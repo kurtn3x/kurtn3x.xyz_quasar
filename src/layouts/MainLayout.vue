@@ -1,6 +1,6 @@
 <template>
   <q-layout view="hHh lpR fff">
-    <q-header reveal elevated class="bg-primary text-white" height-hint="98">
+    <q-header reveal elevated class="bg-primary text-dark" height-hint="98">
       <q-toolbar>
         <q-btn
           flat
@@ -11,34 +11,35 @@
           @click="toggleLeftDrawer"
         />
         <q-separator dark vertical inset />
-        <q-btn stretch flat label="Link" />
+        <q-btn stretch flat label="Home" to="/" />
 
         <q-space />
 
         <q-btn-dropdown
-          color="pink"
-          label="Dropdown Button"
+          color="amber"
+          text-color="dark"
           dropdown-icon="change_history"
+          v-model="menu"
+          :content-style="{ backgroundColor: '#272727' }"
+          icon="person"
         >
-          <q-list>
-            <q-item clickable v-close-popup to="/login">
-              <q-item-section>
-                <q-item-label>Login</q-item-label>
-              </q-item-section>
-            </q-item>
+          <q-item clickable v-close-popup to="/login" class="text-white">
+            <q-item-section>
+              <q-item-label>Login</q-item-label>
+            </q-item-section>
+          </q-item>
 
-            <q-item clickable v-close-popup @click="onItemClick">
-              <q-item-section>
-                <q-item-label>Register</q-item-label>
-              </q-item-section>
-            </q-item>
+          <q-item clickable v-close-popup to="/register" class="text-white">
+            <q-item-section>
+              <q-item-label>Register</q-item-label>
+            </q-item-section>
+          </q-item>
 
-            <q-item clickable v-close-popup @click="onItemClick">
-              <q-item-section>
-                <q-item-label>Settings</q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
+          <q-item clickable v-close-popup to="/register" class="text-white">
+            <q-item-section>
+              <q-item-label>Settings</q-item-label>
+            </q-item-section>
+          </q-item>
         </q-btn-dropdown>
       </q-toolbar>
     </q-header>
@@ -60,6 +61,14 @@
         <q-toolbar-title>
           <div>Title</div>
         </q-toolbar-title>
+        <q-toggle
+          v-model="mode"
+          checked-icon="check"
+          color="green"
+          unchecked-icon="clear"
+          label="Dark Mode"
+          @click="toogleDarkMode"
+        />
       </q-toolbar>
     </q-footer>
   </q-layout>
@@ -67,11 +76,13 @@
 
 <script>
 import { ref } from 'vue';
+import { Dark } from 'quasar';
 
 export default {
   setup() {
     const leftDrawerOpen = ref(false);
     const rightDrawerOpen = ref(false);
+    Dark.set(true);
 
     return {
       leftDrawerOpen,
@@ -83,6 +94,12 @@ export default {
       toggleRightDrawer() {
         rightDrawerOpen.value = !rightDrawerOpen.value;
       },
+
+      toogleDarkMode() {
+        Dark.toggle();
+      },
+
+      mode: ref(true),
     };
   },
 };
