@@ -19,7 +19,6 @@
           color="amber"
           text-color="dark"
           dropdown-icon="change_history"
-          v-model="menu"
           icon="person"
           @click="login = true"
         >
@@ -59,15 +58,24 @@
                   Login to your account
                 </p>
                 <q-card-section>
-                  <q-form class="q-gutter-md text-grey">
+                  <q-form
+                    class="q-gutter-md text-grey"
+                    ref="loginform"
+                    @submit.prevent="submitLogin"
+                  >
                     <q-input
                       dense
                       square
                       filled
                       clearable
-                      v-model="email"
+                      v-model="username"
                       type="username"
                       label="Username"
+                      lazy-rules
+                      :rules="[
+                        (val) =>
+                          (val && val.length > 0) || 'Please type something',
+                      ]"
                     >
                       <template v-slot:prepend>
                         <q-icon name="person" />
@@ -81,6 +89,11 @@
                       v-model="password"
                       label="Password"
                       :type="isPwd ? 'password' : 'text'"
+                      lazy-rules
+                      :rules="[
+                        (val) =>
+                          (val && val.length > 0) || 'Please type something',
+                      ]"
                     >
                       <template v-slot:prepend>
                         <q-icon
@@ -90,19 +103,19 @@
                         />
                       </template>
                     </q-input>
+                    <q-card-actions>
+                      <q-btn
+                        outline
+                        rounded
+                        size="md"
+                        color="red-4"
+                        class="full-width text-white"
+                        label="Sign In"
+                        type="submit"
+                      />
+                    </q-card-actions>
                   </q-form>
                 </q-card-section>
-                <q-card-actions>
-                  <q-btn
-                    outline
-                    rounded
-                    size="md"
-                    color="red-4"
-                    class="full-width text-white"
-                    label="Sign In"
-                    @click="submitLogin"
-                  />
-                </q-card-actions>
               </q-card>
             </q-tab-panel>
 
@@ -112,7 +125,7 @@
                   Register a new Account
                 </p>
                 <q-card-section>
-                  <q-form class="q-gutter-md">
+                  <q-form class="q-gutter-md" @submit.prevent="submitRegister">
                     <q-input
                       dense
                       square
@@ -193,7 +206,10 @@
                     </q-input>
 
                     <q-input
+                      dense
+                      square
                       filled
+                      clearable
                       v-model="password2"
                       label="Confirm Password"
                       lazy-rules
@@ -202,27 +218,27 @@
                       ]"
                       :type="isPwd2 ? 'password' : 'text'"
                     >
-                      <template v-slot:append>
+                      <template v-slot:prepend>
                         <q-icon
                           class="pw_icon"
-                          :name="isPwd ? 'lock' : 'lock_open'"
+                          :name="isPwd2 ? 'lock' : 'lock_open'"
                           @click="isPwd2 = !isPwd2"
                         />
                       </template>
                     </q-input>
+                    <q-card-actions>
+                      <q-btn
+                        outline
+                        rounded
+                        size="md"
+                        color="red-4"
+                        class="full-width text-white"
+                        label="Register"
+                        type="submit"
+                      />
+                    </q-card-actions>
                   </q-form>
                 </q-card-section>
-                <q-card-actions>
-                  <q-btn
-                    outline
-                    rounded
-                    size="md"
-                    color="red-4"
-                    class="full-width text-white"
-                    label="Register"
-                    @click="submitRegister"
-                  />
-                </q-card-actions>
               </q-card>
             </q-tab-panel>
           </q-tab-panels>
@@ -255,9 +271,12 @@
 import { ref } from 'vue';
 import { Dark } from 'quasar';
 import { useStore } from 'stores/store.ts';
+import { useQuasar } from 'quasar';
+import { api } from 'boot/axios';
 
 export default {
   setup() {
+    const $q = useQuasar();
     const $store = useStore();
     const leftDrawerOpen = ref(false);
     const rightDrawerOpen = ref(false);
@@ -278,15 +297,6 @@ export default {
         Dark.toggle();
       },
 
-      submitRegister() {
-        console.log($store.isAuthenticated);
-        $store.setAccess($store, false);
-      },
-
-      submitLogin() {
-        $store.setAccess($store, true);
-      },
-
       mode: ref(true),
       login: ref(false),
       register: ref(false),
@@ -298,6 +308,70 @@ export default {
       isPwd: ref(true),
       isPwd2: ref(true),
     };
+  },
+  beforeCreate() {
+    api.get('/auth/csrf_cookie', { withCredentials: true });
+  },
+  methods: {
+    submitLogin() {
+      const formData = {
+        username: this.username,
+        password: this.password,
+      };
+      let config = {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': this.$q.cookies.get('csrftoken'),
+        },
+      };
+
+      api
+        .post('/auth/login', formData, config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.$q.notify({
+              type: 'positive',
+              message: 'This is a "positive" type notification.',
+            });
+          } else {
+            console.log(error);
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+
+    submitRegister(data) {
+      const formData = {
+        username: this.username,
+        password: this.password,
+        re_password: this.password2,
+        email: this.email,
+      };
+      let config = {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': this.$q.cookies.get('csrftoken'),
+        },
+      };
+
+      api
+        .post('/auth/register', formData, config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.$q.notify({
+              type: 'positive',
+              message: 'Successfully registered',
+            });
+          } else {
+            console.log('error');
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
   },
 };
 </script>
