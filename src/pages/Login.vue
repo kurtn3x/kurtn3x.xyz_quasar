@@ -1,17 +1,9 @@
 <template>
-  <img src="~assets/wave.png" class="wave" alt="login-wave" />
-  <div class="row" style="height: 90vh">
-    <div class="col-0 col-md-6 flex justify-center content-center">
-      <img src="~assets/login.svg" class="responsive" alt="login-image" />
-    </div>
-    <div
-      v-bind:class="{
-        'justify-center': $q.screen.md || $q.screen.sm || $q.screen.xs,
-      }"
-      class="col-12 col-md-6 flex content-center"
-    >
+  <div class="row">
+    <div class="col-12 col-md-6 flex content-center">
       <q-card
-        v-bind:style="$q.screen.lt.sm ? { width: '80%' } : { width: '50%' }"
+        class="fixed-center"
+        v-bind:style="$q.screen.lt.sm ? { width: '80%' } : { width: '30%' }"
       >
         <q-card-section>
           <q-avatar size="103px" class="absolute-center shadow-10">
@@ -29,8 +21,27 @@
         </q-card-section>
         <q-card-section>
           <q-form class="q-gutter-md" @submit.prevent="submitForm">
-            <q-input label="Username" v-model="login.username"> </q-input>
-            <q-input label="Password" type="password" v-model="login.password">
+            <q-input
+              filled
+              v-model="username"
+              label="Your username *"
+              hint="Username"
+            />
+            <q-input
+              filled
+              v-model="password"
+              label="Your password *"
+              hint="Password"
+              lazy-rules
+              :type="isPwd ? 'password' : 'text'"
+            >
+              <template v-slot:append>
+                <q-icon
+                  :name="isPwd ? 'visibility_off' : 'visibility'"
+                  class="cursor-pointer"
+                  @click="isPwd = !isPwd"
+                />
+              </template>
             </q-input>
             <div>
               <q-btn
@@ -58,51 +69,16 @@
 </template>
 
 <script>
-import { useQuasar } from 'quasar';
-import { mapActions } from 'pinia';
-
-let $q;
+import { ref } from 'vue';
 
 export default {
   name: 'LoginView',
-  data() {
+  setup() {
     return {
-      login: {
-        username: '',
-        password: '',
-      },
+      username: ref(''),
+      password: ref(''),
+      isPwd: ref(true),
     };
-  },
-  methods: {
-    async submitForm() {
-      if (!this.login.username || !this.login.password) {
-        $q.notify({
-          type: 'negative',
-          message: 'Os dados informados são inválidos.',
-        });
-      } else if (this.login.password.length < 6) {
-        $q.notify({
-          type: 'negative',
-          message: 'A senha deve ter 6 ou mais caracteres.',
-        });
-      } else {
-        try {
-          await this.doLogin(this.login);
-          const toPath = this.$route.query.to || '/admin';
-          this.$router.push(toPath);
-        } catch (err) {
-          if (err.response.data.detail) {
-            $q.notify({
-              type: 'negative',
-              message: err.response.data.detail,
-            });
-          }
-        }
-      }
-    },
-  },
-  mounted() {
-    $q = useQuasar();
   },
 };
 </script>
