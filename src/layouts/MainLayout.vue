@@ -42,17 +42,23 @@
       bordered
       overlay
       side="right"
-      tabindex="-12222"
+      tabindex="111111111111111111111111111111111111111"
+      @focus="drawerClick"
       @focusout="handleFocusOut"
     >
       <q-scroll-area class="fit">
         <q-list padding>
-          <q-item clickable v-ripple @click="miniState = !miniState">
-            <q-item-section avatar>
-              <q-icon :name="miniState ? 'chevron_left' : 'chevron_right'" />
-            </q-item-section>
-            <q-item-section>
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          <q-item
+            clickable
+            v-ripple
+            @click="miniState = !miniState"
+            tabindex="-999999999999999999999999"
+          >
+            <q-item-section avatar tabindex="-999999999999999999999999">
+              <q-icon
+                :name="miniState ? 'chevron_left' : 'chevron_right'"
+                tabindex="-999999999999999999999999"
+              />
             </q-item-section>
           </q-item>
           <q-item clickable v-ripple>
