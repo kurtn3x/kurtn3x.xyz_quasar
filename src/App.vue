@@ -9,11 +9,6 @@ import ParticlesBG from './components/ParticlesBG.vue';
 
 export default defineComponent({
   name: 'App',
-  data() {
-    return {
-      mobile_view_bool: false,
-    };
-  },
   components: { ParticlesBG },
 });
 </script>

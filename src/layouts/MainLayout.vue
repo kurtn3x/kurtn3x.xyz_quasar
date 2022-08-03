@@ -16,29 +16,92 @@
         <q-space />
 
         <q-btn
+          v-if="!authenticated"
           color="amber"
           text-color="dark"
           dropdown-icon="change_history"
           icon="person"
-          @click="login = true"
+          @click="login_popup = true"
         >
         </q-btn>
       </q-toolbar>
     </q-header>
 
     <q-drawer v-model="leftDrawerOpen" side="left" overlay bordered>
-      <!-- drawer content -->
+      <!-- drawer content       @click.capture="drawerClick" -->
     </q-drawer>
 
-    <q-drawer v-model="rightDrawerOpen" side="right" overlay bordered>
-      <!-- drawer content -->
+    <!-- fix  -->
+
+    <q-drawer
+      v-if="!authenticated"
+      v-model="rightDrawer"
+      :mini="!rightDrawer || miniState"
+      :width="200"
+      :breakpoint="500"
+      bordered
+      overlay
+      side="right"
+      tabindex="-12222"
+      @focusout="handleFocusOut"
+    >
+      <q-scroll-area class="fit">
+        <q-list padding>
+          <q-item clickable v-ripple @click="miniState = !miniState">
+            <q-item-section avatar>
+              <q-icon :name="miniState ? 'chevron_left' : 'chevron_right'" />
+            </q-item-section>
+            <q-item-section>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            </q-item-section>
+          </q-item>
+          <q-item clickable v-ripple>
+            <q-item-section avatar>
+              <q-icon name="inbox" />
+            </q-item-section>
+
+            <q-item-section> Inbox </q-item-section>
+          </q-item>
+
+          <q-item active clickable v-ripple>
+            <q-item-section avatar>
+              <q-icon name="star" />
+            </q-item-section>
+
+            <q-item-section> Star </q-item-section>
+          </q-item>
+
+          <q-item clickable v-ripple>
+            <q-item-section avatar>
+              <q-icon name="send" />
+            </q-item-section>
+
+            <q-item-section> Send </q-item-section>
+          </q-item>
+
+          <q-item clickable v-ripple>
+            <q-item-section avatar>
+              <q-icon name="drafts" />
+            </q-item-section>
+
+            <q-item-section> Drafts </q-item-section>
+          </q-item>
+          <q-item clickable v-ripple @click="logout">
+            <q-item-section avatar>
+              <q-icon name="logout" />
+            </q-item-section>
+
+            <q-item-section> Logout </q-item-section>
+          </q-item>
+        </q-list>
+      </q-scroll-area>
     </q-drawer>
 
     <q-page-container>
-      <q-dialog v-model="login">
+      <q-dialog v-model="login_popup">
         <q-card>
           <q-tabs
-            v-model="tab"
+            v-model="login_tab"
             dense
             class="text-grey"
             active-color="primary"
@@ -51,7 +114,7 @@
 
           <q-separator />
 
-          <q-tab-panels v-model="tab" animated>
+          <q-tab-panels v-model="login_tab" animated>
             <q-tab-panel name="login">
               <q-card square class="no-shadow" style="width: 100%">
                 <p class="text-weight-bolder text-grey">
@@ -86,7 +149,7 @@
                       square
                       filled
                       clearable
-                      v-model="password"
+                      v-model="login_password"
                       label="Password"
                       :type="isPwd ? 'password' : 'text'"
                       lazy-rules
@@ -252,7 +315,8 @@
     <q-footer elevated class="bg-grey-8 text-white">
       <q-toolbar>
         <q-toolbar-title>
-          <div>Title</div>
+          <div>{{ authenticated }}</div>
+          <div>{{ test }}</div>
         </q-toolbar-title>
         <q-toggle
           v-model="mode"
@@ -268,42 +332,67 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { Dark } from 'quasar';
-import { useStore } from 'stores/store.ts';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
+import { useAuthStore } from 'stores/authenticated.ts';
 
 export default {
+  computed: {
+    authenticated() {
+      return this.store.auth_state;
+    },
+  },
   setup() {
-    const $q = useQuasar();
-    const $store = useStore();
+    const store = useAuthStore();
     const leftDrawerOpen = ref(false);
-    const rightDrawerOpen = ref(false);
+    const miniState = ref(true);
+
     Dark.set(true);
 
     return {
+      store,
+      rightDrawer: ref(true),
       leftDrawerOpen,
       toggleLeftDrawer() {
         leftDrawerOpen.value = !leftDrawerOpen.value;
       },
 
-      rightDrawerOpen,
-      toggleRightDrawer() {
-        rightDrawerOpen.value = !rightDrawerOpen.value;
+      miniState,
+
+      drawerClick(e) {
+        // if in "mini" state and user
+        // click on drawer, we switch it to "normal" mode
+        if (miniState.value) {
+          miniState.value = false;
+
+          // notice we have registered an event with capture flag;
+          // we need to stop further propagation as this click is
+          // intended for switching drawer to "normal" mode only
+          e.stopPropagation();
+        }
+      },
+
+      handleFocusOut(e) {
+        if (!miniState.value) {
+          miniState.value = true;
+          e.stopPropagation();
+        }
       },
 
       toogleDarkMode() {
         Dark.toggle();
       },
 
+      test: ref(1),
       mode: ref(true),
-      login: ref(false),
-      register: ref(false),
-      tab: ref('login'),
+      login_popup: ref(false),
+      login_tab: ref('login'),
       username: ref(''),
       password: ref(''),
       password2: ref(''),
+      login_password: ref(''),
       email: ref(''),
       isPwd: ref(true),
       isPwd2: ref(true),
@@ -311,12 +400,35 @@ export default {
   },
   beforeCreate() {
     api.get('/auth/csrf_cookie', { withCredentials: true });
+    let config = {
+      withCredentials: true,
+      headers: {
+        'X-CSRFToken': this.$q.cookies.get('csrftoken'),
+      },
+    };
+    api
+      .get('/auth/authenticated', config)
+      .then((response) => {
+        if (response.status == 200) {
+          this.store.authenticated = true;
+        } else {
+          this.store.authenticated = false;
+        }
+      })
+      .catch((this.store.authenticated = false));
   },
   methods: {
+    notify(type, message) {
+      this.$q.notify({
+        type: type,
+        message: message,
+      });
+    },
+
     submitLogin() {
       const formData = {
         username: this.username,
-        password: this.password,
+        password: this.login_password,
       };
       let config = {
         withCredentials: true,
@@ -329,20 +441,27 @@ export default {
         .post('/auth/login', formData, config)
         .then((response) => {
           if (response.status == 200) {
-            this.$q.notify({
-              type: 'positive',
-              message: 'This is a "positive" type notification.',
-            });
+            this.store.authenticated = true;
+            this.username = '';
+            this.password = '';
+            this.password2 = '';
+            this.login_password = '';
+            this.email = '';
+            this.notify('positive', 'Logged in');
+            this.login_popup = false;
           } else {
-            console.log(error);
+            var msg = 'Error: ' + response;
+            this.notify('negative', msg);
           }
         })
         .catch((error) => {
-          console.log(error);
+          var msg = 'Error: ' + error;
+          this.notify('negative', msg);
+          this.store.authenticated = true;
         });
     },
 
-    submitRegister(data) {
+    submitRegister() {
       const formData = {
         username: this.username,
         password: this.password,
@@ -360,17 +479,39 @@ export default {
         .post('/auth/register', formData, config)
         .then((response) => {
           if (response.status == 200) {
-            this.$q.notify({
-              type: 'positive',
-              message: 'Successfully registered',
-            });
+            this.notify('positive', 'Registered');
+            this.login_tab = 'login';
+            this.password = '';
+            this.password2 = '';
+            this.login_password = '';
+            this.email = '';
           } else {
-            console.log('error');
+            var msg = 'Error: ' + response;
+            this.notify('negative', msg);
           }
         })
         .catch((error) => {
-          console.log(error);
+          var msg = 'Error: ' + error;
+          this.notify('negative', msg);
         });
+    },
+
+    logout() {
+      let config = {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': this.$q.cookies.get('csrftoken'),
+        },
+      };
+      api
+        .post('/auth/logout', '', config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.store.authenticated = false;
+            this.$router.go('/');
+          }
+        })
+        .catch();
     },
   },
 };
