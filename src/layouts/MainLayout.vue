@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="hHh lpR fff">
+  <q-layout view="hHh LpR fff">
     <q-header reveal elevated class="bg-primary text-dark" height-hint="98">
       <q-toolbar>
         <q-btn
@@ -17,17 +17,25 @@
 
         <q-btn
           v-if="!authenticated"
-          color="amber"
           text-color="dark"
-          dropdown-icon="change_history"
+          stretch
+          flat
           icon="person"
           @click="login_popup = true"
-        >
-        </q-btn>
+        />
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="leftDrawerOpen" side="left" overlay bordered>
+    <q-drawer
+      v-model="leftDrawerOpen"
+      side="left"
+      overlay
+      bordered
+      mini
+      mini-to-overlay
+      :width="200"
+      :breakpoint="500"
+    >
       <!-- drawer content       @click.capture="drawerClick" -->
     </q-drawer>
 
@@ -36,31 +44,16 @@
     <q-drawer
       v-if="!authenticated"
       v-model="rightDrawer"
-      :mini="!rightDrawer || miniState"
+      :mini="miniState"
       :width="200"
       :breakpoint="500"
       bordered
       overlay
       side="right"
       tabindex="111111111111111111111111111111111111111"
-      @focus="drawerClick"
-      @focusout="handleFocusOut"
     >
       <q-scroll-area class="fit">
         <q-list padding>
-          <q-item
-            clickable
-            v-ripple
-            @click="miniState = !miniState"
-            tabindex="-999999999999999999999999"
-          >
-            <q-item-section avatar tabindex="-999999999999999999999999">
-              <q-icon
-                :name="miniState ? 'chevron_left' : 'chevron_right'"
-                tabindex="-999999999999999999999999"
-              />
-            </q-item-section>
-          </q-item>
           <q-item clickable v-ripple>
             <q-item-section avatar>
               <q-icon name="inbox" />
@@ -101,6 +94,27 @@
           </q-item>
         </q-list>
       </q-scroll-area>
+
+      <!-- http://jsfiddle.net/shomz/yFy5n/5/ -->
+      <div
+        v-if="!mobile"
+        class="absolute"
+        :style="[
+          miniState
+            ? { top: '15px', right: '46px' }
+            : { top: '15px', right: '190px' },
+        ]"
+      >
+        <q-btn
+          dense
+          round
+          unelevated
+          color="primary"
+          :icon="miniState ? 'chevron_left' : 'chevron_right'"
+          @click="miniState = !miniState"
+          size="sm"
+        />
+      </div>
     </q-drawer>
 
     <q-page-container>
@@ -177,10 +191,11 @@
                         outline
                         rounded
                         size="md"
-                        color="red-4"
+                        color="green"
                         class="full-width text-white"
                         label="Sign In"
                         type="submit"
+                        :loading="loading"
                       />
                     </q-card-actions>
                   </q-form>
@@ -300,10 +315,11 @@
                         outline
                         rounded
                         size="md"
-                        color="red-4"
+                        color="green"
                         class="full-width text-white"
                         label="Register"
                         type="submit"
+                        :loading="loading"
                       />
                     </q-card-actions>
                   </q-form>
@@ -316,13 +332,24 @@
       >
 
       <router-view />
+      <div class="fixed-right" style="top: 60px">
+        <q-btn
+          v-if="authenticated && mobile"
+          round
+          size="md"
+          color="primary"
+          text-color="dark"
+          icon="chevron_left"
+          @click="rightDrawer = !rightDrawer"
+        />
+      </div>
     </q-page-container>
 
     <q-footer elevated class="bg-grey-8 text-white">
       <q-toolbar>
         <q-toolbar-title>
           <div>{{ authenticated }}</div>
-          <div>{{ test }}</div>
+          <div>{{ mobile }}</div>
         </q-toolbar-title>
         <q-toggle
           v-model="mode"
@@ -349,17 +376,27 @@ export default {
     authenticated() {
       return this.store.auth_state;
     },
+    mobile() {
+      return this.q.platform.is.mobile;
+    },
   },
   setup() {
     const store = useAuthStore();
-    const leftDrawerOpen = ref(false);
+    const leftDrawerOpen = ref(true);
     const miniState = ref(true);
+    const q = useQuasar();
 
     Dark.set(true);
+    if (q.platform.is.mobile) {
+      var rightDrawer = ref(false);
+    } else {
+      var rightDrawer = ref(true);
+    }
 
     return {
       store,
-      rightDrawer: ref(true),
+      q,
+      rightDrawer,
       leftDrawerOpen,
       toggleLeftDrawer() {
         leftDrawerOpen.value = !leftDrawerOpen.value;
@@ -368,14 +405,8 @@ export default {
       miniState,
 
       drawerClick(e) {
-        // if in "mini" state and user
-        // click on drawer, we switch it to "normal" mode
         if (miniState.value) {
           miniState.value = false;
-
-          // notice we have registered an event with capture flag;
-          // we need to stop further propagation as this click is
-          // intended for switching drawer to "normal" mode only
           e.stopPropagation();
         }
       },
@@ -402,6 +433,7 @@ export default {
       email: ref(''),
       isPwd: ref(true),
       isPwd2: ref(true),
+      loading: ref(false),
     };
   },
   beforeCreate() {
@@ -432,6 +464,7 @@ export default {
     },
 
     submitLogin() {
+      this.loading = true;
       const formData = {
         username: this.username,
         password: this.login_password,
@@ -447,6 +480,7 @@ export default {
         .post('/auth/login', formData, config)
         .then((response) => {
           if (response.status == 200) {
+            this.loading = false;
             this.store.authenticated = true;
             this.username = '';
             this.password = '';
@@ -456,11 +490,13 @@ export default {
             this.notify('positive', 'Logged in');
             this.login_popup = false;
           } else {
+            this.loading = false;
             var msg = 'Error: ' + response;
             this.notify('negative', msg);
           }
         })
         .catch((error) => {
+          this.loading = false;
           var msg = 'Error: ' + error;
           this.notify('negative', msg);
           this.store.authenticated = true;
@@ -468,6 +504,7 @@ export default {
     },
 
     submitRegister() {
+      this.loading = true;
       const formData = {
         username: this.username,
         password: this.password,
@@ -485,6 +522,7 @@ export default {
         .post('/auth/register', formData, config)
         .then((response) => {
           if (response.status == 200) {
+            this.loading = false;
             this.notify('positive', 'Registered');
             this.login_tab = 'login';
             this.password = '';
@@ -492,11 +530,13 @@ export default {
             this.login_password = '';
             this.email = '';
           } else {
+            this.loading = false;
             var msg = 'Error: ' + response;
             this.notify('negative', msg);
           }
         })
         .catch((error) => {
+          this.loading = false;
           var msg = 'Error: ' + error;
           this.notify('negative', msg);
         });
