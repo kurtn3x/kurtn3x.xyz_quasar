@@ -27,7 +27,7 @@
     </q-header>
 
     <q-drawer
-      v-model="leftDrawerOpen"
+      v-model="leftDrawer"
       side="left"
       overlay
       bordered
@@ -42,7 +42,7 @@
     <!-- fix  -->
 
     <q-drawer
-      v-if="!authenticated"
+      v-if="authenticated"
       v-model="rightDrawer"
       :mini="miniState"
       :width="200"
@@ -96,25 +96,29 @@
       </q-scroll-area>
 
       <!-- http://jsfiddle.net/shomz/yFy5n/5/ -->
-      <div
+      <q-btn
+        dense
+        round
+        unelevated
+        color="primary"
+        :icon="miniState ? 'chevron_left' : 'chevron_right'"
+        @click="miniState = !miniState"
+        size="sm"
+        v-bind:class="miniState ? 'drawer_btn_desk' : 'drawer_btn_desk_moved'"
         v-if="!mobile"
-        class="absolute"
-        :style="[
-          miniState
-            ? { top: '15px', right: '46px' }
-            : { top: '15px', right: '190px' },
-        ]"
-      >
-        <q-btn
-          dense
-          round
-          unelevated
-          color="primary"
-          :icon="miniState ? 'chevron_left' : 'chevron_right'"
-          @click="miniState = !miniState"
-          size="sm"
-        />
-      </div>
+      />
+
+      <!-- mobile  -->
+      <q-btn
+        round
+        text-color="dark"
+        color="primary"
+        icon="chevron_right"
+        @click="rightDrawer = !rightDrawer"
+        size="md"
+        class="drawer_btn_mob"
+        v-if="mobile"
+      />
     </q-drawer>
 
     <q-page-container>
@@ -298,6 +302,8 @@
                       label="Confirm Password"
                       lazy-rules
                       :rules="[
+                        (val) =>
+                          (val && val.length > 0) || 'Please type something',
                         (val) => val == password || 'Passwords do not match',
                       ]"
                       :type="isPwd2 ? 'password' : 'text'"
@@ -332,9 +338,12 @@
       >
 
       <router-view />
-      <div class="fixed-right" style="top: 60px">
+      <div
+        v-if="authenticated && mobile"
+        class="fixed-right drawer_btn_mob_moved"
+      >
+        <!-- mobile  -->
         <q-btn
-          v-if="authenticated && mobile"
           round
           size="md"
           color="primary"
@@ -382,11 +391,11 @@ export default {
   },
   setup() {
     const store = useAuthStore();
-    const leftDrawerOpen = ref(true);
+    const leftDrawer = ref(false);
     const miniState = ref(true);
     const q = useQuasar();
-
     Dark.set(true);
+
     if (q.platform.is.mobile) {
       var rightDrawer = ref(false);
     } else {
@@ -397,9 +406,9 @@ export default {
       store,
       q,
       rightDrawer,
-      leftDrawerOpen,
+      leftDrawer,
       toggleLeftDrawer() {
-        leftDrawerOpen.value = !leftDrawerOpen.value;
+        leftDrawer.value = !leftDrawer.value;
       },
 
       miniState,
@@ -441,7 +450,7 @@ export default {
     let config = {
       withCredentials: true,
       headers: {
-        'X-CSRFToken': this.$q.cookies.get('csrftoken'),
+        'X-CSRFToken': this.q.cookies.get('csrftoken'),
       },
     };
     api
@@ -457,7 +466,7 @@ export default {
   },
   methods: {
     notify(type, message) {
-      this.$q.notify({
+      this.q.notify({
         type: type,
         message: message,
       });
@@ -472,7 +481,7 @@ export default {
       let config = {
         withCredentials: true,
         headers: {
-          'X-CSRFToken': this.$q.cookies.get('csrftoken'),
+          'X-CSRFToken': this.q.cookies.get('csrftoken'),
         },
       };
 
@@ -491,15 +500,15 @@ export default {
             this.login_popup = false;
           } else {
             this.loading = false;
-            var msg = 'Error: ' + response;
+            var msg = 'Error: ' + response.data.error;
             this.notify('negative', msg);
           }
         })
         .catch((error) => {
           this.loading = false;
-          var msg = 'Error: ' + error;
+          var msg = 'Error (Server Error): ' + error;
           this.notify('negative', msg);
-          this.store.authenticated = true;
+          this.store.authenticated = false;
         });
     },
 
@@ -514,7 +523,7 @@ export default {
       let config = {
         withCredentials: true,
         headers: {
-          'X-CSRFToken': this.$q.cookies.get('csrftoken'),
+          'X-CSRFToken': this.q.cookies.get('csrftoken'),
         },
       };
 
@@ -531,13 +540,13 @@ export default {
             this.email = '';
           } else {
             this.loading = false;
-            var msg = 'Error: ' + response;
+            var msg = response.data.error;
             this.notify('negative', msg);
           }
         })
         .catch((error) => {
           this.loading = false;
-          var msg = 'Error: ' + error;
+          var msg = 'Error (Server Error): ' + error;
           this.notify('negative', msg);
         });
     },
@@ -546,7 +555,7 @@ export default {
       let config = {
         withCredentials: true,
         headers: {
-          'X-CSRFToken': this.$q.cookies.get('csrftoken'),
+          'X-CSRFToken': this.q.cookies.get('csrftoken'),
         },
       };
       api
@@ -566,5 +575,31 @@ export default {
 <style scoped>
 .pw_icon:hover {
   color: whitesmoke;
+}
+
+.drawer_btn_desk {
+  position: absolute;
+  top: 15px;
+  right: 46px;
+  transition: all 0.1s linear;
+}
+.drawer_btn_desk_moved {
+  position: absolute;
+  top: 15px;
+  right: 190px;
+  transition: all 0.1s linear;
+}
+
+.drawer_btn_mob {
+  position: fixed;
+  top: 45%;
+  right: 185px;
+  transition: all 0.1s linear;
+}
+.drawer_btn_mob_moved {
+  position: fixed;
+  right: -14px;
+  top: 45%;
+  transition: all 0.1s linear;
 }
 </style>
