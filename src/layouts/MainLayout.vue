@@ -351,7 +351,7 @@
                         (val) =>
                           (val && val.length > 0) || 'Please type something',
                         (val) =>
-                          (val && val.length > 3) || 'At least 6 characters',
+                          (val && val.length > 7) || 'At least 8 characters',
                         (val) =>
                           /(?=.*[a-z])/.test(val) ||
                           'At least 1 lowercase letter',

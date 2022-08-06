@@ -26,7 +26,7 @@
             lazy-rules
             :rules="[
               (val) => (val && val.length > 0) || 'Please type something',
-              (val) => (val && val.length > 3) || 'At least 4 characters',
+              (val && val.length > 7) || 'At least 8 characters',
               (val) =>
                 (val && val.length < 16) || 'Not more than 16 characters',
             ]"
