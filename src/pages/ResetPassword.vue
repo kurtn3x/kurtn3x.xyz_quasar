@@ -21,7 +21,7 @@
             lazy-rules
             :rules="[
               (val) => (val && val.length > 0) || 'Please type something',
-              (val) => (val && val.length > 3) || 'At least 6 characters',
+              (val && val.length > 7) || 'At least 8 characters',
               (val) => /(?=.*[a-z])/.test(val) || 'At least 1 lowercase letter',
               (val) => /(?=.*[A-Z])/.test(val) || 'At least 1 uppercase letter',
               (val) => /(?=.*[0-9])/.test(val) || 'At least 1 number',
