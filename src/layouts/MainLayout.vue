@@ -170,8 +170,8 @@
                   <strong
                     >For security reasons we will send the password reset link
                     and your username in 2 seperate E-Mails.
-                  </strong></q-tooltip
-                >
+                  </strong>
+                </q-tooltip>
               </p>
               <q-card-actions>
                 <q-btn
@@ -555,24 +555,47 @@ export default {
         },
       };
 
-      api
-        .post('auth/password_reset/', formData, config)
-        .then((response) => {
-          if (response.status == 200) {
+      if (this.request_password) {
+        api
+          .post('auth/password_reset/', formData, config)
+          .then((response) => {
+            if (response.status == 200) {
+              this.loading = false;
+              this.forgot_popup = false;
+              this.notify('positive', 'Password-Request-Email has been sent.');
+            } else {
+              this.loading = false;
+              var msg = 'Error: ' + response.data.error;
+              this.notify('negative', msg);
+            }
+          })
+          .catch((error) => {
             this.loading = false;
-            this.forgot_popup = false;
-            this.notify('positive', 'Email has been sent.');
-          } else {
-            this.loading = false;
-            var msg = 'Error: ' + response.data.error;
+            var msg = 'Please enter a valid E-Mail Adress.';
             this.notify('negative', msg);
-          }
-        })
-        .catch((error) => {
-          this.loading = false;
-          var msg = 'Please enter a valid E-Mail Adress.';
-          this.notify('negative', msg);
-        });
+          });
+      }
+
+      if (this.request_username) {
+        api
+          .post('auth/username_request', formData, config)
+          .then((response) => {
+            if (response.status == 200) {
+              this.loading = false;
+              this.forgot_popup = false;
+              this.notify('positive', 'Username-Request-Email has been sent.');
+            } else {
+              this.loading = false;
+              var msg = 'Error: ' + response.data.error;
+              this.notify('negative', msg);
+            }
+          })
+          .catch((error) => {
+            this.loading = false;
+            var msg = 'Please enter a valid E-Mail Adress.';
+            this.notify('negative', msg);
+          });
+      }
     },
 
     submitLogin() {

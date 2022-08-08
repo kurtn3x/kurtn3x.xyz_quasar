@@ -1,8 +1,19 @@
 <template>
   <div class="col-12 col-md-6 flex content-center">
+    <h2
+      class="text-h5 text-center text-uppercase q-my-none text-weight-regular fixed-center text-red"
+      v-if="!token_exist"
+    >
+      TOKEN DOES NOT EXIST :/<br />
+      PLEASE REQUEST A NEW ONE
+      <q-tooltip class="bg-red">
+        <strong>Perhabs you already used it? </strong>
+      </q-tooltip>
+    </h2>
     <q-card
-      class="fixed-center"
+      class="absolute-center"
       v-bind:style="$q.screen.lt.sm ? { width: '80%' } : { width: '50%' }"
+      v-if="token_exist"
     >
       <q-card-section>
         <h2
@@ -21,7 +32,7 @@
             lazy-rules
             :rules="[
               (val) => (val && val.length > 0) || 'Please type something',
-              (val && val.length > 7) || 'At least 8 characters',
+              (val) => (val && val.length > 7) || 'At least 8 characters',
               (val) => /(?=.*[a-z])/.test(val) || 'At least 1 lowercase letter',
               (val) => /(?=.*[A-Z])/.test(val) || 'At least 1 uppercase letter',
               (val) => /(?=.*[0-9])/.test(val) || 'At least 1 number',
@@ -91,7 +102,35 @@ export default {
       password2: ref(''),
       isPwd: ref(true),
       isPwd2: ref(true),
+      token_exist: ref(false),
     };
+  },
+  beforeCreate() {
+    let config = {
+      withCredentials: true,
+      headers: {
+        'X-CSRFToken': this.q.cookies.get('csrftoken'),
+      },
+    };
+
+    var url = window.location;
+    var token = new URLSearchParams(url.search).get('token');
+    const formData = {
+      token: token,
+    };
+
+    api
+      .post('/auth/password_reset/validate_token', formData, config)
+      .then((response) => {
+        if (response.status == 200) {
+          this.token_exist = true;
+        } else {
+          this.token_exist = false;
+        }
+      })
+      .catch((error) => {
+        this.token_exist = false;
+      });
   },
   methods: {
     notify(type, message) {
@@ -116,7 +155,7 @@ export default {
       };
 
       api
-        .post('auth/password_reset/confirm/', formData, config)
+        .post('auth/password_reset/confirm', formData, config)
         .then((response) => {
           if (response.status == 200) {
             this.loading = false;
