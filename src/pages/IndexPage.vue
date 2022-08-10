@@ -1,66 +1,87 @@
 <template>
-  <h1>wwww</h1>
-  <h1>wwww</h1>
-  <h1>wwww</h1>
-  <h1>wwww</h1>
-  <h1>wwww</h1>
-  <h1>wwww</h1>
-  <h1>wwww</h1>
-  <h1>wwww</h1>
-  <h1>wwww</h1>
-  <h1>wwww</h1>
-  <h1>wwww</h1>
-  <h1>wwww</h1>
-  <h1>wwww</h1>
-  <h1>wwww</h1>
+  <div v-if="this.store.authenticated" v-bind="getMe">
+    <h1>{{ this.first_name }}</h1>
+    <h1>{{ this.last_name }}</h1>
+    <h1>{{ this.username }}</h1>
+    <h1>{{ this.id }}</h1>
+    <h1>{{ this.user }}</h1>
+    <h1>{{ this.phone }}</h1>
+    <h1>xx</h1>
+  </div>
   <h1>wwww</h1>
   <h1>wwww</h1>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
+import { useAuthStore } from 'stores/authenticated';
+import { useQuasar } from 'quasar';
+import { api } from 'boot/axios';
+import { store } from 'quasar/wrappers';
 
 export default defineComponent({
   name: 'IndexPage',
+  setup() {
+    const store = useAuthStore();
+    const q = useQuasar();
+
+    return {
+      store,
+      q,
+      username: ref(''),
+      id: ref(''),
+      first_name: ref(''),
+      last_name: ref(''),
+      phone: ref(''),
+      user: ref(''),
+    };
+  },
+  created() {
+    this.getMe();
+  },
+  watch: {
+    'store.authenticated'() {
+      this.getMe();
+    },
+  },
+  methods: {
+    getMe() {
+      let config = {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': this.q.cookies.get('csrftoken'),
+        },
+      };
+      api
+        .get('/profile/user', config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.username = response.data.username;
+            this.id = response.data.profile.id;
+            this.first_name = response.data.profile.first_name;
+            this.last_name = response.data.profile.last_name;
+            this.phone = response.data.profile.phone;
+            this.user = response.data.profile.user;
+          } else {
+            this.username = '';
+            this.id = '';
+            this.first_name = '';
+            this.last_name = '';
+            this.phone = '';
+            this.user = '';
+          }
+        })
+        .catch((error) => {
+          (this.username = ''),
+            (this.id = ''),
+            (this.first_name = ''),
+            (this.last_name = ''),
+            (this.phone = ''),
+            (this.user = '');
+        });
+    },
+  },
 });
 </script>
 
-<style scoped>
-#myVideo {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  min-width: 110%;
-  min-height: 110%;
-}
-
-.video-container {
-  position: relative;
-  padding-bottom: 56.25%; /* 16:9 */
-  padding-top: 25px;
-  width: 300%; /* enlarge beyond browser width */
-  left: -100%; /* center */
-}
-
-iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-@media (min-aspect-ratio: 16/9) {
-  .video-container iframe {
-    /* height = 100 * (9 / 16) = 56.25 */
-    height: 56.25vw;
-  }
-}
-
-@media (max-aspect-ratio: 16/9) {
-  .video-container iframe {
-    /* width = 100 / (9 / 16) = 177.777777 */
-    width: 177.78vh;
-  }
-}
-</style>
+<style scoped></style>

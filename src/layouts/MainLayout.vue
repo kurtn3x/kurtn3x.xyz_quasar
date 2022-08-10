@@ -437,7 +437,9 @@
         <q-toolbar-title>
           <div>{{ authenticated }}</div>
           <div>{{ mobile }}</div>
+          <div>{{ this.store.test }}</div>
         </q-toolbar-title>
+        <q-btn @click="this.store.test = !this.store.test"> Test </q-btn>
         <q-toggle
           v-model="darkmode"
           checked-icon="check"
@@ -541,6 +543,9 @@ export default {
       this.q.notify({
         type: type,
         message: message,
+        position: 'top',
+        progress: true,
+        multiLine: true,
       });
     },
     submitForget() {
@@ -658,7 +663,15 @@ export default {
         .then((response) => {
           if (response.status == 200) {
             this.loading = false;
-            this.notify('positive', 'Registered');
+            this.q.notify({
+              icon: 'mail',
+              type: 'positive',
+              message:
+                'Successfully registered. Now validate your account with the link we e-mailed you!',
+              position: 'top',
+              progress: true,
+              multiLine: true,
+            });
             this.login_tab = 'login';
             this.password = '';
             this.password2 = '';
