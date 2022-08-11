@@ -456,7 +456,7 @@
 <script>
 import { ref, computed } from 'vue';
 import { Dark } from 'quasar';
-import { useQuasar } from 'quasar';
+import { useQuasar, QSpinnerGears } from 'quasar';
 import { api } from 'boot/axios';
 import { useAuthStore } from 'stores/authenticated.ts';
 export default {
@@ -515,6 +515,7 @@ export default {
       isPwd: ref(true),
       isPwd2: ref(true),
       loading: ref(false),
+      saved_username: ref(''),
     };
   },
   beforeCreate() {
@@ -543,7 +544,6 @@ export default {
       this.q.notify({
         type: type,
         message: message,
-        position: 'top',
         progress: true,
         multiLine: true,
       });
@@ -630,9 +630,51 @@ export default {
             this.notify('positive', 'Logged in');
             this.login_popup = false;
           } else {
-            this.loading = false;
-            var msg = 'Error: ' + response.data.error;
-            this.notify('negative', msg);
+            // means that email hasnt been verified yet
+            if (response.status == 244) {
+              this.loading = false;
+              this.saved_username = this.username;
+              this.q.notify({
+                message:
+                  'Please click the activation link we sent you first to activate this account or request a new one.',
+                type: 'info',
+                spinner: QSpinnerGears,
+                timeout: 8000,
+                progress: true,
+                actions: [
+                  {
+                    label: 'Request new verification link',
+                    color: 'primary',
+                    handler: () => {
+                      const formData = {
+                        username: this.saved_username,
+                      };
+                      api
+                        .post(
+                          '/auth/activation-email_request',
+                          formData,
+                          config
+                        )
+                        .then((response) => {
+                          if (response.status == 200) {
+                          } else {
+                            var msg = 'Error: ' + response.data.error;
+                            this.notify('negative', msg);
+                          }
+                        })
+                        .catch((error) => {
+                          var msg = 'Error (Server Error): ' + error;
+                          this.notify('negative', msg);
+                        });
+                    },
+                  },
+                ],
+              });
+            } else {
+              this.loading = false;
+              var msg = 'Error: ' + response.data.error;
+              this.notify('negative', msg);
+            }
           }
         })
         .catch((error) => {
