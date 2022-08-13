@@ -127,7 +127,6 @@
                 dense
                 square
                 filled
-                clearable
                 v-model="email_forgot"
                 type="email"
                 label="Your Email"
@@ -222,7 +221,6 @@
                       dense
                       square
                       filled
-                      clearable
                       v-model="username"
                       type="username"
                       label="Username"
@@ -240,7 +238,6 @@
                       dense
                       square
                       filled
-                      clearable
                       v-model="login_password"
                       label="Password"
                       :type="isPwd ? 'password' : 'text'"
@@ -296,7 +293,6 @@
                       dense
                       square
                       filled
-                      clearable
                       v-model="username"
                       label="Username"
                       lazy-rules
@@ -319,7 +315,6 @@
                       dense
                       square
                       filled
-                      clearable
                       v-model="email"
                       type="email"
                       label="Email"
@@ -343,7 +338,6 @@
                       dense
                       square
                       filled
-                      clearable
                       v-model="password"
                       label="Password"
                       lazy-rules
@@ -375,7 +369,6 @@
                       dense
                       square
                       filled
-                      clearable
                       v-model="password2"
                       label="Confirm Password"
                       lazy-rules
