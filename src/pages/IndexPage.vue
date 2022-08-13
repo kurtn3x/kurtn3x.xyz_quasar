@@ -5,11 +5,11 @@
     <h1>{{ this.username }}</h1>
     <h1>{{ this.id }}</h1>
     <h1>{{ this.user }}</h1>
-    <h1>{{ this.phone }}</h1>
-    <h1>xx</h1>
   </div>
-  <h1>wwww</h1>
-  <h1>wwww</h1>
+  <div v-if="!this.store.authenticated">
+    <h1 class="text-center">Hi!</h1>
+    <h1 class="text-center">Please log in to access the site.</h1>
+  </div>
 </template>
 
 <script lang="ts">

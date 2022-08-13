@@ -1,8 +1,15 @@
 <template>
   <q-layout view="hHh LpR fff">
-    <q-header reveal bordered class="bg-primary text-dark" height-hint="98">
+    <q-header
+      reveal
+      bordered
+      height-hint="98"
+      class="bg-transparent"
+      :class="darkmode ? 'text-light' : 'text-dark'"
+    >
       <q-toolbar>
         <q-btn
+          v-if="authenticated"
           flat
           round
           dense
@@ -10,9 +17,16 @@
           class="q-mr-sm"
           @click="toggleLeftDrawer"
         />
-        <q-separator dark vertical inset />
-        <q-btn stretch flat label="Home" to="/" />
+        <q-space />
 
+        <q-btn stretch flat label="Home" to="/" />
+        <q-btn
+          v-if="authenticated"
+          stretch
+          flat
+          label="Forum"
+          href="https://forum.kurtn3x.xyz"
+        />
         <q-space />
 
         <q-btn
@@ -425,14 +439,15 @@
       </div>
     </q-page-container>
 
-    <q-footer elevated class="bg-grey-8 text-white">
+    <q-footer
+      elevated
+      class="bg-transparent"
+      :class="darkmode ? 'text-light' : 'text-dark'"
+    >
       <q-toolbar>
         <q-toolbar-title>
-          <div>{{ authenticated }}</div>
-          <div>{{ mobile }}</div>
-          <div>{{ this.store.test }}</div>
+          <div>Under developement.</div>
         </q-toolbar-title>
-        <q-btn @click="this.store.test = !this.store.test"> Test </q-btn>
         <q-toggle
           v-model="darkmode"
           checked-icon="check"
@@ -477,10 +492,6 @@ export default {
     return {
       toggleLeftDrawer() {
         leftDrawer.value = !leftDrawer.value;
-      },
-
-      toogleDarkMode() {
-        Dark.toggle();
       },
 
       // layout & styling
@@ -533,6 +544,9 @@ export default {
       });
   },
   methods: {
+    toogleDarkMode() {
+      Dark.toggle();
+    },
     notify(type, message) {
       this.q.notify({
         type: type,

@@ -3,37 +3,42 @@
     id="tsparticles"
     :options="{
       // HERE
+
       detectRetina: false,
+      fpsLimit: 60,
       interactivity: {
         detectsOn: 'window',
         events: {
           onHover: {
             enable: true,
-            mode: 'light',
+            mode: 'bubble',
           },
           resize: true,
         },
         modes: {
-          light: {
-            area: {
-              gradient: {
-                start: '#FFFFFF',
-                stop: '#F8F0E3',
-              },
-              radius: 3,
-            },
+          bubble: {
+            distance: 40,
+            duration: 2,
+            opacity: 8,
+            size: 6,
+            speed: 3,
           },
         },
       },
       particles: {
         color: {
-          value: ['#4285f4', '#34A853', '#FBBC05', '#EA4335'],
+          value: '#ff0000',
+          animation: {
+            enable: true,
+            speed: 20,
+            sync: true,
+          },
         },
         lineLinked: {
           blink: false,
           color: 'random',
           consent: false,
-          distance: 50,
+          distance: 30,
           enable: true,
           opacity: 1.0,
           width: 0.5,
@@ -46,9 +51,9 @@
               y: 1200,
             },
           },
-          bounce: true,
+          bounce: false,
           direction: 'none',
-          enable: true,
+          enable: false,
           outMode: 'bounce',
           random: true,
           speed: 0.5,
@@ -56,37 +61,23 @@
         },
         number: {
           density: {
-            enable: true,
-            area: 5000,
+            enable: false,
+            area: 2000,
           },
           limit: 0,
-          value: 50,
+          value: 200,
         },
         opacity: {
           animation: {
             enable: true,
-            minimumValue: 0.3,
+            minimumValue: 0.05,
             speed: 2,
             sync: false,
           },
           random: false,
-          value: 0.8,
+          value: 1,
         },
         shape: {
-          character: {
-            fill: false,
-            font: 'Verdana',
-            style: '',
-            value: '*',
-            weight: '400',
-          },
-          polygon: {
-            sides: 5,
-          },
-          stroke: {
-            color: '#000000',
-            width: 0,
-          },
           type: 'circle',
         },
         size: {
@@ -102,19 +93,21 @@
       },
       polygon: {
         draw: {
-          enable: true,
-          lineColor: 'rgba(255,255,255,0.1)',
+          enable: false,
+          lineColor: 'rgba(255,255,255,1.0)',
           lineWidth: 1.0,
         },
         enable: true,
         move: {
-          radius: 15,
+          radius: 20,
         },
+
         inlineArrangement: 'equidistant',
-        scale: 1.2,
+        scale: 1.0,
         type: 'inline',
-        url: './assets/name.svg',
+        url: './src/components/test2.svg',
       },
+
       // HERE
     }"
     :particlesInit="particlesInit"
@@ -124,17 +117,15 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { loadFull } from 'tsparticles';
-import { Engine, Opacity, Size } from 'tsparticles-engine';
+import { Engine, Opacity } from 'tsparticles-engine';
 import { loadPolygonPath } from 'tsparticles-path-polygon';
 import { loadPolygonMaskPlugin } from 'tsparticles-plugin-polygon-mask';
-import { loadLightInteraction } from 'tsparticles-interaction-light';
 
 export default defineComponent({
   name: 'ParticlesBG',
   data() {
     return {
       particlesInit: async (engine: Engine) => {
-        loadLightInteraction(engine);
         await loadPolygonMaskPlugin(engine);
         await loadFull(engine);
       },
