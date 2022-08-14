@@ -1,11 +1,13 @@
 <template>
   <Particles
-    id="tsparticles"
+    v-if="active"
+    :class="active ? '' : 'hidden'"
+    id="tsparticlestext"
     :options="{
       // HERE
+      fpsLimit: 60,
 
       detectRetina: false,
-      fpsLimit: 60,
       interactivity: {
         detectsOn: 'window',
         events: {
@@ -17,31 +19,26 @@
         },
         modes: {
           bubble: {
-            distance: 40,
-            duration: 2,
-            opacity: 8,
-            size: 6,
-            speed: 3,
+            distance: 200,
+            duration: 1,
+            opacity: 1,
+            size: 10,
+            speed: 10,
           },
         },
       },
       particles: {
         color: {
-          value: '#ff0000',
-          animation: {
-            enable: true,
-            speed: 20,
-            sync: true,
-          },
+          value: ['#4285f4', '#34A853', '#FBBC05', '#EA4335'],
         },
         lineLinked: {
           blink: false,
           color: 'random',
           consent: false,
-          distance: 30,
+          distance: 50,
           enable: true,
-          opacity: 1.0,
-          width: 0.5,
+          opacity: 1,
+          width: 1.0,
         },
         move: {
           attract: {
@@ -53,7 +50,7 @@
           },
           bounce: false,
           direction: 'none',
-          enable: false,
+          enable: true,
           outMode: 'bounce',
           random: true,
           speed: 0.5,
@@ -61,21 +58,20 @@
         },
         number: {
           density: {
-            enable: false,
-            area: 2000,
+            enable: true,
+            area: 4000,
           },
           limit: 0,
-          value: 200,
+          value: 10,
         },
         opacity: {
           animation: {
-            enable: true,
-            minimumValue: 0.05,
-            speed: 2,
+            enable: false,
+            minimumValue: 0.9,
+            speed: 0.5,
             sync: false,
           },
-          random: false,
-          value: 1,
+          value: 1.0,
         },
         shape: {
           type: 'circle',
@@ -93,21 +89,20 @@
       },
       polygon: {
         draw: {
-          enable: false,
-          lineColor: 'rgba(255,255,255,1.0)',
+          enable: true,
+          lineColor: 'rgba(128,128,128, 0.2)',
           lineWidth: 1.0,
         },
         enable: true,
         move: {
-          radius: 20,
+          radius: 10,
         },
-
         inlineArrangement: 'equidistant',
-        scale: 1.0,
+        scale: 1.2,
         type: 'inline',
-        url: './src/components/test2.svg',
+        url: './assets/name.svg',
+        // url: './src/assets/name.svg',
       },
-
       // HERE
     }"
     :particlesInit="particlesInit"
@@ -115,23 +110,26 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, ref } from 'vue';
 import { loadFull } from 'tsparticles';
-import { Engine, Opacity } from 'tsparticles-engine';
-import { loadPolygonPath } from 'tsparticles-path-polygon';
+import { Engine } from 'tsparticles-engine';
 import { loadPolygonMaskPlugin } from 'tsparticles-plugin-polygon-mask';
 
 export default defineComponent({
-  name: 'ParticlesBG',
-  data() {
+  name: 'ParticlesText',
+  setup() {
     return {
+      active: ref(true),
       particlesInit: async (engine: Engine) => {
-        await loadPolygonMaskPlugin(engine);
         await loadFull(engine);
+        await loadPolygonMaskPlugin(engine);
       },
     };
   },
+  methods: {
+    toogle_active(text_val: boolean) {
+      this.active = text_val;
+    },
+  },
 });
 </script>
-
-<style></style>

@@ -1,144 +1,88 @@
 <template>
   <Particles
     id="tsparticles"
+    :class="active ? '' : 'hidden'"
     :options="{
       // HERE
-      detectRetina: false,
+
+      fpsLimit: 60,
       interactivity: {
-        detectsOn: 'window',
+        detect_on: 'canvas',
         events: {
-          onHover: {
-            enable: true,
-            mode: 'light',
-          },
+          onclick: { enable: true, mode: 'repulse' },
+
           resize: true,
         },
         modes: {
-          light: {
-            area: {
-              gradient: {
-                start: '#FFFFFF',
-                stop: '#F8F0E3',
-              },
-              radius: 3,
-            },
-          },
+          bubble: { distance: 200, duration: 2, opacity: 0, size: 0, speed: 3 },
+          grab: { distance: 400, line_linked: { opacity: 1 } },
+          push: { particles_nb: 4 },
+          remove: { particles_nb: 2 },
+          repulse: { distance: 400, duration: 0.4 },
         },
       },
       particles: {
-        color: {
-          value: ['#4285f4', '#34A853', '#FBBC05', '#EA4335'],
-        },
-        lineLinked: {
-          blink: false,
-          color: 'random',
-          consent: false,
-          distance: 50,
-          enable: true,
-          opacity: 1.0,
-          width: 0.5,
-        },
+        color: { value: '#ffffff' },
         move: {
-          attract: {
-            enable: false,
-            rotate: {
-              x: 600,
-              y: 1200,
-            },
-          },
-          bounce: true,
+          attract: { enable: false, rotateX: 600, rotateY: 600 },
+          bounce: false,
           direction: 'none',
           enable: true,
-          outMode: 'bounce',
+          out_mode: 'out',
           random: true,
-          speed: 0.5,
+          speed: 0.3,
           straight: false,
         },
         number: {
-          density: {
-            enable: true,
-            area: 5000,
-          },
-          limit: 0,
-          value: 50,
+          density: { enable: true, value_area: 800 },
+          value: 600,
         },
         opacity: {
-          animation: {
+          anim: { enable: true, opacity_min: 0.3, speed: 5, sync: false },
+          random: {
             enable: true,
             minimumValue: 0.3,
-            speed: 2,
-            sync: false,
           },
-          random: false,
-          value: 0.8,
+          value: 0.6,
         },
         shape: {
-          character: {
-            fill: false,
-            font: 'Verdana',
-            style: '',
-            value: '*',
-            weight: '400',
-          },
-          polygon: {
-            sides: 5,
-          },
-          stroke: {
-            color: '#000000',
-            width: 0,
-          },
           type: 'circle',
         },
         size: {
-          animation: {
-            enable: false,
-            minimumValue: 0.1,
-            speed: 40,
-            sync: false,
-          },
-          random: true,
+          anim: { enable: false, size_min: 0.3, speed: 4, sync: false },
+          random: false,
           value: 1,
         },
       },
-      polygon: {
-        draw: {
-          enable: true,
-          lineColor: 'rgba(255,255,255,0.1)',
-          lineWidth: 1.0,
-        },
-        enable: true,
-        move: {
-          radius: 15,
-        },
-        inlineArrangement: 'equidistant',
-        scale: 1.2,
-        type: 'inline',
-        url: './assets/name.svg',
-      },
+      retina_detect: true,
       // HERE
     }"
-    :particlesInit="particlesInit"
+    :particlesInit="particlesInit2"
   />
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, ref } from 'vue';
 import { loadFull } from 'tsparticles';
-import { Engine, Opacity, Size } from 'tsparticles-engine';
-import { loadPolygonPath } from 'tsparticles-path-polygon';
-import { loadPolygonMaskPlugin } from 'tsparticles-plugin-polygon-mask';
+import { Engine } from 'tsparticles-engine';
 import { loadLightInteraction } from 'tsparticles-interaction-light';
 
 export default defineComponent({
   name: 'ParticlesBG',
   data() {
     return {
-      particlesInit: async (engine: Engine) => {
+      active: ref(true),
+      container: ref(''),
+      particlesInit2: async (engine: Engine) => {
         loadLightInteraction(engine);
-        await loadPolygonMaskPlugin(engine);
         await loadFull(engine);
       },
     };
+  },
+  methods: {
+    toogle_active(background_val: boolean) {
+      this.active = background_val;
+    },
   },
 });
 </script>

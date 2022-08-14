@@ -2,23 +2,11 @@
   <q-layout view="hHh LpR fff">
     <q-header
       reveal
-      bordered
       height-hint="98"
       class="bg-transparent"
       :class="darkmode ? 'text-light' : 'text-dark'"
     >
       <q-toolbar>
-        <q-btn
-          v-if="authenticated"
-          flat
-          round
-          dense
-          icon="menu"
-          class="q-mr-sm"
-          @click="toggleLeftDrawer"
-        />
-        <q-space />
-
         <q-btn stretch flat label="Home" to="/" />
         <q-btn
           v-if="authenticated"
@@ -128,9 +116,12 @@
 
     <q-page-container>
       <q-dialog v-model="forgot_popup">
-        <q-card>
-          <p class="text-weight-bolder text-grey">Request your Account Data</p>
-
+        <q-card bordered>
+          <q-card-section>
+            <p class="text-weight-bolder text-grey">
+              Request your Account Data
+            </p>
+          </q-card-section>
           <q-card-section>
             <q-form
               class="q-gutter-md text-grey"
@@ -448,14 +439,44 @@
         <q-toolbar-title>
           <div>Under developement.</div>
         </q-toolbar-title>
-        <q-toggle
-          v-model="darkmode"
-          checked-icon="check"
-          color="green"
-          unchecked-icon="clear"
-          label="Dark Mode"
-          @click="toogleDarkMode"
-        />
+        <q-btn-dropdown icon="settings" flat>
+          <q-list>
+            <q-item>
+              <q-item-section>
+                <q-toggle
+                  v-model="darkmode"
+                  checked-icon="check"
+                  color="green"
+                  unchecked-icon="clear"
+                  label="Dark Mode"
+                  @click="toogleDarkMode"
+                />
+              </q-item-section>
+            </q-item>
+
+            <q-item>
+              <q-toggle
+                v-model="text_animation"
+                checked-icon="check"
+                color="green"
+                unchecked-icon="clear"
+                label="Text Animation"
+                @click="this.$emit('text_animation', text_animation)"
+              />
+            </q-item>
+
+            <q-item>
+              <q-toggle
+                v-model="background_animation"
+                checked-icon="check"
+                color="green"
+                unchecked-icon="clear"
+                label="Background Animation"
+                @click="emitBackground"
+              />
+            </q-item>
+          </q-list>
+        </q-btn-dropdown>
       </q-toolbar>
     </q-footer>
   </q-layout>
@@ -500,6 +521,8 @@ export default {
       rightDrawer,
       leftDrawer,
       miniState,
+      background_animation: ref(true),
+      text_animation: ref(true),
       darkmode: ref(true),
 
       // login / register form stuff
@@ -544,6 +567,9 @@ export default {
       });
   },
   methods: {
+    emitBackground() {
+      this.$emit('background_animation', this.background_animation);
+    },
     toogleDarkMode() {
       Dark.toggle();
     },
