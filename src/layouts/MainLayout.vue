@@ -502,7 +502,6 @@ export default {
     const leftDrawer = ref(false);
     const miniState = ref(true);
     const q = useQuasar();
-    Dark.set(true);
 
     if (q.platform.is.mobile) {
       var rightDrawer = ref(false);

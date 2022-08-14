@@ -20,6 +20,7 @@ export default defineComponent({
   components: { ParticlesText, ParticlesBG },
   setup() {
     const $q = useQuasar();
+    $q.dark.set(true);
     return {
       mobile: $q.platform.is.mobile,
     };
