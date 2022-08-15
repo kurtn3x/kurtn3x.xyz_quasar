@@ -173,9 +173,11 @@ export default {
   computed: {
     authenticated() {
       return this.store.auth_state;
+      // return true;
     },
     mobile() {
       return this.q.platform.is.mobile;
+      // return true;
     },
   },
   beforeCreate() {
@@ -199,7 +201,7 @@ export default {
     if (q.platform.is.mobile) {
       var rightDrawer = ref(false);
     } else {
-      var rightDrawer = ref(true);
+      var rightDrawer = ref(false);
     }
     var darkmode = ref(store.darkmode_state);
 
