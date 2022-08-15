@@ -5,7 +5,7 @@
     id="tsparticlestext"
     :options="{
       // HERE
-      fpsLimit: 60,
+      fpsLimit: 30,
 
       detectRetina: false,
       interactivity: {
@@ -37,7 +37,7 @@
           consent: false,
           distance: 50,
           enable: true,
-          opacity: 1,
+          opacity: 1.0,
           width: 1.0,
         },
         move: {
@@ -59,32 +59,20 @@
         number: {
           density: {
             enable: true,
-            area: 4000,
+            area: 100000,
           },
           limit: 0,
-          value: 10,
+          value: 1,
         },
         opacity: {
-          animation: {
-            enable: false,
-            minimumValue: 0.9,
-            speed: 0.5,
-            sync: false,
-          },
           value: 1.0,
         },
         shape: {
           type: 'circle',
         },
         size: {
-          animation: {
-            enable: false,
-            minimumValue: 0.1,
-            speed: 40,
-            sync: false,
-          },
-          random: true,
-          value: 1,
+          random: false,
+          value: 0.1,
         },
       },
       polygon: {

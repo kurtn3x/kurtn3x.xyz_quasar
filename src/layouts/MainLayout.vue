@@ -4,10 +4,11 @@
       reveal
       height-hint="98"
       class="bg-transparent"
-      :class="darkmode ? 'text-light' : 'text-dark'"
+      :class="darkmode ? 'text-indigo-1' : 'text-dark'"
     >
       <q-toolbar>
         <q-btn stretch flat label="Home" to="/" />
+        <q-btn stretch flat label="Logged" to="/l" />
         <q-btn
           v-if="authenticated"
           stretch
@@ -41,78 +42,6 @@
     </q-drawer>
 
     <!-- fix  -->
-
-    <q-drawer
-      v-if="authenticated"
-      v-model="rightDrawer"
-      :mini="miniState"
-      :width="200"
-      :breakpoint="500"
-      bordered
-      overlay
-      side="right"
-      tabindex="111111111111111111111111111111111111111"
-    >
-      <q-scroll-area class="fit">
-        <q-list padding>
-          <q-item clickable v-ripple>
-            <q-item-section avatar>
-              <q-icon name="account_circle" />
-            </q-item-section>
-
-            <q-item-section> My Profile </q-item-section>
-          </q-item>
-
-          <q-item clickable v-ripple>
-            <q-item-section avatar>
-              <q-icon name="send" />
-            </q-item-section>
-
-            <q-item-section> Send </q-item-section>
-          </q-item>
-
-          <q-item clickable v-ripple>
-            <q-item-section avatar>
-              <q-icon name="drafts" />
-            </q-item-section>
-
-            <q-item-section> Drafts </q-item-section>
-          </q-item>
-          <q-item clickable v-ripple @click="logout">
-            <q-item-section avatar>
-              <q-icon name="logout" />
-            </q-item-section>
-
-            <q-item-section> Logout </q-item-section>
-          </q-item>
-        </q-list>
-      </q-scroll-area>
-
-      <!-- http://jsfiddle.net/shomz/yFy5n/5/ -->
-      <q-btn
-        dense
-        round
-        unelevated
-        color="primary"
-        :icon="miniState ? 'chevron_left' : 'chevron_right'"
-        @click="miniState = !miniState"
-        size="sm"
-        v-bind:class="miniState ? 'drawer_btn_desk' : 'drawer_btn_desk_moved'"
-        v-if="!mobile"
-      />
-
-      <!-- mobile  -->
-      <q-btn
-        round
-        text-color="dark"
-        color="primary"
-        icon="chevron_right"
-        @click="rightDrawer = !rightDrawer"
-        size="md"
-        class="drawer_btn_mob"
-        v-if="mobile"
-      />
-    </q-drawer>
 
     <q-page-container>
       <q-dialog v-model="forgot_popup">
@@ -307,8 +236,12 @@
                         (val) =>
                           (val && val.length > 3) || 'At least 4 characters',
                         (val) =>
-                          (val && val.length < 16) ||
+                          (val && val.length < 50) ||
                           'Not more than 16 characters',
+                        (val) =>
+                          /^([a-zA-Z0-9\u0600-\u06FF\u0660-\u0669\u06F0-\u06F9 _.-]+)$/.test(
+                            val
+                          ) || 'Only alphanumeric characters allowed.',
                       ]"
                     >
                       <template v-slot:prepend>
@@ -351,6 +284,9 @@
                           (val && val.length > 0) || 'Please type something',
                         (val) =>
                           (val && val.length > 7) || 'At least 8 characters',
+                        (val) =>
+                          (val && val.length < 100) ||
+                          'Not more than 100 characters',
                         (val) =>
                           /(?=.*[a-z])/.test(val) ||
                           'At least 1 lowercase letter',
@@ -412,22 +348,9 @@
           </q-tab-panels>
         </q-card>
       </q-dialog>
-
+      <ParticlesText ref="textAnimation" v-if="!mobile" />
+      <ParticlesBG ref="backgroundAnimation" />
       <router-view />
-      <div
-        v-if="authenticated && mobile"
-        class="fixed-right drawer_btn_mob_moved"
-      >
-        <!-- mobile  -->
-        <q-btn
-          round
-          size="md"
-          color="primary"
-          text-color="dark"
-          icon="chevron_left"
-          @click="rightDrawer = !rightDrawer"
-        />
-      </div>
     </q-page-container>
 
     <q-footer
@@ -449,19 +372,19 @@
                   color="green"
                   unchecked-icon="clear"
                   label="Dark Mode"
-                  @click="toogleDarkMode"
+                  @click="darkmodeChanged"
                 />
               </q-item-section>
             </q-item>
 
-            <q-item>
+            <q-item v-if="!mobile">
               <q-toggle
                 v-model="text_animation"
                 checked-icon="check"
                 color="green"
                 unchecked-icon="clear"
                 label="Text Animation"
-                @click="this.$emit('text_animation', text_animation)"
+                @click="toogleTextAnimation(text_animation)"
               />
             </q-item>
 
@@ -472,7 +395,7 @@
                 color="green"
                 unchecked-icon="clear"
                 label="Background Animation"
-                @click="emitBackground"
+                @click="toogleBackgroundAnimation(background_animation)"
               />
             </q-item>
           </q-list>
@@ -488,7 +411,18 @@ import { Dark } from 'quasar';
 import { useQuasar, QSpinnerGears } from 'quasar';
 import { api } from 'boot/axios';
 import { useAuthStore } from 'stores/authenticated.ts';
+import ParticlesBG from 'components/ParticlesBG.vue';
+import ParticlesText from 'components/ParticlesText.vue';
+import router from 'src/router/index.ts';
+
 export default {
+  components: { ParticlesText, ParticlesBG },
+  mounted() {
+    if (this.store.auth_state) {
+      this.$router.push('/l');
+    }
+  },
+
   computed: {
     authenticated() {
       return this.store.auth_state;
@@ -499,15 +433,18 @@ export default {
   },
   setup() {
     const store = useAuthStore();
-    const leftDrawer = ref(false);
     const miniState = ref(true);
     const q = useQuasar();
 
     if (q.platform.is.mobile) {
-      var rightDrawer = ref(false);
+      var background_animation = ref(true);
+      var text_animation = ref(false);
     } else {
-      var rightDrawer = ref(true);
+      var background_animation = ref(false);
+      var text_animation = ref(true);
     }
+
+    var darkmode = ref(store.darkmode_state);
 
     return {
       toggleLeftDrawer() {
@@ -517,13 +454,9 @@ export default {
       // layout & styling
       store,
       q,
-      rightDrawer,
-      leftDrawer,
-      miniState,
-      background_animation: ref(true),
+      darkmode,
+      background_animation: ref(false),
       text_animation: ref(true),
-      darkmode: ref(true),
-
       // login / register form stuff
       login_popup: ref(false),
       forgot_popup: ref(false),
@@ -544,33 +477,16 @@ export default {
       saved_username: ref(''),
     };
   },
-  beforeCreate() {
-    api.get('/auth/csrf_cookie', { withCredentials: true }).catch();
-    let config = {
-      withCredentials: true,
-      headers: {
-        'X-CSRFToken': this.q.cookies.get('csrftoken'),
-      },
-    };
-    api
-      .get('/auth/authenticated', config)
-      .then((response) => {
-        if (response.status == 200) {
-          this.store.authenticated = true;
-        } else {
-          this.store.authenticated = false;
-        }
-      })
-      .catch((error) => {
-        this.store.authenticated = false;
-      });
-  },
+
   methods: {
-    emitBackground() {
-      this.$emit('background_animation', this.background_animation);
+    darkmodeChanged() {
+      this.store.darkmode = this.darkmode;
     },
-    toogleDarkMode() {
-      Dark.toggle();
+    toogleTextAnimation(text_val) {
+      this.$refs.textAnimation.toogle_active(text_val);
+    },
+    toogleBackgroundAnimation(bg_val) {
+      this.$refs.backgroundAnimation.toogle_active(bg_val);
     },
     notify(type, message) {
       this.q.notify({
@@ -661,6 +577,7 @@ export default {
             this.email = '';
             this.notify('positive', 'Logged in');
             this.login_popup = false;
+            this.$router.push('/l');
           } else {
             // means that email hasnt been verified yet
             if (response.status == 244) {

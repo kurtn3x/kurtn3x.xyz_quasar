@@ -5,7 +5,7 @@
     :options="{
       // HERE
 
-      fpsLimit: 60,
+      fpsLimit: 45,
       interactivity: {
         detect_on: 'canvas',
         events: {
@@ -14,18 +14,14 @@
           resize: true,
         },
         modes: {
-          bubble: { distance: 200, duration: 2, opacity: 0, size: 0, speed: 3 },
-          grab: { distance: 400, line_linked: { opacity: 1 } },
-          push: { particles_nb: 4 },
-          remove: { particles_nb: 2 },
-          repulse: { distance: 400, duration: 0.4 },
+          repulse: { distance: 200, duration: 6.0 },
         },
       },
       particles: {
         color: { value: '#ffffff' },
         move: {
           attract: { enable: false, rotateX: 600, rotateY: 600 },
-          bounce: false,
+          bounce: true,
           direction: 'none',
           enable: true,
           out_mode: 'out',
@@ -35,7 +31,7 @@
         },
         number: {
           density: { enable: true, value_area: 800 },
-          value: 600,
+          value: 300,
         },
         opacity: {
           anim: { enable: true, opacity_min: 0.3, speed: 5, sync: false },
@@ -71,7 +67,7 @@ export default defineComponent({
   name: 'ParticlesBG',
   data() {
     return {
-      active: ref(true),
+      active: ref(false),
       container: ref(''),
       particlesInit2: async (engine: Engine) => {
         loadLightInteraction(engine);

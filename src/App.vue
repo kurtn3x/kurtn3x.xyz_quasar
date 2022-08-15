@@ -1,37 +1,63 @@
 <template>
-  <ParticlesText ref="textAnimation" v-if="!mobile" />
-  <router-view
-    @text_animation="toogleTextAnimation"
-    @background_animation="toogleBackgroundAnimation"
-  />
-  <ParticlesBG ref="backgroundAnimation" />
+  <router-view v-if="prefetch" />
 </template>
 
-<script lang="ts">
+<script>
 import { defineComponent } from 'vue';
-import ParticlesBG from './components/ParticlesBG.vue';
-import ParticlesText from './components/ParticlesText.vue';
 import 'https://cdn.jsdelivr.net/npm/pathseg@1.2.0/pathseg.min.js';
 import { useQuasar } from 'quasar';
 import { ref } from 'vue';
+import { api } from 'boot/axios';
+import { useAuthStore } from 'stores/authenticated';
 
 export default defineComponent({
   name: 'App',
-  components: { ParticlesText, ParticlesBG },
   setup() {
-    const $q = useQuasar();
-    $q.dark.set(true);
-    return {
-      mobile: $q.platform.is.mobile,
-    };
+    const q = useQuasar();
+    const store = useAuthStore();
+    q.dark.set(true);
+    return { q, store };
   },
-  methods: {
-    toogleTextAnimation(text_val: boolean) {
-      this.$refs.textAnimation.toogle_active(text_val);
+  computed: {
+    darkmode() {
+      return this.store.darkmode;
     },
-    toogleBackgroundAnimation(bg_val: boolean) {
-      this.$refs.backgroundAnimation.toogle_active(bg_val);
+  },
+  watch: {
+    darkmode(valChanged) {
+      // Our fancy notification (2).
+      this.q.dark.set(valChanged);
     },
+  },
+  data() {
+    return { prefetch: false };
+  },
+  beforeCreate() {
+    api.get('/auth/csrf_cookie', { withCredentials: true }).catch();
+    let config = {
+      withCredentials: true,
+      headers: {
+        'X-CSRFToken': this.q.cookies.get('csrftoken'),
+      },
+    };
+    api
+      .get('/auth/authenticated', config)
+      .then((response) => {
+        if (response.status == 200) {
+          this.store.authenticated = true;
+          this.prefetch = true;
+        } else {
+          this.store.authenticated = false;
+          this.prefetch = true;
+        }
+      })
+      .catch((error) => {
+        console.log(
+          'Encountered Error while fetching auth-state. This may be intentional.'
+        );
+        this.store.authenticated = false;
+        this.prefetch = true;
+      });
   },
 });
 </script>
