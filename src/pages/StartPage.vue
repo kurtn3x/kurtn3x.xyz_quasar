@@ -1,5 +1,8 @@
 <template>
-  <div class="disable-select">
+  <div
+    class="disable-select"
+    :class="this.store.darkmode ? 'text-offwhite' : 'text-dark'"
+  >
     <h1 class="text-center">Welcome!</h1>
   </div>
   <div v-if="this.store.authenticated" v-bind="getMe">

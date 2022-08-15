@@ -25,12 +25,13 @@ export default defineComponent({
   },
   watch: {
     darkmode(valChanged) {
-      // Our fancy notification (2).
       this.q.dark.set(valChanged);
     },
   },
   data() {
-    return { prefetch: false };
+    return {
+      prefetch: false,
+    };
   },
   beforeCreate() {
     api.get('/auth/csrf_cookie', { withCredentials: true }).catch();

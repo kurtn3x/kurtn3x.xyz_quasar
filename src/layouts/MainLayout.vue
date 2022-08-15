@@ -3,12 +3,15 @@
     <q-header
       reveal
       height-hint="98"
-      class="bg-transparent"
-      :class="darkmode ? 'text-indigo-1' : 'text-dark'"
+      bordered
+      class="bg-primary"
+      :class="darkmode ? 'text-offwhite' : 'text-dark'"
     >
-      <q-toolbar>
-        <q-btn stretch flat label="Home" to="/" />
+      <q-toolbar class="q-pl-none q-pr-none">
+        <q-btn stretch flat label="Home" to="/l" />
+        <q-separator vertical />
         <q-btn stretch flat label="Logged" to="/l" />
+        <q-separator vertical />
         <q-btn
           v-if="authenticated"
           stretch
@@ -16,8 +19,9 @@
           label="Forum"
           href="https://forum.kurtn3x.xyz"
         />
+        <q-separator vertical v-if="authenticated" />
         <q-space />
-
+        <q-separator vertical v-if="!authenticated" />
         <q-btn
           v-if="!authenticated"
           stretch
@@ -46,11 +50,9 @@
     <q-page-container>
       <q-dialog v-model="forgot_popup">
         <q-card bordered>
-          <q-card-section>
-            <p class="text-weight-bolder text-grey">
-              Request your Account Data
-            </p>
-          </q-card-section>
+          <p class="text-weight-bolder text-primary q-pt-md q-pl-md">
+            Request your Account Data
+          </p>
           <q-card-section>
             <q-form
               class="q-gutter-md text-grey"
@@ -142,7 +144,7 @@
           <q-tab-panels v-model="login_tab" animated>
             <q-tab-panel name="login">
               <q-card square class="no-shadow" style="width: 100%">
-                <p class="text-weight-bolder text-grey">
+                <p class="text-weight-bolder text-primary">
                   Login to your account
                 </p>
                 <q-card-section>
@@ -218,7 +220,7 @@
 
             <q-tab-panel name="register">
               <q-card square class="no-shadow" style="width: 100%">
-                <p class="text-weight-bolder text-grey">
+                <p class="text-weight-bolder text-primary">
                   Register a new Account
                 </p>
                 <q-card-section>
@@ -355,8 +357,8 @@
 
     <q-footer
       elevated
-      class="bg-transparent"
-      :class="darkmode ? 'text-light' : 'text-dark'"
+      class="bg-primary"
+      :class="darkmode ? 'text-offwhite' : 'text-dark'"
     >
       <q-toolbar>
         <q-toolbar-title>

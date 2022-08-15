@@ -6,9 +6,17 @@
     <h1>{{ this.id }}</h1>
     <h1>{{ this.user }}</h1>
   </div>
-  <div v-if="!this.store.authenticated" class="disable-select">
+  <div
+    v-if="!this.store.authenticated"
+    class="disable-select"
+    :class="this.store.darkmode ? 'text-offwhite' : 'text-dark'"
+  >
     <h1 class="text-center">Hi!</h1>
     <h1 class="text-center">Please log in to access the site.</h1>
+    <h1 class="text-center">Hi!</h1>
+    <h1 class="text-center">Hi!</h1>
+    <h1 class="text-center">Hi!</h1>
+    <h1 class="text-center">Hi!</h1>
   </div>
 </template>
 

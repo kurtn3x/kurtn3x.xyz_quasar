@@ -1,14 +1,15 @@
 <template>
-  <q-layout view="hHh LpR fff">
+  <q-layout view="hHh LpR fFf">
     <q-header
       reveal
       height-hint="98"
-      class="bg-transparent"
-      :class="darkmode ? 'text-light' : 'text-dark'"
+      bordered
+      class="bg-primary"
+      :class="darkmode ? 'text-offwhite' : 'text-dark'"
     >
-      <q-toolbar>
-        <q-btn stretch flat label="Home" to="/" />
-        <q-btn stretch flat label="Logged" to="/l" />
+      <q-toolbar class="q-pl-none q-pr-none">
+        <q-btn stretch flat label="Home" to="/l" />
+        <q-separator vertical />
         <q-btn
           v-if="authenticated"
           stretch
@@ -16,15 +17,7 @@
           label="Forum"
           href="https://forum.kurtn3x.xyz"
         />
-        <q-space />
-
-        <q-btn
-          v-if="!authenticated"
-          stretch
-          flat
-          icon="person"
-          @click="login_popup = true"
-        />
+        <q-separator vertical />
       </q-toolbar>
     </q-header>
 
@@ -52,7 +45,7 @@
       bordered
       overlay
       side="right"
-      tabindex="111111111111111111111111111111111111111"
+      :class="darkmode ? 'bg-dark' : 'bg-orange-3'"
     >
       <q-scroll-area class="fit">
         <q-list padding>
@@ -94,7 +87,8 @@
         dense
         round
         unelevated
-        color="primary"
+        :text-color="darkmode ? 'dark' : 'offwhite'"
+        :color="darkmode ? 'offwhite' : 'dark'"
         :icon="miniState ? 'chevron_left' : 'chevron_right'"
         @click="miniState = !miniState"
         size="sm"
@@ -105,8 +99,8 @@
       <!-- mobile  -->
       <q-btn
         round
-        text-color="dark"
-        color="primary"
+        :text-color="darkmode ? 'dark' : 'offwhite'"
+        :color="darkmode ? 'offwhite' : 'dark'"
         icon="chevron_right"
         @click="rightDrawer = !rightDrawer"
         size="md"
@@ -121,8 +115,8 @@
 
     <q-footer
       elevated
-      class="bg-transparent"
-      :class="darkmode ? 'text-light' : 'text-dark'"
+      class="bg-primary"
+      :class="darkmode ? 'text-offwhite' : 'text-dark'"
     >
       <div
         v-if="authenticated && mobile"
@@ -132,8 +126,8 @@
         <q-btn
           round
           size="md"
-          color="primary"
-          text-color="dark"
+          :text-color="darkmode ? 'dark' : 'offwhite'"
+          :color="darkmode ? 'offwhite' : 'dark'"
           icon="chevron_left"
           @click="rightDrawer = !rightDrawer"
         />
@@ -173,7 +167,7 @@ export default {
   computed: {
     authenticated() {
       return this.store.auth_state;
-      // return true;
+      //return true;
     },
     mobile() {
       return this.q.platform.is.mobile;
@@ -201,7 +195,7 @@ export default {
     if (q.platform.is.mobile) {
       var rightDrawer = ref(false);
     } else {
-      var rightDrawer = ref(false);
+      var rightDrawer = ref(true);
     }
     var darkmode = ref(store.darkmode_state);
 
