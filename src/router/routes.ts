@@ -5,7 +5,7 @@ const routes: RouteRecordRaw[] = [
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/IndexPage.vue') },
+      { path: '/', component: () => import('pages/IndexPage.vue') },
       {
         path: 'reset_password',
         component: () => import('pages/ResetPassword.vue'),
@@ -15,7 +15,17 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/l',
     component: () => import('layouts/LoggedLayout.vue'),
-    children: [{ path: '', component: () => import('pages/StartPage.vue') }],
+    children: [
+      { path: '', component: () => import('src/pages/l/StartPage.vue') },
+      {
+        path: 'profile',
+        component: () => import('src/pages/l/MyProfile.vue'),
+      },
+      {
+        path: 'settings',
+        component: () => import('src/pages/l/Settings.vue'),
+      },
+    ],
   },
 
   // Always leave this as last one,

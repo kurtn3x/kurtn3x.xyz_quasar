@@ -4,23 +4,20 @@
       reveal
       height-hint="98"
       bordered
-      class="text-offwhite"
-      :class="darkmode ? 'bg-primarydark' : 'bg-primary'"
+      :class="
+        darkmode ? 'bg-primarydark text-offwhite' : 'bg-primary text-dark'
+      "
     >
       <q-toolbar class="q-pl-none q-pr-none">
-        <q-btn
-          flat
-          stretch
-          @click="leftDrawer = !leftDrawer"
-          :icon="leftDrawer ? 'menu_open' : 'menu'"
-          label="Menu"
-        />
+        <q-btn flat stretch mini: leftDrawerMini @click="q.screen.width < 600 ?
+        leftDrawer = !leftDrawer : leftDrawerMini = !leftDrawerMini"
+        :icon="leftDrawerMini ? 'menu' : 'menu_open'" label="Menu" />
         <q-separator vertical class="gt-xs" />
 
         <q-btn stretch flat label="Home" to="/l" icon="home" />
         <q-separator vertical class="gt-xs" />
         <q-space />
-        <q-btn-dropdown stretch flat label="Account" icon="person">
+        <q-btn-dropdown stretch flat :icon="avatar_img" rounded>
           <div class="row no-wrap q-pa-md">
             <div class="column">
               <div class="text-h6 q-mb-md">Settings</div>
@@ -57,18 +54,15 @@
       side="left"
       behavior="default"
       :mini="leftDrawerMini"
-      @mouseover="leftDrawerMini = false"
-      @mouseout="leftDrawerMini = true"
-      overlay
       bordered
-      :width="220"
+      :width="217"
       :class="
-        darkmode ? 'bg-primarydark text-offwhite' : 'bg-primary text-offwhite'
+        darkmode ? 'bg-primarydark text-offwhite' : 'bg-primary text-dark'
       "
     >
       <q-scroll-area class="fit">
         <q-list padding>
-          <q-item clickable v-ripple>
+          <q-item clickable v-ripple to="/l/profile">
             <q-item-section avatar>
               <q-icon name="account_circle" />
             </q-item-section>
@@ -91,11 +85,21 @@
 
             <q-item-section> Drafts </q-item-section>
           </q-item>
+
+          <q-space />
+
+          <q-item clickable v-ripple to="/l/settings">
+            <q-item-section avatar>
+              <q-icon name="settings" />
+            </q-item-section>
+
+            <q-item-section> Settings </q-item-section>
+          </q-item>
+
           <q-item clickable v-ripple @click="logout">
             <q-item-section avatar>
               <q-icon name="logout" />
             </q-item-section>
-
             <q-item-section> Logout </q-item-section>
           </q-item>
         </q-list>
@@ -157,9 +161,10 @@
     </q-page-container>
 
     <q-footer
-      class="text-offwhite"
       bordered
-      :class="darkmode ? 'bg-primarydark' : 'bg-primary'"
+      :class="
+        darkmode ? 'bg-primarydark text-offwhite' : 'bg-primary text-dark'
+      "
     >
       <!-- mobile  -->
       <q-toolbar>
@@ -239,9 +244,10 @@ export default {
 
       username: ref('SomeUser'),
       avatar: ref('https://media.kurtn3x.xyz/test/avatar.png'),
+      avatar_img: ref('https://media.kurtn3x.xyz/test/avatar.png'),
     };
   },
-
+  /*
   beforeCreate() {
     if (!this.auth_store.auth_state) {
       const q = useQuasar();
@@ -255,7 +261,7 @@ export default {
       });
     }
   },
-
+*/
   created() {
     this.getMe();
   },
@@ -321,18 +327,33 @@ export default {
           if (response.status == 200) {
             this.username = response.data.username;
             this.avatar = response.data.avatar;
+            this.avatar_img = 'img:' + response.data.avatar;
           } else {
             this.username = 'SomeUser';
             this.avatar = 'https://media.kurtn3x.xyz/test/avatar.png';
+            this.avatar_img =
+              'img:' + 'https://media.kurtn3x.xyz/test/avatar.png';
           }
         })
         .catch((error) => {
           this.username = 'SomeUser';
           this.avatar = 'https://media.kurtn3x.xyz/test/avatar.png';
+          this.avatar_img =
+            'img:' + 'https://media.kurtn3x.xyz/test/avatar.png';
         });
     },
   },
 };
+
+/*
+<q-item :class="{ 'myclass': $q.dark.isActive }" ...
+.myclass {
+  .q-item.q-router-link--active {
+     color: var(--q-color-primary);
+     background-color: $blue-1 !important;
+  }
+}
+*/
 </script>
 
 <style scoped>
@@ -364,5 +385,9 @@ export default {
   right: -14px;
   top: 45%;
   transition: all 0.1s linear;
+}
+
+.q-item.q-router-link--active {
+  color: #1e70cecc;
 }
 </style>

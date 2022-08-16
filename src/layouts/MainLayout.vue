@@ -4,8 +4,9 @@
       height-hint="98"
       bordered
       reveal
-      class="text-offwhite"
-      :class="darkmode ? 'bg-primarydark' : 'bg-primary'"
+      :class="
+        darkmode ? 'bg-primarydark text-offwhite' : 'bg-primary text-dark'
+      "
     >
       <q-toolbar class="q-pl-none q-pr-none">
         <q-btn stretch flat label="Test" to="/l" />
@@ -122,7 +123,6 @@
               </p>
               <q-card-actions>
                 <q-btn
-                  outline
                   rounded
                   size="md"
                   color="green"
@@ -205,7 +205,6 @@
                     </q-input>
                     <q-card-actions>
                       <q-btn
-                        outline
                         rounded
                         size="md"
                         color="green"
@@ -345,7 +344,6 @@
 
                     <q-card-actions>
                       <q-btn
-                        outline
                         rounded
                         size="md"
                         color="green"
@@ -370,8 +368,9 @@
     <q-footer
       reveal
       elevated
-      class="bg-primary text-offwhite"
-      :class="darkmode ? 'bg-primarydark' : 'bg-primary'"
+      :class="
+        darkmode ? 'bg-primarydark text-offwhite' : 'bg-primary text-dark'
+      "
     >
       <q-toolbar>
         <q-toolbar-title>
