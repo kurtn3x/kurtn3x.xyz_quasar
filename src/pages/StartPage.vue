@@ -1,16 +1,16 @@
 <template>
   <div
     class="disable-select"
-    :class="this.store.darkmode ? 'text-offwhite' : 'text-dark'"
+    :class="settings_store.darkmode ? 'text-offwhite' : 'text-dark'"
   >
     <h1 class="text-center">Welcome!</h1>
   </div>
-  <div v-if="this.store.authenticated" v-bind="getMe">
-    <h1>{{ this.first_name }}</h1>
-    <h1>{{ this.last_name }}</h1>
-    <h1>{{ this.username }}</h1>
-    <h1>{{ this.id }}</h1>
-    <h1>{{ this.user }}</h1>
+  <div v-if="auth_store.authenticated" v-bind="getMe">
+    <h1>{{ first_name }}</h1>
+    <h1>{{ last_name }}</h1>
+    <h1>{{ username }}</h1>
+    <h1>{{ id }}</h1>
+    <h1>{{ user }}</h1>
   </div>
 </template>
 
@@ -20,15 +20,18 @@ import { useAuthStore } from 'stores/authenticated';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { store } from 'quasar/wrappers';
+import { useSettingsStore } from 'stores/settings';
 
 export default defineComponent({
   name: 'IndexPage',
   setup() {
-    const store = useAuthStore();
+    const auth_store = useAuthStore();
+    const settings_store = useSettingsStore();
     const q = useQuasar();
 
     return {
-      store,
+      auth_store,
+      settings_store,
       q,
       username: ref(''),
       id: ref(''),

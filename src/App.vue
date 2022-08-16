@@ -9,30 +9,25 @@ import { useQuasar } from 'quasar';
 import { ref } from 'vue';
 import { api } from 'boot/axios';
 import { useAuthStore } from 'stores/authenticated';
+import { useSettingsStore } from 'stores/settings';
 
 export default defineComponent({
   name: 'App',
+
   setup() {
     const q = useQuasar();
-    const store = useAuthStore();
+    const auth_store = useAuthStore();
+    const settings_store = useSettingsStore();
     q.dark.set(true);
-    return { q, store };
+    return { q, auth_store, settings_store };
   },
-  computed: {
-    darkmode() {
-      return this.store.darkmode;
-    },
-  },
-  watch: {
-    darkmode(valChanged) {
-      this.q.dark.set(valChanged);
-    },
-  },
+
   data() {
     return {
       prefetch: false,
     };
   },
+
   beforeCreate() {
     api.get('/auth/csrf_cookie', { withCredentials: true }).catch();
     let config = {
@@ -45,10 +40,10 @@ export default defineComponent({
       .get('/auth/authenticated', config)
       .then((response) => {
         if (response.status == 200) {
-          this.store.authenticated = true;
+          this.auth_store.authenticated = true;
           this.prefetch = true;
         } else {
-          this.store.authenticated = false;
+          this.auth_store.authenticated = false;
           this.prefetch = true;
         }
       })
@@ -56,9 +51,21 @@ export default defineComponent({
         console.log(
           'Encountered Error while fetching auth-state. This may be intentional.'
         );
-        this.store.authenticated = false;
+        this.auth_store.authenticated = false;
         this.prefetch = true;
       });
+  },
+
+  computed: {
+    darkmode() {
+      return this.settings_store.darkmode;
+    },
+  },
+
+  watch: {
+    darkmode(valChanged) {
+      this.q.dark.set(valChanged);
+    },
   },
 });
 </script>

@@ -94,6 +94,7 @@
       // HERE
     }"
     :particlesInit="particlesInit"
+    :particlesLoaded="particlesLoaded"
   />
 </template>
 
@@ -111,6 +112,10 @@ export default defineComponent({
       particlesInit: async (engine: Engine) => {
         await loadFull(engine);
         await loadPolygonMaskPlugin(engine);
+      },
+
+      particlesLoaded: async (container) => {
+        console.log('Particles container loaded', container);
       },
     };
   },

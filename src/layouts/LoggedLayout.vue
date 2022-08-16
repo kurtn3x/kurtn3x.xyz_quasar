@@ -4,48 +4,67 @@
       reveal
       height-hint="98"
       bordered
-      class="bg-primary"
-      :class="darkmode ? 'text-offwhite' : 'text-dark'"
+      class="text-offwhite"
+      :class="darkmode ? 'bg-primarydark' : 'bg-primary'"
     >
       <q-toolbar class="q-pl-none q-pr-none">
-        <q-btn stretch flat label="Home" to="/l" />
-        <q-separator vertical />
         <q-btn
-          v-if="authenticated"
-          stretch
           flat
-          label="Forum"
-          href="https://forum.kurtn3x.xyz"
+          stretch
+          @click="leftDrawer = !leftDrawer"
+          :icon="leftDrawer ? 'menu_open' : 'menu'"
+          label="Menu"
         />
-        <q-separator vertical />
+        <q-separator vertical class="gt-xs" />
+
+        <q-btn stretch flat label="Home" to="/l" icon="home" />
+        <q-separator vertical class="gt-xs" />
+        <q-space />
+        <q-btn-dropdown stretch flat label="Account" icon="person">
+          <div class="row no-wrap q-pa-md">
+            <div class="column">
+              <div class="text-h6 q-mb-md">Settings</div>
+              <q-toggle v-model="mobileData" label="Use Mobile Data" />
+              <q-toggle v-model="bluetooth" label="Bluetooth" />
+            </div>
+
+            <q-separator vertical inset class="q-mx-lg" />
+
+            <div class="column items-center">
+              <q-avatar size="72px">
+                <img :src="avatar" />
+              </q-avatar>
+
+              <div class="text-subtitle1 q-mt-md q-mb-xs">{{ username }}</div>
+
+              <q-btn
+                color="primary"
+                label="Logout"
+                push
+                size="sm"
+                v-close-popup
+                @click="logout"
+              />
+            </div>
+          </div>
+        </q-btn-dropdown>
       </q-toolbar>
     </q-header>
 
+    <!-- LEFT DRAWER -->
     <q-drawer
       v-model="leftDrawer"
       side="left"
+      behavior="default"
+      :mini="leftDrawerMini"
+      @mouseover="leftDrawerMini = false"
+      @mouseout="leftDrawerMini = true"
       overlay
       bordered
-      mini
-      mini-to-overlay
-      :width="200"
-      :breakpoint="500"
-    >
-      <!-- drawer content       @click.capture="drawerClick" -->
-    </q-drawer>
-
-    <!-- fix  -->
-
-    <q-drawer
-      v-if="authenticated"
-      v-model="rightDrawer"
-      :mini="miniState"
-      :width="200"
-      :breakpoint="500"
-      bordered
-      overlay
-      side="right"
-      :class="darkmode ? 'bg-dark' : 'bg-orange-3'"
+      :width="220"
+      :class="
+        darkmode ? 'bg-primarydark text-offwhite' : 'bg-primary text-offwhite'
+      "
     >
       <q-scroll-area class="fit">
         <q-list padding>
@@ -81,57 +100,68 @@
           </q-item>
         </q-list>
       </q-scroll-area>
+    </q-drawer>
 
-      <!-- http://jsfiddle.net/shomz/yFy5n/5/ -->
-      <q-btn
-        dense
-        round
-        unelevated
-        :text-color="darkmode ? 'dark' : 'offwhite'"
-        :color="darkmode ? 'offwhite' : 'dark'"
-        :icon="miniState ? 'chevron_left' : 'chevron_right'"
-        @click="miniState = !miniState"
-        size="sm"
-        v-bind:class="miniState ? 'drawer_btn_desk' : 'drawer_btn_desk_moved'"
-        v-if="!mobile"
-      />
+    <!-- fix  -->
 
-      <!-- mobile  -->
-      <q-btn
-        round
-        :text-color="darkmode ? 'dark' : 'offwhite'"
-        :color="darkmode ? 'offwhite' : 'dark'"
-        icon="chevron_right"
-        @click="rightDrawer = !rightDrawer"
-        size="md"
-        class="drawer_btn_mob"
-        v-if="mobile"
-      />
+    <q-drawer
+      v-model="rightDrawer"
+      :mini="miniState"
+      :width="200"
+      :breakpoint="500"
+      bordered
+      overlay
+      side="right"
+      class="text-offwhite"
+      :class="darkmode ? 'bg-primarydark' : 'bg-primary'"
+    >
+      <q-scroll-area class="fit">
+        <q-list padding>
+          <q-item clickable v-ripple>
+            <q-item-section avatar>
+              <q-icon name="account_circle" />
+            </q-item-section>
+
+            <q-item-section> My Profile </q-item-section>
+          </q-item>
+
+          <q-item clickable v-ripple>
+            <q-item-section avatar>
+              <q-icon name="send" />
+            </q-item-section>
+
+            <q-item-section> Send </q-item-section>
+          </q-item>
+
+          <q-item clickable v-ripple>
+            <q-item-section avatar>
+              <q-icon name="drafts" />
+            </q-item-section>
+
+            <q-item-section> Drafts </q-item-section>
+          </q-item>
+          <q-item clickable v-ripple @click="logout">
+            <q-item-section avatar>
+              <q-icon name="logout" />
+            </q-item-section>
+
+            <q-item-section> Logout </q-item-section>
+          </q-item>
+        </q-list>
+      </q-scroll-area>
     </q-drawer>
 
     <q-page-container>
+      <ParticlesBG ref="backgroundAnimation" />
       <router-view />
     </q-page-container>
 
     <q-footer
-      elevated
-      class="bg-primary"
-      :class="darkmode ? 'text-offwhite' : 'text-dark'"
+      class="text-offwhite"
+      bordered
+      :class="darkmode ? 'bg-primarydark' : 'bg-primary'"
     >
-      <div
-        v-if="authenticated && mobile"
-        class="fixed-right drawer_btn_mob_moved"
-      >
-        <!-- mobile  -->
-        <q-btn
-          round
-          size="md"
-          :text-color="darkmode ? 'dark' : 'offwhite'"
-          :color="darkmode ? 'offwhite' : 'dark'"
-          icon="chevron_left"
-          @click="rightDrawer = !rightDrawer"
-        />
-      </div>
+      <!-- mobile  -->
       <q-toolbar>
         <q-toolbar-title>
           <div>Under developement.</div>
@@ -148,6 +178,16 @@
                 @click="darkmodeChanged"
               />
             </q-item>
+            <q-item>
+              <q-toggle
+                v-model="background_animation"
+                checked-icon="check"
+                color="green"
+                unchecked-icon="clear"
+                label="Background Animation"
+                @click="toogleBackgroundAnimation(background_animation)"
+              />
+            </q-item>
           </q-list>
         </q-btn-dropdown>
       </q-toolbar>
@@ -161,21 +201,50 @@ import { Dark } from 'quasar';
 import { useQuasar, QSpinnerGears } from 'quasar';
 import { api } from 'boot/axios';
 import { useAuthStore } from 'stores/authenticated.ts';
+import { useSettingsStore } from 'stores/settings';
 import router from 'src/router/index.ts';
+import ParticlesBG from 'components/ParticlesBG.vue';
 
 export default {
-  computed: {
-    authenticated() {
-      return this.store.auth_state;
-      //return true;
-    },
-    mobile() {
-      return this.q.platform.is.mobile;
-      // return true;
-    },
+  components: {
+    ParticlesBG,
   },
+
+  setup() {
+    const auth_store = useAuthStore();
+    const settings_store = useSettingsStore();
+    const miniState = ref(true);
+    const q = useQuasar();
+    var darkmode = ref(settings_store.darkmode_state);
+    if (q.screen.width < 600) {
+      var rightDrawer = ref(false);
+      var leftDrawer = ref(false);
+    } else {
+      var rightDrawer = ref(false);
+      var leftDrawer = ref(true);
+    }
+
+    return {
+      background_animation: ref(false),
+      leftDrawerMini: ref(true),
+      leftDrawer,
+      // layout & styling
+      settings_store,
+      auth_store,
+      q,
+      darkmode,
+      rightDrawer,
+      miniState,
+      loading: ref(false),
+
+      username: ref('SomeUser'),
+      avatar: ref('https://media.kurtn3x.xyz/test/avatar.png'),
+    };
+  },
+
+  /*
   beforeCreate() {
-    if (!this.store.auth_state) {
+    if (!this.auth_store.auth_state) {
       const q = useQuasar();
       this.$router.push('/');
       q.notify({
@@ -187,36 +256,31 @@ export default {
       });
     }
   },
-  setup() {
-    const store = useAuthStore();
-    const miniState = ref(true);
-    const q = useQuasar();
+  */
 
-    if (q.platform.is.mobile) {
-      var rightDrawer = ref(false);
-    } else {
-      var rightDrawer = ref(true);
-    }
-    var darkmode = ref(store.darkmode_state);
+  created() {
+    this.getMe();
+  },
 
-    return {
-      toggleLeftDrawer() {
-        leftDrawer.value = !leftDrawer.value;
-      },
-
-      // layout & styling
-      store,
-      q,
-      darkmode,
-      rightDrawer,
-      miniState,
-      loading: ref(false),
-    };
+  computed: {
+    authenticated() {
+      return true;
+    },
+    mobile() {
+      if (q.screen.width < 600) {
+        return true;
+      } else {
+        return false;
+      }
+    },
   },
 
   methods: {
     darkmodeChanged() {
-      this.store.darkmode = this.darkmode;
+      this.settings_store.darkmode = this.darkmode;
+    },
+    toogleBackgroundAnimation(bg_val) {
+      this.$refs.backgroundAnimation.toogle_active(bg_val);
     },
 
     notify(type, message) {
@@ -239,11 +303,35 @@ export default {
         .post('/auth/logout', '', config)
         .then((response) => {
           if (response.status == 200) {
-            this.store.authenticated = false;
+            this.auth_store.authenticated = false;
             this.$router.push('/');
           }
         })
         .catch();
+    },
+
+    getMe() {
+      let config = {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': this.q.cookies.get('csrftoken'),
+        },
+      };
+      api
+        .get('/profile/user', config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.username = response.data.username;
+            this.avatar = response.data.avatar;
+          } else {
+            this.username = 'SomeUser';
+            this.avatar = 'https://media.kurtn3x.xyz/test/avatar.png';
+          }
+        })
+        .catch((error) => {
+          this.username = 'SomeUser';
+          this.avatar = 'https://media.kurtn3x.xyz/test/avatar.png';
+        });
     },
   },
 };

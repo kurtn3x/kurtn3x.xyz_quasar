@@ -1,16 +1,14 @@
 <template>
   <q-layout view="hHh LpR fff">
     <q-header
-      reveal
       height-hint="98"
       bordered
-      class="bg-primary"
-      :class="darkmode ? 'text-offwhite' : 'text-dark'"
+      reveal
+      class="text-offwhite"
+      :class="darkmode ? 'bg-primarydark' : 'bg-primary'"
     >
       <q-toolbar class="q-pl-none q-pr-none">
-        <q-btn stretch flat label="Home" to="/l" />
-        <q-separator vertical />
-        <q-btn stretch flat label="Logged" to="/l" />
+        <q-btn stretch flat label="Test" to="/l" />
         <q-separator vertical />
         <q-btn
           v-if="authenticated"
@@ -19,15 +17,29 @@
           label="Forum"
           href="https://forum.kurtn3x.xyz"
         />
-        <q-separator vertical v-if="authenticated" />
         <q-space />
-        <q-separator vertical v-if="!authenticated" />
+        <q-separator vertical />
+
         <q-btn
-          v-if="!authenticated"
           stretch
           flat
-          icon="person"
-          @click="login_popup = true"
+          icon="login"
+          label="Login"
+          @click="
+            login_popup = true;
+            login_tab = 'login';
+          "
+        />
+        <q-separator vertical />
+        <q-btn
+          stretch
+          flat
+          icon="add"
+          label="Register"
+          @click="
+            login_popup = true;
+            login_tab = 'register';
+          "
         />
       </q-toolbar>
     </q-header>
@@ -350,15 +362,16 @@
           </q-tab-panels>
         </q-card>
       </q-dialog>
-      <ParticlesText ref="textAnimation" v-if="!mobile" />
+      <ParticlesText ref="textAnimation" class="gt-md" />
       <ParticlesBG ref="backgroundAnimation" />
       <router-view />
     </q-page-container>
 
     <q-footer
+      reveal
       elevated
-      class="bg-primary"
-      :class="darkmode ? 'text-offwhite' : 'text-dark'"
+      class="bg-primary text-offwhite"
+      :class="darkmode ? 'bg-primarydark' : 'bg-primary'"
     >
       <q-toolbar>
         <q-toolbar-title>
@@ -379,7 +392,7 @@
               </q-item-section>
             </q-item>
 
-            <q-item v-if="!mobile">
+            <q-item class="gt-md">
               <q-toggle
                 v-model="text_animation"
                 checked-icon="check"
@@ -413,32 +426,21 @@ import { Dark } from 'quasar';
 import { useQuasar, QSpinnerGears } from 'quasar';
 import { api } from 'boot/axios';
 import { useAuthStore } from 'stores/authenticated.ts';
+import { useSettingsStore } from 'stores/settings';
 import ParticlesBG from 'components/ParticlesBG.vue';
 import ParticlesText from 'components/ParticlesText.vue';
 import router from 'src/router/index.ts';
 
 export default {
   components: { ParticlesText, ParticlesBG },
-  mounted() {
-    if (this.store.auth_state) {
-      this.$router.push('/l');
-    }
-  },
 
-  computed: {
-    authenticated() {
-      return this.store.auth_state;
-    },
-    mobile() {
-      return this.q.platform.is.mobile;
-    },
-  },
   setup() {
-    const store = useAuthStore();
+    const auth_store = useAuthStore();
+    const settings_store = useSettingsStore();
     const miniState = ref(true);
     const q = useQuasar();
 
-    if (q.platform.is.mobile) {
+    if (q.screen.width < 600) {
       var background_animation = ref(true);
       var text_animation = ref(false);
     } else {
@@ -446,7 +448,7 @@ export default {
       var text_animation = ref(true);
     }
 
-    var darkmode = ref(store.darkmode_state);
+    var darkmode = ref(settings_store.darkmode_state);
 
     return {
       toggleLeftDrawer() {
@@ -454,7 +456,8 @@ export default {
       },
 
       // layout & styling
-      store,
+      settings_store,
+      auth_store,
       q,
       darkmode,
       background_animation: ref(false),
@@ -480,9 +483,21 @@ export default {
     };
   },
 
+  mounted() {
+    if (this.auth_store.auth_state) {
+      this.$router.push('/l');
+    }
+  },
+
+  computed: {
+    authenticated() {
+      return this.auth_store.auth_state;
+    },
+  },
+
   methods: {
     darkmodeChanged() {
-      this.store.darkmode = this.darkmode;
+      this.settings_store.darkmode = this.darkmode;
     },
     toogleTextAnimation(text_val) {
       this.$refs.textAnimation.toogle_active(text_val);
@@ -571,7 +586,7 @@ export default {
         .then((response) => {
           if (response.status == 200) {
             this.loading = false;
-            this.store.authenticated = true;
+            this.auth_store.authenticated = true;
             this.username = '';
             this.password = '';
             this.password2 = '';
@@ -623,6 +638,7 @@ export default {
               });
             } else {
               this.loading = false;
+              this.auth_store.authenticated = false;
               var msg = 'Error: ' + response.data.error;
               this.notify('negative', msg);
             }
@@ -632,7 +648,7 @@ export default {
           this.loading = false;
           var msg = 'Error (Server Error): ' + error;
           this.notify('negative', msg);
-          this.store.authenticated = false;
+          this.auth_store.authenticated = false;
         });
     },
 
@@ -694,7 +710,7 @@ export default {
         .post('/auth/logout', '', config)
         .then((response) => {
           if (response.status == 200) {
-            this.store.authenticated = false;
+            this.auth_store.authenticated = false;
             this.$router.go('/');
           }
         })
