@@ -4,12 +4,7 @@
     class="disable-select"
     :class="settings_store.darkmode ? 'text-offwhite' : 'text-dark'"
   >
-    <h1 class="text-center">Hi!</h1>
     <h1 class="text-center">Please log in to access the site.</h1>
-    <h1 class="text-center">Hi!</h1>
-    <h1 class="text-center">Hi!</h1>
-    <h1 class="text-center">Hi!</h1>
-    <h1 class="text-center">Hi!</h1>
   </div>
 </template>
 

@@ -242,7 +242,6 @@ export default {
     };
   },
 
-  /*
   beforeCreate() {
     if (!this.auth_store.auth_state) {
       const q = useQuasar();
@@ -256,7 +255,6 @@ export default {
       });
     }
   },
-  */
 
   created() {
     this.getMe();
