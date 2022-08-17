@@ -27,58 +27,7 @@ export default defineComponent({
       auth_store,
       settings_store,
       q,
-      username: ref(''),
-      id: ref(''),
-      first_name: ref(''),
-      last_name: ref(''),
-      phone: ref(''),
-      user: ref(''),
     };
-  },
-  created() {
-    this.getMe();
-  },
-  watch: {
-    'store.authenticated'() {
-      this.getMe();
-    },
-  },
-  methods: {
-    getMe() {
-      let config = {
-        withCredentials: true,
-        headers: {
-          'X-CSRFToken': this.q.cookies.get('csrftoken'),
-        },
-      };
-      api
-        .get('/profile/user', config)
-        .then((response) => {
-          if (response.status == 200) {
-            this.username = response.data.username;
-            this.id = response.data.profile.id;
-            this.first_name = response.data.profile.first_name;
-            this.last_name = response.data.profile.last_name;
-            this.phone = response.data.profile.phone;
-            this.user = response.data.profile.user;
-          } else {
-            this.username = '';
-            this.id = '';
-            this.first_name = '';
-            this.last_name = '';
-            this.phone = '';
-            this.user = '';
-          }
-        })
-        .catch((error) => {
-          (this.username = ''),
-            (this.id = ''),
-            (this.first_name = ''),
-            (this.last_name = ''),
-            (this.phone = ''),
-            (this.user = '');
-        });
-    },
   },
 });
 </script>

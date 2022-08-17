@@ -9,14 +9,24 @@
       "
     >
       <q-toolbar class="q-pl-none q-pr-none">
-        <q-btn flat stretch mini: leftDrawerMini @click="q.screen.width < 600 ?
-        leftDrawer = !leftDrawer : leftDrawerMini = !leftDrawerMini"
-        :icon="leftDrawerMini ? 'menu' : 'menu_open'" label="Menu" />
+        <q-btn
+          flat
+          stretch
+          mini:leftDrawerMini
+          @click="
+            mobile
+              ? (leftDrawer = !leftDrawer)
+              : (leftDrawerMini = !leftDrawerMini)
+          "
+          :icon="leftDrawerMini ? 'menu' : 'menu_open'"
+          label="Menu"
+        />
         <q-separator vertical class="gt-xs" />
 
         <q-btn stretch flat label="Home" to="/l" icon="home" />
         <q-separator vertical class="gt-xs" />
         <q-space />
+
         <q-btn-dropdown stretch flat :icon="avatar_img" rounded>
           <div class="row no-wrap q-pa-md">
             <div class="column">
@@ -55,6 +65,7 @@
       behavior="default"
       :mini="leftDrawerMini"
       bordered
+      :breakpoint="600"
       :width="217"
       :class="
         darkmode ? 'bg-primarydark text-offwhite' : 'bg-primary text-dark'
@@ -112,7 +123,7 @@
       v-model="rightDrawer"
       :mini="miniState"
       :width="200"
-      :breakpoint="500"
+      :breakpoint="600"
       bordered
       overlay
       side="right"
@@ -271,7 +282,7 @@ export default {
       return true;
     },
     mobile() {
-      if (q.screen.width < 600) {
+      if (this.q.screen.width < 600) {
         return true;
       } else {
         return false;
