@@ -5,7 +5,7 @@
       bordered
       reveal
       :class="
-        darkmode ? 'bg-primarydark text-offwhite' : 'bg-primary text-dark'
+        darkmode ? 'bg-primarydark text-custom_light' : 'bg-primary text-dark'
       "
     >
       <q-toolbar class="q-pl-none q-pr-none">

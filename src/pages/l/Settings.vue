@@ -3,13 +3,18 @@
     <q-splitter
       v-model="splitterModel"
       class="q-ma-md"
+      :class="darkmode ? 'text-light' : 'text-dark'"
       style="min-height: 500px"
     >
       <template v-slot:before>
         <q-tabs
           v-model="tab"
           vertical
-          :class="darkmode ? 'text-white' : 'text-dark'"
+          :class="
+            darkmode
+              ? 'text-light bg-background-dark'
+              : 'text-dark bg-background-light'
+          "
         >
           <q-expansion-item
             icon="perm_identity"
@@ -21,7 +26,7 @@
             <q-tab name="account" icon="admin_panel_settings" label="Account" />
           </q-expansion-item>
           <q-expansion-item
-            icon="perm_identity"
+            icon="public"
             label="Website settings"
             v-if="!small"
             header-style="fontSize: 1.3em"
@@ -39,11 +44,34 @@
       </template>
 
       <template v-slot:after>
-        <q-tab-panels v-model="tab" animated swipeable vertical>
-          <q-tab-panel name="start"
+        <q-tab-panels
+          v-model="tab"
+          animated
+          swipeable
+          vertical
+          :class="
+            darkmode
+              ? 'text-light bg-background-dark'
+              : 'text-dark bg-background-light'
+          "
+        >
+          <q-tab-panel
+            name="start"
+            :class="
+              darkmode
+                ? 'text-light bg-background-dark'
+                : 'text-dark bg-background-light'
+            "
             ><div class="text-h4 q-mb-md">The Settings Menu</div></q-tab-panel
           >
-          <q-tab-panel name="profile">
+          <q-tab-panel
+            name="profile"
+            :class="
+              darkmode
+                ? 'text-light bg-background-dark'
+                : 'text-dark bg-background-light'
+            "
+          >
             <div class="text-h4 q-mb-md">Profile Settings</div>
             <!--  -->
 
@@ -68,7 +96,7 @@
                   ></q-avatar>
                 </div>
               </div>
-              <div class="text-weight-bold text-h6">TestUser</div>
+              <div class="text-weight-bold text-h6 q-pt-xl">TestUser</div>
               <div class="user-info q-mt-lg">
                 <div class="row justify-between">
                   <label class="text-h6 text-body1">Email:</label>
@@ -84,49 +112,64 @@
             <!--  -->
           </q-tab-panel>
 
-          <q-tab-panel name="account">
+          <q-tab-panel
+            name="account"
+            :class="
+              darkmode
+                ? 'text-light bg-background-dark'
+                : 'text-dark bg-background-light'
+            "
+          >
             <div class="text-h4 q-mb-md">Account Settings</div>
             <div class="q-pl-none q-pt-md">
               <q-table
-                :rows="rows"
+                :rows="testthing"
                 :columns="columns"
                 flat
                 square
                 hide-header
                 hide-bottom
                 separator="vertical"
+                :class="
+                  darkmode
+                    ? 'text-light bg-background-dark'
+                    : 'text-dark bg-background-light'
+                "
+                table-style="max-width:700px"
               >
                 <!-- https://codepen.io/metalsadman/pen/ZgKexK -->
-                <template v-slot:body-cell-button="props">
-                  <q-td :props="props">
-                    <div>
-                      <q-btn icon="info" dense flat @click="deleteRow(props)">
-                        <q-tooltip> Changing these values </q-tooltip>
-                      </q-btn>
-                    </div>
-                  </q-td>
-                </template>
               </q-table>
             </div>
           </q-tab-panel>
 
-          <q-tab-panel name="theme">
+          <q-tab-panel
+            name="theme"
+            :class="
+              darkmode
+                ? 'text-light bg-background-dark'
+                : 'text-dark bg-background-light'
+            "
+          >
             <div class="text-h4 q-mb-md">Themes</div>
-            <p>
-              Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis
-              praesentium cumque magnam odio iure quidem, quod illum numquam
-              possimus obcaecati commodi minima assumenda consectetur culpa fuga
-              nulla ullam. In, libero.
-            </p>
-            <p>
-              Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis
-              praesentium cumque magnam odio iure quidem, quod illum numquam
-              possimus obcaecati commodi minima assumenda consectetur culpa fuga
-              nulla ullam. In, libero.
-            </p>
+            <q-btn
+              style="background: #1ecececc; color: white"
+              label="Default Theme"
+            />
+            <q-btn
+              class="q-ml-xl"
+              style="background: #00ff62cc; color: white"
+              label="Green Theme"
+            />
           </q-tab-panel>
 
-          <q-tab-panel name="other">
+          <q-tab-panel
+            name="other"
+            :class="
+              darkmode
+                ? 'text-light bg-background-dark'
+                : 'text-dark bg-background-light'
+            "
+          >
             <div class="text-h4 q-mb-md">Other</div>
             <p>
               Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis
@@ -154,6 +197,11 @@
 </template>
 
 <script>
+import { ref, reactive } from 'vue';
+import { useQuasar, QSpinnerGears } from 'quasar';
+import { api } from 'boot/axios';
+import { useAuthStore } from 'stores/authenticated.ts';
+import { useSettingsStore } from 'stores/settings';
 const columns = [
   {
     name: 'key',
@@ -172,64 +220,61 @@ const columns = [
     field: 'value',
     classes: 'text-weight-bolder',
     style: {
-      width: '1px',
-      fontSize: '1.2em',
-    },
-  },
-
-  {
-    name: 'button',
-    align: 'left',
-    field: 'button',
-    style: {
+      width: '100px',
       fontSize: '1.2em',
     },
   },
 ];
-
-const rows = [
-  {
-    key: 'Userid',
-    value: 400,
-  },
-  {
-    key: 'Username',
-    value: 'WASDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDd',
-  },
-  {
-    key: 'E-Mail',
-    value: 'dkowdwadwoadnaodnad@email.de',
-  },
-  {
-    key: 'Role',
-    value: 'Admin',
-  },
-  {
-    key: 'E-Mail',
-    value: 2,
-  },
-];
-
-import { ref } from 'vue';
-import { useQuasar, QSpinnerGears } from 'quasar';
-import { api } from 'boot/axios';
-import { useAuthStore } from 'stores/authenticated.ts';
-import { useSettingsStore } from 'stores/settings';
 
 export default {
   name: 'SettingsView',
+  data() {
+    return {
+      rows: [
+        {
+          key: 'Userid',
+          value: 'Fetching',
+        },
+        {
+          key: 'Username',
+          value: 'Fetching',
+        },
+        {
+          key: 'E-Mail',
+          value: 'Fetching',
+        },
+        {
+          key: 'Role',
+          value: 'Fetching',
+        },
+        {
+          key: 'Groups',
+          value: 'Fetching',
+        },
+      ],
+    };
+  },
   setup() {
     const settings_store = useSettingsStore();
     const q = useQuasar();
     return {
+      theme: ref('default'),
       columns,
-      rows,
       tab: ref('start'),
       splitterModel: ref(20),
       settings_store,
       q,
+      loading: ref(false),
       username: ref('SomeUser'),
       avatar: ref('https://media.kurtn3x.xyz/test/avatar.png'),
+      background_avatar: ref(''),
+      userid: ref(''),
+      email: ref(''),
+      role: ref(''),
+      group: ref(''),
+      name: ref(''),
+      surname: ref(''),
+      phone: ref(''),
     };
   },
   created() {
@@ -237,6 +282,9 @@ export default {
   },
 
   computed: {
+    testthing() {
+      return this.rows;
+    },
     darkmode() {
       return this.settings_store.darkmode;
     },
@@ -250,6 +298,9 @@ export default {
   },
 
   methods: {
+    changeTheme() {
+      document.body.setAttribute('data-theme', 'orange');
+    },
     deleteRow(props) {
       this.q.notify({
         type: 'negative',
@@ -260,8 +311,8 @@ export default {
         timeout: 2000,
       });
     },
-    test(test2) {
-      console.log(test2);
+    test() {
+      this.rows[0].value = 777;
     },
     getMe() {
       let config = {
@@ -277,12 +328,20 @@ export default {
             this.username = response.data.username;
             this.avatar = response.data.avatar;
           } else {
-            this.username = 'SomeUser';
+            this.rows[0].value = this.userid = 1;
+            this.rows[1].value = this.username = 'SomeUser';
+            this.rows[2].value = this.email = 'SomeEmail';
+            this.rows[3].value = this.role = 'SomeRoles';
+            this.rows[4].value = this.group = 'SomeGroup';
             this.avatar = 'https://media.kurtn3x.xyz/test/avatar.png';
           }
         })
         .catch((error) => {
-          this.username = 'SomeUser';
+          this.rows[0].value = this.userid = 1;
+          this.rows[1].value = this.username = 'SomeUser';
+          this.rows[2].value = this.email = 'SomeEmail';
+          this.rows[3].value = this.role = 'SomeRoles';
+          this.rows[4].value = this.group = 'SomeGroup';
           this.avatar = 'https://media.kurtn3x.xyz/test/avatar.png';
         });
     },
@@ -295,7 +354,7 @@ export default {
   position: relative;
   text-align: center;
   background: rgba(0, 0, 0, 0);
-  top: -4.6em;
+  top: -10em;
 }
 
 .account-container {

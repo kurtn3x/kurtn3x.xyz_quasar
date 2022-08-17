@@ -4,9 +4,7 @@
       reveal
       height-hint="98"
       bordered
-      :class="
-        darkmode ? 'bg-primarydark text-offwhite' : 'bg-primary text-dark'
-      "
+      :class="darkmode ? 'bg-primarydark text-light' : 'bg-primary text-dark'"
     >
       <q-toolbar class="q-pl-none q-pr-none">
         <q-btn
@@ -58,7 +56,7 @@
       </q-toolbar>
     </q-header>
 
-    <!-- LEFT DRAWER -->
+    <!-- LEFT DRAWER  this fucker doesnt take global text color classes-->
     <q-drawer
       v-model="leftDrawer"
       side="left"
@@ -67,13 +65,16 @@
       bordered
       :breakpoint="600"
       :width="217"
-      :class="
-        darkmode ? 'bg-primarydark text-offwhite' : 'bg-primary text-dark'
-      "
+      :class="darkmode ? 'bg-primarydark text-light' : 'bg-primary text-dark'"
     >
       <q-scroll-area class="fit">
         <q-list padding>
-          <q-item clickable v-ripple to="/l/profile">
+          <q-item
+            clickable
+            v-ripple
+            to="/l/profile"
+            :class="darkmode ? 'text-light' : 'text-dark'"
+          >
             <q-item-section avatar>
               <q-icon name="account_circle" />
             </q-item-section>
@@ -81,7 +82,11 @@
             <q-item-section> My Profile </q-item-section>
           </q-item>
 
-          <q-item clickable v-ripple>
+          <q-item
+            clickable
+            v-ripple
+            :class="darkmode ? 'text-light' : 'text-dark'"
+          >
             <q-item-section avatar>
               <q-icon name="send" />
             </q-item-section>
@@ -89,7 +94,11 @@
             <q-item-section> Send </q-item-section>
           </q-item>
 
-          <q-item clickable v-ripple>
+          <q-item
+            clickable
+            v-ripple
+            :class="darkmode ? 'text-light' : 'text-dark'"
+          >
             <q-item-section avatar>
               <q-icon name="drafts" />
             </q-item-section>
@@ -99,7 +108,12 @@
 
           <q-space />
 
-          <q-item clickable v-ripple to="/l/settings">
+          <q-item
+            clickable
+            v-ripple
+            to="/l/settings"
+            :class="darkmode ? 'text-light' : 'text-dark'"
+          >
             <q-item-section avatar>
               <q-icon name="settings" />
             </q-item-section>
@@ -107,7 +121,12 @@
             <q-item-section> Settings </q-item-section>
           </q-item>
 
-          <q-item clickable v-ripple @click="logout">
+          <q-item
+            clickable
+            v-ripple
+            @click="logout"
+            :class="darkmode ? 'text-light' : 'text-dark'"
+          >
             <q-item-section avatar>
               <q-icon name="logout" />
             </q-item-section>
@@ -127,7 +146,7 @@
       bordered
       overlay
       side="right"
-      class="text-offwhite"
+      class="text-light"
       :class="darkmode ? 'bg-primarydark' : 'bg-primary'"
     >
       <q-scroll-area class="fit">
@@ -173,9 +192,7 @@
 
     <q-footer
       bordered
-      :class="
-        darkmode ? 'bg-primarydark text-offwhite' : 'bg-primary text-dark'
-      "
+      :class="darkmode ? 'bg-primarydark text-light' : 'bg-primary text-dark'"
     >
       <!-- mobile  -->
       <q-toolbar>

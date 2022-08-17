@@ -1,5 +1,12 @@
 <template>
-  <router-view v-if="prefetch" />
+  <router-view
+    v-if="prefetch"
+    :class="
+      darkmode
+        ? 'bg-background-dark text-light'
+        : 'bg-background-light text-dark'
+    "
+  />
 </template>
 
 <script>
@@ -29,6 +36,8 @@ export default defineComponent({
   },
 
   beforeCreate() {
+    document.body.setAttribute('data-theme', 'default');
+
     api.get('/auth/csrf_cookie', { withCredentials: true }).catch();
     let config = {
       withCredentials: true,
