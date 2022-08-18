@@ -5,7 +5,7 @@
   >
     <h1 class="text-center">Welcome!</h1>
   </div>
-  <div v-if="auth_store.authenticated" v-bind="getMe">
+  <div v-if="userStore.authenticated" v-bind="getMe">
     <h1>{{ first_name }}</h1>
     <h1>{{ last_name }}</h1>
     <h1>{{ username }}</h1>
@@ -16,7 +16,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
-import { useAuthStore } from 'stores/authenticated';
+import { useUserStore } from 'stores/user';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { store } from 'quasar/wrappers';
@@ -25,12 +25,12 @@ import { useSettingsStore } from 'stores/settings';
 export default defineComponent({
   name: 'IndexPage',
   setup() {
-    const auth_store = useAuthStore();
+    const userStore = useUserStore();
     const settings_store = useSettingsStore();
     const q = useQuasar();
 
     return {
-      auth_store,
+      userStore,
       settings_store,
       q,
       username: ref(''),
@@ -43,11 +43,6 @@ export default defineComponent({
   },
   created() {
     this.getMe();
-  },
-  watch: {
-    'store.authenticated'() {
-      this.getMe();
-    },
   },
   methods: {
     getMe() {

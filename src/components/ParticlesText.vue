@@ -113,10 +113,6 @@ export default defineComponent({
         await loadFull(engine);
         await loadPolygonMaskPlugin(engine);
       },
-
-      particlesLoaded: async (container) => {
-        console.log('Particles container loaded', container);
-      },
     };
   },
   methods: {

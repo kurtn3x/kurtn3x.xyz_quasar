@@ -381,7 +381,7 @@
             <q-item>
               <q-item-section>
                 <q-toggle
-                  v-model="darkmode"
+                  v-model="darkmode_model"
                   checked-icon="check"
                   color="green"
                   unchecked-icon="clear"
@@ -424,7 +424,7 @@ import { ref, computed } from 'vue';
 import { Dark } from 'quasar';
 import { useQuasar, QSpinnerGears } from 'quasar';
 import { api } from 'boot/axios';
-import { useAuthStore } from 'stores/authenticated.ts';
+import { useUserStore } from 'stores/user.ts';
 import { useSettingsStore } from 'stores/settings';
 import ParticlesBG from 'components/ParticlesBG.vue';
 import ParticlesText from 'components/ParticlesText.vue';
@@ -434,8 +434,8 @@ export default {
   components: { ParticlesText, ParticlesBG },
 
   setup() {
-    const auth_store = useAuthStore();
-    const settings_store = useSettingsStore();
+    const userStore = useUserStore();
+    const settingsStore = useSettingsStore();
     const miniState = ref(true);
     const q = useQuasar();
 
@@ -447,18 +447,16 @@ export default {
       var text_animation = ref(true);
     }
 
-    var darkmode = ref(settings_store.darkmode_state);
-
     return {
       toggleLeftDrawer() {
         leftDrawer.value = !leftDrawer.value;
       },
 
       // layout & styling
-      settings_store,
-      auth_store,
+      settingsStore,
+      darkmode_model: ref(settingsStore.darkmode_state),
+      userStore,
       q,
-      darkmode,
       background_animation: ref(false),
       text_animation: ref(true),
       // login / register form stuff
@@ -483,20 +481,23 @@ export default {
   },
 
   mounted() {
-    if (this.auth_store.auth_state) {
+    if (this.userStore.auth_state) {
       this.$router.push('/l');
     }
   },
 
   computed: {
+    darkmode() {
+      return this.settingsStore.darkmode_state;
+    },
     authenticated() {
-      return this.auth_store.auth_state;
+      return this.userStore.auth_state;
     },
   },
 
   methods: {
     darkmodeChanged() {
-      this.settings_store.darkmode = this.darkmode;
+      this.settingsStore.darkmode = this.darkmode_model;
     },
     toogleTextAnimation(text_val) {
       this.$refs.textAnimation.toogle_active(text_val);
@@ -585,7 +586,7 @@ export default {
         .then((response) => {
           if (response.status == 200) {
             this.loading = false;
-            this.auth_store.authenticated = true;
+            this.userStore.authenticated = true;
             this.username = '';
             this.password = '';
             this.password2 = '';
@@ -637,7 +638,7 @@ export default {
               });
             } else {
               this.loading = false;
-              this.auth_store.authenticated = false;
+              this.userStore.authenticated = false;
               var msg = 'Error: ' + response.data.error;
               this.notify('negative', msg);
             }
@@ -647,7 +648,7 @@ export default {
           this.loading = false;
           var msg = 'Error (Server Error): ' + error;
           this.notify('negative', msg);
-          this.auth_store.authenticated = false;
+          this.userStore.authenticated = false;
         });
     },
 
@@ -709,7 +710,7 @@ export default {
         .post('/auth/logout', '', config)
         .then((response) => {
           if (response.status == 200) {
-            this.auth_store.authenticated = false;
+            this.userStore.authenticated = false;
             this.$router.go('/');
           }
         })

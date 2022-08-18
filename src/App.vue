@@ -11,22 +11,34 @@
 
 <script>
 import { defineComponent } from 'vue';
-import 'https://cdn.jsdelivr.net/npm/pathseg@1.2.0/pathseg.min.js';
-import { useQuasar, setCssVar } from 'quasar';
-import { ref } from 'vue';
+import { useQuasar, LocalStorage } from 'quasar';
 import { api } from 'boot/axios';
-import { useAuthStore } from 'stores/authenticated';
 import { useSettingsStore } from 'stores/settings';
-
+import { useUserStore } from './stores/user';
 export default defineComponent({
   name: 'App',
 
   setup() {
     const q = useQuasar();
-    const auth_store = useAuthStore();
-    const settings_store = useSettingsStore();
-    q.dark.set(true);
-    return { q, auth_store, settings_store };
+    const settingsStore = useSettingsStore();
+    const userStore = useUserStore();
+    if (settingsStore.darkmode_state == null) {
+      q.dark.set(true);
+      settingsStore.darkmode = true;
+    }
+
+    userStore.$subscribe((mutation, state) => {
+      LocalStorage.set('user', state.user);
+    });
+
+    settingsStore.$subscribe((mutation, state) => {
+      LocalStorage.set('darkmode', state.darkmode);
+    });
+
+    settingsStore.$subscribe((mutation, state) => {
+      LocalStorage.set('theme', state.theme);
+    });
+    return { q, userStore, settingsStore };
   },
 
   data() {
@@ -36,7 +48,12 @@ export default defineComponent({
   },
 
   beforeCreate() {
-    document.body.setAttribute('data-theme', 'default');
+    if (this.settingsStore.theme_state == null) {
+      document.body.setAttribute('data-theme', 'default');
+      this.settingsStore.theme = 'default';
+    } else {
+      document.body.setAttribute('data-theme', this.settingsStore.theme);
+    }
 
     api.get('/auth/csrf_cookie', { withCredentials: true }).catch();
     let config = {
@@ -49,10 +66,10 @@ export default defineComponent({
       .get('/auth/authenticated', config)
       .then((response) => {
         if (response.status == 200) {
-          this.auth_store.authenticated = true;
+          this.userStore.authenticated = true;
           this.prefetch = true;
         } else {
-          this.auth_store.authenticated = false;
+          this.userStore.authenticated = false;
           this.prefetch = true;
         }
       })
@@ -60,14 +77,14 @@ export default defineComponent({
         console.log(
           'Encountered Error while fetching auth-state. This may be intentional.'
         );
-        this.auth_store.authenticated = false;
+        this.userStore.authenticated = false;
         this.prefetch = true;
       });
   },
 
   computed: {
     darkmode() {
-      return this.settings_store.darkmode;
+      return this.settingsStore.darkmode;
     },
   },
 

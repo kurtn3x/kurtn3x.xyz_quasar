@@ -1,6 +1,5 @@
 <template>
   <div
-    v-if="!auth_store.authenticated"
     class="disable-select"
     :class="settings_store.darkmode ? 'text-offwhite' : 'text-dark'"
   >
@@ -10,21 +9,20 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
-import { useAuthStore } from 'stores/authenticated';
+import { useUserStore } from 'stores/user';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
-import { store } from 'quasar/wrappers';
 import { useSettingsStore } from 'stores/settings';
 
 export default defineComponent({
   name: 'IndexPage',
   setup() {
-    const auth_store = useAuthStore();
+    const userStore = useUserStore();
     const settings_store = useSettingsStore();
     const q = useQuasar();
 
     return {
-      auth_store,
+      userStore,
       settings_store,
       q,
     };

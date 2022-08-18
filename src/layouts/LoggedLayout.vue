@@ -25,34 +25,38 @@
         <q-separator vertical class="gt-xs" />
         <q-space />
 
-        <q-btn-dropdown stretch flat :icon="avatar_img" rounded>
-          <div class="row no-wrap q-pa-md">
-            <div class="column">
-              <div class="text-h6 q-mb-md">Settings</div>
-              <q-toggle v-model="mobileData" label="Use Mobile Data" />
-              <q-toggle v-model="bluetooth" label="Bluetooth" />
+        <q-btn stretch flat>
+          <q-avatar size="34px">
+            <img :src="user.avatar" />
+          </q-avatar>
+          <q-menu>
+            <div class="row no-wrap q-pa-md">
+              <div class="column">
+                <div class="text-h6 q-mb-md">Settings</div>
+                <q-toggle v-model="mobileData" label="Use Mobile Data" />
+                <q-toggle v-model="bluetooth" label="Bluetooth" />
+              </div>
+
+              <q-separator vertical inset class="q-mx-lg" />
+
+              <div class="column items-center">
+                <q-avatar size="72px">
+                  <img src="https://cdn.quasar.dev/img/avatar4.jpg" />
+                </q-avatar>
+
+                <div class="text-subtitle1 q-mt-md q-mb-xs">John Doe</div>
+
+                <q-btn
+                  color="primary"
+                  label="Logout"
+                  push
+                  size="sm"
+                  v-close-popup
+                />
+              </div>
             </div>
-
-            <q-separator vertical inset class="q-mx-lg" />
-
-            <div class="column items-center">
-              <q-avatar size="72px">
-                <img :src="avatar" />
-              </q-avatar>
-
-              <div class="text-subtitle1 q-mt-md q-mb-xs">{{ username }}</div>
-
-              <q-btn
-                color="primary"
-                label="Logout"
-                push
-                size="sm"
-                v-close-popup
-                @click="logout"
-              />
-            </div>
-          </div>
-        </q-btn-dropdown>
+          </q-menu>
+        </q-btn>
       </q-toolbar>
     </q-header>
 
@@ -203,7 +207,7 @@
           <q-list>
             <q-item>
               <q-toggle
-                v-model="darkmode"
+                v-model="darkmode_model"
                 checked-icon="check"
                 color="green"
                 unchecked-icon="clear"
@@ -229,14 +233,13 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue';
-import { Dark } from 'quasar';
-import { useQuasar, QSpinnerGears, setCssVar } from 'quasar';
+import { ref } from 'vue';
+import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
-import { useAuthStore } from 'stores/authenticated.ts';
+import { useUserStore } from 'stores/user.ts';
 import { useSettingsStore } from 'stores/settings';
-import router from 'src/router/index.ts';
 import ParticlesBG from 'components/ParticlesBG.vue';
+import { defaultUser, serializeUser } from 'src/models';
 
 export default {
   components: {
@@ -244,11 +247,10 @@ export default {
   },
 
   setup() {
-    const auth_store = useAuthStore();
-    const settings_store = useSettingsStore();
+    const userStore = useUserStore();
+    const settingsStore = useSettingsStore();
     const miniState = ref(true);
     const q = useQuasar();
-    var darkmode = ref(settings_store.darkmode_state);
     if (q.screen.width < 600) {
       var rightDrawer = ref(false);
       var leftDrawer = ref(false);
@@ -261,23 +263,20 @@ export default {
       background_animation: ref(false),
       leftDrawerMini: ref(true),
       leftDrawer,
-      // layout & styling
-      settings_store,
-      auth_store,
+
+      darkmode_model: ref(settingsStore.darkmode_state),
+      settingsStore,
+      userStore,
       q,
-      darkmode,
       rightDrawer,
       miniState,
       loading: ref(false),
-
-      username: ref('SomeUser'),
-      avatar: ref('https://media.kurtn3x.xyz/test/avatar.png'),
-      avatar_img: ref('https://media.kurtn3x.xyz/test/avatar.png'),
+      user: userStore.user,
     };
   },
   /*
   beforeCreate() {
-    if (!this.auth_store.auth_state) {
+    if (!this.userStore.auth_state) {
       const q = useQuasar();
       this.$router.push('/');
       q.notify({
@@ -291,12 +290,14 @@ export default {
   },
 */
   created() {
-    this.getMe();
+    if (!this.user.feched) {
+      this.getMe();
+    }
   },
 
   computed: {
-    authenticated() {
-      return true;
+    darkmode() {
+      return this.settingsStore.darkmode_state;
     },
     mobile() {
       if (this.q.screen.width < 600) {
@@ -309,7 +310,7 @@ export default {
 
   methods: {
     darkmodeChanged() {
-      this.settings_store.darkmode = this.darkmode;
+      this.settingsStore.darkmode = this.darkmode_model;
     },
     toogleBackgroundAnimation(bg_val) {
       this.$refs.backgroundAnimation.toogle_active(bg_val);
@@ -335,7 +336,7 @@ export default {
         .post('/auth/logout', '', config)
         .then((response) => {
           if (response.status == 200) {
-            this.auth_store.authenticated = false;
+            this.userStore.authenticated = false;
             this.$router.push('/');
           }
         })
@@ -353,39 +354,17 @@ export default {
         .get('/profile/user', config)
         .then((response) => {
           if (response.status == 200) {
-            this.username = response.data.username;
-            if (response.data.profile.avatar == null) {
-              this.avatar = 'https://media.kurtn3x.xyz/default.png';
-              this.avatar_img =
-                'img:' + 'https://media.kurtn3x.xyz/default.png';
-            } else {
-              var temp = response.data.profile.avatar.split('/');
-              this.avatar =
-                'https://media.kurtn3x.xyz/' +
-                temp[2] +
-                '/' +
-                temp[3] +
-                '/' +
-                temp[4];
-              this.avatar_img =
-                'img:' +
-                'https://media.kurtn3x.xyz/' +
-                temp[2] +
-                '/' +
-                temp[3] +
-                '/' +
-                temp[4];
-            }
+            this.user = serializeUser(response.data);
+            this.userStore.setUser(this.user);
           } else {
-            this.username = 'SomeUser';
-            this.avatar = 'https://media.kurtn3x.xyz/default.png';
-            this.avatar_img = 'img:' + 'https://media.kurtn3x.xyz/default.png';
+            this.user = defaultUser();
+            this.notify('negative', 'Something went wrong with the API :/');
           }
         })
         .catch((error) => {
-          this.username = 'SomeUser';
-          this.avatar = 'https://media.kurtn3x.xyz/default.png';
-          this.avatar_img = 'img:' + 'https://media.kurtn3x.xyz/default.png';
+          this.user = defaultUser();
+          this.notify('negative', 'Something went wrong with the API :/');
+          console.log(error);
         });
     },
   },

@@ -78,7 +78,7 @@
             <div class="background-photo">
               <div class="default-background">
                 <q-img
-                  :src="this.background_avatar"
+                  :src="this.user.background"
                   style="height: 200px"
                 ></q-img>
               </div>
@@ -92,31 +92,33 @@
                     size="120px"
                     text-color="white"
                   >
-                    <img :src="this.avatar"
+                    <img :src="this.user.avatar"
                   /></q-avatar>
                 </div>
               </div>
-              <div class="text-weight-bold text-h6 q-pt-xl">{{ username }}</div>
+              <div class="text-weight-bold text-h6 q-pt-xl">
+                {{ user.username }}
+              </div>
               <div class="user-info q-mt-lg">
                 <div class="row justify-between">
                   <label class="text-h6 text-weight-bolder">First Name:</label>
-                  <p class="text-h6">{{ first_name }}</p>
+                  <p class="text-h6">{{ user.first_name }}</p>
                 </div>
                 <div class="row justify-between">
                   <label class="text-h6 text-weight-bolder">Last Name:</label>
-                  <p class="text-h6">{{ last_name }}</p>
+                  <p class="text-h6">{{ user.last_name }}</p>
                 </div>
                 <div class="row justify-between">
                   <label class="text-h6 text-left text-weight-bolder"
                     >Mobile Number:</label
                   >
-                  <p class="text-h6 text-right">{{ phone }}</p>
+                  <p class="text-h6 text-right">{{ user.phone }}</p>
                 </div>
                 <div class="column">
                   <label class="text-h6 text-left text-weight-bolder"
                     >Bio:</label
                   >
-                  <p class="text-h6 text-left">{{ bio }}</p>
+                  <p class="text-h6 text-left">{{ user.bio }}</p>
                 </div>
               </div>
             </div>
@@ -133,25 +135,6 @@
             "
           >
             <div class="text-h4 q-mb-md">Account Settings</div>
-            <div class="q-pl-none q-pt-md">
-              <q-table
-                :rows="testthing"
-                :columns="columns"
-                flat
-                square
-                hide-header
-                hide-bottom
-                separator="vertical"
-                :class="
-                  darkmode
-                    ? 'text-light bg-background-dark'
-                    : 'text-dark bg-background-light'
-                "
-                table-style="max-width:700px"
-              >
-                <!-- https://codepen.io/metalsadman/pen/ZgKexK -->
-              </q-table>
-            </div>
           </q-tab-panel>
 
           <q-tab-panel
@@ -291,95 +274,41 @@
 import { ref, reactive } from 'vue';
 import { useQuasar, QSpinnerGears } from 'quasar';
 import { api } from 'boot/axios';
-import { useAuthStore } from 'stores/authenticated.ts';
+import { useUserStore } from 'stores/user.ts';
 import { useSettingsStore } from 'stores/settings';
-const columns = [
-  {
-    name: 'key',
-    align: 'left',
-    field: 'key',
-    classes: 'text-weight-bolder',
-    style: {
-      width: '100px',
-      fontSize: '1.2em',
-    },
-  },
-
-  {
-    name: 'value',
-    align: 'left',
-    field: 'value',
-    classes: 'text-weight-bolder',
-    style: {
-      width: '100px',
-      fontSize: '1.2em',
-    },
-  },
-];
+import { defaultUser, serializeUser } from 'src/models';
 
 export default {
   name: 'SettingsView',
-  data() {
-    return {
-      rows: [
-        {
-          key: 'Userid',
-          value: 'Fetching',
-        },
-        {
-          key: 'Username',
-          value: 'Fetching',
-        },
-        {
-          key: 'E-Mail',
-          value: 'Fetching',
-        },
-        {
-          key: 'Role',
-          value: 'Fetching',
-        },
-        {
-          key: 'Groups',
-          value: 'Fetching',
-        },
-      ],
-    };
-  },
+
   setup() {
-    const settings_store = useSettingsStore();
+    const settingsStore = useSettingsStore();
+    const userStore = useUserStore();
     const q = useQuasar();
+
     return {
+      user: userStore.user,
       theme: ref('default'),
-      columns,
       tab: ref('start'),
       splitterModel: ref(20),
-      settings_store,
+      settingsStore,
       q,
+      userStore,
       loading: ref(false),
-      username: ref('SomeUser'),
-      avatar: ref('https://media.kurtn3x.xyz/test/avatar.png'),
-      background_avatar: ref(''),
-      userid: ref(''),
-      email: ref(''),
-      role: ref(''),
-      group: ref(''),
-      last_name: ref(''),
-      first_name: ref(''),
-      bio: ref(''),
-      phone: ref(''),
       test_darkmode: ref(false),
     };
   },
+
   created() {
-    this.getMe();
+    if (!this.user.feched) {
+      console.log(this.user.avatar);
+      this.getMe();
+    }
   },
 
   computed: {
-    testthing() {
-      return this.rows;
-    },
     darkmode() {
-      return this.settings_store.darkmode;
+      return this.settingsStore.darkmode;
     },
     small() {
       if (this.q.screen.width < 1024) {
@@ -391,22 +320,20 @@ export default {
   },
 
   methods: {
-    setTheme(theme) {
-      document.body.setAttribute('data-theme', theme);
-    },
-    deleteRow(props) {
+    notify(type, message) {
       this.q.notify({
-        type: 'negative',
-        multiline: true,
-        message: `I'll delete row data => ${JSON.stringify(props.row)
-          .split(',')
-          .join(', ')}`,
-        timeout: 2000,
+        type: type,
+        message: message,
+        progress: true,
+        multiLine: true,
       });
     },
-    test() {
-      this.rows[0].value = 777;
+    setTheme(theme) {
+      document.body.setAttribute('data-theme', theme);
+      this.settingsStore.theme = theme;
+      console.log(this.settingsStore.theme);
     },
+
     getMe() {
       let config = {
         withCredentials: true,
@@ -418,72 +345,18 @@ export default {
         .get('/profile/user', config)
         .then((response) => {
           if (response.status == 200) {
-            console.log(response);
-            this.rows[0].value = this.userid = response.data.profile.id;
-            this.rows[1].value = this.username = response.data.username;
-            this.rows[2].value = this.email = response.data.email;
-            this.rows[3].value = this.role = 'Placeholder';
-            this.rows[4].value = this.group = 'Placeholder';
-
-            if (response.data.profile.background == null) {
-              this.background_avatar =
-                'https://media.kurtn3x.xyz/background.png';
-            } else {
-              var temp = response.data.profile.background.split('/');
-              this.background_avatar =
-                'https://media.kurtn3x.xyz/' +
-                temp[2] +
-                '/' +
-                temp[3] +
-                '/' +
-                temp[4];
-            }
-
-            if (response.data.profile.avatar == null) {
-              this.avatar = 'https://media.kurtn3x.xyz/default.png';
-            } else {
-              var temp = response.data.profile.avatar.split('/');
-              this.avatar =
-                'https://media.kurtn3x.xyz/' +
-                temp[2] +
-                '/' +
-                temp[3] +
-                '/' +
-                temp[4];
-            }
-            this.bio = response.data.profile.bio;
-            this.first_name = response.data.profile.first_name;
-            this.last_name = response.data.profile.last_name;
-
-            console.log(this.bio);
+            this.user = serializeUser(response.data);
+            this.userStore.setUser(this.user);
+            console.log(this.user.avatar);
           } else {
-            this.rows[0].value = this.userid = 1;
-            this.rows[1].value = this.username = 'SomeUser';
-            this.rows[2].value = this.email = 'SomeEmail';
-            this.rows[3].value = this.role = 'SomeRoles';
-            this.rows[4].value = this.group = 'SomeGroup';
-            this.first_name = 'SomeName';
-            this.last_name = 'SomeName';
-            this.phone = '0000000000';
-            this.bio = 'Hi, this is my bio!';
-            this.avatar = 'https://media.kurtn3x.xyz/default.png';
-            this.background_avatar = 'https://media.kurtn3x.xyz/background.png';
+            this.user = defaultUser();
+            this.notify('negative', 'Something went wrong with the API :/');
           }
         })
         .catch((error) => {
+          this.user = defaultUser();
+          this.notify('negative', 'Something went wrong with the API :/');
           console.log(error);
-          this.rows[0].value = this.userid = 1;
-          this.rows[1].value = this.username = 'SomeUser';
-          this.rows[2].value = this.email = 'SomeEmail';
-          this.rows[3].value = this.role = 'SomeRoles';
-          this.rows[4].value = this.group = 'SomeGroup';
-          this.avatar = 'https://media.kurtn3x.xyz/default.png';
-          this.background_avatar = 'https://media.kurtn3x.xyz/background.png';
-          this.first_name = 'SomeName';
-          this.last_name = 'SomeName';
-          this.phone = '0000000000';
-          this.bio =
-            'Hi, this i              Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quispraesentium cumque magnam odio iure quidem, quod illum numquampossimus obcaecati commodi minima assumenda consectetur culpa fuganulla ullam. In, libero.s my bio! ';
         });
     },
   },
