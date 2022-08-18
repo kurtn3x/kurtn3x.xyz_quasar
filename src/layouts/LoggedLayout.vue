@@ -231,7 +231,7 @@
 <script>
 import { ref, computed } from 'vue';
 import { Dark } from 'quasar';
-import { useQuasar, QSpinnerGears } from 'quasar';
+import { useQuasar, QSpinnerGears, setCssVar } from 'quasar';
 import { api } from 'boot/axios';
 import { useAuthStore } from 'stores/authenticated.ts';
 import { useSettingsStore } from 'stores/settings';
@@ -354,20 +354,38 @@ export default {
         .then((response) => {
           if (response.status == 200) {
             this.username = response.data.username;
-            this.avatar = response.data.avatar;
-            this.avatar_img = 'img:' + response.data.avatar;
+            if (response.data.profile.avatar == null) {
+              this.avatar = 'https://media.kurtn3x.xyz/default.png';
+              this.avatar_img =
+                'img:' + 'https://media.kurtn3x.xyz/default.png';
+            } else {
+              var temp = response.data.profile.avatar.split('/');
+              this.avatar =
+                'https://media.kurtn3x.xyz/' +
+                temp[2] +
+                '/' +
+                temp[3] +
+                '/' +
+                temp[4];
+              this.avatar_img =
+                'img:' +
+                'https://media.kurtn3x.xyz/' +
+                temp[2] +
+                '/' +
+                temp[3] +
+                '/' +
+                temp[4];
+            }
           } else {
             this.username = 'SomeUser';
-            this.avatar = 'https://media.kurtn3x.xyz/test/avatar.png';
-            this.avatar_img =
-              'img:' + 'https://media.kurtn3x.xyz/test/avatar.png';
+            this.avatar = 'https://media.kurtn3x.xyz/default.png';
+            this.avatar_img = 'img:' + 'https://media.kurtn3x.xyz/default.png';
           }
         })
         .catch((error) => {
           this.username = 'SomeUser';
-          this.avatar = 'https://media.kurtn3x.xyz/test/avatar.png';
-          this.avatar_img =
-            'img:' + 'https://media.kurtn3x.xyz/test/avatar.png';
+          this.avatar = 'https://media.kurtn3x.xyz/default.png';
+          this.avatar_img = 'img:' + 'https://media.kurtn3x.xyz/default.png';
         });
     },
   },
@@ -413,9 +431,5 @@ export default {
   right: -14px;
   top: 45%;
   transition: all 0.1s linear;
-}
-
-.q-item.q-router-link--active {
-  color: #1e70cecc;
 }
 </style>

@@ -12,7 +12,7 @@
 <script>
 import { defineComponent } from 'vue';
 import 'https://cdn.jsdelivr.net/npm/pathseg@1.2.0/pathseg.min.js';
-import { useQuasar } from 'quasar';
+import { useQuasar, setCssVar } from 'quasar';
 import { ref } from 'vue';
 import { api } from 'boot/axios';
 import { useAuthStore } from 'stores/authenticated';
