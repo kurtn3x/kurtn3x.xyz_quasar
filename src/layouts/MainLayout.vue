@@ -63,7 +63,10 @@
     <q-page-container>
       <q-dialog v-model="forgot_popup">
         <q-card bordered>
-          <p class="text-weight-bolder text-primary q-pt-md q-pl-md">
+          <p
+            class="text-weight-bolder q-pt-md q-pl-md"
+            :class="darkmode ? 'text-grey-2' : 'text-grey-8'"
+          >
             Request your Account Data
           </p>
           <q-card-section>
@@ -100,6 +103,7 @@
                 unchecked-icon="clear"
                 label="Request password reset link"
                 v-model="request_password"
+                :class="darkmode ? 'text-grey-2' : 'text-grey-8'"
               />
               <p></p>
               <q-toggle
@@ -108,6 +112,7 @@
                 unchecked-icon="clear"
                 label="Request username"
                 v-model="request_username"
+                :class="darkmode ? 'text-grey-2' : 'text-grey-8'"
               />
               <p
                 v-if="request_username && request_password"
@@ -142,10 +147,10 @@
           <q-tabs
             v-model="login_tab"
             dense
-            class="text-grey"
-            active-color="primary"
-            indicator-color="primary"
+            :class="darkmode ? 'text-grey-2' : 'text-grey-8'"
             align="justify"
+            :active-color="darkmode ? 'text-grey-2' : 'text-grey-8'"
+            :indicator-color="darkmode ? 'text-grey-2' : 'text-grey-8'"
           >
             <q-tab name="login" label="Login" />
             <q-tab name="register" label="Register" />
@@ -156,7 +161,10 @@
           <q-tab-panels v-model="login_tab" animated>
             <q-tab-panel name="login">
               <q-card square class="no-shadow" style="width: 100%">
-                <p class="text-weight-bolder text-primary">
+                <p
+                  class="text-weight-bolder"
+                  :class="darkmode ? 'text-grey-2' : 'text-grey-8'"
+                >
                   Login to your account
                 </p>
                 <q-card-section>
@@ -216,7 +224,8 @@
                     </q-card-actions>
                     <q-card-section class="q-pa-none">
                       <q-btn
-                        class="text-grey-6 full-width"
+                        class="full-width"
+                        :class="darkmode ? 'text-grey-2' : 'text-grey-8'"
                         flat
                         size="md"
                         @click="forgot_popup = !forgot_popup"
@@ -231,7 +240,10 @@
 
             <q-tab-panel name="register">
               <q-card square class="no-shadow" style="width: 100%">
-                <p class="text-weight-bolder text-primary">
+                <p
+                  class="text-weight-bolder"
+                  :class="darkmode ? 'text-grey-2' : 'text-grey-8'"
+                >
                   Register a new Account
                 </p>
                 <q-card-section>
@@ -610,7 +622,7 @@ export default {
                 actions: [
                   {
                     label: 'Request new verification link',
-                    color: 'primary',
+                    type: 'info',
                     handler: () => {
                       const formData = {
                         username: this.saved_username,

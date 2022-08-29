@@ -24,6 +24,8 @@ $themes: (
 
     // background used in light mode
     background-light: #f8e7e3,
+
+    active: #86a5d9,
   ),
   'classic': (
     // keep as is
@@ -64,7 +66,7 @@ $themes: (
 
     .q-field__control,
     .q-item.q-router-link--active {
-      color: map.get($colors, primary) !important;
+      color: map.get($colors, active) !important;
     }
   }
 }

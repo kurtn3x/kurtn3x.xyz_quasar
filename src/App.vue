@@ -22,10 +22,13 @@ export default defineComponent({
     const q = useQuasar();
     const settingsStore = useSettingsStore();
     const userStore = useUserStore();
+    console.log(settingsStore.darkmode_state);
     if (settingsStore.darkmode_state == null) {
-      q.dark.set(true);
       settingsStore.darkmode = true;
     }
+    console.log(settingsStore.darkmode_state);
+
+    q.dark.set(settingsStore.darkmode_state);
 
     userStore.$subscribe((mutation, state) => {
       LocalStorage.set('user', state.user);

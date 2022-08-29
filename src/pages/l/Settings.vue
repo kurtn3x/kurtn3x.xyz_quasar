@@ -74,54 +74,165 @@
           >
             <div class="text-h4 q-mb-md">Profile Settings</div>
             <!--  -->
+            <!--
+            <q-parallax
+              :src="this.user.background"
+              style="height: 400px"
+              @mouseover="background_hover = true"
+              @mouseleave="background_hover = false"
+              :style="background_hover ? 'filter: brightness(50%);' : ''"
+            />
+            <q-avatar
+              round="round"
+              size="150px"
+              text-color="white"
+              @mouseover="avatar_hover = true"
+              @mouseleave="avatar_hover = false"
+              style="top: -2em; left: 0.1em"
+            >
+              <img
+                :src="this.user.avatar"
+                :style="avatar_hover ? 'filter: brightness(50%);' : ''" />
+              <q-file
+                v-if="avatar_hover"
+                v-model="image"
+                borderless
+                hide-bottom-space
+                style="
+                  display: inline-block;
+                  position: absolute;
+                  z-index: 100;
+                  height: 120px;
+                  width: 120px;
+                "
+                @change="updateFile()"
+                color="transparent"
+                bg-color="transparent"
+              >
+                <q-icon
+                  name="attach_file"
+                  color="black"
+                  class="q-mr-xl"
+                  style="height: 120px"
+                  size="22px"
+                /> </q-file
+            ></q-avatar>
 
-            <div class="background-photo">
-              <div class="default-background">
-                <q-img
-                  :src="this.user.background"
-                  style="height: 200px"
-                ></q-img>
-              </div>
-            </div>
-            <div class="profile-container">
-              <div class="profile-photo text-center">
-                <div class="default-user-image">
-                  <q-avatar
-                    round="round"
-                    font-size="100px"
-                    size="120px"
-                    text-color="white"
-                  >
-                    <img :src="this.user.avatar"
-                  /></q-avatar>
+            <q-card
+              class="profile-card"
+              v-if="!small"
+              :class="darkmode ? 'bg-dark text-light' : 'bg-light text-dark'"
+            >
+              <q-card-section
+                :class="darkmode ? 'bg-primarydark' : 'bg-primary'"
+              >
+                <div class="text-weight-bolder text-h4 q-pa-xs q-pl-md">
+                  {{ user.username }}
                 </div>
-              </div>
-              <div class="text-weight-bold text-h6 q-pt-xl">
-                {{ user.username }}
-              </div>
-              <div class="user-info q-mt-lg">
+              </q-card-section>
+              <q-card-section>
                 <div class="row justify-between">
-                  <label class="text-h6 text-weight-bolder">First Name:</label>
-                  <p class="text-h6">{{ user.first_name }}</p>
+                  <p class="text-h6 q-pt-md q-pl-lg">{{ user.first_name }}</p>
+
+                  <p class="text-h6 q-pt-md q-pa-md">{{ user.last_name }}</p>
+
+                  <p class="text-h6 q-pt-md q-pa-md">{{ user.phone }}</p>
+
+                  <p class="text-h6 q-pt-md q-pa-md">Some Country</p>
+
+                  <p class="text-h6 q-pt-md q-pa-md">Flag</p>
                 </div>
-                <div class="row justify-between">
-                  <label class="text-h6 text-weight-bolder">Last Name:</label>
-                  <p class="text-h6">{{ user.last_name }}</p>
+              </q-card-section>
+              <q-card-section>
+                <div class="row justify-start q-pt-xl">
+                  <p class="text-body q-pt-md q-pl-lg">Joined: 26.02.2002</p>
+
+                  <p class="text-body-2 q-pt-md q-pa-md">
+                    Total Posts: 9000000
+                  </p>
+
+                  <p class="text-body-2 q-pt-md q-pa-md">Status</p>
                 </div>
-                <div class="row justify-between">
-                  <label class="text-h6 text-left text-weight-bolder"
-                    >Mobile Number:</label
-                  >
-                  <p class="text-h6 text-right">{{ user.phone }}</p>
-                </div>
-                <div class="column">
-                  <label class="text-h6 text-left text-weight-bolder"
-                    >Bio:</label
-                  >
-                  <p class="text-h6 text-left">{{ user.bio }}</p>
-                </div>
+              </q-card-section>
+            </q-card> -->
+
+            <q-card
+              class="profile-card2"
+              flat
+              bordered
+              style="background-color: transparent"
+            >
+              <q-parallax
+                :src="this.user.background"
+                @mouseover="background_hover = true"
+                @mouseleave="background_hover = false"
+                :style="background_hover ? 'filter: brightness(50%);' : ''"
+                style="height: 200px"
+              />
+
+              <q-avatar
+                round="round"
+                size="150px"
+                text-color="white"
+                @mouseover="avatar_hover = true"
+                @mouseleave="avatar_hover = false"
+                style="
+                  top: -1.2em;
+                  left: 0.1em;
+                  z-index: 9999999999999999999999999;
+                "
+                class="justify-center"
+              >
+                <img
+                  :src="this.user.avatar"
+                  :style="avatar_hover ? 'filter: brightness(50%);' : ''" />
+                <q-file
+                  v-if="avatar_hover"
+                  v-model="image"
+                  borderless
+                  hide-bottom-space
+                  style="
+                    display: inline-block;
+                    position: absolute;
+                    z-index: 100;
+                    height: 120px;
+                    width: 120px;
+                  "
+                  @change="updateFile()"
+                  color="transparent"
+                  bg-color="transparent"
+                >
+                  <q-icon
+                    name="attach_file"
+                    color="black"
+                    class="q-mr-xl"
+                    style="height: 120px"
+                    size="22px"
+                  /> </q-file
+              ></q-avatar>
+              <div style="position: relative; top: -20em" v-if="!small">
+                <q-card-section
+                  style="
+                    left: 15em;
+                    max-width: 400px;
+                    min-width: 300px;
+                    top: -5em;
+                  "
+                >
+                  <div class="text-overline text-orange-9">User userid</div>
+                  <div class="text-h5 q-mt-sm q-mb-xs">Username</div>
+                  <div class="text-caption text-grey">
+                    Name etc bla bli blub djasid dsanda dsjuiadiu dsabdiua
+                  </div>
+                </q-card-section>
+                <q-card-section>
+                  <div class="text-h6 q-mt-sm q-mb-xs">Bio</div>
+                  <div class="text-caption text-grey">
+                    Name etc bla bli blub djasid dsanda dsjuiadiu dsabdiua
+                  </div>
+                </q-card-section>
               </div>
-            </div>
+            </q-card>
 
             <!--  -->
           </q-tab-panel>
@@ -296,12 +407,13 @@ export default {
       userStore,
       loading: ref(false),
       test_darkmode: ref(false),
+      avatar_hover: ref(false),
+      background_hover: ref(false),
     };
   },
 
   created() {
     if (!this.user.feched) {
-      console.log(this.user.avatar);
       this.getMe();
     }
   },
@@ -320,6 +432,9 @@ export default {
   },
 
   methods: {
+    changeBackground() {
+      console.log('bla');
+    },
     notify(type, message) {
       this.q.notify({
         type: type,
@@ -331,7 +446,6 @@ export default {
     setTheme(theme) {
       document.body.setAttribute('data-theme', theme);
       this.settingsStore.theme = theme;
-      console.log(this.settingsStore.theme);
     },
 
     getMe() {
@@ -347,7 +461,6 @@ export default {
           if (response.status == 200) {
             this.user = serializeUser(response.data);
             this.userStore.setUser(this.user);
-            console.log(this.user.avatar);
           } else {
             this.user = defaultUser();
             this.notify('negative', 'Something went wrong with the API :/');
@@ -364,20 +477,26 @@ export default {
 </script>
 
 <style>
-.profile-container {
-  position: relative;
-  text-align: center;
-  background: rgba(0, 0, 0, 0);
-  top: -10em;
-}
-.user-info {
-  margin: 2em auto;
-  max-width: 24em;
-  position: relative;
-}
 .my-card {
   width: 100%;
   max-width: 250px;
+}
+
+.profile-card {
+  position: relative;
+  top: -38em;
+  left: 6em;
+  text-align: start;
+  min-height: 350px;
+  max-height: 500px;
+  max-width: 70%;
+  margin: 0 auto;
+}
+
+.profile-card2 {
+  min-height: 350px;
+  max-height: 500px;
+  margin: 0 auto;
 }
 
 .default-light {
