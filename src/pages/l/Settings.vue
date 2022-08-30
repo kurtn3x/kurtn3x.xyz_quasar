@@ -47,7 +47,7 @@
         <q-tab-panels
           v-model="tab"
           animated
-          swipeable
+          swipeable="false"
           vertical
           :class="
             darkmode
@@ -164,8 +164,6 @@
             >
               <q-parallax
                 :src="this.user.background"
-                @mouseover="background_hover = true"
-                @mouseleave="background_hover = false"
                 :style="background_hover ? 'filter: brightness(50%);' : ''"
                 style="height: 200px"
               />
@@ -204,33 +202,68 @@
                 >
                   <q-icon
                     name="attach_file"
-                    color="black"
+                    color="white"
                     class="q-mr-xl"
                     style="height: 120px"
                     size="22px"
                   /> </q-file
               ></q-avatar>
-              <div style="position: relative; top: -20em" v-if="!small">
+              <div
+                style="position: relative; top: -25em; height: 200px"
+                v-if="!small"
+                @mouseover="background_hover = true"
+                @mouseleave="background_hover = false"
+              >
+                <q-file
+                  v-if="background_hover"
+                  v-model="image"
+                  borderless
+                  hide-bottom-space
+                  style="
+                    position: absolute;
+                    z-index: 100;
+                    height: 100%;
+                    width: 100%;
+                  "
+                  @change="updateFile()"
+                  color="transparent"
+                  bg-color="transparent"
+                >
+                  <q-icon name="attach_file" color="white" size="22px" />
+                </q-file>
                 <q-card-section
+                  :style="
+                    background_hover ? 'cursor: pointer' : 'cursor:default'
+                  "
                   style="
                     left: 15em;
                     max-width: 400px;
                     min-width: 300px;
-                    top: -5em;
+                    top: 0em;
                   "
                 >
-                  <div class="text-overline text-orange-9">User userid</div>
-                  <div class="text-h5 q-mt-sm q-mb-xs">Username</div>
-                  <div class="text-caption text-grey">
-                    Name etc bla bli blub djasid dsanda dsjuiadiu dsabdiua
+                  <div class="text-h6 text-orange">#1111111</div>
+                  <div
+                    :class="darkmode ? 'text-primary' : 'text-primarydark'"
+                    class="text-h4 q-mt-sm q-mb-xs text-weight-bolder"
+                  >
+                    Usernamessssssssssssssssss
                   </div>
+                  <div class="text-h6 q-mt-md text-weight-bold">Role</div>
                 </q-card-section>
+              </div>
+              <div style="position: relative; top: -25em" v-if="!small">
                 <q-card-section>
                   <div class="text-h6 q-mt-sm q-mb-xs">Bio</div>
                   <div class="text-caption text-grey">
                     Name etc bla bli blub djasid dsanda dsjuiadiu dsabdiua
                   </div>
                 </q-card-section>
+                <q-card-actions>
+                  <div class="absolute-bottom text-subtitle2 text-center">
+                    Title
+                  </div>
+                </q-card-actions>
               </div>
             </q-card>
 
@@ -276,75 +309,81 @@
                 </q-tooltip>
               </q-btn>
             </div>
-            <div class="q-pa-md row items-start q-gutter-md">
-              <!-- DEFAULT THEME -->
+            <q-scroll-area style="height: 500px; max-width: 10000px">
+              <div class="q-pa-md row items-start q-gutter-md">
+                <!-- DEFAULT THEME -->
 
-              <q-card
-                class="my-card"
-                :class="test_darkmode ? 'default-dark' : 'default-light'"
-                bordered
-              >
-                <q-card-section
-                  :class="
-                    test_darkmode ? 'default-primarydark' : 'default-primary'
-                  "
-                  class="row"
+                <q-card
+                  class="my-card"
+                  :class="test_darkmode ? 'default-dark' : 'default-light'"
+                  bordered
                 >
-                  <div class="text-h6">Default Theme</div>
-                  <q-btn
-                    class="q-ml-lg"
-                    flat
-                    icon="lightbulb"
-                    @click="test_darkmode = !test_darkmode"
-                  />
-                </q-card-section>
-                <q-card-section>
-                  <p class="q-mb-none">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
-                    ac lobortis nunc, sit amet egestas tortor. Donec
-                    pellentesque dolor ac urna efficitur maximus.
-                  </p>
-                </q-card-section>
+                  <q-card-section
+                    :class="
+                      test_darkmode ? 'default-primarydark' : 'default-primary'
+                    "
+                    class="row"
+                  >
+                    <div class="text-h6">Default Theme</div>
+                    <q-btn
+                      class="q-ml-lg"
+                      flat
+                      icon="lightbulb"
+                      @click="test_darkmode = !test_darkmode"
+                    />
+                  </q-card-section>
+                  <q-card-section>
+                    <p class="q-mb-none">
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                      Sed ac lobortis nunc, sit amet egestas tortor. Donec
+                      pellentesque dolor ac urna efficitur maximus.
+                    </p>
+                  </q-card-section>
 
-                <q-card-actions vertical class="q-mt-none">
-                  <q-btn stretch flat @click="setTheme('default')"> Use </q-btn>
-                </q-card-actions>
-              </q-card>
+                  <q-card-actions vertical class="q-mt-none">
+                    <q-btn stretch flat @click="setTheme('default')">
+                      Use
+                    </q-btn>
+                  </q-card-actions>
+                </q-card>
 
-              <!-- CLASSIC THEME -->
+                <!-- CLASSIC THEME -->
 
-              <q-card
-                class="my-card"
-                :class="test_darkmode ? 'classic-dark' : 'classic-light'"
-                bordered
-              >
-                <q-card-section
-                  :class="
-                    test_darkmode ? 'classic-primarydark' : 'classic-primary'
-                  "
-                  class="row"
+                <q-card
+                  class="my-card"
+                  :class="test_darkmode ? 'classic-dark' : 'classic-light'"
+                  bordered
                 >
-                  <div class="text-h6">Classic Theme</div>
-                  <q-btn
-                    class="q-ml-lg"
-                    flat
-                    icon="lightbulb"
-                    @click="test_darkmode = !test_darkmode"
-                  />
-                </q-card-section>
-                <q-card-section>
-                  <p class="q-mb-none">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
-                    ac lobortis nunc, sit amet egestas tortor. Donec
-                    pellentesque dolor ac urna efficitur maximus.
-                  </p>
-                </q-card-section>
+                  <q-card-section
+                    :class="
+                      test_darkmode ? 'classic-primarydark' : 'classic-primary'
+                    "
+                    class="row"
+                  >
+                    <div class="text-h6">Classic Theme</div>
+                    <q-btn
+                      class="q-ml-lg"
+                      flat
+                      icon="lightbulb"
+                      @click="test_darkmode = !test_darkmode"
+                    />
+                  </q-card-section>
+                  <q-card-section>
+                    <p class="q-mb-none">
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                      Sed ac lobortis nunc, sit amet egestas tortor. Donec
+                      pellentesque dolor ac urna efficitur maximus.
+                    </p>
+                  </q-card-section>
 
-                <q-card-actions vertical class="q-mt-none">
-                  <q-btn stretch flat @click="setTheme('classic')"> Use </q-btn>
-                </q-card-actions>
-              </q-card>
-            </div>
+                  <q-card-actions vertical class="q-mt-none">
+                    <q-btn stretch flat @click="setTheme('classic')">
+                      Use
+                    </q-btn>
+                  </q-card-actions>
+                </q-card>
+              </div>
+            </q-scroll-area>
           </q-tab-panel>
 
           <q-tab-panel
@@ -446,6 +485,11 @@ export default {
     setTheme(theme) {
       document.body.setAttribute('data-theme', theme);
       this.settingsStore.theme = theme;
+      if (this.test_darkmode) {
+        this.settingsStore.darkmode = true;
+      } else {
+        this.settingsStore.darkmode = false;
+      }
     },
 
     getMe() {
@@ -500,12 +544,12 @@ export default {
 }
 
 .default-light {
-  background: #f8e3e3;
+  background: #ffffff;
   color: #1a1c1f;
 }
 .default-dark {
   background: #1a1c1f;
-  color: #f8e3e3;
+  color: #dddddd;
 }
 .default-primary {
   background: #1ecececc;
@@ -513,16 +557,16 @@ export default {
 }
 .default-primarydark {
   background: #1a4158;
-  color: #f8e3e3;
+  color: #d6d6d6;
 }
 
 .classic-light {
-  background: #fafaff;
+  background: #ffffff;
   color: #101010;
 }
 .classic-dark {
   background: #101010;
-  color: #fafaff;
+  color: #ffffff;
 }
 .classic-primary {
   background: #eef0f2;
@@ -530,6 +574,6 @@ export default {
 }
 .classic-primarydark {
   background: #232c33;
-  color: #fafaff;
+  color: #ffffff;
 }
 </style>

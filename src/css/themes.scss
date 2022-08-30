@@ -10,22 +10,23 @@ $themes: (
     warning: #f2c037,
 
     // text color used in darkmode
-    light: #f8e3e3,
+    light: #f5f5f5,
 
     // text color used in light mode
-    dark: #1a1c1f,
+    dark: #202124,
 
     // theme colors
     primary: #1ecece,
     primarydark: #1a4158,
 
     // background used in dark mode
-    background-dark: #1a1c1f,
+    background-dark: #202124,
 
     // background used in light mode
-    background-light: #f8e7e3,
+    background-light: #fff,
 
-    active: #86a5d9,
+    active-dark: #ff0000,
+    active-light: #22ff00,
   ),
   'classic': (
     // keep as is
@@ -39,17 +40,20 @@ $themes: (
     light: #fafaff,
 
     // text color used in light mode
-    dark: #1c1c1c,
+    dark: #202124,
 
     // theme colors
-    primary: #eef0f2,
+    primary: #f9f9f9,
     primarydark: #232c33,
 
     // background used in dark mode
-    background-dark: #1c1c1c,
+    background-dark: #202124,
 
     // background used in light mode
-    background-light: #fafaff,
+    background-light: #fff,
+
+    active-dark: #ff0000,
+    active-light: #22ff00,
   ),
 );
 
@@ -66,7 +70,10 @@ $themes: (
 
     .q-field__control,
     .q-item.q-router-link--active {
-      color: map.get($colors, active) !important;
+      color: map.get($colors, active-light) !important;
+    }
+    .q-item--dark.q-router-link--active {
+      color: map.get($colors, active-dark) !important;
     }
   }
 }

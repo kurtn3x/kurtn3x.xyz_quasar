@@ -85,16 +85,24 @@ export default defineComponent({
   name: 'ParticlesBG',
   setup() {
     var particlesContainer;
-    const settings_store = useSettingsStore();
+    const settingsStore = useSettingsStore();
     return {
       particlesContainer,
-      settings_store,
+      settingsStore,
     };
   },
   computed: {
     darkmode() {
-      return this.settings_store.darkmode;
+      return this.settingsStore.darkmode;
     },
+  },
+
+  updated() {
+    if (this.settingsStore.darkmode) {
+      this.particlesContainer.loadTheme();
+    } else {
+      this.particlesContainer.loadTheme('light');
+    }
   },
 
   watch: {

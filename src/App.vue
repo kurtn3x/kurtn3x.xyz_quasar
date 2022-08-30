@@ -22,11 +22,9 @@ export default defineComponent({
     const q = useQuasar();
     const settingsStore = useSettingsStore();
     const userStore = useUserStore();
-    console.log(settingsStore.darkmode_state);
     if (settingsStore.darkmode_state == null) {
       settingsStore.darkmode = true;
     }
-    console.log(settingsStore.darkmode_state);
 
     q.dark.set(settingsStore.darkmode_state);
 

@@ -2,7 +2,7 @@
   <q-layout view="hHh LpR fff">
     <q-header
       height-hint="98"
-      bordered
+      elevated
       reveal
       :class="
         darkmode ? 'bg-primarydark text-custom_light' : 'bg-primary text-dark'
@@ -19,7 +19,6 @@
           href="https://forum.kurtn3x.xyz"
         />
         <q-space />
-        <q-separator vertical />
 
         <q-btn
           stretch
@@ -31,7 +30,6 @@
             login_tab = 'login';
           "
         />
-        <q-separator vertical />
         <q-btn
           stretch
           flat
@@ -44,19 +42,6 @@
         />
       </q-toolbar>
     </q-header>
-
-    <q-drawer
-      v-model="leftDrawer"
-      side="left"
-      overlay
-      bordered
-      mini
-      mini-to-overlay
-      :width="200"
-      :breakpoint="500"
-    >
-      <!-- drawer content       @click.capture="drawerClick" -->
-    </q-drawer>
 
     <!-- fix  -->
 

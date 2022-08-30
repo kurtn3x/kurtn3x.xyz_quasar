@@ -66,10 +66,17 @@
       side="left"
       behavior="default"
       :mini="leftDrawerMini"
+      @mouseover="leftDrawerMini = false"
+      @mouseout="leftDrawerMini = true"
+      mini-to-overlay
       bordered
       :breakpoint="600"
       :width="217"
-      :class="darkmode ? 'bg-primarydark text-light' : 'bg-primary text-dark'"
+      :class="
+        darkmode
+          ? 'bg-background-dark text-light'
+          : 'bg-background-light text-dark'
+      "
     >
       <q-scroll-area class="fit">
         <q-list padding>
@@ -305,6 +312,12 @@ export default {
       } else {
         return false;
       }
+    },
+  },
+
+  watch: {
+    darkmode(valChanged) {
+      this.darkmode_model = valChanged;
     },
   },
 
