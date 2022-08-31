@@ -1,172 +1,216 @@
 <template>
-  <div class="col-12 col-md-6 flex content-center">
+  <div class="q-ma-md">
     <q-card
-      class="absolute-center"
-      v-bind:style="$q.screen.lt.sm ? { width: '80%' } : { width: '50%' }"
+      class="gt-sm"
+      bordered
+      style="background-color: transparent; max-height: 500px"
     >
-      <q-card-section>
-        <h2
-          class="text-h5 text-center text-uppercase q-my-none text-weight-regular"
+      <q-parallax :src="this.user.background" style="height: 200px" />
+
+      <q-avatar
+        round="round"
+        size="150px"
+        text-color="white"
+        @mouseover="avatar_hover = true"
+        @mouseleave="avatar_hover = false"
+        style="top: -1.17em; left: 0.1em; z-index: 101"
+        class="justify-center"
+      >
+        <img
+          :src="this.user.avatar"
+          :style="avatar_hover ? 'filter: brightness(50%);' : ''" />
+        <q-file
+          v-if="avatar_hover"
+          v-model="image"
+          borderless
+          hide-bottom-space
+          style="
+            display: inline-block;
+            position: absolute;
+            z-index: 100;
+            height: 120px;
+            width: 120px;
+          "
+          @change="updateFile()"
+          color="transparent"
+          bg-color="transparent"
         >
-          Reset your password
-        </h2>
-      </q-card-section>
-      <q-card-section>
-        <q-form class="q-gutter-md" @submit.prevent="forgotReset">
-          <q-input
-            filled
-            v-model="password"
-            label="Your password *"
-            hint="Password"
-            lazy-rules
-            :rules="[
-              (val) => (val && val.length > 0) || 'Please type something',
-              (val) => (val && val.length > 7) || 'At least 8 characters',
-              (val) => /(?=.*[a-z])/.test(val) || 'At least 1 lowercase letter',
-              (val) => /(?=.*[A-Z])/.test(val) || 'At least 1 uppercase letter',
-              (val) => /(?=.*[0-9])/.test(val) || 'At least 1 number',
-            ]"
-            :type="isPwd ? 'password' : 'text'"
-          >
-            <template v-slot:append>
-              <q-icon
-                :name="isPwd ? 'visibility_off' : 'visibility'"
-                class="cursor-pointer"
-                @click="isPwd = !isPwd"
-              />
-            </template>
-          </q-input>
-          <q-input
-            filled
-            v-model="password2"
-            label="Confirm password *"
-            hint="Confirm Password"
-            lazy-rules
-            :rules="[
-              (val) => (val && val.length > 0) || 'Please type something',
-              ,
-              (val) => val == password || 'Passwords do not match',
-            ]"
-            :type="isPwd2 ? 'password' : 'text'"
-          >
-            <template v-slot:append>
-              <q-icon
-                :name="isPwd2 ? 'visibility_off' : 'visibility'"
-                class="cursor-pointer"
-                @click="isPwd2 = !isPwd2"
-              />
-            </template>
-          </q-input>
-          <div>
-            <q-btn
-              class="full-width"
-              color="primary"
-              text-color="dark"
-              label="Change password"
-              type="submit"
-              rounded
-              :loading="loading"
-            ></q-btn>
+          <q-icon
+            name="attach_file"
+            color="white"
+            class="q-mr-xl"
+            style="height: 120px"
+            size="22px"
+          /> </q-file
+      ></q-avatar>
+      <div style="position: relative; top: -25em; height: 200px">
+        <q-card-section
+          style="
+            left: 13em;
+            top: 2.6em;
+            background-color: rgba(255, 255, 255, 0.5);
+            max-width: 400px;
+          "
+          class="relative"
+        >
+          <div class="text-primary text-h4 q-mt-xs q-mb-xs text-weight-bolder">
+            {{ this.user.username }}
           </div>
-        </q-form>
+          <div class="text-caption q-mt-sm text-dark">
+            {{ this.user.first_name }} {{ this.user.last_name }}
+          </div>
+        </q-card-section>
+        <q-card-actions
+          vertical
+          class="absolute-right q-ma-sm"
+          style="background-color: rgba(255, 255, 255, 0.5)"
+        >
+          <q-btn size="lg" flat stretch color="red" icon="favorite" />
+          <q-btn size="lg" flat stretch color="accent" icon="bookmark" />
+          <q-btn size="lg" flat stretch color="primary" icon="share" />
+        </q-card-actions>
+      </div>
+      <div style="position: relative; top: -25em" v-if="!small">
+        <q-card-section>
+          <div class="text-h6 q-mt-sm q-mb-xs">Bio</div>
+          <div class="text-body1 q-ml-xl">
+            {{ this.user.bio }}
+          </div>
+        </q-card-section>
+      </div>
+    </q-card>
+
+    <q-card class="lt-md" bordered style="background-color: transparent">
+      <q-parallax :src="this.user.background" style="height: 200px" />
+
+      <q-avatar
+        round="round"
+        size="150px"
+        text-color="white"
+        style="z-index: 99; top: 0.66em"
+        class="absolute-center"
+      >
+        <img :src="this.user.avatar" />
+      </q-avatar>
+      <q-card-section>
+        <div class="text-primary text-h5 text-center text-weight-bolder lt-md">
+          <a>{{ this.user.username }}</a>
+        </div>
+        <div class="text-center text-caption q-mt-xs">
+          <a>{{ this.user.first_name }} {{ this.user.last_name }} </a>
+        </div>
       </q-card-section>
+      <q-card-section style="padding: 0">
+        <div class="text-h6 q-mb-xs q-ml-sm">Bio</div>
+        <div class="text-left text-body1 q-ml-xl q-mr-sm">
+          {{ this.user.bio }}
+        </div>
+      </q-card-section>
+      <q-card-actions class="q-mt-md row justify-center">
+        <q-btn size="lg" flat stretch color="red" icon="favorite" />
+        <q-btn size="lg" flat stretch color="accent" icon="bookmark" />
+        <q-btn size="lg" flat stretch color="primary" icon="share" />
+      </q-card-actions>
     </q-card>
   </div>
 </template>
 
 <script>
-import { ref } from 'vue';
-import { useQuasar } from 'quasar';
+import { ref, reactive } from 'vue';
+import { useQuasar, QSpinnerGears } from 'quasar';
 import { api } from 'boot/axios';
+import { useUserStore } from 'stores/user.ts';
+import { useSettingsStore } from 'stores/settings';
+import { defaultUser, serializeUser } from 'src/models';
 
 export default {
-  name: 'RestPasswordView',
+  name: 'SettingsView',
+
   setup() {
+    const settingsStore = useSettingsStore();
+    const userStore = useUserStore();
     const q = useQuasar();
 
     return {
+      user: userStore.user,
+      theme: ref('default'),
+      tab: ref('start'),
+      splitterModel: ref(20),
+      settingsStore,
       q,
+      userStore,
       loading: ref(false),
-      password: ref(''),
-      password2: ref(''),
-      isPwd: ref(true),
-      isPwd2: ref(true),
-      token_exist: ref(false),
+      test_darkmode: ref(false),
+      avatar_hover: ref(false),
+      background_hover: ref(false),
     };
   },
-  beforeCreate() {
-    let config = {
-      withCredentials: true,
-      headers: {
-        'X-CSRFToken': this.q.cookies.get('csrftoken'),
-      },
-    };
 
-    var url = window.location;
-    var token = new URLSearchParams(url.search).get('token');
-    const formData = {
-      token: token,
-    };
-
-    api
-      .post('/auth/password_reset/validate_token', formData, config)
-      .then((response) => {
-        if (response.status == 200) {
-          this.token_exist = true;
-        } else {
-          this.token_exist = false;
-        }
-      })
-      .catch((error) => {
-        this.token_exist = false;
-      });
+  created() {
+    if (!this.user.feched) {
+      this.getMe();
+    }
   },
+
+  computed: {
+    darkmode() {
+      return this.settingsStore.darkmode;
+    },
+    small() {
+      if (this.q.screen.width < 1024) {
+        return true;
+      } else {
+        return false;
+      }
+    },
+  },
+
   methods: {
+    changeBackground() {
+      console.log('bla');
+    },
     notify(type, message) {
       this.q.notify({
         type: type,
         message: message,
+        progress: true,
+        multiLine: true,
       });
     },
-    forgotReset() {
-      this.loading = true;
-      var url = window.location;
-      var token = new URLSearchParams(url.search).get('token');
-      const formData = {
-        password: this.password,
-        token: token,
-      };
+    setTheme(theme) {
+      document.body.setAttribute('data-theme', theme);
+      this.settingsStore.theme = theme;
+      if (this.test_darkmode) {
+        this.settingsStore.darkmode = true;
+      } else {
+        this.settingsStore.darkmode = false;
+      }
+    },
+
+    getMe() {
       let config = {
         withCredentials: true,
         headers: {
           'X-CSRFToken': this.q.cookies.get('csrftoken'),
         },
       };
-
       api
-        .post('auth/password_reset/confirm', formData, config)
+        .get('/profile/user', config)
         .then((response) => {
           if (response.status == 200) {
-            this.loading = false;
-            this.notify(
-              'positive',
-              'Password has been reset, you can now log in.'
-            );
-            this.$router.push('/');
+            this.user = serializeUser(response.data);
+            this.userStore.setUser(this.user);
           } else {
-            this.loading = false;
-            var msg = 'Error: ' + response.data.error;
-            this.notify('negative', msg);
+            this.user = defaultUser();
+            this.notify('negative', 'Something went wrong with the API :/');
           }
         })
         .catch((error) => {
-          this.loading = false;
-          var msg = 'Error (Server Error): ' + error;
-          this.notify('negative', msg);
+          this.user = defaultUser();
+          this.notify('negative', 'Something went wrong with the API :/');
+          console.log(error);
         });
     },
   },
 };
 </script>
-
-<style scoped></style>

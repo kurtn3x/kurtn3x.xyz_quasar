@@ -24,6 +24,17 @@
         <q-btn stretch flat label="Home" to="/l" icon="home" />
         <q-separator vertical color="layout-text" />
         <q-space />
+        <q-input dark dense standout v-model="search" input-class="text-left">
+          <template v-slot:append>
+            <q-icon v-if="search === ''" name="search" />
+            <q-icon
+              v-else
+              name="clear"
+              class="cursor-pointer"
+              @click="search = ''"
+            />
+          </template>
+        </q-input>
 
         <q-btn stretch flat>
           <q-avatar size="34px">
@@ -41,17 +52,22 @@
 
               <div class="column items-center">
                 <q-avatar size="72px">
-                  <img src="https://cdn.quasar.dev/img/avatar4.jpg" />
+                  <img :src="this.user.avatar" />
                 </q-avatar>
 
-                <div class="text-subtitle1 q-mt-md q-mb-xs">John Doe</div>
+                <div class="text-subtitle1 q-mt-md q-mb-xs">
+                  {{ this.user.username }}
+                </div>
 
                 <q-btn
                   color="primary"
                   label="Logout"
                   push
+                  stretch
                   size="sm"
                   v-close-popup
+                  text-color="layout-text"
+                  @click="logout"
                 />
               </div>
             </div>
@@ -218,6 +234,7 @@ export default {
       background_animation: ref(false),
       leftDrawerMini: ref(true),
       leftDrawer,
+      search: ref(''),
 
       darkmode_model: ref(settingsStore.darkmode_state),
       settingsStore,

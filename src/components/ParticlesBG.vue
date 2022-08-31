@@ -37,7 +37,7 @@
         color: { value: '#f8f0e3' },
         move: {
           attract: { enable: false, rotateX: 600, rotateY: 600 },
-          bounce: true,
+          bounce: false,
           direction: 'none',
           enable: true,
           out_mode: 'out',

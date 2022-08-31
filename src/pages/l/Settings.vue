@@ -119,23 +119,20 @@
               <div style="position: relative; top: -25em; height: 200px">
                 <q-card-section
                   style="
-                    left: 26em;
-                    max-width: 390px;
+                    left: 13em;
+                    top: 2.6em;
                     background-color: rgba(255, 255, 255, 0.5);
+                    max-width: 400px;
                   "
-                  class="absolute-center"
+                  class="relative"
                 >
-                  <div class="text-body2 text-weight-bold text-deep-orange-5">
-                    <a>Administartor</a>
-                    <a class="q-ml-md">#111111</a>
-                  </div>
                   <div
                     class="text-primary text-h4 q-mt-xs q-mb-xs text-weight-bolder"
                   >
-                    UsernameUsername
+                    {{ this.user.username }}
                   </div>
                   <div class="text-caption q-mt-sm text-dark">
-                    USERNAMEUSERNAME
+                    {{ this.user.first_name }} {{ this.user.last_name }}
                   </div>
                 </q-card-section>
                 <q-card-actions
@@ -157,8 +154,8 @@
               <div style="position: relative; top: -25em" v-if="!small">
                 <q-card-section>
                   <div class="text-h6 q-mt-sm q-mb-xs">Bio</div>
-                  <div class="text-caption text-grey">
-                    Kurt Test 012345678910
+                  <div class="text-body1 q-ml-xl">
+                    {{ this.user.bio }}
                   </div>
                 </q-card-section>
               </div>
@@ -182,30 +179,18 @@
               </q-avatar>
               <q-card-section>
                 <div
-                  class="text-primary text-h5 text-center text-weight-bolder gt-xs"
+                  class="text-primary text-h5 text-center text-weight-bolder lt-md"
                 >
-                  <a>UsernameUsername</a>
-                </div>
-                <div class="text-center text-subtitle text-red">
-                  <a>Administartor</a>
-                  <a class="q-ml-md">#111111</a>
-                </div>
-                <div
-                  class="text-primary text-center text-h6 text-weight-bolder lt-sm"
-                >
-                  UsernameUsername
+                  <a>{{ this.user.username }}</a>
                 </div>
                 <div class="text-center text-caption q-mt-xs">
-                  <a>Kurt </a>
-                  <a>Test </a>
+                  <a>{{ this.user.first_name }} {{ this.user.last_name }} </a>
                 </div>
               </q-card-section>
               <q-card-section style="padding: 0">
-                <div class="text-h6 q-mb-xs q-ml-md">Bio</div>
-                <div class="text-left text-caption text-grey q-ml-xl q-mr-sm">
-                  Name etc bla bli blub djasid dsanda dsjuiadiu dsabdiua Name
-                  etc bla bli blub djasid dsanda dsjuiadiu dsabdiua Name etc bla
-                  bli blub djasid dsanda dsjuiadiu dsabdiua
+                <div class="text-h6 q-mb-xs q-ml-sm">Bio</div>
+                <div class="text-left text-body1 q-ml-xl q-mr-sm">
+                  {{ this.user.bio }}
                 </div>
               </q-card-section>
               <q-card-actions class="q-mt-md row justify-center">
@@ -237,6 +222,31 @@
             "
           >
             <div class="text-h4 q-mb-md">Account Settings</div>
+            <q-card class="my-card">
+              <q-card-section>
+                <div class="text-body1">Id: {{ this.user.id }}</div>
+                <div class="text-body1">Username: {{ this.user.username }}</div>
+                <div class="text-body1">Email: {{ this.user.email }}</div>
+                <div class="text-body1">Role: {{ this.user.role }}</div>
+                <div class="text-body1">Groups: {{ placeholder }}</div>
+                <div class="text-body1">Phone: {{ this.user.phone }}</div>
+                <div class="text-body1">
+                  First Name: {{ this.user.first_name }}
+                </div>
+                <div class="text-body1">
+                  Last Name: {{ this.user.last_name }}
+                </div>
+              </q-card-section>
+
+              <q-card-actions vertical align="center">
+                <q-btn flat stretch>Change E-Mail</q-btn>
+                <q-btn flat stretch>Change Password</q-btn>
+                <q-btn flat stretch>Delete Account</q-btn>
+                <q-btn flat stretch @click="this.tab = 'profile'"
+                  >Other Settings can be changed in the Profile Tab.</q-btn
+                >
+              </q-card-actions>
+            </q-card>
           </q-tab-panel>
 
           <q-tab-panel
