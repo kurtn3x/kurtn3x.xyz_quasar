@@ -4,7 +4,7 @@
       reveal
       height-hint="98"
       bordered
-      :class="darkmode ? 'bg-primarydark text-light' : 'bg-primary text-dark'"
+      class="bg-primary text-layout-text"
     >
       <q-toolbar class="q-pl-none q-pr-none">
         <q-btn
@@ -19,10 +19,10 @@
           :icon="leftDrawerMini ? 'menu' : 'menu_open'"
           label="Menu"
         />
-        <q-separator vertical class="gt-xs" />
+        <q-separator vertical color="layout-text" />
 
         <q-btn stretch flat label="Home" to="/l" icon="home" />
-        <q-separator vertical class="gt-xs" />
+        <q-separator vertical color="layout-text" />
         <q-space />
 
         <q-btn stretch flat>
@@ -147,64 +147,12 @@
       </q-scroll-area>
     </q-drawer>
 
-    <!-- fix  -->
-
-    <q-drawer
-      v-model="rightDrawer"
-      :mini="miniState"
-      :width="200"
-      :breakpoint="600"
-      bordered
-      overlay
-      side="right"
-      class="text-light"
-      :class="darkmode ? 'bg-primarydark' : 'bg-primary'"
-    >
-      <q-scroll-area class="fit">
-        <q-list padding>
-          <q-item clickable v-ripple>
-            <q-item-section avatar>
-              <q-icon name="account_circle" />
-            </q-item-section>
-
-            <q-item-section> My Profile </q-item-section>
-          </q-item>
-
-          <q-item clickable v-ripple>
-            <q-item-section avatar>
-              <q-icon name="send" />
-            </q-item-section>
-
-            <q-item-section> Send </q-item-section>
-          </q-item>
-
-          <q-item clickable v-ripple>
-            <q-item-section avatar>
-              <q-icon name="drafts" />
-            </q-item-section>
-
-            <q-item-section> Drafts </q-item-section>
-          </q-item>
-          <q-item clickable v-ripple @click="logout">
-            <q-item-section avatar>
-              <q-icon name="logout" />
-            </q-item-section>
-
-            <q-item-section> Logout </q-item-section>
-          </q-item>
-        </q-list>
-      </q-scroll-area>
-    </q-drawer>
-
     <q-page-container>
       <ParticlesBG ref="backgroundAnimation" />
       <router-view />
     </q-page-container>
 
-    <q-footer
-      bordered
-      :class="darkmode ? 'bg-primarydark text-light' : 'bg-primary text-dark'"
-    >
+    <q-footer bordered class="bg-primary text-layout-text">
       <!-- mobile  -->
       <q-toolbar>
         <q-toolbar-title>
@@ -382,16 +330,6 @@ export default {
     },
   },
 };
-
-/*
-<q-item :class="{ 'myclass': $q.dark.isActive }" ...
-.myclass {
-  .q-item.q-router-link--active {
-     color: var(--q-color-primary);
-     background-color: $blue-1 !important;
-  }
-}
-*/
 </script>
 
 <style scoped>

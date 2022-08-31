@@ -2,7 +2,7 @@
   <div>
     <q-splitter
       v-model="splitterModel"
-      class="q-ma-md"
+      class="q-ma-sm"
       :class="darkmode ? 'text-light' : 'text-dark'"
       style="min-height: 500px"
     >
@@ -73,100 +73,12 @@
             "
           >
             <div class="text-h4 q-mb-md">Profile Settings</div>
-            <!--  -->
-            <!--
-            <q-parallax
-              :src="this.user.background"
-              style="height: 400px"
-              @mouseover="background_hover = true"
-              @mouseleave="background_hover = false"
-              :style="background_hover ? 'filter: brightness(50%);' : ''"
-            />
-            <q-avatar
-              round="round"
-              size="150px"
-              text-color="white"
-              @mouseover="avatar_hover = true"
-              @mouseleave="avatar_hover = false"
-              style="top: -2em; left: 0.1em"
-            >
-              <img
-                :src="this.user.avatar"
-                :style="avatar_hover ? 'filter: brightness(50%);' : ''" />
-              <q-file
-                v-if="avatar_hover"
-                v-model="image"
-                borderless
-                hide-bottom-space
-                style="
-                  display: inline-block;
-                  position: absolute;
-                  z-index: 100;
-                  height: 120px;
-                  width: 120px;
-                "
-                @change="updateFile()"
-                color="transparent"
-                bg-color="transparent"
-              >
-                <q-icon
-                  name="attach_file"
-                  color="black"
-                  class="q-mr-xl"
-                  style="height: 120px"
-                  size="22px"
-                /> </q-file
-            ></q-avatar>
-
             <q-card
-              class="profile-card"
-              v-if="!small"
-              :class="darkmode ? 'bg-dark text-light' : 'bg-light text-dark'"
-            >
-              <q-card-section
-                :class="darkmode ? 'bg-primarydark' : 'bg-primary'"
-              >
-                <div class="text-weight-bolder text-h4 q-pa-xs q-pl-md">
-                  {{ user.username }}
-                </div>
-              </q-card-section>
-              <q-card-section>
-                <div class="row justify-between">
-                  <p class="text-h6 q-pt-md q-pl-lg">{{ user.first_name }}</p>
-
-                  <p class="text-h6 q-pt-md q-pa-md">{{ user.last_name }}</p>
-
-                  <p class="text-h6 q-pt-md q-pa-md">{{ user.phone }}</p>
-
-                  <p class="text-h6 q-pt-md q-pa-md">Some Country</p>
-
-                  <p class="text-h6 q-pt-md q-pa-md">Flag</p>
-                </div>
-              </q-card-section>
-              <q-card-section>
-                <div class="row justify-start q-pt-xl">
-                  <p class="text-body q-pt-md q-pl-lg">Joined: 26.02.2002</p>
-
-                  <p class="text-body-2 q-pt-md q-pa-md">
-                    Total Posts: 9000000
-                  </p>
-
-                  <p class="text-body-2 q-pt-md q-pa-md">Status</p>
-                </div>
-              </q-card-section>
-            </q-card> -->
-
-            <q-card
-              class="profile-card2"
-              flat
+              class="gt-sm"
               bordered
-              style="background-color: transparent"
+              style="background-color: transparent; max-height: 500px"
             >
-              <q-parallax
-                :src="this.user.background"
-                :style="background_hover ? 'filter: brightness(50%);' : ''"
-                style="height: 200px"
-              />
+              <q-parallax :src="this.user.background" style="height: 200px" />
 
               <q-avatar
                 round="round"
@@ -174,11 +86,7 @@
                 text-color="white"
                 @mouseover="avatar_hover = true"
                 @mouseleave="avatar_hover = false"
-                style="
-                  top: -1.2em;
-                  left: 0.1em;
-                  z-index: 9999999999999999999999999;
-                "
+                style="top: -1.17em; left: 0.1em; z-index: 101"
                 class="justify-center"
               >
                 <img
@@ -208,64 +116,114 @@
                     size="22px"
                   /> </q-file
               ></q-avatar>
-              <div
-                style="position: relative; top: -25em; height: 200px"
-                v-if="!small"
-                @mouseover="background_hover = true"
-                @mouseleave="background_hover = false"
-              >
-                <q-file
-                  v-if="background_hover"
-                  v-model="image"
-                  borderless
-                  hide-bottom-space
-                  style="
-                    position: absolute;
-                    z-index: 100;
-                    height: 100%;
-                    width: 100%;
-                  "
-                  @change="updateFile()"
-                  color="transparent"
-                  bg-color="transparent"
-                >
-                  <q-icon name="attach_file" color="white" size="22px" />
-                </q-file>
+              <div style="position: relative; top: -25em; height: 200px">
                 <q-card-section
-                  :style="
-                    background_hover ? 'cursor: pointer' : 'cursor:default'
-                  "
                   style="
-                    left: 15em;
-                    max-width: 400px;
-                    min-width: 300px;
-                    top: 0em;
+                    left: 26em;
+                    max-width: 390px;
+                    background-color: rgba(255, 255, 255, 0.5);
                   "
+                  class="absolute-center"
                 >
-                  <div class="text-h6 text-orange">#1111111</div>
-                  <div
-                    :class="darkmode ? 'text-primary' : 'text-primarydark'"
-                    class="text-h4 q-mt-sm q-mb-xs text-weight-bolder"
-                  >
-                    Usernamessssssssssssssssss
+                  <div class="text-body2 text-weight-bold text-deep-orange-5">
+                    <a>Administartor</a>
+                    <a class="q-ml-md">#111111</a>
                   </div>
-                  <div class="text-h6 q-mt-md text-weight-bold">Role</div>
+                  <div
+                    class="text-primary text-h4 q-mt-xs q-mb-xs text-weight-bolder"
+                  >
+                    UsernameUsername
+                  </div>
+                  <div class="text-caption q-mt-sm text-dark">
+                    USERNAMEUSERNAME
+                  </div>
                 </q-card-section>
+                <q-card-actions
+                  vertical
+                  class="absolute-right q-ma-sm"
+                  style="background-color: rgba(255, 255, 255, 0.5)"
+                >
+                  <q-btn size="lg" flat stretch color="red" icon="favorite" />
+                  <q-btn
+                    size="lg"
+                    flat
+                    stretch
+                    color="accent"
+                    icon="bookmark"
+                  />
+                  <q-btn size="lg" flat stretch color="primary" icon="share" />
+                </q-card-actions>
               </div>
               <div style="position: relative; top: -25em" v-if="!small">
                 <q-card-section>
                   <div class="text-h6 q-mt-sm q-mb-xs">Bio</div>
                   <div class="text-caption text-grey">
-                    Name etc bla bli blub djasid dsanda dsjuiadiu dsabdiua
+                    Kurt Test 012345678910
                   </div>
                 </q-card-section>
-                <q-card-actions>
-                  <div class="absolute-bottom text-subtitle2 text-center">
-                    Title
-                  </div>
-                </q-card-actions>
               </div>
             </q-card>
+
+            <q-card
+              class="lt-md"
+              bordered
+              style="background-color: transparent"
+            >
+              <q-parallax :src="this.user.background" style="height: 200px" />
+
+              <q-avatar
+                round="round"
+                size="150px"
+                text-color="white"
+                style="z-index: 99; top: 0.66em"
+                class="absolute-center"
+              >
+                <img :src="this.user.avatar" />
+              </q-avatar>
+              <q-card-section>
+                <div
+                  class="text-primary text-h5 text-center text-weight-bolder gt-xs"
+                >
+                  <a>UsernameUsername</a>
+                </div>
+                <div class="text-center text-subtitle text-red">
+                  <a>Administartor</a>
+                  <a class="q-ml-md">#111111</a>
+                </div>
+                <div
+                  class="text-primary text-center text-h6 text-weight-bolder lt-sm"
+                >
+                  UsernameUsername
+                </div>
+                <div class="text-center text-caption q-mt-xs">
+                  <a>Kurt </a>
+                  <a>Test </a>
+                </div>
+              </q-card-section>
+              <q-card-section style="padding: 0">
+                <div class="text-h6 q-mb-xs q-ml-md">Bio</div>
+                <div class="text-left text-caption text-grey q-ml-xl q-mr-sm">
+                  Name etc bla bli blub djasid dsanda dsjuiadiu dsabdiua Name
+                  etc bla bli blub djasid dsanda dsjuiadiu dsabdiua Name etc bla
+                  bli blub djasid dsanda dsjuiadiu dsabdiua
+                </div>
+              </q-card-section>
+              <q-card-actions class="q-mt-md row justify-center">
+                <q-btn size="lg" flat stretch color="red" icon="favorite" />
+                <q-btn size="lg" flat stretch color="accent" icon="bookmark" />
+                <q-btn size="lg" flat stretch color="primary" icon="share" />
+              </q-card-actions>
+            </q-card>
+            <div class="row justify-center q-mt-md">
+              <q-btn
+                size="lg"
+                flat
+                stretch
+                color="primary"
+                icon="edit"
+                label="Edit Profile"
+              />
+            </div>
 
             <!--  -->
           </q-tab-panel>
@@ -521,28 +479,6 @@ export default {
 </script>
 
 <style>
-.my-card {
-  width: 100%;
-  max-width: 250px;
-}
-
-.profile-card {
-  position: relative;
-  top: -38em;
-  left: 6em;
-  text-align: start;
-  min-height: 350px;
-  max-height: 500px;
-  max-width: 70%;
-  margin: 0 auto;
-}
-
-.profile-card2 {
-  min-height: 350px;
-  max-height: 500px;
-  margin: 0 auto;
-}
-
 .default-light {
   background: #ffffff;
   color: #1a1c1f;

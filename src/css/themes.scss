@@ -16,8 +16,7 @@ $themes: (
     dark: #202124,
 
     // theme colors
-    primary: #1ecece,
-    primarydark: #1a4158,
+    primary: #2f739a,
 
     // background used in dark mode
     background-dark: #202124,
@@ -25,8 +24,10 @@ $themes: (
     // background used in light mode
     background-light: #fff,
 
-    active-dark: #ff0000,
-    active-light: #22ff00,
+    active-dark: #2f739a,
+    active-light: #2f739a,
+
+    layout-text: #f5f5f5,
   ),
   'classic': (
     // keep as is
@@ -43,8 +44,7 @@ $themes: (
     dark: #202124,
 
     // theme colors
-    primary: #f9f9f9,
-    primarydark: #232c33,
+    primary: #cdcdcd,
 
     // background used in dark mode
     background-dark: #202124,
@@ -52,8 +52,10 @@ $themes: (
     // background used in light mode
     background-light: #fff,
 
-    active-dark: #ff0000,
-    active-light: #22ff00,
+    active-dark: #b3b3b3,
+    active-light: #909090,
+
+    layout-text: #4c4c4c,
   ),
 );
 

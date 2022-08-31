@@ -4,9 +4,7 @@
       height-hint="98"
       elevated
       reveal
-      :class="
-        darkmode ? 'bg-primarydark text-custom_light' : 'bg-primary text-dark'
-      "
+      class="bg-primary text-layout-text"
     >
       <q-toolbar class="q-pl-none q-pr-none">
         <q-btn stretch flat label="Test" to="/l" />
@@ -362,13 +360,7 @@
       <router-view />
     </q-page-container>
 
-    <q-footer
-      reveal
-      elevated
-      :class="
-        darkmode ? 'bg-primarydark text-offwhite' : 'bg-primary text-dark'
-      "
-    >
+    <q-footer reveal elevated class="bg-primary text-layout-text">
       <q-toolbar>
         <q-toolbar-title>
           <div>Under developement.</div>
