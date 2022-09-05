@@ -16,10 +16,10 @@ $themes: (
     dark: #202124,
 
     // theme colors
-    primary: #2f739a,
+    primary: #214f69,
 
     // background used in dark mode
-    background-dark: #202124,
+    background-dark: #242629,
 
     // background used in light mode
     background-light: #fff,
@@ -55,7 +55,119 @@ $themes: (
     active-dark: #b3b3b3,
     active-light: #909090,
 
-    layout-text: #4c4c4c,
+    layout-text: #fff,
+  ),
+  'orange': (
+    // keep as is
+    accent: #9c27b0,
+    positive: #21ba45,
+    negative: #c10015,
+    info: #31ccec,
+    warning: #f2c037,
+
+    // text color used in darkmode
+    light: #fafaff,
+
+    // text color used in light mode
+    dark: #202124,
+
+    // theme colors
+    primary: #ee4d2e,
+
+    // background used in dark mode
+    background-dark: #202124,
+
+    // background used in light mode
+    background-light: #fff,
+
+    active-dark: #b3b3b3,
+    active-light: #909090,
+
+    layout-text: #fff,
+  ),
+  'nice-green': (
+    // keep as is
+    accent: #9c27b0,
+    positive: #21ba45,
+    negative: #c10015,
+    info: #31ccec,
+    warning: #f2c037,
+
+    // text color used in darkmode
+    light: #fafaff,
+
+    // text color used in light mode
+    dark: #202124,
+
+    // theme colors
+    primary: #1db992,
+
+    // background used in dark mode
+    background-dark: #202124,
+
+    // background used in light mode
+    background-light: #fff,
+
+    active-dark: #b3b3b3,
+    active-light: #909090,
+
+    layout-text: #fff,
+  ),
+  'olive-green': (
+    // keep as is
+    accent: #9c27b0,
+    positive: #21ba45,
+    negative: #c10015,
+    info: #31ccec,
+    warning: #f2c037,
+
+    // text color used in darkmode
+    light: #fafaff,
+
+    // text color used in light mode
+    dark: #202124,
+
+    // theme colors
+    primary: #bfbc06,
+
+    // background used in dark mode
+    background-dark: #202124,
+
+    // background used in light mode
+    background-light: #fff,
+
+    active-dark: #b3b3b3,
+    active-light: #909090,
+
+    layout-text: #fff,
+  ),
+  'epic-blue': (
+    // keep as is
+    accent: #9c27b0,
+    positive: #21ba45,
+    negative: #c10015,
+    info: #31ccec,
+    warning: #f2c037,
+
+    // text color used in darkmode
+    light: #fafaff,
+
+    // text color used in light mode
+    dark: #202124,
+
+    // theme colors
+    primary: #008fff,
+
+    // background used in dark mode
+    background-dark: #202124,
+
+    // background used in light mode
+    background-light: #fff,
+
+    active-dark: #68bdff,
+    active-light: #68bdff,
+
+    layout-text: #fff,
   ),
 );
 
@@ -70,6 +182,13 @@ $themes: (
       }
     }
 
+    /*     .q-field__control,
+    .q-item.q-router-link--active {
+      color: map.get($colors, active-light) !important;
+    }
+    .q-item--dark.q-router-link--active {
+      color: map.get($colors, active-dark) !important;
+    } */
     .q-field__control,
     .q-item.q-router-link--active {
       color: map.get($colors, active-light) !important;

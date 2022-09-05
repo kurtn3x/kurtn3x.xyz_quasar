@@ -10,6 +10,14 @@ const routes: RouteRecordRaw[] = [
         path: 'reset_password',
         component: () => import('pages/ResetPassword.vue'),
       },
+      {
+        path: 'accepted',
+        component: () => import('pages/Accepted.vue'),
+      },
+      {
+        path: 'declined',
+        component: () => import('pages/Declined.vue'),
+      },
     ],
   },
   {
@@ -25,15 +33,19 @@ const routes: RouteRecordRaw[] = [
         path: 'settings',
         component: () => import('src/pages/l/Settings.vue'),
       },
+      {
+        path: 'users/:id',
+        component: () => import('pages/l/UserProfile.vue'),
+      },
     ],
   },
 
   // Always leave this as last one,
   // but you can also remove it
-  // {
-  //   path: '/:catchAll(.*)*',
-  //   component: () => import('pages/ErrorNotFound.vue'),
-  // },
+  {
+    path: '/:catchAll(.*)*',
+    component: () => import('pages/ErrorNotFound.vue'),
+  },
 ];
 
 export default routes;

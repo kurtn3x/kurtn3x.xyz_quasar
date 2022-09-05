@@ -41,15 +41,30 @@ export function serializeUser(fetchedData: any) {
     last_name: fetchedData.profile.last_name,
     bio: fetchedData.profile.bio,
     phone: fetchedData.profile.phone,
-    avatar: path_to_link(fetchedData.profile.avatar),
-    background: path_to_link(fetchedData.profile.background),
+    avatar: path_to_link_av(fetchedData.profile.avatar),
+    background: path_to_link_bg(fetchedData.profile.background),
   };
   return user;
 }
 
-function path_to_link(path: string) {
-  const temp = path.split('/');
-  const link =
-    'https://media.kurtn3x.xyz/' + temp[2] + '/' + temp[3] + '/' + temp[4];
-  return link;
+function path_to_link_av(path: any) {
+  if (path != null) {
+    const temp = path.split('/');
+    const link =
+      'https://media.kurtn3x.xyz/' + temp[2] + '/' + temp[3] + '/' + temp[4];
+    return link;
+  } else {
+    return 'https://media.kurtn3x.xyz/default.png';
+  }
+}
+
+function path_to_link_bg(path: any) {
+  if (path != null) {
+    const temp = path.split('/');
+    const link =
+      'https://media.kurtn3x.xyz/' + temp[2] + '/' + temp[3] + '/' + temp[4];
+    return link;
+  } else {
+    return 'https://media.kurtn3x.xyz/background.png';
+  }
 }

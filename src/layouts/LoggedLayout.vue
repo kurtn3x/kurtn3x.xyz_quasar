@@ -88,20 +88,11 @@
       bordered
       :breakpoint="600"
       :width="217"
-      :class="
-        darkmode
-          ? 'bg-background-dark text-light'
-          : 'bg-background-light text-dark'
-      "
+      class="bg-primary"
     >
       <q-scroll-area class="fit">
         <q-list padding>
-          <q-item
-            clickable
-            v-ripple
-            to="/l/profile"
-            :class="darkmode ? 'text-light' : 'text-dark'"
-          >
+          <q-item clickable v-ripple to="/l/profile" class="text-layout-text">
             <q-item-section avatar>
               <q-icon name="account_circle" />
             </q-item-section>
@@ -109,11 +100,7 @@
             <q-item-section> My Profile </q-item-section>
           </q-item>
 
-          <q-item
-            clickable
-            v-ripple
-            :class="darkmode ? 'text-light' : 'text-dark'"
-          >
+          <q-item clickable v-ripple class="text-layout-text">
             <q-item-section avatar>
               <q-icon name="send" />
             </q-item-section>
@@ -121,11 +108,7 @@
             <q-item-section> Send </q-item-section>
           </q-item>
 
-          <q-item
-            clickable
-            v-ripple
-            :class="darkmode ? 'text-light' : 'text-dark'"
-          >
+          <q-item clickable v-ripple class="text-layout-text">
             <q-item-section avatar>
               <q-icon name="drafts" />
             </q-item-section>
@@ -135,12 +118,7 @@
 
           <q-space />
 
-          <q-item
-            clickable
-            v-ripple
-            to="/l/settings"
-            :class="darkmode ? 'text-light' : 'text-dark'"
-          >
+          <q-item clickable v-ripple to="/l/settings" class="text-layout-text">
             <q-item-section avatar>
               <q-icon name="settings" />
             </q-item-section>
@@ -148,12 +126,7 @@
             <q-item-section> Settings </q-item-section>
           </q-item>
 
-          <q-item
-            clickable
-            v-ripple
-            @click="logout"
-            :class="darkmode ? 'text-light' : 'text-dark'"
-          >
+          <q-item clickable v-ripple @click="logout" class="text-layout-text">
             <q-item-section avatar>
               <q-icon name="logout" />
             </q-item-section>
@@ -175,6 +148,56 @@
           <div>Under developement.</div>
         </q-toolbar-title>
         <q-btn-dropdown icon="settings" flat>
+          <q-item clickable>
+            <q-item-section avatar>
+              <q-icon
+                :name="theme_menu ? 'arrow_drop_up' : 'arrow_drop_down'"
+              />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>Themes</q-item-label>
+            </q-item-section>
+            <q-menu
+              menu-anchor="bottom middle"
+              menu-self="bottom middle"
+              :menu-offset="[0, -40]"
+              fit
+              v-model="theme_menu"
+            >
+              <q-list bordered>
+                <q-item
+                  clickable
+                  @click="setTheme('default')"
+                  style="background: #214f69"
+                />
+                <q-item
+                  clickable
+                  @click="setTheme('classic')"
+                  style="background: #cdcdcd"
+                />
+                <q-item
+                  clickable
+                  @click="setTheme('orange')"
+                  style="background: #ee4d2e"
+                />
+                <q-item
+                  clickable
+                  @click="setTheme('nice-green')"
+                  style="background: #1db992"
+                />
+                <q-item
+                  clickable
+                  @click="setTheme('olive-green')"
+                  style="background: #bfbc06"
+                />
+                <q-item
+                  clickable
+                  @click="setTheme('epic-blue')"
+                  style="background: #008fff"
+                />
+              </q-list>
+            </q-menu>
+          </q-item>
           <q-list>
             <q-item>
               <q-toggle
@@ -235,7 +258,6 @@ export default {
       leftDrawerMini: ref(true),
       leftDrawer,
       search: ref(''),
-
       darkmode_model: ref(settingsStore.darkmode_state),
       settingsStore,
       userStore,
@@ -244,6 +266,7 @@ export default {
       miniState,
       loading: ref(false),
       user: userStore.user,
+      theme_menu: ref(false),
     };
   },
   /*
@@ -287,6 +310,10 @@ export default {
   },
 
   methods: {
+    setTheme(theme) {
+      document.body.setAttribute('data-theme', theme);
+      this.settingsStore.theme = theme;
+    },
     darkmodeChanged() {
       this.settingsStore.darkmode = this.darkmode_model;
     },
