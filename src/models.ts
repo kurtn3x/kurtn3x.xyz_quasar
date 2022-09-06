@@ -1,3 +1,11 @@
+export interface Me {
+  fetched: boolean;
+  role: string;
+  username: string;
+  status: string;
+  avatar: string;
+}
+
 export interface User {
   fetched: boolean;
   role: string;
@@ -28,6 +36,29 @@ export function defaultUser() {
   };
 
   return user;
+}
+
+export function defaultMe() {
+  const user: Me = {
+    fetched: false,
+    role: 'User',
+    username: 'User',
+    status: 'Online',
+    avatar: 'https://media.kurtn3x.xyz/default.png',
+  };
+
+  return user;
+}
+
+export function serializeMe(fetchedData: any) {
+  const me: Me = {
+    fetched: true,
+    role: fetchedData.role,
+    status: fetchedData.status,
+    username: fetchedData.username,
+    avatar: path_to_link_av(fetchedData.profile.avatar),
+  };
+  return me;
 }
 
 export function serializeUser(fetchedData: any) {

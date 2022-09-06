@@ -1,13 +1,12 @@
 import { defineStore } from 'pinia';
-import { api } from 'boot/axios';
-import { User } from 'src/models';
+import { Me } from 'src/models';
 import { LocalStorage } from 'quasar';
-import { defaultUser } from 'src/models';
+import { defaultMe } from 'src/models';
 
 export const useUserStore = defineStore('user', {
   state: () => ({
     authenticated: LocalStorage.getItem('authenticated') || false,
-    user: (LocalStorage.getItem('user') || defaultUser()) as User,
+    user: (LocalStorage.getItem('user') || defaultMe()) as Me,
   }),
 
   getters: {
@@ -15,7 +14,7 @@ export const useUserStore = defineStore('user', {
   },
 
   actions: {
-    setUser(user: User) {
+    setUser(user: Me) {
       this.user = user;
     },
   },

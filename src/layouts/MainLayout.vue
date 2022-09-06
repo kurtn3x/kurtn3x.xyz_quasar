@@ -46,10 +46,7 @@
     <q-page-container>
       <q-dialog v-model="forgot_popup">
         <q-card bordered>
-          <p
-            class="text-weight-bolder q-pt-md q-pl-md"
-            :class="darkmode ? 'text-grey-2' : 'text-grey-8'"
-          >
+          <p class="text-weight-bolder q-pt-md q-pl-md text-primary">
             Request your Account Data
           </p>
           <q-card-section>
@@ -132,8 +129,8 @@
             dense
             :class="darkmode ? 'text-grey-2' : 'text-grey-8'"
             align="justify"
-            :active-color="darkmode ? 'text-grey-2' : 'text-grey-8'"
-            :indicator-color="darkmode ? 'text-grey-2' : 'text-grey-8'"
+            active-color="primary"
+            indicator-color="primary"
           >
             <q-tab name="login" label="Login" />
             <q-tab name="register" label="Register" />
@@ -144,10 +141,7 @@
           <q-tab-panels v-model="login_tab" animated>
             <q-tab-panel name="login">
               <q-card square class="no-shadow" style="width: 100%">
-                <p
-                  class="text-weight-bolder"
-                  :class="darkmode ? 'text-grey-2' : 'text-grey-8'"
-                >
+                <p class="text-weight-bolder text-primary">
                   Login to your account
                 </p>
                 <q-card-section>
@@ -223,10 +217,7 @@
 
             <q-tab-panel name="register">
               <q-card square class="no-shadow" style="width: 100%">
-                <p
-                  class="text-weight-bolder"
-                  :class="darkmode ? 'text-grey-2' : 'text-grey-8'"
-                >
+                <p class="text-weight-bolder text-primary">
                   Register a new Account
                 </p>
                 <q-card-section>
@@ -386,7 +377,7 @@
                 <q-item
                   clickable
                   @click="setTheme('default')"
-                  style="background: #214f69"
+                  style="background: #0eb1d2"
                 />
                 <q-item
                   clickable

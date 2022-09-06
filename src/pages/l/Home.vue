@@ -1,6 +1,6 @@
 <template>
-  <div class="disable-select text-primary">
-    <h1 class="text-center">Please log in to access the site.</h1>
+  <div class="disable-select">
+    <h1 class="text-center text-primary">Welcome!</h1>
   </div>
 </template>
 
@@ -9,10 +9,11 @@ import { defineComponent, ref } from 'vue';
 import { useUserStore } from 'stores/user';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
+import { store } from 'quasar/wrappers';
 import { useSettingsStore } from 'stores/settings';
 
 export default defineComponent({
-  name: 'IndexPage',
+  name: 'HomeView',
   setup() {
     const userStore = useUserStore();
     const settings_store = useSettingsStore();

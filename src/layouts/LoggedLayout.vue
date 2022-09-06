@@ -19,10 +19,6 @@
           :icon="leftDrawerMini ? 'menu' : 'menu_open'"
           label="Menu"
         />
-        <q-separator vertical color="layout-text" />
-
-        <q-btn stretch flat label="Home" to="/l" icon="home" />
-        <q-separator vertical color="layout-text" />
         <q-space />
         <q-input dark dense standout v-model="search" input-class="text-left">
           <template v-slot:append>
@@ -88,11 +84,27 @@
       bordered
       :breakpoint="600"
       :width="217"
-      class="bg-primary"
     >
       <q-scroll-area class="fit">
         <q-list padding>
-          <q-item clickable v-ripple to="/l/profile" class="text-layout-text">
+          <q-item
+            clickable
+            v-ripple
+            to="/l/home"
+            class="text-primary text-weight-bold"
+          >
+            <q-item-section avatar>
+              <q-icon name="home" />
+            </q-item-section>
+
+            <q-item-section> Home </q-item-section>
+          </q-item>
+          <q-item
+            clickable
+            v-ripple
+            to="/l/profile"
+            class="text-primary text-weight-bold"
+          >
             <q-item-section avatar>
               <q-icon name="account_circle" />
             </q-item-section>
@@ -100,7 +112,7 @@
             <q-item-section> My Profile </q-item-section>
           </q-item>
 
-          <q-item clickable v-ripple class="text-layout-text">
+          <q-item clickable v-ripple class="text-primary text-weight-bold">
             <q-item-section avatar>
               <q-icon name="send" />
             </q-item-section>
@@ -108,7 +120,7 @@
             <q-item-section> Send </q-item-section>
           </q-item>
 
-          <q-item clickable v-ripple class="text-layout-text">
+          <q-item clickable v-ripple class="text-primary text-weight-bold">
             <q-item-section avatar>
               <q-icon name="drafts" />
             </q-item-section>
@@ -118,7 +130,12 @@
 
           <q-space />
 
-          <q-item clickable v-ripple to="/l/settings" class="text-layout-text">
+          <q-item
+            clickable
+            v-ripple
+            to="/l/settings"
+            class="text-primary text-weight-bold"
+          >
             <q-item-section avatar>
               <q-icon name="settings" />
             </q-item-section>
@@ -126,7 +143,12 @@
             <q-item-section> Settings </q-item-section>
           </q-item>
 
-          <q-item clickable v-ripple @click="logout" class="text-layout-text">
+          <q-item
+            clickable
+            v-ripple
+            @click="logout"
+            class="text-primary text-weight-bold"
+          >
             <q-item-section avatar>
               <q-icon name="logout" />
             </q-item-section>
@@ -168,7 +190,7 @@
                 <q-item
                   clickable
                   @click="setTheme('default')"
-                  style="background: #214f69"
+                  style="background: #0eb1d2"
                 />
                 <q-item
                   clickable
@@ -233,7 +255,7 @@ import { api } from 'boot/axios';
 import { useUserStore } from 'stores/user.ts';
 import { useSettingsStore } from 'stores/settings';
 import ParticlesBG from 'components/ParticlesBG.vue';
-import { defaultUser, serializeUser } from 'src/models';
+import { defaultMe, serializeMe } from 'src/models';
 
 export default {
   components: {
@@ -356,18 +378,18 @@ export default {
         },
       };
       api
-        .get('/profile/user', config)
+        .get('/profile/me', config)
         .then((response) => {
           if (response.status == 200) {
-            this.user = serializeUser(response.data);
+            this.user = serializeMe(response.data);
             this.userStore.setUser(this.user);
           } else {
-            this.user = defaultUser();
+            this.user = defaultMe();
             this.notify('negative', 'Something went wrong with the API :/');
           }
         })
         .catch((error) => {
-          this.user = defaultUser();
+          this.user = defaultMe();
           this.notify('negative', 'Something went wrong with the API :/');
           console.log(error);
         });

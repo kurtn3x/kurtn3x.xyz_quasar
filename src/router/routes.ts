@@ -25,6 +25,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('layouts/LoggedLayout.vue'),
     children: [
       { path: '', component: () => import('src/pages/l/StartPage.vue') },
+      { path: 'home', component: () => import('src/pages/l/Home.vue') },
       {
         path: 'profile',
         component: () => import('src/pages/l/MyProfile.vue'),

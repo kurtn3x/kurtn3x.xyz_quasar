@@ -1,12 +1,19 @@
 <template>
-  <q-dialog v-model="edit_popup">
-    <q-card square class="no-shadow q-ma-md q-pa-md">
-      <p
-        class="text-weight-bolder"
-        :class="darkmode ? 'text-grey-2' : 'text-grey-8'"
-      >
-        Login to your account
-      </p>
+  <q-dialog seamless v-model="edit_popup">
+    <q-card bordered square class="no-shadow q-ma-md q-pa-md">
+      <q-card-section class="row items-center q-pb-none">
+        <p class="text-weight-bolder text-primary">Update your Profile</p>
+        <q-space />
+        <q-btn
+          class="text-red"
+          flat
+          icon="close"
+          round
+          v-close-popup
+          style="top: -2em; left: 2em"
+        />
+      </q-card-section>
+
       <q-card-section>
         <q-form
           class="q-gutter-md text-grey"
@@ -99,85 +106,139 @@
         round="round"
         size="150px"
         text-color="white"
-        @mouseover="avatar_hover = true"
-        @mouseleave="avatar_hover = false"
         style="top: -1.25em; left: 0.2em; z-index: 101; max-height: 0px"
         class="justify-center"
       >
-        <img
-          :src="this.user.avatar"
-          :style="avatar_hover ? 'filter: brightness(50%);' : ''" />
-        <q-file
-          v-if="avatar_hover"
-          v-model="image"
-          borderless
-          hide-bottom-space
-          style="
-            display: inline-block;
-            position: absolute;
-            z-index: 100;
-            height: 120px;
-            width: 120px;
-          "
-          @change="updateFile()"
-          color="transparent"
-          bg-color="transparent"
-        >
-          <q-icon
-            name="attach_file"
-            color="white"
-            class="q-mr-xl"
-            style="height: 120px"
-            size="22px"
-          /> </q-file
-      ></q-avatar>
-      <div style="height: 200px; max-height: 200px">
-        <q-card-section
-          style="
-            left: 14em;
-            top: 1.8em;
-            background-color: rgba(0, 0, 0, 0.5);
-            max-height: 150px;
-          "
-          class="absolute-left"
-        >
-          <div class="text-light text-h4 text-weight-bolder">
-            {{ this.user.username }}
-            <q-tooltip
-              class="text-body2"
-              :class="darkmode ? 'bg-dark text-light' : 'bg-light text-dark'"
-              anchor="bottom middle"
-              self="center middle"
-              >{{ this.user.role }}</q-tooltip
-            >
-          </div>
-          <div class="text-caption q-mt-sm text-light">
-            {{ this.user.first_name }} {{ this.user.last_name }}
-          </div>
-          <div class="text-caption q-mt-sm text-light">Country</div>
-          <div class="text-caption q-mt-sm text-light">last online: Today</div>
-        </q-card-section>
-        <q-card-actions
-          vertical
-          class="q-ma-sm absolute-right"
-          style="background-color: rgba(0, 0, 0, 0.5); max-height: 183px"
-        >
-          <q-btn size="lg" flat stretch color="red" icon="favorite" />
-          <q-btn size="lg" flat stretch color="accent" icon="bookmark" />
-          <q-btn size="lg" flat stretch color="primary" icon="share" />
-        </q-card-actions>
-      </div>
+        <img :src="this.user.avatar" />
+      </q-avatar>
       <div
-        style="position: relative; top: -17em; max-height: 0px"
-        v-if="!small"
+        style="
+          left: 14em;
+          top: 24px;
+          background-color: rgba(0, 0, 0, 0.3);
+          max-height: 150px;
+        "
+        class="absolute-left"
       >
-        <q-card-section>
-          <div class="text-h6 q-mt-sm q-mb-xs">Description</div>
-          <div class="text-body1 q-ml-xl">
-            {{ this.user.bio }}
-          </div>
-        </q-card-section>
+        <div
+          class="text-light text-h4 text-weight-bolder q-mt-sm q-mb-sm q-ml-sm q-mr-md"
+        >
+          {{ this.user.username }}
+        </div>
+
+        <q-separator class="bg-white q-ml-sm q-mr-lg q-mt-xs" />
+        <div class="text-body1 q-mt-sm text-light q-ml-md q-mr-md q-mt-xs">
+          Status: Hello
+        </div>
+        <div class="text-body1 q-mt-sm text-light q-ml-md q-mr-md q-mt-xs">
+          Last Seen: Today
+        </div>
       </div>
+      <q-card-actions
+        vertical
+        class="q-ma-sm absolute-right"
+        style="background-color: rgba(0, 0, 0, 0.5); max-height: 183px"
+      >
+        <q-btn size="lg" flat stretch color="primary" icon="chat">
+          <q-tooltip
+            class="bg-primary text-body2"
+            anchor="bottom left"
+            self="center middle"
+          >
+            Start a Conversation
+          </q-tooltip>
+        </q-btn>
+        <q-btn size="lg" flat stretch color="primary" icon="person_add">
+          <q-tooltip
+            class="bg-primary text-body2"
+            anchor="bottom left"
+            self="center middle"
+          >
+            Add as Friend
+          </q-tooltip>
+        </q-btn>
+        <q-btn size="lg" flat stretch color="primary" icon="share">
+          <q-tooltip
+            anchor="bottom left"
+            self="center middle"
+            class="bg-primary text-body2"
+          >
+            Copy the profile link
+          </q-tooltip>
+        </q-btn>
+      </q-card-actions>
+      <q-card-section style="padding: 0; margin: 0; top: -1.5em">
+        <div style="width: 100%" v-if="!small">
+          <q-tabs
+            v-model="profile_tab"
+            active-color="primary"
+            indicator-color="primary"
+            align="justify"
+          >
+            <q-tab name="about" label="About" />
+            <q-tab name="comments" label="Comments" />
+            <q-tab name="postings" label="Recent Activity" />
+          </q-tabs>
+
+          <q-tab-panels v-model="profile_tab" animated>
+            <q-tab-panel name="about">
+              <q-card flat>
+                <q-card-section class="row justify-center">
+                  <q-card flat class="q-ml-lg">
+                    <div class="text-h6">About</div>
+                    <q-separator />
+                    <q-card-section horizontal>
+                      <q-card-section>
+                        <div class="text-body1">Name</div>
+                        <div class="q-mt-sm text-body1">UserID</div>
+                        <div class="q-mt-sm text-body1">Location</div>
+                        <div class="q-mt-sm text-body1">Status</div>
+                        <div class="q-mt-sm text-body1">Role</div>
+                        <div class="q-mt-sm text-body1">Joined</div>
+                        <div class="q-mt-sm text-body1">Last Seen</div>
+                      </q-card-section>
+
+                      <q-separator vertical class="q-mt-sm" />
+
+                      <q-card-section>
+                        <div class="text-body1">
+                          {{ this.user.first_name }} {{ this.user.last_name }}
+                        </div>
+                        <div class="q-mt-sm text-body1">{{ this.user.id }}</div>
+                        <div class="q-mt-sm text-body1">Location</div>
+                        <div class="q-mt-sm text-body1">Status</div>
+                        <div class="q-mt-sm text-body1">Role</div>
+                        <div class="q-mt-sm text-body1">Joined</div>
+                        <div class="q-mt-sm text-body1">Last Seen</div>
+                      </q-card-section>
+                    </q-card-section>
+                  </q-card>
+                  <q-separator vertical class="q-ml-xl" />
+                  <q-card class="q-ml-xl" flat>
+                    <div class="text-h6">Description</div>
+                    <q-separator />
+
+                    <div class="text-body1 q-mt-sm q-ml-lg">
+                      {{ this.user.bio }}
+                    </div>
+                    <q-card-section horizontal> </q-card-section>
+                  </q-card>
+                </q-card-section>
+              </q-card>
+            </q-tab-panel>
+
+            <q-tab-panel name="comments">
+              <div class="text-h6">Alarms</div>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit.
+            </q-tab-panel>
+
+            <q-tab-panel name="postings">
+              <div class="text-h6">Movies</div>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit.
+            </q-tab-panel>
+          </q-tab-panels>
+        </div>
+      </q-card-section>
     </q-card>
 
     <q-card class="lt-md" bordered style="background-color: transparent">
@@ -196,19 +257,82 @@
         <div class="text-h5 text-center text-weight-bolder lt-md">
           <a>{{ this.user.username }}</a>
         </div>
-        <div class="text-center text-caption q-mt-xs">
-          <a>{{ this.user.first_name }} {{ this.user.last_name }} </a>
+        <div class="text-center text-caption q-mt-sm">
+          <a> Role: {{ this.user.role }} </a>
+          <a class="q-ml-lg">Last Seen: Today </a>
+          <a class="q-ml-lg">Status: LWLWLLWLWLWLWL </a>
         </div>
       </q-card-section>
+      <q-separator></q-separator>
       <q-card-section style="padding: 0">
-        <div class="text-h6 q-mb-xs q-ml-sm">Description</div>
-        <div class="text-left text-body1 q-ml-xl q-mr-sm">
-          {{ this.user.bio }}
-        </div>
+        <q-tabs
+          v-model="profile_tab"
+          active-color="primary"
+          indicator-color="primary"
+          align="justify"
+        >
+          <q-tab name="about" label="About" />
+          <q-tab name="comments" label="Comments" />
+          <q-tab name="postings" label="Recent Activity" />
+        </q-tabs>
+        <q-tab-panels v-model="profile_tab" animated>
+          <q-tab-panel name="about">
+            <q-card flat>
+              <q-card-section class="row justify-center">
+                <q-card flat class="q-ml-lg">
+                  <div class="text-h5 text-center text-weight-bold">About</div>
+                  <q-separator></q-separator>
+                  <q-card-section horizontal style="min-width: 320px">
+                    <q-card-section>
+                      <div class="text-body1">Name</div>
+                      <div class="q-mt-sm text-body1">UserID</div>
+                      <div class="q-mt-sm text-body1">Gender</div>
+                      <div class="q-mt-sm text-body1">Location</div>
+                      <div class="q-mt-sm text-body1">Joined</div>
+                      <div class="q-mt-sm text-body1">Last Seen</div>
+                    </q-card-section>
+
+                    <q-separator vertical class="q-mt-sm" />
+
+                    <q-card-section>
+                      <div class="text-body1">
+                        {{ this.user.first_name }} {{ this.user.last_name }}
+                      </div>
+                      <div class="q-mt-sm text-body1">{{ this.user.id }}</div>
+                      <div class="q-mt-sm text-body1">Name</div>
+                      <div class="q-mt-sm text-body1">Name</div>
+                      <div class="q-mt-sm text-body1">Name</div>
+                      <div class="q-mt-sm text-body1">Name</div>
+                    </q-card-section>
+                  </q-card-section>
+                  <q-separator class="q-mt-sm" />
+                  <q-card-section>
+                    <div class="text-h6">Description:</div>
+                    <div class="text-body1 q-mt-sm q-ml-lg">
+                      {{ this.user.bio }}
+                    </div>
+                  </q-card-section>
+                </q-card>
+
+                <q-card-section horizontal> </q-card-section>
+              </q-card-section>
+            </q-card>
+          </q-tab-panel>
+
+          <q-tab-panel name="comments">
+            <div class="text-h6">Alarms</div>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit.
+          </q-tab-panel>
+
+          <q-tab-panel name="postings">
+            <div class="text-h6">Movies</div>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit.
+          </q-tab-panel>
+        </q-tab-panels>
       </q-card-section>
-      <q-card-actions class="q-mt-md row justify-center">
-        <q-btn size="lg" flat stretch color="red" icon="favorite" />
-        <q-btn size="lg" flat stretch color="accent" icon="bookmark" />
+      <q-card-actions class="row justify-center">
+        <q-btn size="lg" flat stretch color="primary" icon="chat" />
+        <q-btn size="lg" flat stretch color="primary" icon="person_add" />
         <q-btn size="lg" flat stretch color="primary" icon="share" />
       </q-card-actions>
     </q-card>
@@ -232,7 +356,7 @@ import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { useUserStore } from 'stores/user.ts';
 import { useSettingsStore } from 'stores/settings';
-import { defaultUser, serializeUser } from 'src/models';
+import { defaultMe, serializeMe } from 'src/models';
 
 export default {
   name: 'SettingsView',
@@ -250,6 +374,7 @@ export default {
       loading: ref(false),
       avatar_hover: ref(false),
       edit_popup: ref(false),
+      profile_tab: ref('about'),
     };
   },
 
@@ -305,15 +430,15 @@ export default {
         .get('/profile/user', config)
         .then((response) => {
           if (response.status == 200) {
-            this.user = serializeUser(response.data);
+            this.user = serializeMe(response.data);
             this.userStore.setUser(this.user);
           } else {
-            this.user = defaultUser();
+            this.user = defaultMe();
             this.notify('negative', 'Something went wrong with the API :/');
           }
         })
         .catch((error) => {
-          this.user = defaultUser();
+          this.user = defaultMe();
           this.notify('negative', 'Something went wrong with the API :/');
           console.log(error);
         });
