@@ -67,18 +67,15 @@ export default defineComponent({
       .get('/auth/authenticated', config)
       .then((response) => {
         if (response.status == 200) {
-          this.userStore.authenticated = true;
+          this.userStore.setAuthState(true);
           this.prefetch = true;
         } else {
-          this.userStore.authenticated = false;
+          this.userStore.setAuthState(false);
           this.prefetch = true;
         }
       })
       .catch((error) => {
-        console.log(
-          'Encountered Error while fetching auth-state. This may be intentional.'
-        );
-        this.userStore.authenticated = false;
+        this.userStore.setAuthState(false);
         this.prefetch = true;
       });
   },
