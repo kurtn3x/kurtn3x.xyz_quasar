@@ -205,12 +205,11 @@ export default {
             this.user = serializeUser(response.data);
             this.userStore.setUser(this.user);
           } else {
-            this.user = defaultUser();
-            this.notify('negative', 'Something went wrong with the API :/');
+            this.$router.push('/');
           }
         })
         .catch((error) => {
-          this.user = defaultUser();
+          this.$router.push('/');
           this.notify('negative', 'Something went wrong with the API :/');
           console.log(error);
         });

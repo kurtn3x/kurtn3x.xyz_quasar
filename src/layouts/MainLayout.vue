@@ -35,7 +35,7 @@
 
         <q-btn stretch flat>
           <q-avatar size="34px">
-            <img :src="this.me.avatar" />
+            <img :src="this.user.avatar" />
           </q-avatar>
           <q-menu>
             <div class="row no-wrap q-pa-md">
@@ -49,11 +49,11 @@
 
               <div class="column items-center">
                 <q-avatar size="72px">
-                  <img :src="this.me.avatar" />
+                  <img :src="this.user.avatar" />
                 </q-avatar>
 
                 <div class="text-subtitle1 q-mt-md q-mb-xs">
-                  {{ this.me.username }}
+                  {{ this.user.username }}
                 </div>
 
                 <q-btn
@@ -80,7 +80,7 @@
       v-if="!authenticated"
     >
       <q-toolbar class="q-pl-none q-pr-none">
-        <q-btn stretch flat label="Test" to="/l" />
+        <q-btn stretch flat icon="home" to="/" />
         <q-separator vertical />
         <q-btn
           v-if="authenticated"
@@ -642,7 +642,7 @@ export default {
       search: ref(''),
       miniState,
       loading: ref(false),
-      me: userStore.user,
+      user: userStore.user,
       theme_menu: ref(false),
 
       login_tab: ref('login'),
@@ -678,7 +678,7 @@ export default {
       }
     },
     myprofileroute() {
-      return '/users/' + this.me.username;
+      return '/users/' + this.user.username;
     },
     authenticated() {
       //return true;
@@ -789,8 +789,8 @@ export default {
         .get('/profile/me', config)
         .then((response) => {
           if (response.status == 200) {
-            this.me = serializeMe(response.data);
-            this.userStore.setUser(this.me);
+            this.user = serializeLiteUser(response.data);
+            this.userStore.setUser(this.user);
             this.userStore.setAuthState(true);
           } else {
             this.userStore.setAuthState(false);

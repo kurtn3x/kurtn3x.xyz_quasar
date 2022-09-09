@@ -1,4 +1,4 @@
-export interface Me {
+export interface LiteUser {
   fetched: boolean;
   role: string;
   username: string;
@@ -42,8 +42,8 @@ export function defaultUser() {
   return user;
 }
 
-export function defaultMe() {
-  const user: Me = {
+export function defaultLiteUser() {
+  const user: LiteUser = {
     fetched: false,
     role: '​',
     username: '​',
@@ -54,15 +54,15 @@ export function defaultMe() {
   return user;
 }
 
-export function serializeMe(fetchedData: any) {
-  const me: Me = {
+export function serializeLiteUser(fetchedData: any) {
+  const lite_user: LiteUser = {
     fetched: true,
     role: fetchedData.role,
     status: fetchedData.status,
     username: fetchedData.username,
     avatar: path_to_link_av(fetchedData.profile.avatar),
   };
-  return me;
+  return lite_user;
 }
 
 export function serializeUser(fetchedData: any) {
