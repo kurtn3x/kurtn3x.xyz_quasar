@@ -10,27 +10,31 @@ export interface User {
   fetched: boolean;
   role: string;
   username: string;
-  email: string;
-  id: number;
-  first_name: string;
-  last_name: string;
-  bio: string;
-  phone: string;
+  name: string;
+  id: string;
+  last_seen: string;
+  joined: string;
+  description: string;
+  location: string;
+  status: string;
   avatar: string;
   background: string;
+  email: string;
 }
 
 export function defaultUser() {
   const user: User = {
     fetched: false,
-    role: 'User',
-    username: 'User',
-    email: 'Email',
-    id: 0,
-    first_name: 'FirstName',
-    last_name: 'LastName',
-    bio: 'Hi, this is my bio.',
-    phone: '0',
+    role: '​',
+    username: '​',
+    name: '​',
+    id: '​',
+    email: '​',
+    status: '​',
+    description: '​',
+    location: '​',
+    last_seen: '​',
+    joined: '​',
     avatar: 'https://media.kurtn3x.xyz/default.png',
     background: 'https://media.kurtn3x.xyz/background.png',
   };
@@ -41,9 +45,9 @@ export function defaultUser() {
 export function defaultMe() {
   const user: Me = {
     fetched: false,
-    role: 'User',
-    username: 'User',
-    status: 'Online',
+    role: '​',
+    username: '​',
+    status: '​',
     avatar: 'https://media.kurtn3x.xyz/default.png',
   };
 
@@ -67,11 +71,13 @@ export function serializeUser(fetchedData: any) {
     role: fetchedData.role,
     username: fetchedData.username,
     email: fetchedData.email,
-    id: fetchedData.profile.id,
-    first_name: fetchedData.profile.first_name,
-    last_name: fetchedData.profile.last_name,
-    bio: fetchedData.profile.bio,
-    phone: fetchedData.profile.phone,
+    id: fetchedData.id,
+    name: fetchedData.profile.name,
+    status: fetchedData.profile.status,
+    description: fetchedData.profile.description,
+    last_seen: fetchedData.profile.last_seen,
+    joined: fetchedData.profile.joined,
+    location: fetchedData.profile.location,
     avatar: path_to_link_av(fetchedData.profile.avatar),
     background: path_to_link_bg(fetchedData.profile.background),
   };

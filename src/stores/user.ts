@@ -17,5 +17,8 @@ export const useUserStore = defineStore('user', {
     setUser(user: Me) {
       this.user = user;
     },
+    setAuthState(state: boolean) {
+      this.authenticated = state;
+    },
   },
 });

@@ -7,8 +7,19 @@
       TOKEN DOES NOT EXIST :/<br />
       PLEASE REQUEST A NEW ONE
       <q-tooltip class="bg-red">
-        <strong>Perhabs you already used it? </strong>
+        <a class="text-h6">Perhabs you already used it? </a>
       </q-tooltip>
+      <div>
+        <q-btn
+          size="xl"
+          class="q-mt-xl"
+          text-color="primary"
+          unelevated
+          to="/"
+          label="Go Home"
+          no-caps
+        />
+      </div>
     </h2>
     <q-card
       class="absolute-center"

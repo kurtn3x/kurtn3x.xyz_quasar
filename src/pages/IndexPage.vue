@@ -1,6 +1,6 @@
 <template>
   <div class="disable-select text-primary">
-    <h1 class="text-center">Please log in to access the site.</h1>
+    <h1 class="text-center">Hi</h1>
   </div>
 </template>
 

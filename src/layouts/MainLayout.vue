@@ -1,10 +1,83 @@
 <template>
   <q-layout view="hHh LpR fff">
     <q-header
+      reveal
+      height-hint="98"
+      elevated
+      class="bg-primary text-layout-text"
+      v-if="authenticated"
+    >
+      <q-toolbar class="q-pl-none q-pr-none">
+        <q-btn
+          flat
+          stretch
+          mini:leftDrawerMini
+          @click="
+            mobile
+              ? (leftDrawer = !leftDrawer)
+              : (leftDrawerMini = !leftDrawerMini)
+          "
+          :icon="leftDrawerMini ? 'menu' : 'menu_open'"
+          label="Menu"
+        />
+        <q-space />
+        <q-input dark dense standout v-model="search" input-class="text-left">
+          <template v-slot:append>
+            <q-icon v-if="search === ''" name="search" />
+            <q-icon
+              v-else
+              name="clear"
+              class="cursor-pointer"
+              @click="search = ''"
+            />
+          </template>
+        </q-input>
+
+        <q-btn stretch flat>
+          <q-avatar size="34px">
+            <img :src="this.me.avatar" />
+          </q-avatar>
+          <q-menu>
+            <div class="row no-wrap q-pa-md">
+              <div class="column">
+                <div class="text-h6 q-mb-md">Settings</div>
+                <q-toggle v-model="mobileData" label="Use Mobile Data" />
+                <q-toggle v-model="bluetooth" label="Bluetooth" />
+              </div>
+
+              <q-separator vertical inset class="q-mx-lg" />
+
+              <div class="column items-center">
+                <q-avatar size="72px">
+                  <img :src="this.me.avatar" />
+                </q-avatar>
+
+                <div class="text-subtitle1 q-mt-md q-mb-xs">
+                  {{ this.me.username }}
+                </div>
+
+                <q-btn
+                  color="primary"
+                  label="Logout"
+                  push
+                  stretch
+                  size="sm"
+                  v-close-popup
+                  text-color="layout-text"
+                  @click="logout"
+                />
+              </div>
+            </div>
+          </q-menu>
+        </q-btn>
+      </q-toolbar>
+    </q-header>
+    <q-header
       height-hint="98"
       elevated
       reveal
       class="bg-primary text-layout-text"
+      v-if="!authenticated"
     >
       <q-toolbar class="q-pl-none q-pr-none">
         <q-btn stretch flat label="Test" to="/l" />
@@ -40,6 +113,93 @@
         />
       </q-toolbar>
     </q-header>
+
+    <!-- LEFT DRAWER  this fucker doesnt take global text color classes-->
+    <q-drawer
+      v-model="leftDrawer"
+      side="left"
+      behavior="default"
+      :mini="leftDrawerMini"
+      @mouseover="leftDrawerMini = false"
+      @mouseout="leftDrawerMini = true"
+      mini-to-overlay
+      bordered
+      :breakpoint="600"
+      :width="217"
+      v-if="authenticated"
+    >
+      <q-scroll-area class="fit">
+        <q-list padding>
+          <q-item
+            clickable
+            v-ripple
+            to="/"
+            class="text-primary text-weight-bold"
+          >
+            <q-item-section avatar>
+              <q-icon name="home" />
+            </q-item-section>
+
+            <q-item-section> Home </q-item-section>
+          </q-item>
+          <q-item
+            clickable
+            v-ripple
+            :to="myprofileroute"
+            class="text-primary text-weight-bold"
+          >
+            <q-item-section avatar>
+              <q-icon name="account_circle" />
+            </q-item-section>
+
+            <q-item-section> My Profile </q-item-section>
+          </q-item>
+
+          <q-item clickable v-ripple class="text-primary text-weight-bold">
+            <q-item-section avatar>
+              <q-icon name="send" />
+            </q-item-section>
+
+            <q-item-section> Send </q-item-section>
+          </q-item>
+
+          <q-item clickable v-ripple class="text-primary text-weight-bold">
+            <q-item-section avatar>
+              <q-icon name="drafts" />
+            </q-item-section>
+
+            <q-item-section> Drafts </q-item-section>
+          </q-item>
+
+          <q-space />
+
+          <q-item
+            clickable
+            v-ripple
+            to="/settings"
+            class="text-primary text-weight-bold"
+          >
+            <q-item-section avatar>
+              <q-icon name="settings" />
+            </q-item-section>
+
+            <q-item-section> Settings </q-item-section>
+          </q-item>
+
+          <q-item
+            clickable
+            v-ripple
+            @click="logout"
+            class="text-primary text-weight-bold"
+          >
+            <q-item-section avatar>
+              <q-icon name="logout" />
+            </q-item-section>
+            <q-item-section> Logout </q-item-section>
+          </q-item>
+        </q-list>
+      </q-scroll-area>
+    </q-drawer>
 
     <!-- fix  -->
 
@@ -346,7 +506,6 @@
           </q-tab-panels>
         </q-card>
       </q-dialog>
-      <ParticlesText ref="textAnimation" class="gt-md" />
       <ParticlesBG ref="backgroundAnimation" />
       <router-view />
     </q-page-container>
@@ -421,17 +580,6 @@
               </q-item-section>
             </q-item>
 
-            <q-item class="gt-md">
-              <q-toggle
-                v-model="text_animation"
-                checked-icon="check"
-                color="green"
-                unchecked-icon="clear"
-                label="Text Animation"
-                @click="toogleTextAnimation(text_animation)"
-              />
-            </q-item>
-
             <q-item>
               <q-toggle
                 v-model="background_animation"
@@ -461,20 +609,17 @@ import ParticlesText from 'components/ParticlesText.vue';
 import router from 'src/router/index.ts';
 
 export default {
-  components: { ParticlesText, ParticlesBG },
+  components: { ParticlesBG },
 
   setup() {
     const userStore = useUserStore();
     const settingsStore = useSettingsStore();
     const miniState = ref(true);
     const q = useQuasar();
-
     if (q.screen.width < 600) {
-      var background_animation = ref(true);
-      var text_animation = ref(false);
+      var leftDrawer = ref(false);
     } else {
-      var background_animation = ref(false);
-      var text_animation = ref(true);
+      var leftDrawer = ref(true);
     }
 
     return {
@@ -488,13 +633,19 @@ export default {
       userStore,
       q,
       background_animation: ref(false),
-      text_animation: ref(true),
       // login / register form stuff
       login_popup: ref(false),
       forgot_popup: ref(false),
 
-      login_tab: ref('login'),
+      leftDrawerMini: ref(true),
+      leftDrawer,
+      search: ref(''),
+      miniState,
+      loading: ref(false),
+      me: userStore.user,
+      theme_menu: ref(false),
 
+      login_tab: ref('login'),
       username: ref(''),
       password: ref(''),
       password2: ref(''),
@@ -505,15 +656,13 @@ export default {
       request_password: ref(false),
       isPwd: ref(true),
       isPwd2: ref(true),
-      loading: ref(false),
       saved_username: ref(''),
-      theme_menu: ref(false),
     };
   },
 
-  mounted() {
-    if (this.userStore.auth_state) {
-      this.$router.push('/l');
+  created() {
+    if (!this.userStore.authenticated) {
+      this.getMe();
     }
   },
 
@@ -521,8 +670,19 @@ export default {
     darkmode() {
       return this.settingsStore.darkmode_state;
     },
+    mobile() {
+      if (this.q.screen.width < 600) {
+        return true;
+      } else {
+        return false;
+      }
+    },
+    myprofileroute() {
+      return '/users/' + this.me.username;
+    },
     authenticated() {
-      return this.userStore.auth_state;
+      //return true;
+      return this.userStore.authenticated;
     },
   },
 
@@ -533,9 +693,6 @@ export default {
     },
     darkmodeChanged() {
       this.settingsStore.darkmode = this.darkmode_model;
-    },
-    toogleTextAnimation(text_val) {
-      this.$refs.textAnimation.toogle_active(text_val);
     },
     toogleBackgroundAnimation(bg_val) {
       this.$refs.backgroundAnimation.toogle_active(bg_val);
@@ -602,6 +759,47 @@ export default {
           });
       }
     },
+    logout() {
+      let config = {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': this.q.cookies.get('csrftoken'),
+        },
+      };
+      api
+        .post('/auth/logout', '', config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.userStore.setAuthState(false);
+            this.$router.push('/');
+            this.notify('positive', 'Logged out!');
+          }
+        })
+        .catch();
+    },
+
+    getMe() {
+      let config = {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': this.q.cookies.get('csrftoken'),
+        },
+      };
+      api
+        .get('/profile/me', config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.me = serializeMe(response.data);
+            this.userStore.setUser(this.me);
+            this.userStore.setAuthState(true);
+          } else {
+            this.userStore.setAuthState(false);
+          }
+        })
+        .catch((error) => {
+          this.userStore.setAuthState(false);
+        });
+    },
 
     submitLogin() {
       this.loading = true;
@@ -621,7 +819,7 @@ export default {
         .then((response) => {
           if (response.status == 200) {
             this.loading = false;
-            this.userStore.authenticated = true;
+            this.userStore.setAuthState(true);
             this.username = '';
             this.password = '';
             this.password2 = '';
@@ -629,10 +827,10 @@ export default {
             this.email = '';
             this.notify('positive', 'Logged in');
             this.login_popup = false;
-            this.$router.push('/l');
           } else {
             // means that email hasnt been verified yet
             if (response.status == 244) {
+              this.userStore.setAuthState(false);
               this.loading = false;
               this.saved_username = this.username;
               this.q.notify({
@@ -673,7 +871,7 @@ export default {
               });
             } else {
               this.loading = false;
-              this.userStore.authenticated = false;
+              this.userStore.setAuthState(false);
               var msg = 'Error: ' + response.data.error;
               this.notify('negative', msg);
             }
@@ -683,7 +881,7 @@ export default {
           this.loading = false;
           var msg = 'Error (Server Error): ' + error;
           this.notify('negative', msg);
-          this.userStore.authenticated = false;
+          this.userStore.setAuthState(false);
         });
     },
 
@@ -732,24 +930,6 @@ export default {
           var msg = 'Error (Server Error): ' + error;
           this.notify('negative', msg);
         });
-    },
-
-    logout() {
-      let config = {
-        withCredentials: true,
-        headers: {
-          'X-CSRFToken': this.q.cookies.get('csrftoken'),
-        },
-      };
-      api
-        .post('/auth/logout', '', config)
-        .then((response) => {
-          if (response.status == 200) {
-            this.userStore.authenticated = false;
-            this.$router.go('/');
-          }
-        })
-        .catch();
     },
   },
 };

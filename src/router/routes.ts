@@ -7,36 +7,32 @@ const routes: RouteRecordRaw[] = [
     children: [
       { path: '/', component: () => import('pages/IndexPage.vue') },
       {
-        path: 'reset_password',
-        component: () => import('pages/ResetPassword.vue'),
-      },
-      {
-        path: 'accepted',
-        component: () => import('pages/Accepted.vue'),
-      },
-      {
-        path: 'declined',
-        component: () => import('pages/Declined.vue'),
-      },
-    ],
-  },
-  {
-    path: '/l',
-    component: () => import('layouts/LoggedLayout.vue'),
-    children: [
-      { path: '', component: () => import('src/pages/l/StartPage.vue') },
-      { path: 'home', component: () => import('src/pages/l/Home.vue') },
-      {
-        path: 'profile',
-        component: () => import('src/pages/l/MyProfile.vue'),
-      },
-      {
         path: 'settings',
-        component: () => import('src/pages/l/Settings.vue'),
+        component: () => import('src/pages/Settings.vue'),
       },
       {
         path: 'users/:id',
-        component: () => import('pages/l/UserProfile.vue'),
+        component: () => import('pages/UserProfile.vue'),
+      },
+    ],
+  },
+
+  {
+    path: '/api',
+    component: () => import('layouts/APIReferrersLayout.vue'),
+    children: [
+      { path: '/', component: () => import('pages/ErrorNotFound.vue') },
+      {
+        path: 'reset_password',
+        component: () => import('pages/APIReferrers/ResetPassword.vue'),
+      },
+      {
+        path: 'accepted',
+        component: () => import('pages/APIReferrers/Accepted.vue'),
+      },
+      {
+        path: 'declined',
+        component: () => import('pages/APIReferrers/Declined.vue'),
       },
     ],
   },

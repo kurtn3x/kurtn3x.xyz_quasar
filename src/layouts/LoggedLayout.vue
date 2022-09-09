@@ -102,7 +102,7 @@
           <q-item
             clickable
             v-ripple
-            to="/l/profile"
+            :to="myprofileroute"
             class="text-primary text-weight-bold"
           >
             <q-item-section avatar>
@@ -322,6 +322,9 @@ export default {
       } else {
         return false;
       }
+    },
+    myprofileroute() {
+      return '/users/' + this.user.username;
     },
   },
 
