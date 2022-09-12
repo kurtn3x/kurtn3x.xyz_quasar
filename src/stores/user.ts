@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia';
-import { LiteUser } from 'src/models';
+import { UserPreview } from 'src/models';
 import { LocalStorage } from 'quasar';
-import { defaultLiteUser } from 'src/models';
+import { defaultUserPreview } from 'src/models';
 
 export const useUserStore = defineStore('user', {
   state: () => ({
     authenticated: LocalStorage.getItem('authenticated') || false,
-    user: (LocalStorage.getItem('user') || defaultLiteUser()) as LiteUser,
+    user: (LocalStorage.getItem('user') || defaultUserPreview()) as UserPreview,
   }),
 
   getters: {
@@ -14,7 +14,7 @@ export const useUserStore = defineStore('user', {
   },
 
   actions: {
-    setUser(user: LiteUser) {
+    setUser(user: UserPreview) {
       this.user = user;
     },
     setAuthState(state: boolean) {

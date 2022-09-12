@@ -1,4 +1,4 @@
-export interface LiteUser {
+export interface UserPreview {
   fetched: boolean;
   role: string;
   username: string;
@@ -13,28 +13,26 @@ export interface User {
   name: string;
   id: string;
   last_seen: string;
-  joined: string;
+  date_joined: string;
   description: string;
   location: string;
   status: string;
   avatar: string;
   background: string;
-  email: string;
 }
 
 export function defaultUser() {
   const user: User = {
     fetched: false,
     role: '​',
-    username: '​',
+    username: '',
     name: '​',
     id: '​',
-    email: '​',
     status: '​',
     description: '​',
     location: '​',
     last_seen: '​',
-    joined: '​',
+    date_joined: '​',
     avatar: 'https://media.kurtn3x.xyz/default.png',
     background: 'https://media.kurtn3x.xyz/background.png',
   };
@@ -42,11 +40,11 @@ export function defaultUser() {
   return user;
 }
 
-export function defaultLiteUser() {
-  const user: LiteUser = {
+export function defaultUserPreview() {
+  const user: UserPreview = {
     fetched: false,
     role: '​',
-    username: '​',
+    username: '',
     status: '​',
     avatar: 'https://media.kurtn3x.xyz/default.png',
   };
@@ -54,30 +52,29 @@ export function defaultLiteUser() {
   return user;
 }
 
-export function serializeLiteUser(fetchedData: any) {
-  const lite_user: LiteUser = {
+export function serializeUserPreview(fetchedData: any) {
+  const user_preview: UserPreview = {
     fetched: true,
     role: fetchedData.role,
     status: fetchedData.status,
     username: fetchedData.username,
     avatar: path_to_link_av(fetchedData.profile.avatar),
   };
-  return lite_user;
+  return user_preview;
 }
 
 export function serializeUser(fetchedData: any) {
   const user: User = {
     fetched: true,
-    role: fetchedData.role,
-    username: fetchedData.username,
-    email: fetchedData.email,
-    id: fetchedData.id,
+    id: fetchedData.account.id,
+    username: fetchedData.account.username,
+    last_seen: fetchedData.profile.last_seen,
+    date_joined: fetchedData.account.date_joined,
     name: fetchedData.profile.name,
     status: fetchedData.profile.status,
     description: fetchedData.profile.description,
-    last_seen: fetchedData.profile.last_seen,
-    joined: fetchedData.profile.joined,
     location: fetchedData.profile.location,
+    role: fetchedData.profile.role,
     avatar: path_to_link_av(fetchedData.profile.avatar),
     background: path_to_link_bg(fetchedData.profile.background),
   };

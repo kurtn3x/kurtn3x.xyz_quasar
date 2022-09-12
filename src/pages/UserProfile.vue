@@ -1,5 +1,5 @@
 <template>
-  <div v-if="this.user.fetched && this.loading">
+  <div v-if="this.user.fetched && this.page_load">
     <q-dialog seamless v-model="edit_popup">
       <q-card bordered square class="no-shadow q-ma-md q-pa-md">
         <q-card-section class="row items-center q-pb-none">
@@ -19,15 +19,15 @@
           <q-form
             class="q-gutter-md text-grey"
             ref="loginform"
-            @submit.prevent="submitLogin"
+            @submit.prevent="updateUserProfile"
           >
             <q-input
               dense
               square
               filled
-              v-model="username"
-              type="username"
-              label="First Name"
+              v-model="name"
+              type="name"
+              label="Name"
               lazy-rules
               :rules="[
                 (val) => (val && val.length > 0) || 'Please type something',
@@ -37,21 +37,19 @@
               dense
               square
               filled
-              v-model="username"
-              type="username"
-              label="Last Name"
-              lazy-rules
-              :rules="[
-                (val) => (val && val.length > 0) || 'Please type something',
-              ]"
-            />
-            <q-input
-              dense
-              square
-              filled
-              v-model="username"
-              type="username"
+              v-model="description"
               label="Description"
+              lazy-rules
+              :rules="[
+                (val) => (val && val.length > 0) || 'Please type something',
+              ]"
+            />
+            <q-input
+              dense
+              square
+              filled
+              v-model="location"
+              label="Location"
               lazy-rules
               :rules="[
                 (val) => (val && val.length > 0) || 'Please type something',
@@ -59,7 +57,7 @@
             />
 
             <q-file
-              v-model="filesMaxSize"
+              v-model="avatar"
               outlined
               label="Profile Picture"
               max-file-size="2048"
@@ -72,7 +70,7 @@
             </q-file>
 
             <q-file
-              v-model="filesMaxSize"
+              v-model="background"
               outlined
               label="Background Picture"
               max-file-size="2048"
@@ -212,7 +210,7 @@
                             {{ this.user.location }}
                           </div>
                           <div class="q-mt-sm text-body1">
-                            {{ this.user.joined }}
+                            {{ this.user.date_joined }}
                           </div>
                           <div class="q-mt-sm text-body1">
                             {{ this.user.last_seen }}
@@ -319,7 +317,7 @@
                           {{ this.user.location }}
                         </div>
                         <div class="q-mt-sm text-body1">
-                          {{ this.user.joined }}
+                          {{ this.user.date_joined }}
                         </div>
                         <div class="q-mt-sm text-body1">
                           {{ this.user.last_seen }}
@@ -377,7 +375,7 @@
     </div>
   </div>
   <div
-    v-if="!this.user.fetched && this.loading"
+    v-if="!this.user.fetched && this.page_load"
     class="text-center q-pa-md flex flex-center"
   >
     <div>
@@ -416,14 +414,21 @@ export default {
     return {
       user: ref(defaultUser()),
       me: userStore.user,
+      name: ref(userStore.user.username),
+      description: ref(userStore.user.description),
+      location: ref(userStore.user.location),
+      avatar: ref(''),
+      background: ref(''),
       settingsStore,
       q,
       userStore,
       loading: ref(false),
+      page_load: ref(false),
       avatar_hover: ref(false),
       edit_popup: ref(false),
       profile_tab: ref('about'),
       user_found: ref(false),
+      test: ref(true),
     };
   },
 
@@ -454,6 +459,40 @@ export default {
       });
     },
 
+    updateUserProfile() {
+      let config = {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': this.q.cookies.get('csrftoken'),
+        },
+      };
+      this.loading = true;
+      var data = {
+        name: this.name,
+        description: this.description,
+        location: this.location,
+        avatar: this.avatar,
+        background: this.background,
+      };
+
+      api
+        .put('/profile/update', data, config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.user = serializeUser(response.data);
+            this.loading = false;
+          } else {
+            this.loading = false;
+            this.notify('negative', 'User does not exist.');
+          }
+        })
+        .catch((error) => {
+          this.loading = false;
+          this.notify('negative', 'Something went wrong with the API :/');
+          console.log(error);
+        });
+    },
+
     getUser() {
       let config = {
         withCredentials: true,
@@ -467,14 +506,18 @@ export default {
         .then((response) => {
           if (response.status == 200) {
             this.user = serializeUser(response.data);
-            this.loading = true;
+            this.page_load = true;
           } else {
-            this.loading = true;
+            this.page_load = true;
             this.notify('negative', 'User does not exist.');
           }
         })
         .catch((error) => {
-          this.loading = true;
+          this.page_load = true;
+          if (this.test) {
+            this.user = defaultUser();
+            this.user.fetched = true;
+          }
           this.notify('negative', 'Something went wrong with the API :/');
           console.log(error);
         });

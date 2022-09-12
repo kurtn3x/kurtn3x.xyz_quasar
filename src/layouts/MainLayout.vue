@@ -133,7 +133,7 @@
           <q-item
             clickable
             v-ripple
-            to="/"
+            to="/dashboard/home"
             class="text-primary text-weight-bold"
           >
             <q-item-section avatar>
@@ -607,6 +607,7 @@ import { useSettingsStore } from 'stores/settings';
 import ParticlesBG from 'components/ParticlesBG.vue';
 import ParticlesText from 'components/ParticlesText.vue';
 import router from 'src/router/index.ts';
+import { serializeUserPreview } from 'src/models';
 
 export default {
   components: { ParticlesBG },
@@ -661,8 +662,9 @@ export default {
   },
 
   created() {
-    if (!this.userStore.authenticated) {
+    if (!this.userStore.user.fetched) {
       this.getMe();
+      console.log(this.userStore.user);
     }
   },
 
@@ -678,10 +680,10 @@ export default {
       }
     },
     myprofileroute() {
-      return '/users/' + this.user.username;
+      return '/user/' + this.user.username;
     },
     authenticated() {
-      //return true;
+      // return true;
       return this.userStore.authenticated;
     },
   },
@@ -789,7 +791,7 @@ export default {
         .get('/profile/me', config)
         .then((response) => {
           if (response.status == 200) {
-            this.user = serializeLiteUser(response.data);
+            this.user = serializeUserPreview(response.data);
             this.userStore.setUser(this.user);
             this.userStore.setAuthState(true);
           } else {
@@ -797,6 +799,7 @@ export default {
           }
         })
         .catch((error) => {
+          console.log(error);
           this.userStore.setAuthState(false);
         });
     },
@@ -827,6 +830,7 @@ export default {
             this.email = '';
             this.notify('positive', 'Logged in');
             this.login_popup = false;
+            this.$router.push('/dashboard/home');
           } else {
             // means that email hasnt been verified yet
             if (response.status == 244) {
