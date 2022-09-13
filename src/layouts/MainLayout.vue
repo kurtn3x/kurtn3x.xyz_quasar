@@ -831,6 +831,7 @@ export default {
             this.notify('positive', 'Logged in');
             this.login_popup = false;
             this.$router.push('/dashboard/home');
+            this.getMe();
           } else {
             // means that email hasnt been verified yet
             if (response.status == 244) {

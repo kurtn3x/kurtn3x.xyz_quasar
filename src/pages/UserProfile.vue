@@ -55,12 +55,13 @@
                 (val) => (val && val.length > 0) || 'Please type something',
               ]"
             />
+            <input type="file" @change="uploadFile" ref="myFile" />
 
             <q-file
               v-model="avatar"
               outlined
               label="Profile Picture"
-              max-file-size="2048"
+              max-file-size="20480000"
               accept=".jpg, .png, .gif"
               @rejected="onRejected"
             >
@@ -362,7 +363,10 @@
         </q-card-actions>
       </q-card>
     </div>
-    <div class="row justify-center q-mt-md" v-if="user.username == me.username">
+    <div
+      class="row justify-center q-mt-md"
+      v-if="user.username == me.username || test"
+    >
       <q-btn
         size="lg"
         flat
@@ -459,11 +463,52 @@ export default {
       });
     },
 
+    uploadFile() {
+      console.log('Uploading');
+      let config = {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': this.q.cookies.get('csrftoken'),
+          'Content-Type': 'multipart/form-data',
+        },
+      };
+      this.loading = true;
+
+      let form_data = new FormData();
+      form_data.append('avatar', this.$refs.myFile.files[0]);
+
+      api
+        .put('/profile/update', form_data, config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.user = serializeUser(response.data);
+            this.userStore.setUser(this.user);
+            this.loading = false;
+          } else {
+            this.loading = false;
+            this.notify('negative', 'User does not exist.');
+          }
+        })
+        .catch((error) => {
+          this.loading = false;
+          this.notify('negative', 'Something went wrong with the API :/');
+          console.log(error);
+        });
+    },
+
+    onRejected(stuff, x) {
+      this.notify(
+        'negative',
+        'Something went wrong when uploading the picture.' + x
+      );
+    },
+
     updateUserProfile() {
       let config = {
         withCredentials: true,
         headers: {
           'X-CSRFToken': this.q.cookies.get('csrftoken'),
+          'Content-Type': 'multipart/form-data',
         },
       };
       this.loading = true;
@@ -474,12 +519,16 @@ export default {
         avatar: this.avatar,
         background: this.background,
       };
+      let form_data = new FormData();
+
+      console.log(this.avatar);
 
       api
         .put('/profile/update', data, config)
         .then((response) => {
           if (response.status == 200) {
             this.user = serializeUser(response.data);
+            this.userStore.setUser(this.user);
             this.loading = false;
           } else {
             this.loading = false;
