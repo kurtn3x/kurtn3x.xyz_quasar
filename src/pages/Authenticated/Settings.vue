@@ -316,7 +316,11 @@ import { useQuasar, LocalStorage } from 'quasar';
 import { api } from 'boot/axios';
 import { useUserStore } from 'stores/user.ts';
 import { useSettingsStore } from 'stores/settings';
-import { defaultUser, serializeUser } from 'src/models';
+import {
+  defaultUser,
+  serializeHeaderInformation,
+  serializeUser,
+} from 'src/models';
 
 export default {
   name: 'SettingsView',
@@ -327,7 +331,7 @@ export default {
     const q = useQuasar();
 
     return {
-      account: userStore.headerinfo,
+      account: ref(''),
       tab: ref('start'),
       splitterModel: ref(20),
       settingsStore,
@@ -340,9 +344,7 @@ export default {
   },
 
   created() {
-    if (!this.account.fetched) {
-      this.getAccountInformation();
-    }
+    this.getAccountInformation();
   },
 
   computed: {
@@ -407,8 +409,9 @@ export default {
         .put('/profile/update', form_data, config)
         .then((response) => {
           if (response.status == 200) {
-            this.account = serializeUser(response.data);
-            this.userStore.setUser(this.account);
+            this.account = response.data;
+            var header = serializeHeaderInformation(response.data);
+            this.userStore.setHeaderInfo(header);
             this.loading = false;
           } else {
             this.loading = false;
@@ -416,6 +419,7 @@ export default {
           }
         })
         .catch((error) => {
+          console.log(error);
           this.loading = false;
           this.notify('negative', 'Something went wrong with the API :/');
         });
@@ -480,8 +484,7 @@ export default {
         .get('/profile/account', config)
         .then((response) => {
           if (response.status == 200) {
-            this.account = serializeUser(response.data);
-            this.userStore.setUser(this.account);
+            this.account = response.data;
           } else {
             this.$router.push('/');
           }

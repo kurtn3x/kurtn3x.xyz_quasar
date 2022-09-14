@@ -25,6 +25,10 @@ const routes: RouteRecordRaw[] = [
         path: 'settings',
         component: () => import('pages/Authenticated/Settings.vue'),
       },
+      {
+        path: 'files',
+        component: () => import('pages/Authenticated/Files.vue'),
+      },
     ],
   },
 
@@ -50,10 +54,10 @@ const routes: RouteRecordRaw[] = [
 
   // Always leave this as last one,
   // but you can also remove it
-  {
-    path: '/:catchAll(.*)*',
-    component: () => import('pages/ErrorNotFound.vue'),
-  },
+  // {
+  //   path: '/:catchAll(.*)*',
+  //   component: () => import('pages/ErrorNotFound.vue'),
+  // },
 ];
 
 export default routes;

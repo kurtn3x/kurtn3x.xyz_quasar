@@ -94,7 +94,6 @@
       // HERE
     }"
     :particlesInit="particlesInit"
-    :particlesLoaded="particlesLoaded"
   />
 </template>
 

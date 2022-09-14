@@ -1,6 +1,13 @@
 <template>
   <div class="disable-select text-primary">
-    <h1 class="text-center"></h1>
+    <h1 class="text-center text-h5">My Files</h1>
+    <div class="row justify-center">
+      <q-file color="teal" filled v-model="upload" label="Label">
+        <template v-slot:prepend>
+          <q-icon name="cloud_upload" />
+        </template>
+      </q-file>
+    </div>
   </div>
 </template>
 
@@ -12,8 +19,7 @@ import { api } from 'boot/axios';
 import { useSettingsStore } from 'stores/settings';
 
 export default defineComponent({
-  name: 'IndexPage',
-
+  name: 'FilesView',
   setup() {
     const userStore = useUserStore();
     const settings_store = useSettingsStore();
@@ -23,6 +29,7 @@ export default defineComponent({
       userStore,
       settings_store,
       q,
+      upload: ref(null),
     };
   },
 });

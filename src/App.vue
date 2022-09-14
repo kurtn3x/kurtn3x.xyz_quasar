@@ -15,9 +15,9 @@ import { useQuasar, LocalStorage } from 'quasar';
 import { api } from 'boot/axios';
 import { useSettingsStore } from 'stores/settings';
 import { useUserStore } from './stores/user';
+
 export default defineComponent({
   name: 'App',
-
   setup() {
     const q = useQuasar();
     const settingsStore = useSettingsStore();
@@ -48,7 +48,7 @@ export default defineComponent({
     };
   },
 
-  beforeCreate() {
+  created() {
     if (this.settingsStore.theme_state == null) {
       document.body.setAttribute('data-theme', 'default');
       this.settingsStore.theme = 'default';
@@ -93,3 +93,14 @@ export default defineComponent({
   },
 });
 </script>
+
+<style>
+#app {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+  margin: 0 auto;
+}
+</style>

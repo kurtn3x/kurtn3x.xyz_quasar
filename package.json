@@ -11,6 +11,7 @@
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
+    "@pdftron/webviewer": "^8.8.0",
     "@quasar/extras": "^1.0.0",
     "axios": "^0.21.1",
     "i": "^0.3.7",

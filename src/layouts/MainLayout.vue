@@ -147,12 +147,17 @@
             <q-item-section> My Profile </q-item-section>
           </q-item>
 
-          <q-item clickable v-ripple class="text-primary text-weight-bold">
+          <q-item
+            clickable
+            v-ripple
+            class="text-primary text-weight-bold"
+            to="/dashboard/files"
+          >
             <q-item-section avatar>
-              <q-icon name="send" />
+              <q-icon name="cloud" />
             </q-item-section>
 
-            <q-item-section> Send </q-item-section>
+            <q-item-section> My Files </q-item-section>
           </q-item>
 
           <q-item clickable v-ripple class="text-primary text-weight-bold">
@@ -657,8 +662,8 @@ export default {
   },
 
   created() {
-    if (!this.userStore.headerinfo.fetched) {
-      this.getMe();
+    if (!this.userStore.headerinfo.fetched && this.userStore.authenticated) {
+      this.getHeaderInfo();
     }
   },
 
@@ -677,8 +682,17 @@ export default {
       return '/user/' + this.headerinfo.username;
     },
     authenticated() {
-      return true;
-      // return this.userStore.authenticated;
+      // return true;
+      return this.userStore.authenticated;
+    },
+    headerinfoStore() {
+      return this.userStore.headerinfo;
+    },
+  },
+
+  watch: {
+    headerinfoStore(valChanged) {
+      this.headerinfo = valChanged;
     },
   },
 
@@ -768,13 +782,14 @@ export default {
           if (response.status == 200) {
             this.userStore.setAuthState(false);
             this.userStore.setHeaderInfo(defaultHeaderInformation());
+            this.$router.push('/');
             this.notify('positive', 'Logged out!!');
           }
         })
         .catch();
     },
 
-    getMe() {
+    getHeaderInfo() {
       let config = {
         withCredentials: true,
         headers: {
@@ -785,7 +800,6 @@ export default {
         .get('/profile/headerinfo', config)
         .then((response) => {
           if (response.status == 200) {
-            console.log(response.data);
             this.headerinfo = serializeHeaderInformation(response.data);
             this.userStore.setHeaderInfo(this.headerinfo);
             this.userStore.setAuthState(true);
@@ -821,17 +835,19 @@ export default {
         .post('/auth/login', formData, config)
         .then((response) => {
           if (response.status == 200) {
-            this.loading = false;
+            this.headerinfo = serializeHeaderInformation(response.data);
+            this.userStore.setHeaderInfo(this.headerinfo);
             this.userStore.setAuthState(true);
+            this.loading = false;
             this.username = '';
             this.password = '';
             this.password2 = '';
             this.login_password = '';
             this.email = '';
-            this.notify('positive', 'Logged in');
             this.login_popup = false;
             this.$router.push('/dashboard/home');
-            this.getMe();
+            this.loading = false;
+            this.notify('positive', 'Logged in');
           } else {
             // means that email hasnt been verified yet
             if (response.status == 244) {
