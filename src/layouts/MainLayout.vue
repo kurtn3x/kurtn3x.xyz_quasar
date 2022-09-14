@@ -5,7 +5,6 @@
       height-hint="98"
       elevated
       class="bg-primary text-layout-text"
-      v-if="authenticated"
     >
       <q-toolbar class="q-pl-none q-pr-none">
         <q-btn
@@ -19,9 +18,20 @@
           "
           :icon="leftDrawerMini ? 'menu' : 'menu_open'"
           label="Menu"
+          v-if="authenticated"
         />
-        <q-space />
-        <q-input dark dense standout v-model="search" input-class="text-left">
+        <q-separator vertical v-if="authenticated" />
+        <q-btn stretch flat icon="home" to="/" />
+
+        <q-space v-if="authenticated" />
+        <q-input
+          dark
+          dense
+          standout
+          v-model="search"
+          input-class="text-left"
+          v-if="authenticated"
+        >
           <template v-slot:append>
             <q-icon v-if="search === ''" name="search" />
             <q-icon
@@ -33,9 +43,9 @@
           </template>
         </q-input>
 
-        <q-btn stretch flat>
+        <q-btn stretch flat v-if="authenticated">
           <q-avatar size="34px">
-            <img :src="this.user.avatar" />
+            <img :src="this.headerinfo.avatar" />
           </q-avatar>
           <q-menu>
             <div class="row no-wrap q-pa-md">
@@ -49,11 +59,11 @@
 
               <div class="column items-center">
                 <q-avatar size="72px">
-                  <img :src="this.user.avatar" />
+                  <img :src="this.headerinfo.avatar" />
                 </q-avatar>
 
                 <div class="text-subtitle1 q-mt-md q-mb-xs">
-                  {{ this.user.username }}
+                  {{ this.headerinfo.username }}
                 </div>
 
                 <q-btn
@@ -70,27 +80,7 @@
             </div>
           </q-menu>
         </q-btn>
-      </q-toolbar>
-    </q-header>
-    <q-header
-      height-hint="98"
-      elevated
-      reveal
-      class="bg-primary text-layout-text"
-      v-if="!authenticated"
-    >
-      <q-toolbar class="q-pl-none q-pr-none">
-        <q-btn stretch flat icon="home" to="/" />
-        <q-separator vertical />
-        <q-btn
-          v-if="authenticated"
-          stretch
-          flat
-          label="Forum"
-          href="https://forum.kurtn3x.xyz"
-        />
-        <q-space />
-
+        <q-space v-if="!authenticated" />
         <q-btn
           stretch
           flat
@@ -100,6 +90,7 @@
             login_popup = true;
             login_tab = 'login';
           "
+          v-if="!authenticated"
         />
         <q-btn
           stretch
@@ -110,6 +101,7 @@
             login_popup = true;
             login_tab = 'register';
           "
+          v-if="!authenticated"
         />
       </q-toolbar>
     </q-header>
@@ -176,7 +168,7 @@
           <q-item
             clickable
             v-ripple
-            to="/settings"
+            to="/dashboard/settings"
             class="text-primary text-weight-bold"
           >
             <q-item-section avatar>
@@ -599,7 +591,7 @@
 
 <script>
 import { ref, computed } from 'vue';
-import { Dark } from 'quasar';
+import { Dark, LocalStorage } from 'quasar';
 import { useQuasar, QSpinnerGears } from 'quasar';
 import { api } from 'boot/axios';
 import { useUserStore } from 'stores/user.ts';
@@ -607,7 +599,10 @@ import { useSettingsStore } from 'stores/settings';
 import ParticlesBG from 'components/ParticlesBG.vue';
 import ParticlesText from 'components/ParticlesText.vue';
 import router from 'src/router/index.ts';
-import { serializeUserPreview } from 'src/models';
+import {
+  defaultHeaderInformation,
+  serializeHeaderInformation,
+} from 'src/models';
 
 export default {
   components: { ParticlesBG },
@@ -643,7 +638,7 @@ export default {
       search: ref(''),
       miniState,
       loading: ref(false),
-      user: userStore.user,
+      headerinfo: userStore.headerinfo,
       theme_menu: ref(false),
 
       login_tab: ref('login'),
@@ -662,9 +657,8 @@ export default {
   },
 
   created() {
-    if (!this.userStore.user.fetched) {
+    if (!this.userStore.headerinfo.fetched) {
       this.getMe();
-      console.log(this.userStore.user);
     }
   },
 
@@ -680,11 +674,11 @@ export default {
       }
     },
     myprofileroute() {
-      return '/user/' + this.user.username;
+      return '/user/' + this.headerinfo.username;
     },
     authenticated() {
-      // return true;
-      return this.userStore.authenticated;
+      return true;
+      // return this.userStore.authenticated;
     },
   },
 
@@ -773,8 +767,8 @@ export default {
         .then((response) => {
           if (response.status == 200) {
             this.userStore.setAuthState(false);
-            this.$router.push('/');
-            this.notify('positive', 'Logged out!');
+            this.userStore.setHeaderInfo(defaultHeaderInformation());
+            this.notify('positive', 'Logged out!!');
           }
         })
         .catch();
@@ -788,18 +782,24 @@ export default {
         },
       };
       api
-        .get('/profile/me', config)
+        .get('/profile/headerinfo', config)
         .then((response) => {
           if (response.status == 200) {
-            this.user = serializeUserPreview(response.data);
-            this.userStore.setUser(this.user);
+            console.log(response.data);
+            this.headerinfo = serializeHeaderInformation(response.data);
+            this.userStore.setHeaderInfo(this.headerinfo);
             this.userStore.setAuthState(true);
           } else {
+            this.notify(
+              'negative',
+              'Something went wrong when fetching the user.'
+            );
             this.userStore.setAuthState(false);
           }
         })
         .catch((error) => {
           console.log(error);
+          this.notify('negative', 'API ERROR.');
           this.userStore.setAuthState(false);
         });
     },

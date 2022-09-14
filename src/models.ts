@@ -1,3 +1,4 @@
+// preview, unused
 export interface UserPreview {
   fetched: boolean;
   role: string;
@@ -6,6 +7,7 @@ export interface UserPreview {
   avatar: string;
 }
 
+// Profile Data, used when showing a profile
 export interface User {
   fetched: boolean;
   role: string;
@@ -19,6 +21,40 @@ export interface User {
   status: string;
   avatar: string;
   background: string;
+}
+
+// used to load data on the header
+export interface HeaderInformation {
+  fetched: boolean;
+  username: string;
+  role: string;
+  status: string;
+  last_seen: string;
+  avatar: string;
+}
+
+export function defaultHeaderInformation() {
+  const info: HeaderInformation = {
+    fetched: false,
+    username: '​',
+    role: '​',
+    status: '​',
+    last_seen: '​',
+    avatar: 'https://media.kurtn3x.xyz/default.png',
+  };
+  return info;
+}
+
+export function serializeHeaderInformation(fetchedData: any) {
+  const info: HeaderInformation = {
+    fetched: true,
+    role: fetchedData.profile.role,
+    status: fetchedData.profile.status,
+    username: fetchedData.username,
+    last_seen: fetchedData.profile.last_seen,
+    avatar: path_to_link_av(fetchedData.profile.avatar),
+  };
+  return info;
 }
 
 export function defaultUser() {

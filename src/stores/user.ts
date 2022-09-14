@@ -1,12 +1,14 @@
 import { defineStore } from 'pinia';
-import { UserPreview } from 'src/models';
+import { HeaderInformation, defaultHeaderInformation } from 'src/models';
 import { LocalStorage } from 'quasar';
-import { defaultUserPreview } from 'src/models';
 
-export const useUserStore = defineStore('user', {
+export const useUserStore = defineStore('header', {
   state: () => ({
+    // authenticated stores the authentication state
     authenticated: LocalStorage.getItem('authenticated') || false,
-    user: (LocalStorage.getItem('user') || defaultUserPreview()) as UserPreview,
+    // headerinfo stores information required to load the header such as username and avatar
+    headerinfo: (LocalStorage.getItem('header') ||
+      defaultHeaderInformation()) as HeaderInformation,
   }),
 
   getters: {
@@ -14,8 +16,8 @@ export const useUserStore = defineStore('user', {
   },
 
   actions: {
-    setUser(user: UserPreview) {
-      this.user = user;
+    setHeaderInfo(info: HeaderInformation) {
+      this.headerinfo = info;
     },
     setAuthState(state: boolean) {
       this.authenticated = state;

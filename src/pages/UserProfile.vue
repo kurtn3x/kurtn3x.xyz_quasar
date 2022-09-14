@@ -1,103 +1,5 @@
 <template>
   <div v-if="this.user.fetched && this.page_load">
-    <q-dialog seamless v-model="edit_popup">
-      <q-card bordered square class="no-shadow q-ma-md q-pa-md">
-        <q-card-section class="row items-center q-pb-none">
-          <p class="text-weight-bolder text-primary">Update your Profile</p>
-          <q-space />
-          <q-btn
-            class="text-red"
-            flat
-            icon="close"
-            round
-            v-close-popup
-            style="top: -2em; left: 2em"
-          />
-        </q-card-section>
-
-        <q-card-section>
-          <q-form
-            class="q-gutter-md text-grey"
-            ref="loginform"
-            @submit.prevent="updateUserProfile"
-          >
-            <q-input
-              dense
-              square
-              filled
-              v-model="name"
-              type="name"
-              label="Name"
-              lazy-rules
-              :rules="[
-                (val) => (val && val.length > 0) || 'Please type something',
-              ]"
-            />
-            <q-input
-              dense
-              square
-              filled
-              v-model="description"
-              label="Description"
-              lazy-rules
-              :rules="[
-                (val) => (val && val.length > 0) || 'Please type something',
-              ]"
-            />
-            <q-input
-              dense
-              square
-              filled
-              v-model="location"
-              label="Location"
-              lazy-rules
-              :rules="[
-                (val) => (val && val.length > 0) || 'Please type something',
-              ]"
-            />
-            <input type="file" @change="uploadFile" ref="myFile" />
-
-            <q-file
-              v-model="avatar"
-              outlined
-              label="Profile Picture"
-              max-file-size="20480000"
-              accept=".jpg, .png, .gif"
-              @rejected="onRejected"
-            >
-              <template v-slot:prepend>
-                <q-icon name="attach_file" />
-              </template>
-            </q-file>
-
-            <q-file
-              v-model="background"
-              outlined
-              label="Background Picture"
-              max-file-size="2048"
-              accept=".jpg, .png, .gif"
-              @rejected="onRejected"
-            >
-              <template v-slot:prepend>
-                <q-icon name="attach_file" />
-              </template>
-            </q-file>
-            <q-card-actions>
-              <q-btn
-                rounded
-                size="md"
-                color="green"
-                class="full-width"
-                label="Update"
-                type="submit"
-                :loading="loading"
-              />
-            </q-card-actions>
-          </q-form>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
-
     <div class="q-ma-xs">
       <q-card class="gt-sm" bordered style="background-color: transparent">
         <q-img :src="this.user.background" style="height: 200px" />
@@ -363,20 +265,6 @@
         </q-card-actions>
       </q-card>
     </div>
-    <div
-      class="row justify-center q-mt-md"
-      v-if="user.username == me.username || test"
-    >
-      <q-btn
-        size="lg"
-        flat
-        stretch
-        color="primary"
-        icon="edit"
-        label="Edit Profile"
-        @click="this.edit_popup = !this.edit_popup"
-      />
-    </div>
   </div>
   <div
     v-if="!this.user.fetched && this.page_load"
@@ -417,19 +305,11 @@ export default {
 
     return {
       user: ref(defaultUser()),
-      me: userStore.user,
-      name: ref(userStore.user.username),
-      description: ref(userStore.user.description),
-      location: ref(userStore.user.location),
-      avatar: ref(''),
-      background: ref(''),
       settingsStore,
       q,
       userStore,
       loading: ref(false),
       page_load: ref(false),
-      avatar_hover: ref(false),
-      edit_popup: ref(false),
       profile_tab: ref('about'),
       user_found: ref(false),
       test: ref(true),
@@ -461,85 +341,6 @@ export default {
         progress: true,
         multiLine: true,
       });
-    },
-
-    uploadFile() {
-      console.log('Uploading');
-      let config = {
-        withCredentials: true,
-        headers: {
-          'X-CSRFToken': this.q.cookies.get('csrftoken'),
-          'Content-Type': 'multipart/form-data',
-        },
-      };
-      this.loading = true;
-
-      let form_data = new FormData();
-      form_data.append('avatar', this.$refs.myFile.files[0]);
-
-      api
-        .put('/profile/update', form_data, config)
-        .then((response) => {
-          if (response.status == 200) {
-            this.user = serializeUser(response.data);
-            this.userStore.setUser(this.user);
-            this.loading = false;
-          } else {
-            this.loading = false;
-            this.notify('negative', 'User does not exist.');
-          }
-        })
-        .catch((error) => {
-          this.loading = false;
-          this.notify('negative', 'Something went wrong with the API :/');
-          console.log(error);
-        });
-    },
-
-    onRejected(stuff, x) {
-      this.notify(
-        'negative',
-        'Something went wrong when uploading the picture.' + x
-      );
-    },
-
-    updateUserProfile() {
-      let config = {
-        withCredentials: true,
-        headers: {
-          'X-CSRFToken': this.q.cookies.get('csrftoken'),
-          'Content-Type': 'multipart/form-data',
-        },
-      };
-      this.loading = true;
-      var data = {
-        name: this.name,
-        description: this.description,
-        location: this.location,
-        avatar: this.avatar,
-        background: this.background,
-      };
-      let form_data = new FormData();
-
-      console.log(this.avatar);
-
-      api
-        .put('/profile/update', data, config)
-        .then((response) => {
-          if (response.status == 200) {
-            this.user = serializeUser(response.data);
-            this.userStore.setUser(this.user);
-            this.loading = false;
-          } else {
-            this.loading = false;
-            this.notify('negative', 'User does not exist.');
-          }
-        })
-        .catch((error) => {
-          this.loading = false;
-          this.notify('negative', 'Something went wrong with the API :/');
-          console.log(error);
-        });
     },
 
     getUser() {

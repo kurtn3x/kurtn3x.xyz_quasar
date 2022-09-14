@@ -22,6 +22,7 @@
             v-if="!small"
             header-style="fontSize: 1.3em"
           >
+            <q-tab name="profile" icon="person" label="Profile" />
             <q-tab name="account" icon="admin_panel_settings" label="Account" />
           </q-expansion-item>
           <q-expansion-item
@@ -33,6 +34,7 @@
             <q-tab name="other" icon="settings" label="Other" />
           </q-expansion-item>
           <div v-if="small">
+            <q-tab name="profile" icon="person" label="Profile" />
             <q-tab name="account" icon="admin_panel_settings" label="Account" />
             <q-tab name="other" icon="settings" label="Other" />
           </div>
@@ -60,6 +62,107 @@
             "
             ><div class="text-h4 q-mb-md">The Settings Menu</div></q-tab-panel
           >
+          <!-- PROFILE SETTINGS  -->
+          <q-tab-panel
+            name="profile"
+            :class="
+              darkmode
+                ? 'text-light bg-background-dark'
+                : 'text-dark bg-background-light'
+            "
+          >
+            <q-card bordered square class="no-shadow q-ma-md q-pa-md">
+              <q-card-section class="row items-center q-pb-none">
+                <p class="text-weight-bolder text-primary">
+                  Update your Profile
+                </p>
+              </q-card-section>
+
+              <q-card-section>
+                <q-form
+                  class="q-gutter-md text-grey"
+                  ref="loginform"
+                  @submit.prevent="updateUserProfile"
+                >
+                  <q-input
+                    dense
+                    square
+                    filled
+                    v-model="name"
+                    type="name"
+                    label="Name"
+                    lazy-rules
+                    :rules="[
+                      (val) =>
+                        (val && val.length > 0) || 'Please type something',
+                    ]"
+                  />
+                  <q-input
+                    dense
+                    square
+                    filled
+                    v-model="description"
+                    label="Description"
+                    lazy-rules
+                    :rules="[
+                      (val) =>
+                        (val && val.length > 0) || 'Please type something',
+                    ]"
+                  />
+                  <q-input
+                    dense
+                    square
+                    filled
+                    v-model="location"
+                    label="Location"
+                    lazy-rules
+                    :rules="[
+                      (val) =>
+                        (val && val.length > 0) || 'Please type something',
+                    ]"
+                  />
+                  <input type="file" @change="uploadFile" ref="myFile" />
+
+                  <q-file
+                    v-model="avatar"
+                    outlined
+                    label="Profile Picture"
+                    max-file-size="20480000"
+                    accept=".jpg, .png, .gif"
+                    @rejected="onRejected"
+                  >
+                    <template v-slot:prepend>
+                      <q-icon name="attach_file" />
+                    </template>
+                  </q-file>
+
+                  <q-file
+                    v-model="background"
+                    outlined
+                    label="Background Picture"
+                    max-file-size="2048"
+                    accept=".jpg, .png, .gif"
+                    @rejected="onRejected"
+                  >
+                    <template v-slot:prepend>
+                      <q-icon name="attach_file" />
+                    </template>
+                  </q-file>
+                  <q-card-actions>
+                    <q-btn
+                      rounded
+                      size="md"
+                      color="green"
+                      class="full-width"
+                      label="Update"
+                      type="submit"
+                      :loading="loading"
+                    />
+                  </q-card-actions>
+                </q-form>
+              </q-card-section>
+            </q-card>
+          </q-tab-panel>
 
           <q-tab-panel
             name="account"
@@ -72,57 +175,134 @@
             <div class="text-h4 q-mb-md">Account Settings</div>
             <q-card class="my-card">
               <q-card-section>
-                <div class="text-body1">Id: {{ this.user.id }}</div>
-                <div class="text-body1">Username: {{ this.user.username }}</div>
-                <div class="text-body1">Email: {{ this.user.email }}</div>
-                <div class="text-body1">Role: {{ this.user.role }}</div>
-                <div class="text-body1">Groups: {{ placeholder }}</div>
-                <div class="text-body1">Phone: {{ this.user.phone }}</div>
+                <div class="text-body1">Id: {{ this.account.id }}</div>
                 <div class="text-body1">
-                  First Name: {{ this.user.first_name }}
+                  Username: {{ this.account.username }}
+                </div>
+                <div class="text-body1">Email: {{ this.account.email }}</div>
+                <div class="text-body1">Role: {{ this.account.role }}</div>
+                <div class="text-body1">Groups: {{ placeholder }}</div>
+                <div class="text-body1">Phone: {{ this.account.phone }}</div>
+                <div class="text-body1">
+                  First Name: {{ this.account.first_name }}
                 </div>
                 <div class="text-body1">
-                  Last Name: {{ this.user.last_name }}
+                  Last Name: {{ this.account.last_name }}
                 </div>
               </q-card-section>
 
               <q-card-actions vertical align="center">
-                <q-btn flat stretch>Change E-Mail</q-btn>
-                <q-btn flat stretch>Change Password</q-btn>
-                <q-btn flat stretch>Delete Account</q-btn>
-                <q-btn flat stretch @click="this.$router.push('/l/profile')"
-                  >Other Settings can be changed under 'My Profile'.</q-btn
+                <q-expansion-item
+                  label="Change E-Mail"
+                  header-style="fontSize: 1.3em"
                 >
+                  <q-form
+                    class="q-gutter-md text-grey"
+                    ref="loginform"
+                    @submit.prevent="updateUserProfile"
+                  >
+                    <q-input
+                      dense
+                      square
+                      filled
+                      v-model="change_email"
+                      type="email"
+                      label="New E-Mail"
+                      lazy-rules
+                      :rules="[
+                        (val) =>
+                          (val && val.length > 0) || 'Please type something',
+                      ]"
+                    />
+                    <q-input
+                      dense
+                      square
+                      filled
+                      v-model="password"
+                      label="Your Password"
+                      lazy-rules
+                      :rules="[
+                        (val) =>
+                          (val && val.length > 0) || 'Please type something',
+                      ]"
+                    />
+                    <q-btn
+                      rounded
+                      size="md"
+                      color="green"
+                      class="full-width"
+                      label="Change E-Mail"
+                      type="submit"
+                      :loading="loading"
+                    />
+                  </q-form>
+                </q-expansion-item>
+                <q-expansion-item
+                  label="Change Password"
+                  header-style="fontSize: 1.3em"
+                >
+                  <q-form
+                    class="q-gutter-md text-grey"
+                    ref="loginform"
+                    @submit.prevent="updateUserProfile"
+                  >
+                    <q-input
+                      dense
+                      square
+                      filled
+                      v-model="change_email"
+                      type="email"
+                      label="New Password"
+                      lazy-rules
+                      :rules="[
+                        (val) =>
+                          (val && val.length > 0) || 'Please type something',
+                      ]"
+                    />
+                    <q-input
+                      dense
+                      square
+                      filled
+                      v-model="password"
+                      label="Confirm New Password"
+                      lazy-rules
+                      :rules="[
+                        (val) =>
+                          (val && val.length > 0) || 'Please type something',
+                      ]"
+                    />
+                    <q-btn
+                      rounded
+                      size="md"
+                      color="green"
+                      class="full-width"
+                      label="Change Password"
+                      type="submit"
+                      :loading="loading"
+                    />
+                  </q-form>
+                </q-expansion-item>
+                <q-btn flat class="q-mt-xl">Delete Account</q-btn>
               </q-card-actions>
             </q-card>
           </q-tab-panel>
           <q-tab-panel
             name="other"
             :class="
-              test_darkmode
-                ? 'text-dark bg-background-dark'
+              darkmode
+                ? 'text-light bg-background-dark'
                 : 'text-dark bg-background-light'
             "
           >
-            <div class="text-h4 q-mb-md">Other</div>
-            <p>
-              Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis
-              praesentium cumque magnam odio iure quidem, quod illum numquam
-              possimus obcaecati commodi minima assumenda consectetur culpa fuga
-              nulla ullam. In, libero.
-            </p>
-            <p>
-              Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis
-              praesentium cumque magnam odio iure quidem, quod illum numquam
-              possimus obcaecati commodi minima assumenda consectetur culpa fuga
-              nulla ullam. In, libero.
-            </p>
-            <p>
-              Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis
-              praesentium cumque magnam odio iure quidem, quod illum numquam
-              possimus obcaecati commodi minima assumenda consectetur culpa fuga
-              nulla ullam. In, libero.
-            </p>
+            <q-btn
+              rounded
+              size="md"
+              color="green"
+              class="full-width"
+              label="Clear Local Storage and Logout"
+              :loading="loading"
+              @click="clear_all"
+            />
           </q-tab-panel>
         </q-tab-panels>
       </template>
@@ -132,7 +312,7 @@
 
 <script>
 import { ref, reactive } from 'vue';
-import { useQuasar, QSpinnerGears } from 'quasar';
+import { useQuasar, LocalStorage } from 'quasar';
 import { api } from 'boot/axios';
 import { useUserStore } from 'stores/user.ts';
 import { useSettingsStore } from 'stores/settings';
@@ -147,7 +327,7 @@ export default {
     const q = useQuasar();
 
     return {
-      user: userStore.user,
+      account: userStore.headerinfo,
       tab: ref('start'),
       splitterModel: ref(20),
       settingsStore,
@@ -160,8 +340,8 @@ export default {
   },
 
   created() {
-    if (!this.user.feched) {
-      this.getMe();
+    if (!this.account.fetched) {
+      this.getAccountInformation();
     }
   },
 
@@ -179,9 +359,6 @@ export default {
   },
 
   methods: {
-    changeBackground() {
-      console.log('bla');
-    },
     notify(type, message) {
       this.q.notify({
         type: type,
@@ -191,7 +368,7 @@ export default {
       });
     },
 
-    getMe() {
+    clear_all() {
       let config = {
         withCredentials: true,
         headers: {
@@ -199,17 +376,117 @@ export default {
         },
       };
       api
-        .get('/profile/user', config)
+        .post('/auth/logout', '', config)
         .then((response) => {
           if (response.status == 200) {
-            this.user = serializeUser(response.data);
-            this.userStore.setUser(this.user);
+            this.userStore.setAuthState(false);
+            LocalStorage.clear();
+            this.userStore.setHeaderInfo();
+            LocalStorage.remove('header');
+            this.$router.push('/');
+            this.notify('positive', 'Cleared everything and logged out!!');
+          }
+        })
+        .catch();
+    },
+
+    uploadFile() {
+      let config = {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': this.q.cookies.get('csrftoken'),
+          'Content-Type': 'multipart/form-data',
+        },
+      };
+      this.loading = true;
+
+      let form_data = new FormData();
+      form_data.append('avatar', this.$refs.myFile.files[0]);
+
+      api
+        .put('/profile/update', form_data, config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.account = serializeUser(response.data);
+            this.userStore.setUser(this.account);
+            this.loading = false;
+          } else {
+            this.loading = false;
+            this.notify('negative', 'User does not exist.');
+          }
+        })
+        .catch((error) => {
+          this.loading = false;
+          this.notify('negative', 'Something went wrong with the API :/');
+        });
+    },
+
+    onRejected(stuff, x) {
+      this.notify(
+        'negative',
+        'Something went wrong when uploading the picture.' + x
+      );
+    },
+
+    updateUserProfile() {
+      let config = {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': this.q.cookies.get('csrftoken'),
+          'Content-Type': 'multipart/form-data',
+        },
+      };
+      this.loading = true;
+      var data = {
+        name: this.name,
+        description: this.description,
+        location: this.location,
+        avatar: this.avatar,
+        background: this.background,
+      };
+      let form_data = new FormData();
+
+      console.log(this.avatar);
+
+      api
+        .put('/profile/update', data, config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.account = serializeUser(response.data);
+            this.userStore.setUser(this.account);
+            this.loading = false;
+          } else {
+            this.loading = false;
+            this.notify('negative', 'User does not exist.');
+          }
+        })
+        .catch((error) => {
+          this.loading = false;
+          this.notify('negative', 'Something went wrong with the API :/');
+          console.log(error);
+        });
+    },
+
+    // get account settings
+    getAccountInformation() {
+      let config = {
+        withCredentials: true,
+
+        headers: {
+          'X-CSRFToken': this.q.cookies.get('csrftoken'),
+        },
+      };
+      api
+        .get('/profile/account', config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.account = serializeUser(response.data);
+            this.userStore.setUser(this.account);
           } else {
             this.$router.push('/');
           }
         })
         .catch((error) => {
-          this.$router.push('/');
           this.notify('negative', 'Something went wrong with the API :/');
           console.log(error);
         });

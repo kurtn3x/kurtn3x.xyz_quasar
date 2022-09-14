@@ -29,7 +29,7 @@ export default defineComponent({
     q.dark.set(settingsStore.darkmode_state);
 
     userStore.$subscribe((mutation, state) => {
-      LocalStorage.set('user', state.user);
+      LocalStorage.set('header', state.headerinfo);
     });
 
     settingsStore.$subscribe((mutation, state) => {
