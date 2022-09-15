@@ -239,7 +239,7 @@
                       dense
                       square
                       filled
-                      v-model="username"
+                      v-model="new_username"
                       label="New username"
                       lazy-rules
                       :rules="[
@@ -298,7 +298,7 @@
                       dense
                       square
                       filled
-                      v-model="email"
+                      v-model="new_email"
                       type="email"
                       label="Email"
                       lazy-rules
@@ -369,6 +369,18 @@
                       :rules="[
                         (val) =>
                           (val && val.length > 0) || 'Please type something',
+                        (val) =>
+                          (val && val.length > 7) || 'At least 8 characters',
+                        (val) =>
+                          (val && val.length < 100) ||
+                          'Not more than 100 characters',
+                        (val) =>
+                          /(?=.*[a-z])/.test(val) ||
+                          'At least 1 lowercase letter',
+                        (val) =>
+                          /(?=.*[A-Z])/.test(val) ||
+                          'At least 1 uppercase letter',
+                        (val) => /(?=.*[0-9])/.test(val) || 'At least 1 number',
                       ]"
                     >
                       <template v-slot:prepend>
@@ -391,6 +403,8 @@
                       :rules="[
                         (val) =>
                           (val && val.length > 0) || 'Please type something',
+                        (val) =>
+                          val == new_password || 'Passwords do not match',
                       ]"
                     >
                       <template v-slot:prepend>
@@ -514,6 +528,8 @@ export default {
       current_password: ref(''),
       new_password: ref(''),
       confirm_new_password: ref(''),
+      new_username: ref(''),
+      new_email: ref(''),
     };
   },
 
@@ -544,9 +560,62 @@ export default {
       });
     },
 
-    updateUsername() {},
-    updatePassword() {},
-    updateEmail() {},
+    updateUsername() {
+      let data = {
+        new_username: this.username,
+        password: this.current_password,
+      };
+      api
+        .put('/auth/update/username', data, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+          } else {
+            this.notify('negative', 'Something went wrong :/');
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'Something went wrong with the API :/');
+          console.log(error);
+        });
+    },
+
+    updatePassword() {
+      let data = {
+        new_password: this.new_password,
+        password: this.current_password,
+      };
+      api
+        .put('/auth/update/password', data, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+          } else {
+            this.notify('negative', 'Something went wrong :/');
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'Something went wrong with the API :/');
+          console.log(error);
+        });
+    },
+
+    updateEmail() {
+      let data = {
+        new_email: this.email,
+        password: this.current_password,
+      };
+      api
+        .put('/auth/update/email', data, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+          } else {
+            this.notify('negative', 'Something went wrong :/');
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'Something went wrong with the API :/');
+          console.log(error);
+        });
+    },
 
     clear_all() {
       api
