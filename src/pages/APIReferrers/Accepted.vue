@@ -1,9 +1,7 @@
 <template><div></div></template>
 
 <script>
-import { ref } from 'vue';
 import { useQuasar } from 'quasar';
-import { api } from 'boot/axios';
 
 export default {
   name: 'AcceptedView',

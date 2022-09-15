@@ -20,7 +20,6 @@ export interface User {
   location: string;
   status: string;
   avatar: string;
-  background: string;
 }
 
 // used to load data on the header
@@ -61,7 +60,7 @@ export function defaultUser() {
   const user: User = {
     fetched: false,
     role: '​',
-    username: '',
+    username: '​',
     name: '​',
     id: '​',
     status: '​',
@@ -70,7 +69,6 @@ export function defaultUser() {
     last_seen: '​',
     date_joined: '​',
     avatar: 'https://media.kurtn3x.xyz/default.png',
-    background: 'https://media.kurtn3x.xyz/background.png',
   };
 
   return user;
@@ -112,7 +110,6 @@ export function serializeUser(fetchedData: any) {
     location: fetchedData.profile.location,
     role: fetchedData.profile.role,
     avatar: path_to_link_av(fetchedData.profile.avatar),
-    background: path_to_link_bg(fetchedData.profile.background),
   };
   return user;
 }

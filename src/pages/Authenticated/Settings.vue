@@ -81,10 +81,10 @@
               <q-card-section>
                 <q-form
                   class="q-gutter-md text-grey"
-                  ref="loginform"
                   @submit.prevent="updateUserProfile"
                 >
                   <q-input
+                    :readonly="!name_edit"
                     dense
                     square
                     filled
@@ -93,11 +93,42 @@
                     label="Name"
                     lazy-rules
                     :rules="[
-                      (val) =>
-                        (val && val.length > 0) || 'Please type something',
+                      (val) => val.length < 50 || 'Max Length = 50 characters',
                     ]"
-                  />
+                    style="max-width: 600px"
+                  >
+                    <template v-slot:append>
+                      <q-btn
+                        label="edit"
+                        class="cursor-pointer bg-green"
+                        @click="this.name_edit = !this.name_edit"
+                      />
+                    </template>
+                  </q-input>
                   <q-input
+                    :readonly="!location_edit"
+                    dense
+                    square
+                    filled
+                    v-model="location"
+                    label="Location"
+                    lazy-rules
+                    :rules="[
+                      (val) => val.length < 50 || 'Max Length = 50 characters',
+                    ]"
+                    style="max-width: 600px"
+                  >
+                    <template v-slot:append>
+                      <q-btn
+                        label="edit"
+                        class="cursor-pointer bg-green"
+                        @click="this.location_edit = !this.location_edit"
+                      />
+                    </template>
+                  </q-input>
+
+                  <q-input
+                    :readonly="!description_edit"
                     dense
                     square
                     filled
@@ -106,23 +137,18 @@
                     lazy-rules
                     :rules="[
                       (val) =>
-                        (val && val.length > 0) || 'Please type something',
+                        val.length < 255 || 'Max Length = 255 characters',
                     ]"
-                  />
-                  <q-input
-                    dense
-                    square
-                    filled
-                    v-model="location"
-                    label="Location"
-                    lazy-rules
-                    :rules="[
-                      (val) =>
-                        (val && val.length > 0) || 'Please type something',
-                    ]"
-                  />
-                  <input type="file" @change="uploadFile" ref="myFile" />
-
+                    style="max-width: 600px"
+                  >
+                    <template v-slot:append>
+                      <q-btn
+                        label="edit"
+                        class="cursor-pointer bg-green"
+                        @click="this.description_edit = !this.description_edit"
+                      />
+                    </template>
+                  </q-input>
                   <q-file
                     v-model="avatar"
                     outlined
@@ -130,35 +156,29 @@
                     max-file-size="20480000"
                     accept=".jpg, .png, .gif"
                     @rejected="onRejected"
+                    ref="avatarFile"
+                    style="max-width: 600px"
                   >
+                    <template v-slot:before>
+                      <q-avatar>
+                        <img :src="this.userStore.headerinfo.avatar" />
+                      </q-avatar>
+                    </template>
                     <template v-slot:prepend>
                       <q-icon name="attach_file" />
                     </template>
                   </q-file>
 
-                  <q-file
-                    v-model="background"
-                    outlined
-                    label="Background Picture"
-                    max-file-size="2048"
-                    accept=".jpg, .png, .gif"
-                    @rejected="onRejected"
-                  >
-                    <template v-slot:prepend>
-                      <q-icon name="attach_file" />
-                    </template>
-                  </q-file>
-                  <q-card-actions>
+                  <div class="row justify-center">
                     <q-btn
                       rounded
                       size="md"
                       color="green"
-                      class="full-width"
                       label="Update"
                       type="submit"
                       :loading="loading"
                     />
-                  </q-card-actions>
+                  </div>
                 </q-form>
               </q-card-section>
             </q-card>
@@ -175,19 +195,33 @@
             <div class="text-h4 q-mb-md">Account Settings</div>
             <q-card class="my-card">
               <q-card-section>
-                <div class="text-body1">Id: {{ this.account.id }}</div>
+                <div class="text-body1">Id: {{ this.account.account.id }}</div>
                 <div class="text-body1">
-                  Username: {{ this.account.username }}
-                </div>
-                <div class="text-body1">Email: {{ this.account.email }}</div>
-                <div class="text-body1">Role: {{ this.account.role }}</div>
-                <div class="text-body1">Groups: {{ placeholder }}</div>
-                <div class="text-body1">Phone: {{ this.account.phone }}</div>
-                <div class="text-body1">
-                  First Name: {{ this.account.first_name }}
+                  Username: {{ this.account.account.username }}
                 </div>
                 <div class="text-body1">
-                  Last Name: {{ this.account.last_name }}
+                  Email: {{ this.account.account.email }}
+                </div>
+                <div class="text-body1">
+                  Role: {{ this.account.profile.role }}
+                </div>
+                <div class="text-body1">
+                  Joined: {{ this.account.account.date_joined }}
+                </div>
+                <div class="text-body1">
+                  Last login: {{ this.account.account.last_login }}
+                </div>
+                <div class="text-body1">
+                  Name: {{ this.account.profile.name }}
+                </div>
+                <div class="text-body1">
+                  Last Seen: {{ this.account.profile.last_seen }}
+                </div>
+                <div class="text-body1">
+                  Location: {{ this.account.profile.location }}
+                </div>
+                <div class="text-body1">
+                  Status: {{ this.account.profile.status }}
                 </div>
               </q-card-section>
 
@@ -195,37 +229,115 @@
                 <q-expansion-item
                   label="Change E-Mail"
                   header-style="fontSize: 1.3em"
+                  group="expansions"
                 >
                   <q-form
-                    class="q-gutter-md text-grey"
-                    ref="loginform"
-                    @submit.prevent="updateUserProfile"
+                    class="q-gutter-md text-grey q-mt-lg"
+                    @submit.prevent="updateUsername"
                   >
                     <q-input
                       dense
                       square
                       filled
-                      v-model="change_email"
-                      type="email"
-                      label="New E-Mail"
+                      v-model="username"
+                      label="New username"
                       lazy-rules
                       :rules="[
                         (val) =>
                           (val && val.length > 0) || 'Please type something',
+                        (val) =>
+                          (val && val.length > 3) || 'At least 4 characters',
                       ]"
-                    />
+                    >
+                      <template v-slot:prepend>
+                        <q-icon name="person" />
+                      </template>
+                    </q-input>
                     <q-input
                       dense
                       square
                       filled
-                      v-model="password"
-                      label="Your Password"
+                      v-model="current_password"
+                      label="Current Password"
+                      :type="isPwd ? 'password' : 'text'"
                       lazy-rules
                       :rules="[
                         (val) =>
                           (val && val.length > 0) || 'Please type something',
                       ]"
+                    >
+                      <template v-slot:prepend>
+                        <q-icon
+                          class="pw_icon"
+                          :name="isPwd ? 'lock' : 'lock_open'"
+                          @click="isPwd = !isPwd"
+                        />
+                      </template>
+                    </q-input>
+                    <q-btn
+                      rounded
+                      size="md"
+                      color="green"
+                      class="full-width"
+                      label="Change E-Mail"
+                      type="submit"
+                      :loading="loading"
                     />
+                  </q-form>
+                </q-expansion-item>
+                <q-expansion-item
+                  label="Change E-Mail"
+                  header-style="fontSize: 1.3em"
+                  group="expansions"
+                >
+                  <q-form
+                    class="q-gutter-md text-grey q-mt-lg"
+                    @submit.prevent="updateEmail"
+                  >
+                    <q-input
+                      dense
+                      square
+                      filled
+                      v-model="email"
+                      type="email"
+                      label="Email"
+                      lazy-rules
+                      :rules="[
+                        (val) =>
+                          (val && val.length > 0) || 'Please type something',
+                        (val) =>
+                          (val && val.length > 3) || 'At least 4 characters',
+                        (val) =>
+                          /^(?=[a-zA-Z0-9@._%+-]{6,254}$)[a-zA-Z0-9._%+-]{1,64}@(?:[a-zA-Z0-9-]{1,63}\.){1,8}[a-zA-Z]{2,63}$/.test(
+                            val
+                          ) || 'Not a valid E-Mail',
+                      ]"
+                    >
+                      <template v-slot:prepend>
+                        <q-icon name="email" />
+                      </template>
+                    </q-input>
+                    <q-input
+                      dense
+                      square
+                      filled
+                      v-model="current_password"
+                      label="Current Password"
+                      :type="isPwd ? 'password' : 'text'"
+                      lazy-rules
+                      :rules="[
+                        (val) =>
+                          (val && val.length > 0) || 'Please type something',
+                      ]"
+                    >
+                      <template v-slot:prepend>
+                        <q-icon
+                          class="pw_icon"
+                          :name="isPwd ? 'lock' : 'lock_open'"
+                          @click="isPwd = !isPwd"
+                        />
+                      </template>
+                    </q-input>
                     <q-btn
                       rounded
                       size="md"
@@ -240,37 +352,78 @@
                 <q-expansion-item
                   label="Change Password"
                   header-style="fontSize: 1.3em"
+                  group="expansions"
                 >
                   <q-form
-                    class="q-gutter-md text-grey"
-                    ref="loginform"
-                    @submit.prevent="updateUserProfile"
+                    class="q-gutter-md text-grey q-mt-lg"
+                    @submit.prevent="updatePassword"
                   >
                     <q-input
                       dense
                       square
                       filled
-                      v-model="change_email"
-                      type="email"
+                      v-model="new_password"
                       label="New Password"
+                      :type="isPwd ? 'password' : 'text'"
                       lazy-rules
                       :rules="[
                         (val) =>
                           (val && val.length > 0) || 'Please type something',
                       ]"
-                    />
+                    >
+                      <template v-slot:prepend>
+                        <q-icon
+                          class="pw_icon"
+                          :name="isPwd3 ? 'lock' : 'lock_open'"
+                          @click="isPwd3 = !isPwd3"
+                        />
+                      </template>
+                    </q-input>
+
                     <q-input
                       dense
                       square
                       filled
-                      v-model="password"
+                      v-model="confirm_new_password"
                       label="Confirm New Password"
+                      :type="isPwd1 ? 'password' : 'text'"
                       lazy-rules
                       :rules="[
                         (val) =>
                           (val && val.length > 0) || 'Please type something',
                       ]"
-                    />
+                    >
+                      <template v-slot:prepend>
+                        <q-icon
+                          class="pw_icon"
+                          :name="isPwd1 ? 'lock' : 'lock_open'"
+                          @click="isPwd1 = !isPwd1"
+                        />
+                      </template>
+                    </q-input>
+
+                    <q-input
+                      dense
+                      square
+                      filled
+                      v-model="current_password"
+                      label="Current Password"
+                      :type="isPwd2 ? 'password' : 'text'"
+                      lazy-rules
+                      :rules="[
+                        (val) =>
+                          (val && val.length > 0) || 'Please type something',
+                      ]"
+                    >
+                      <template v-slot:prepend>
+                        <q-icon
+                          class="pw_icon"
+                          :name="isPwd2 ? 'lock' : 'lock_open'"
+                          @click="isPwd2 = !isPwd2"
+                        />
+                      </template>
+                    </q-input>
+
                     <q-btn
                       rounded
                       size="md"
@@ -330,16 +483,37 @@ export default {
     const userStore = useUserStore();
     const q = useQuasar();
 
+    const axios_config = {
+      withCredentials: true,
+      headers: {
+        'X-CSRFToken': q.cookies.get('csrftoken'),
+      },
+    };
+
     return {
+      axios_config,
       account: ref(''),
       tab: ref('start'),
       splitterModel: ref(20),
       settingsStore,
+      avatar: ref(null),
+      name: ref(''),
+      location: ref(''),
+      description: ref(''),
       q,
       userStore,
       loading: ref(false),
-      avatar_hover: ref(false),
-      background_hover: ref(false),
+      name_edit: ref(false),
+      description_edit: ref(false),
+      location_edit: ref(false),
+      avatar_edit: ref(false),
+      isPwd: ref(true),
+      isPwd1: ref(true),
+      isPwd2: ref(true),
+      isPwd3: ref(true),
+      current_password: ref(''),
+      new_password: ref(''),
+      confirm_new_password: ref(''),
     };
   },
 
@@ -370,15 +544,13 @@ export default {
       });
     },
 
+    updateUsername() {},
+    updatePassword() {},
+    updateEmail() {},
+
     clear_all() {
-      let config = {
-        withCredentials: true,
-        headers: {
-          'X-CSRFToken': this.q.cookies.get('csrftoken'),
-        },
-      };
       api
-        .post('/auth/logout', '', config)
+        .post('/auth/logout', '', this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.userStore.setAuthState(false);
@@ -390,39 +562,6 @@ export default {
           }
         })
         .catch();
-    },
-
-    uploadFile() {
-      let config = {
-        withCredentials: true,
-        headers: {
-          'X-CSRFToken': this.q.cookies.get('csrftoken'),
-          'Content-Type': 'multipart/form-data',
-        },
-      };
-      this.loading = true;
-
-      let form_data = new FormData();
-      form_data.append('avatar', this.$refs.myFile.files[0]);
-
-      api
-        .put('/profile/update', form_data, config)
-        .then((response) => {
-          if (response.status == 200) {
-            this.account = response.data;
-            var header = serializeHeaderInformation(response.data);
-            this.userStore.setHeaderInfo(header);
-            this.loading = false;
-          } else {
-            this.loading = false;
-            this.notify('negative', 'User does not exist.');
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-          this.loading = false;
-          this.notify('negative', 'Something went wrong with the API :/');
-        });
     },
 
     onRejected(stuff, x) {
@@ -441,24 +580,25 @@ export default {
         },
       };
       this.loading = true;
-      var data = {
-        name: this.name,
-        description: this.description,
-        location: this.location,
-        avatar: this.avatar,
-        background: this.background,
-      };
       let form_data = new FormData();
-
-      console.log(this.avatar);
+      form_data.append('name', this.name);
+      form_data.append('location', this.location);
+      form_data.append('description', this.description);
+      if (this.avatar != null) {
+        form_data.append('avatar', this.avatar);
+      }
 
       api
-        .put('/profile/update', data, config)
+        .put('/profile/update', form_data, config)
         .then((response) => {
           if (response.status == 200) {
-            this.account = serializeUser(response.data);
-            this.userStore.setUser(this.account);
+            var header = serializeHeaderInformation(response.data);
+            this.userStore.setHeaderInfo(header);
             this.loading = false;
+            this.notify(
+              'positive',
+              'Updated your profile! You may need to reload the page to see some changes.'
+            );
           } else {
             this.loading = false;
             this.notify('negative', 'User does not exist.');
@@ -473,20 +613,16 @@ export default {
 
     // get account settings
     getAccountInformation() {
-      let config = {
-        withCredentials: true,
-
-        headers: {
-          'X-CSRFToken': this.q.cookies.get('csrftoken'),
-        },
-      };
       api
-        .get('/profile/account', config)
+        .get('/profile/account', this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.account = response.data;
+            this.name = response.data.profile.name;
+            this.location = response.data.profile.location;
+            this.description = response.data.profile.description;
           } else {
-            this.$router.push('/');
+            this.notify('negative', 'Something went wrong :/');
           }
         })
         .catch((error) => {

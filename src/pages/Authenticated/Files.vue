@@ -24,8 +24,15 @@ export default defineComponent({
     const userStore = useUserStore();
     const settings_store = useSettingsStore();
     const q = useQuasar();
+    const axios_config = {
+      withCredentials: true,
+      headers: {
+        'X-CSRFToken': q.cookies.get('csrftoken'),
+      },
+    };
 
     return {
+      axios_config,
       userStore,
       settings_store,
       q,

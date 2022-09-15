@@ -622,11 +622,18 @@ export default {
     } else {
       var leftDrawer = ref(true);
     }
+    const axios_config = {
+      withCredentials: true,
+      headers: {
+        'X-CSRFToken': q.cookies.get('csrftoken'),
+      },
+    };
 
     return {
       toggleLeftDrawer() {
         leftDrawer.value = !leftDrawer.value;
       },
+      axios_config,
 
       // layout & styling
       settingsStore,
@@ -720,16 +727,10 @@ export default {
       const formData = {
         email: this.email_forgot,
       };
-      let config = {
-        withCredentials: true,
-        headers: {
-          'X-CSRFToken': this.q.cookies.get('csrftoken'),
-        },
-      };
 
       if (this.request_password) {
         api
-          .post('auth/password_reset/', formData, config)
+          .post('auth/password_reset/', formData, this.axios_config)
           .then((response) => {
             if (response.status == 200) {
               this.loading = false;
@@ -750,7 +751,7 @@ export default {
 
       if (this.request_username) {
         api
-          .post('auth/username_request', formData, config)
+          .post('auth/username_request', formData, this.axios_config)
           .then((response) => {
             if (response.status == 200) {
               this.loading = false;
@@ -770,14 +771,8 @@ export default {
       }
     },
     logout() {
-      let config = {
-        withCredentials: true,
-        headers: {
-          'X-CSRFToken': this.q.cookies.get('csrftoken'),
-        },
-      };
       api
-        .post('/auth/logout', '', config)
+        .post('/auth/logout', '', this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.userStore.setAuthState(false);
@@ -790,14 +785,8 @@ export default {
     },
 
     getHeaderInfo() {
-      let config = {
-        withCredentials: true,
-        headers: {
-          'X-CSRFToken': this.q.cookies.get('csrftoken'),
-        },
-      };
       api
-        .get('/profile/headerinfo', config)
+        .get('/profile/headerinfo', this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.headerinfo = serializeHeaderInformation(response.data);
@@ -824,15 +813,8 @@ export default {
         username: this.username,
         password: this.login_password,
       };
-      let config = {
-        withCredentials: true,
-        headers: {
-          'X-CSRFToken': this.q.cookies.get('csrftoken'),
-        },
-      };
-
       api
-        .post('/auth/login', formData, config)
+        .post('/auth/login', formData, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.headerinfo = serializeHeaderInformation(response.data);
@@ -873,7 +855,7 @@ export default {
                         .post(
                           '/auth/activation-email_request',
                           formData,
-                          config
+                          this.axios_config
                         )
                         .then((response) => {
                           if (response.status == 200) {
@@ -914,15 +896,9 @@ export default {
         re_password: this.password2,
         email: this.email,
       };
-      let config = {
-        withCredentials: true,
-        headers: {
-          'X-CSRFToken': this.q.cookies.get('csrftoken'),
-        },
-      };
 
       api
-        .post('/auth/register', formData, config)
+        .post('/auth/register', formData, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.loading = false;

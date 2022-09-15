@@ -1,9 +1,8 @@
 <template>
   <div v-if="this.user.fetched && this.page_load">
-    <div class="q-ma-xs">
+    <div class="q-ma-md">
       <q-card class="gt-sm" bordered style="background-color: transparent">
-        <q-img :src="this.user.background" style="height: 200px" />
-
+        <div style="height: 200px" class="bg-primary" />
         <q-avatar
           round="round"
           size="150px"
@@ -29,7 +28,7 @@
           </div>
 
           <q-separator class="bg-white q-ml-sm q-mr-lg q-mt-xs" />
-          <div class="text-body1 q-mt-sm text-light q-ml-md q-mr-md q-mt-xs">
+          <div class="text-body1 q-mt-md text-light q-ml-md q-mr-md q-mt-xs">
             Status: {{ this.user.status }}
           </div>
           <div class="text-body1 q-mt-sm text-light q-ml-md q-mr-md q-mt-xs">
@@ -43,7 +42,7 @@
         >
           <q-btn size="lg" flat stretch color="primary" icon="chat">
             <q-tooltip
-              class="bg-primary text-body2"
+              class="text-body2"
               anchor="bottom left"
               self="center middle"
             >
@@ -52,7 +51,7 @@
           </q-btn>
           <q-btn size="lg" flat stretch color="primary" icon="person_add">
             <q-tooltip
-              class="bg-primary text-body2"
+              class="text-body2"
               anchor="bottom left"
               self="center middle"
             >
@@ -63,7 +62,7 @@
             <q-tooltip
               anchor="bottom left"
               self="center middle"
-              class="bg-primary text-body2"
+              class="text-body2"
             >
               Copy the profile link
             </q-tooltip>
@@ -156,7 +155,7 @@
       </q-card>
 
       <q-card class="lt-md" bordered style="background-color: transparent">
-        <q-img :src="this.user.background" style="height: 200px" />
+        <div style="height: 200px" class="bg-primary" />
 
         <q-avatar
           round="round"
@@ -302,8 +301,15 @@ export default {
     const settingsStore = useSettingsStore();
     const userStore = useUserStore();
     const q = useQuasar();
+    const axios_config = {
+      withCredentials: true,
+      headers: {
+        'X-CSRFToken': q.cookies.get('csrftoken'),
+      },
+    };
 
     return {
+      axios_config,
       user: ref(defaultUser()),
       settingsStore,
       q,
@@ -344,15 +350,9 @@ export default {
     },
 
     getUser() {
-      let config = {
-        withCredentials: true,
-        headers: {
-          'X-CSRFToken': this.q.cookies.get('csrftoken'),
-        },
-      };
       var user = this.$route.params.id;
       api
-        .get('/profile/user/' + user, config)
+        .get('/profile/user/' + user, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.user = serializeUser(response.data);
