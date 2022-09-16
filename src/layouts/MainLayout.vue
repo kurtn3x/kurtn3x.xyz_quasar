@@ -43,16 +43,55 @@
           </template>
         </q-input>
 
-        <q-btn stretch flat v-if="authenticated">
+        <q-btn stretch flat v-if="authenticated" class="button_hover">
           <q-avatar size="34px">
             <img :src="this.headerinfo.avatar" />
           </q-avatar>
-          <q-menu>
+          <div class="q-ml-md" v-if="!mobile">
+            {{ this.headerinfo.username }}
+          </div>
+          <q-menu @hide="this.done = false">
             <div class="row no-wrap q-pa-md">
               <div class="column">
                 <div class="text-h6 q-mb-md">Settings</div>
-                <q-toggle v-model="mobileData" label="Use Mobile Data" />
-                <q-toggle v-model="bluetooth" label="Bluetooth" />
+                <q-input
+                  hint="Your Status message"
+                  filled
+                  dense
+                  v-model="status"
+                  lazy-rules
+                  :rules="[(val) => val.length < 15 || 'Maximum 15 Characters']"
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="add_reaction" class="button_hover">
+                      <q-menu>
+                        <EmojiPicker :native="true" @select="onSelectEmoji" />
+                      </q-menu>
+                      <q-tooltip> Add a emoji to status</q-tooltip>
+                    </q-icon>
+                  </template>
+                  <template v-slot:after>
+                    <q-icon
+                      name="send"
+                      class="button_hover"
+                      @click="updateHeaderStatus"
+                    >
+                      <q-tooltip> Update Status</q-tooltip>
+                    </q-icon>
+                  </template>
+                  <template v-slot:append>
+                    <q-icon
+                      v-if="done"
+                      name="check"
+                      class="text-green"
+                      @click="updateHeaderStatus"
+                    >
+                      <q-tooltip class="text-green">
+                        Updated the status</q-tooltip
+                      >
+                    </q-icon>
+                  </template>
+                </q-input>
               </div>
 
               <q-separator vertical inset class="q-mx-lg" />
@@ -602,15 +641,15 @@ import { api } from 'boot/axios';
 import { useUserStore } from 'stores/user.ts';
 import { useSettingsStore } from 'stores/settings';
 import ParticlesBG from 'components/ParticlesBG.vue';
-import ParticlesText from 'components/ParticlesText.vue';
-import router from 'src/router/index.ts';
+import EmojiPicker from 'vue3-emoji-picker';
+import '../../node_modules/vue3-emoji-picker/dist/style.css';
 import {
   defaultHeaderInformation,
   serializeHeaderInformation,
 } from 'src/models';
 
 export default {
-  components: { ParticlesBG },
+  components: { ParticlesBG, EmojiPicker },
 
   setup() {
     const userStore = useUserStore();
@@ -665,11 +704,13 @@ export default {
       isPwd: ref(true),
       isPwd2: ref(true),
       saved_username: ref(''),
+      status: ref(userStore.headerinfo.status),
+      done: ref(false),
     };
   },
 
   created() {
-    if (!this.userStore.headerinfo.fetched && this.userStore.authenticated) {
+    if (this.userStore.authenticated) {
       this.getHeaderInfo();
     }
   },
@@ -689,7 +730,6 @@ export default {
       return '/user/' + this.headerinfo.username;
     },
     authenticated() {
-      // return true;
       return this.userStore.authenticated;
     },
     headerinfoStore() {
@@ -722,6 +762,31 @@ export default {
         multiLine: true,
       });
     },
+
+    onSelectEmoji(emoji) {
+      this.status += emoji.i;
+    },
+
+    updateHeaderStatus() {
+      var data = {
+        status: this.status,
+      };
+      api
+        .put('profile/update_status', data, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.userStore.setStatus(this.status);
+            this.done = true;
+          } else {
+            var msg = 'Error: ' + response.data.error;
+            this.notify('negative', msg);
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          this.notify('negative', 'Something went wrong with the API :/');
+        });
+    },
     submitForget() {
       this.loading = true;
       const formData = {
@@ -730,7 +795,7 @@ export default {
 
       if (this.request_password) {
         api
-          .post('auth/password_reset/', formData, this.axios_config)
+          .post('auth/password_reset', formData, this.axios_config)
           .then((response) => {
             if (response.status == 200) {
               this.loading = false;
@@ -779,6 +844,7 @@ export default {
             this.userStore.setHeaderInfo(defaultHeaderInformation());
             this.$router.push('/');
             this.notify('positive', 'Logged out!!');
+            LocalStorage.remove('header');
           }
         })
         .catch();
@@ -792,6 +858,7 @@ export default {
             this.headerinfo = serializeHeaderInformation(response.data);
             this.userStore.setHeaderInfo(this.headerinfo);
             this.userStore.setAuthState(true);
+            this.status = this.headerinfo.status;
           } else {
             this.notify(
               'negative',
@@ -935,6 +1002,10 @@ export default {
 <style scoped>
 .pw_icon:hover {
   color: whitesmoke;
+}
+
+.button_hover:hover {
+  background-color: rgba(255, 255, 255, 0.3);
 }
 
 .drawer_btn_desk {

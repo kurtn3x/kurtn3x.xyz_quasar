@@ -20,6 +20,7 @@ export interface User {
   location: string;
   status: string;
   avatar: string;
+  background: string;
 }
 
 // used to load data on the header
@@ -59,16 +60,17 @@ export function serializeHeaderInformation(fetchedData: any) {
 export function defaultUser() {
   const user: User = {
     fetched: false,
-    role: '​',
+    role: 'User',
     username: '​',
     name: '​',
     id: '​',
     status: '​',
     description: '​',
-    location: '​',
-    last_seen: '​',
+    location: 'Germany',
+    last_seen: 'Never',
     date_joined: '​',
     avatar: 'https://media.kurtn3x.xyz/default.png',
+    background: 'https://media.kurtn3x.xyz/background.png',
   };
 
   return user;
@@ -110,11 +112,12 @@ export function serializeUser(fetchedData: any) {
     location: fetchedData.profile.location,
     role: fetchedData.profile.role,
     avatar: path_to_link_av(fetchedData.profile.avatar),
+    background: path_to_link_bg(fetchedData.profile.background),
   };
   return user;
 }
 
-function path_to_link_av(path: any) {
+export function path_to_link_av(path: any) {
   if (path != null) {
     const temp = path.split('/');
     const link =
@@ -125,7 +128,7 @@ function path_to_link_av(path: any) {
   }
 }
 
-function path_to_link_bg(path: any) {
+export function path_to_link_bg(path: any) {
   if (path != null) {
     const temp = path.split('/');
     const link =

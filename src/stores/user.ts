@@ -22,5 +22,8 @@ export const useUserStore = defineStore('header', {
     setAuthState(state: boolean) {
       this.authenticated = state;
     },
+    setStatus(status: string) {
+      this.headerinfo.status = status;
+    },
   },
 });

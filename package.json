@@ -26,7 +26,8 @@
     "tsparticles-plugin-polygon-mask": "^2.2.1",
     "tsparticles-updater-gradient": "^2.2.1",
     "vue": "^3.0.0",
-    "vue-router": "^4.0.0"
+    "vue-router": "^4.0.0",
+    "vue3-emoji-picker": "^1.1.4"
   },
   "devDependencies": {
     "@quasar/app-vite": "^1.0.0",

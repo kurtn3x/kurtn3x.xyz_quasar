@@ -1,5 +1,88 @@
 <template>
   <div>
+    <q-dialog v-model="confirm">
+      <q-card>
+        <q-card-section class="row items-center">
+          <span class="q-ml-sm"
+            >To change your username you will be logged out and have to relogin
+            with your new credentials. It is recommended to refresh the page
+            afterwards to reload any cached data.</span
+          >
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" color="red" v-close-popup />
+          <q-btn
+            flat
+            label="Continue"
+            color="green"
+            v-close-popup
+            @click="updateUsername"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    <q-dialog
+      v-model="confirm_delete"
+      @hide="
+        this.current_password = '';
+        this.isPwd = true;
+      "
+    >
+      <q-card>
+        <q-card-section class="row items-center">
+          <span class="q-ml-sm text-red"
+            >This will delete your account and all data associated with
+            it.</span
+          >
+          <span class="q-ml-sm q-mt-sm"
+            >Confirm with your password to continue</span
+          >
+          <q-card-section class="q-pt-none">
+            <q-input
+              class="q-mt-lg"
+              dense
+              autofocus
+              v-model="current_password"
+              label="Current Password"
+              :type="isPwd ? 'password' : 'text'"
+              lazy-rules
+              :rules="[
+                (val) => (val && val.length > 0) || 'Please type something',
+              ]"
+            >
+              <template v-slot:prepend>
+                <q-icon
+                  class="pw_icon"
+                  :name="isPwd ? 'lock' : 'lock_open'"
+                  @click="isPwd = !isPwd"
+                />
+              </template>
+            </q-input>
+          </q-card-section>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn
+            flat
+            label="Cancel"
+            color="red"
+            v-close-popup
+            @click="
+              this.current_password = '';
+              this.isPwd = true;
+            "
+          />
+          <q-btn
+            flat
+            label="Continue"
+            color="green"
+            v-close-popup
+            @click="deleteAccount"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
     <q-splitter
       v-model="splitterModel"
       class="q-ma-sm"
@@ -128,6 +211,28 @@
                   </q-input>
 
                   <q-input
+                    :readonly="!status_edit"
+                    dense
+                    square
+                    filled
+                    v-model="status"
+                    label="Status"
+                    lazy-rules
+                    :rules="[
+                      (val) => val.length < 15 || 'Max Length = 15 characters',
+                    ]"
+                    style="max-width: 600px"
+                  >
+                    <template v-slot:append>
+                      <q-btn
+                        label="edit"
+                        class="cursor-pointer bg-green"
+                        @click="this.status_edit = !this.status_edit"
+                      />
+                    </template>
+                  </q-input>
+
+                  <q-input
                     :readonly="!description_edit"
                     dense
                     square
@@ -149,25 +254,54 @@
                       />
                     </template>
                   </q-input>
-                  <q-file
-                    v-model="avatar"
-                    outlined
-                    label="Profile Picture"
-                    max-file-size="20480000"
-                    accept=".jpg, .png, .gif"
-                    @rejected="onRejected"
-                    ref="avatarFile"
-                    style="max-width: 600px"
-                  >
-                    <template v-slot:before>
-                      <q-avatar>
-                        <img :src="this.userStore.headerinfo.avatar" />
-                      </q-avatar>
-                    </template>
-                    <template v-slot:prepend>
-                      <q-icon name="attach_file" />
-                    </template>
-                  </q-file>
+                  <div class="row">
+                    <q-file
+                      v-model="avatar"
+                      outlined
+                      label="Profile Picture"
+                      max-file-size="2048000"
+                      accept=".jpg, .png, .gif, .jpeg"
+                      @rejected="onRejected"
+                      style="max-width: 400px"
+                      counter
+                    >
+                      <template v-slot:before>
+                        <q-avatar>
+                          <img :src="this.account.profile.avatar" />
+                        </q-avatar>
+                      </template>
+                      <template v-slot:prepend>
+                        <q-icon name="attach_file" />
+                      </template>
+                    </q-file>
+                    <a class="text-body2 q-mt-md q-ml-sm"
+                      >.jpg, .png, .gif, .jpeg, less than 2mb</a
+                    >
+                  </div>
+                  <div class="row">
+                    <q-file
+                      v-model="background"
+                      outlined
+                      label="Background Picture"
+                      max-file-size="2048000"
+                      accept=".jpg, .png, .gif, .jpeg"
+                      @rejected="onRejected"
+                      style="max-width: 400px"
+                      counter
+                    >
+                      <template v-slot:before>
+                        <q-avatar>
+                          <img :src="this.account.profile.background" />
+                        </q-avatar>
+                      </template>
+                      <template v-slot:prepend>
+                        <q-icon name="attach_file" />
+                      </template>
+                    </q-file>
+                    <a class="text-body2 q-mt-md q-ml-sm"
+                      >.jpg, .png, .gif, .jpeg, less than 2mb</a
+                    >
+                  </div>
 
                   <div class="row justify-center">
                     <q-btn
@@ -224,13 +358,13 @@
 
               <q-card-actions vertical align="center">
                 <q-expansion-item
-                  label="Change E-Mail"
+                  label="Change Username"
                   header-style="fontSize: 1.3em"
                   group="expansions"
                 >
                   <q-form
                     class="q-gutter-md text-grey q-mt-lg"
-                    @submit.prevent="updateUsername"
+                    @submit.prevent="confirm = true"
                   >
                     <q-input
                       dense
@@ -275,8 +409,8 @@
                       rounded
                       size="md"
                       color="green"
-                      class="full-width"
-                      label="Change E-Mail"
+                      class="full-width q-mb-md"
+                      label="Change Username"
                       type="submit"
                       :loading="loading"
                     />
@@ -339,7 +473,7 @@
                       rounded
                       size="md"
                       color="green"
-                      class="full-width"
+                      class="full-width q-mb-md"
                       label="Change E-Mail"
                       type="submit"
                       :loading="loading"
@@ -439,14 +573,16 @@
                       rounded
                       size="md"
                       color="green"
-                      class="full-width"
+                      class="full-width q-mb-md"
                       label="Change Password"
                       type="submit"
                       :loading="loading"
                     />
                   </q-form>
                 </q-expansion-item>
-                <q-btn flat class="q-mt-xl">Delete Account</q-btn>
+                <q-btn flat class="q-mt-xl" @click="confirm_delete = true"
+                  >Delete Account</q-btn
+                >
               </q-card-actions>
             </q-card>
           </q-tab-panel>
@@ -481,9 +617,10 @@ import { api } from 'boot/axios';
 import { useUserStore } from 'stores/user.ts';
 import { useSettingsStore } from 'stores/settings';
 import {
-  defaultUser,
   serializeHeaderInformation,
-  serializeUser,
+  defaultHeaderInformation,
+  path_to_link_av,
+  path_to_link_bg,
 } from 'src/models';
 
 export default {
@@ -508,16 +645,18 @@ export default {
       splitterModel: ref(20),
       settingsStore,
       avatar: ref(null),
+      background: ref(null),
       name: ref(''),
       location: ref(''),
       description: ref(''),
+      status: ref(''),
       q,
       userStore,
       loading: ref(false),
       name_edit: ref(false),
       description_edit: ref(false),
       location_edit: ref(false),
-      avatar_edit: ref(false),
+      status_edit: ref(false),
       isPwd: ref(true),
       isPwd1: ref(true),
       isPwd2: ref(true),
@@ -527,6 +666,8 @@ export default {
       confirm_new_password: ref(''),
       new_username: ref(''),
       new_email: ref(''),
+      confirm: ref(false),
+      confirm_delete: ref(false),
     };
   },
 
@@ -557,15 +698,64 @@ export default {
       });
     },
 
+    deleteAccount() {
+      let data = {
+        password: this.current_password,
+      };
+      let axios_config = {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': this.q.cookies.get('csrftoken'),
+        },
+        data: data,
+      };
+      api
+        .delete('/auth/delete', axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.notify('positive', 'Deleted your account');
+            this.userStore.setAuthState(false);
+            this.userStore.setHeaderInfo(defaultHeaderInformation());
+            this.$router.push('/');
+            LocalStorage.remove('header');
+          } else if (response.status == 244) {
+            this.notify('negative', 'Current Password is wrong.');
+          } else {
+            this.notify('negative', 'Something went wrong :/');
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'Something went wrong with the API :/');
+          console.log(error);
+        });
+    },
+
     updateUsername() {
       let data = {
-        new_username: this.username,
+        new_username: this.new_username,
         password: this.current_password,
       };
       api
         .put('/auth/update/username', data, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
+            this.notify(
+              'positive',
+              'Username has been changed. Please log in again.'
+            );
+            api
+              .post('/auth/logout', '', this.axios_config)
+              .then((response) => {
+                if (response.status == 200) {
+                  this.userStore.setAuthState(false);
+                  this.userStore.setHeaderInfo(defaultHeaderInformation());
+                  this.$router.push('/');
+                  LocalStorage.remove('header');
+                }
+              })
+              .catch();
+          } else if (response.status == 244) {
+            this.notify('negative', 'Current Password is wrong.');
           } else {
             this.notify('negative', 'Something went wrong :/');
           }
@@ -585,6 +775,10 @@ export default {
         .put('/auth/update/password', data, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
+            this.notify('positive', 'Password has been changed.');
+            logout();
+          } else if (response.status == 244) {
+            this.notify('negative', 'Current Password is wrong.');
           } else {
             this.notify('negative', 'Something went wrong :/');
           }
@@ -597,13 +791,17 @@ export default {
 
     updateEmail() {
       let data = {
-        new_email: this.email,
+        new_email: this.new_email,
         password: this.current_password,
       };
       api
         .put('/auth/update/email', data, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
+            this.notify('positive', 'Email has been changed.');
+            logout();
+          } else if (response.status == 244) {
+            this.notify('negative', 'Current Password is wrong.');
           } else {
             this.notify('negative', 'Something went wrong :/');
           }
@@ -630,10 +828,10 @@ export default {
         .catch();
     },
 
-    onRejected(stuff, x) {
+    onRejected() {
       this.notify(
         'negative',
-        'Something went wrong when uploading the picture.' + x
+        'Something went wrong when uploading the picture. Check if the picture meets the requirements: .jpg, .png, .gif, .jpeg, less than 2mb'
       );
     },
 
@@ -650,8 +848,13 @@ export default {
       form_data.append('name', this.name);
       form_data.append('location', this.location);
       form_data.append('description', this.description);
+      form_data.append('status', this.status);
+
       if (this.avatar != null) {
         form_data.append('avatar', this.avatar);
+      }
+      if (this.background != null) {
+        form_data.append('background', this.background);
       }
 
       api
@@ -684,9 +887,16 @@ export default {
         .then((response) => {
           if (response.status == 200) {
             this.account = response.data;
+            this.account.profile.avatar = path_to_link_av(
+              response.data.profile.avatar
+            );
+            this.account.profile.background = path_to_link_bg(
+              response.data.profile.background
+            );
             this.name = response.data.profile.name;
             this.location = response.data.profile.location;
             this.description = response.data.profile.description;
+            this.status = response.data.profile.status;
           } else {
             this.notify('negative', 'Something went wrong :/');
           }
