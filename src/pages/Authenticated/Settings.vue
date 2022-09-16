@@ -209,9 +209,6 @@
                   Joined: {{ this.account.account.date_joined }}
                 </div>
                 <div class="text-body1">
-                  Last login: {{ this.account.account.last_login }}
-                </div>
-                <div class="text-body1">
                   Name: {{ this.account.profile.name }}
                 </div>
                 <div class="text-body1">
@@ -300,7 +297,7 @@
                       filled
                       v-model="new_email"
                       type="email"
-                      label="Email"
+                      label="New Email"
                       lazy-rules
                       :rules="[
                         (val) =>

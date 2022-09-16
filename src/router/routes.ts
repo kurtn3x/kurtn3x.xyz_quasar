@@ -7,8 +7,12 @@ const routes: RouteRecordRaw[] = [
     children: [
       { path: '/', component: () => import('pages/IndexPage.vue') },
       {
-        path: 'user/:id',
+        path: 'user/:username',
         component: () => import('pages/UserProfile.vue'),
+      },
+      {
+        path: 'id/:id',
+        component: () => import('pages/UserProfileIDReferrer.vue'),
       },
     ],
   },

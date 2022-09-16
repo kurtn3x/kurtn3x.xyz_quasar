@@ -66,6 +66,14 @@
             >
               Copy the profile link
             </q-tooltip>
+            <q-menu>
+              <q-list style="min-width: 500px">
+                <q-input filled square v-model="this.userlink" readonly />
+                <q-item clickable @click="copyuserlink" class="justify-center">
+                  Copy the link</q-item
+                >
+              </q-list>
+            </q-menu>
           </q-btn>
         </q-card-actions>
         <q-card-section style="padding: 0; margin: 0; top: -1.5em">
@@ -260,7 +268,16 @@
         <q-card-actions class="row justify-center">
           <q-btn size="lg" flat stretch color="primary" icon="chat" />
           <q-btn size="lg" flat stretch color="primary" icon="person_add" />
-          <q-btn size="lg" flat stretch color="primary" icon="share" />
+          <q-btn size="lg" flat stretch color="primary" icon="share">
+            <q-menu>
+              <q-list style="min-width: 300px">
+                <q-input filled square v-model="this.userlink" readonly />
+                <q-item clickable @click="copyuserlink" class="justify-center">
+                  Copy the link</q-item
+                >
+              </q-list>
+            </q-menu>
+          </q-btn>
         </q-card-actions>
       </q-card>
     </div>
@@ -319,6 +336,7 @@ export default {
       profile_tab: ref('about'),
       user_found: ref(false),
       test: ref(true),
+      userlink: ref('https://kurtn3x.xyz/id/0000000000000000'),
     };
   },
 
@@ -348,15 +366,24 @@ export default {
         multiLine: true,
       });
     },
+    selectuserlink() {
+      var autoselect = document.getElementById('userlink');
+      autoselect.select();
+    },
+    copyuserlink() {
+      navigator.clipboard.writeText(this.userlink);
+      this.notify('positive', 'copied the link');
+    },
 
     getUser() {
-      var user = this.$route.params.id;
+      var user = this.$route.params.username;
       api
         .get('/profile/user/' + user, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.user = serializeUser(response.data);
             this.page_load = true;
+            this.userlink = 'https://kurtn3x.xyz/id/' + this.user.id;
           } else {
             this.page_load = true;
             this.notify('negative', 'User does not exist.');
