@@ -702,7 +702,7 @@ export default {
       let data = {
         password: this.current_password,
       };
-      let axios_config = {
+      let config = {
         withCredentials: true,
         headers: {
           'X-CSRFToken': this.q.cookies.get('csrftoken'),
@@ -710,7 +710,7 @@ export default {
         data: data,
       };
       api
-        .delete('/auth/delete', axios_config)
+        .delete('/auth/delete', config)
         .then((response) => {
           if (response.status == 200) {
             this.notify('positive', 'Deleted your account');
