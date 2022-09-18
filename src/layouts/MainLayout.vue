@@ -1007,30 +1007,4 @@ export default {
 .button_hover:hover {
   background-color: rgba(255, 255, 255, 0.3);
 }
-
-.drawer_btn_desk {
-  position: absolute;
-  top: 15px;
-  right: 46px;
-  transition: all 0.1s linear;
-}
-.drawer_btn_desk_moved {
-  position: absolute;
-  top: 15px;
-  right: 190px;
-  transition: all 0.1s linear;
-}
-
-.drawer_btn_mob {
-  position: fixed;
-  top: 45%;
-  right: 185px;
-  transition: all 0.1s linear;
-}
-.drawer_btn_mob_moved {
-  position: fixed;
-  right: -14px;
-  top: 45%;
-  transition: all 0.1s linear;
-}
 </style>

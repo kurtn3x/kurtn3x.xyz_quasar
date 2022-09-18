@@ -4,28 +4,35 @@
       <q-file
         color="teal"
         filled
-        v-model="upload_file_file"
-        label="Select File"
+        v-model="upload_file_files"
+        label="Select/Drag & Drop"
+        multiple
+        append
         @update:model-value="fileNameVmodel"
+        :loading="loading"
+        counter
       >
         <template v-slot:prepend>
           <q-icon name="cloud_upload" />
         </template>
       </q-file>
-      <q-input
-        dense
-        standout
-        v-model="upload_file_name"
-        label="File Name"
-        input-class="text-center"
-      />
+      <div class="q-mt-xs"></div>
+      <template v-for="(file, index) in upload_file_files" :key="file">
+        <q-input
+          dense
+          standout
+          v-model="upload_file_names[index]"
+          :label="'File ' + index + ' Name'"
+          input-class="text-center"
+          :suffix="'.' + upload_file_types[index]"
+        />
+      </template>
       <div class="row justify-center">
         <q-btn
           label="Upload"
           class="cursor-pointer full-width text-green"
           flat
           @click="sendFile"
-          :loading="loading"
         />
       </div>
     </q-card>
@@ -36,15 +43,12 @@
         <q-toolbar class="bg-primary">
           <div class="row">
             <div>
-              <template v-for="key in path" :key="key">
+              <template v-for="name in path_names" :key="name">
                 <q-btn
-                  :label="key"
+                  :label="name"
                   flat
                   class="text-light q-ml-lg text-body1"
-                  @click="
-                    next_folder = key;
-                    getFolder();
-                  "
+                  @click="getFolderPath(name)"
                 />
                 <a
                   class="text-light text-h5 q-ml-xs"
@@ -73,7 +77,26 @@
             </template>
           </q-input>
           <q-space />
-          <q-btn stretch flat icon="add" label="Folder" class="text-light" />
+          <q-btn stretch flat icon="add" label="Folder" class="text-light">
+            <q-menu>
+              <q-input
+                dense
+                standout
+                v-model="create_folder_name"
+                label="New Folder Name"
+                input-class="text-center"
+              />
+              <div class="row justify-center">
+                <q-btn
+                  label="Create"
+                  class="cursor-pointer full-width text-green"
+                  flat
+                  @click="createFolder"
+                  :loading="loading"
+                />
+              </div>
+            </q-menu>
+          </q-btn>
           <q-btn
             stretch
             flat
@@ -83,39 +106,67 @@
             @click="upload_file_dialog = !upload_file_dialog"
           />
         </q-toolbar>
+        <div class="q-mt-sm text-h6 q-mb-sm text-primary">Subfolders</div>
         <q-separator />
         <template
           v-for="folder in folder_content.children.folders"
           :key="folder"
         >
-          <q-item
-            clickable
-            v-ripple
-            @click="
-              next_folder = folder.name;
-              getFolder();
-            "
-          >
-            <q-item-section avatar top>
-              <q-avatar icon="folder" color="primary" text-color="white" />
-            </q-item-section>
+          <div class="row">
+            <q-item clickable @click="getFolder(folder.id)" style="width: 75%">
+              <q-item-section avatar top>
+                <q-avatar icon="folder" color="primary" text-color="white" />
+              </q-item-section>
 
-            <q-item-section>
-              <q-item-label lines="1">{{ folder.name }}</q-item-label>
-            </q-item-section>
-          </q-item>
+              <q-item-section>
+                <q-item-label class="text-body1">{{
+                  folder.name
+                }}</q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-space />
+            <q-btn
+              class="justify-end"
+              flat
+              icon="delete"
+              @click="deleteFolder(folder.id)"
+            />
+            <q-btn flat icon="more_vert" />
+          </div>
+
           <q-separator />
         </template>
+        <div class="q-mt-lg text-h6 q-mb-sm text-primary">Files</div>
+        <q-separator />
         <template
           v-for="file in folder_content.children.private_files"
           :key="file"
         >
-          <q-item clickable v-ripple @click="openInNewTab(file.link)">
+          <q-item>
             <q-item-section avatar top>
               <q-avatar icon="description" color="primary" text-color="white" />
             </q-item-section>
             <q-item-section>
               <q-item-label lines="1">{{ file.name }}</q-item-label>
+              <q-item-label caption lines="1">{{ file.changed }}</q-item-label>
+            </q-item-section>
+            <q-item-section side>
+              <q-btn
+                label="Download"
+                class="cursor-pointer full-width text-green"
+                flat
+                @click="openInNewTab(file.id)"
+                :loading="loading"
+              />
+            </q-item-section>
+            <q-item-section side>
+              <q-btn
+                label="Delete"
+                class="cursor-pointer full-width text-red"
+                flat
+                @click="deleteFile(file.id)"
+                :loading="loading"
+              />
             </q-item-section>
           </q-item>
           <q-separator />
@@ -159,17 +210,20 @@ export default defineComponent({
           folders: [],
         },
       }),
-      path: ref(['root']),
-      next_folder: ref(''),
+      path_names: ref([]),
+      path_ids: ref([]),
       upload_file_dialog: ref(false),
-      upload_file_file: ref(null),
-      upload_file_name: ref(''),
+      upload_file_files: ref(null),
+      upload_file_names: ref([]),
+      upload_file_types: ref([]),
       loading: ref(false),
+      create_folder_name: ref(''),
+      search: ref(''),
+      uploading: ref(false),
     };
   },
   created() {
-    this.next_folder = 'root';
-    this.getFolder();
+    this.getRootFolder();
   },
   methods: {
     notify(type, message) {
@@ -180,26 +234,186 @@ export default defineComponent({
         multiLine: true,
       });
     },
-    openInNewTab(url) {
-      window.open('https://' + url, '_blank').focus();
+    openInNewTab(id) {
+      window
+        .open('https://api.kurtn3x.xyz/files/download/' + id, '_blank')
+        .focus();
     },
     fileNameVmodel() {
-      this.upload_file_name = this.upload_file_file.name;
+      var i = 0;
+      console.log(this.upload_file_files);
+      for (const file in this.upload_file_files) {
+        // get the filename without extension
+        this.upload_file_names[i] = this.upload_file_files[file].name.replace(
+          /\.[^/.]+$/,
+          ''
+        );
+        // get file extension as suffix
+        this.upload_file_types[i] = this.upload_file_files[file].name
+          .split('.')
+          .pop();
+        i += 1;
+      }
     },
 
     styleFn(offset, height) {
       let pageheight = height - offset;
       return 'height: ' + pageheight + 'px';
     },
-    getFolder() {
+
+    getFolderPath(foldername) {
       this.loading = true;
+      var folderid = '';
+      var i = 1;
+      for (var name of this.path_names) {
+        if (name == foldername) {
+          this.path_names.length = i;
+          this.path_ids.length = i;
+        }
+        folderid = this.path_ids[i - 1];
+        i += 1;
+      }
+      console.log(folderid, foldername);
+
       api
-        .get('/files/list/' + this.next_folder, this.axios_config)
+        .get('/files/list/' + folderid, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.folder_content = response.data;
-            this.path = response.data.path.split('/');
             this.loading = false;
+          } else {
+            this.notify('negative', 'Something went wrong :/');
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'Something went wrong with the API :/');
+          this.loading = false;
+          console.log(error);
+        });
+    },
+
+    getFolder(folderid) {
+      this.loading = true;
+      api
+        .get('/files/list/' + folderid, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.folder_content = response.data;
+            this.path_names.push(response.data.name);
+            this.path_ids.push(response.data.id);
+            this.loading = false;
+          } else {
+            this.notify('negative', 'Something went wrong :/');
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'Something went wrong with the API :/');
+          this.loading = false;
+          console.log(error);
+        });
+    },
+
+    refreshFolder() {
+      this.loading = true;
+      api
+        .get('/files/list/' + this.folder_content.id, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.folder_content = response.data;
+            this.loading = false;
+          } else {
+            this.notify('negative', 'Something went wrong :/');
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'Something went wrong with the API :/');
+          this.loading = false;
+          console.log(error);
+        });
+    },
+
+    getRootFolder() {
+      this.loading = true;
+      api
+        .get('/files/list_root', this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.folder_content = response.data;
+            this.path_names.push(response.data.name);
+            this.path_ids.push(response.data.id);
+            this.loading = false;
+          } else {
+            this.notify('negative', 'Something went wrong :/');
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'Something went wrong with the API :/');
+          this.loading = false;
+          console.log(error);
+        });
+    },
+
+    deleteFile(id) {
+      this.loading = true;
+      api
+        .delete('/files/delete/file/' + id, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.notify('positive', 'Deleted');
+            this.loading = false;
+            this.refreshFolder();
+          } else {
+            this.notify('negative', 'Something went wrong :/');
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'Something went wrong with the API :/');
+          this.loading = false;
+          console.log(error);
+        });
+    },
+
+    deleteFolder(id) {
+      this.loading = true;
+      api
+        .delete('/files/delete/folder/' + id, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.notify('positive', 'Deleted');
+            this.loading = false;
+            this.refreshFolder();
+          } else {
+            this.notify('negative', 'Something went wrong :/');
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'Something went wrong with the API :/');
+          this.loading = false;
+          console.log(error);
+        });
+    },
+
+    createFolder() {
+      this.loading = true;
+      var data = {
+        current_folder_id: this.folder_content.id,
+        foldername: this.create_folder_name,
+      };
+      api
+        .post('/files/create/folder', data, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            console.log(this.folder_content);
+            this.refreshFolder();
+            this.notify('positive', 'Created');
+            this.loading = false;
+            this.create_folder_name = ref('');
           } else {
             this.notify('negative', 'Something went wrong :/');
             this.loading = false;
@@ -213,8 +427,7 @@ export default defineComponent({
     },
 
     sendFile() {
-      this.loading = true;
-
+      this.uploading = true;
       let config = {
         withCredentials: true,
         headers: {
@@ -222,28 +435,37 @@ export default defineComponent({
           'Content-Type': 'multipart/form-data',
         },
       };
-      let form_data = new FormData();
-      form_data.append('filename', this.upload_file_name);
-      form_data.append('current_foldername', this.folder_content.name);
-      if (this.upload_file_file != null) {
-        form_data.append('file', this.upload_file_file);
+      for (const file in this.upload_file_files) {
+        let form_data = new FormData();
+        form_data.append(
+          'filename',
+          this.upload_file_names[file] + '.' + this.upload_file_types[file]
+        );
+        form_data.append('current_folder_id', this.folder_content.id);
+        if (this.upload_file_files != null) {
+          form_data.append('file', this.upload_file_files[file]);
+        }
+        api
+          .post('/files/upload', form_data, config)
+          .then((response) => {
+            if (response.status == 200) {
+              this.refreshFolder();
+              this.notify('positive', 'Uploaded');
+              this.uploading = false;
+            } else {
+              this.notify('negative', 'Something went wrong :/');
+              this.uploading = false;
+            }
+          })
+          .catch((error) => {
+            this.notify('negative', 'Something went wrong with the API :/');
+            this.uploading = false;
+            console.log(error);
+          });
       }
-      api
-        .post('/files/upload', form_data, config)
-        .then((response) => {
-          if (response.status == 200) {
-            this.notify('positive', 'Uploaded');
-            this.loading = false;
-          } else {
-            this.notify('negative', 'Something went wrong :/');
-            this.loading = false;
-          }
-        })
-        .catch((error) => {
-          this.notify('negative', 'Something went wrong with the API :/');
-          this.loading = false;
-          console.log(error);
-        });
+      this.upload_file_files = null;
+      this.upload_file_names = [];
+      this.upload_file_types = [];
     },
   },
 });

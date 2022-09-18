@@ -1,6 +1,7 @@
 <template>
   <div class="disable-select text-primary">
-    <h1 class="text-center">Dashboard</h1>
+    <h1 class="text-center gt-xs">Dashboard</h1>
+    <h3 class="text-center lt-sm">Dashboard</h3>
   </div>
 </template>
 

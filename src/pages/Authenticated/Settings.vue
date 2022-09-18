@@ -93,11 +93,8 @@
         <q-tabs
           v-model="tab"
           vertical
-          :class="
-            darkmode
-              ? 'text-light bg-background-dark'
-              : 'text-dark bg-background-light'
-          "
+          :class="darkmode ? 'text-light ' : 'text-dark '"
+          style="background: transparent"
         >
           <q-expansion-item
             icon="perm_identity"
@@ -130,37 +127,28 @@
           animated
           swipeable="false"
           vertical
-          :class="
-            darkmode
-              ? 'text-light bg-background-dark'
-              : 'text-dark bg-background-light'
-          "
+          :class="darkmode ? 'text-light' : 'text-dark'"
+          style="background: transparent"
         >
           <q-tab-panel
+            style="background: transparent"
             name="start"
-            :class="
-              darkmode
-                ? 'text-light bg-background-dark'
-                : 'text-dark bg-background-light'
-            "
+            :class="darkmode ? 'text-light' : 'text-dark'"
             ><div class="text-h4 q-mb-md">The Settings Menu</div></q-tab-panel
           >
           <!-- PROFILE SETTINGS  -->
           <q-tab-panel
             name="profile"
-            :class="
-              darkmode
-                ? 'text-light bg-background-dark'
-                : 'text-dark bg-background-light'
-            "
+            :class="darkmode ? 'text-light' : 'text-dark'"
+            style="background: transparent"
           >
-            <q-card bordered square class="no-shadow q-ma-md q-pa-md">
-              <q-card-section class="row items-center q-pb-none">
-                <p class="text-weight-bolder text-primary">
-                  Update your Profile
-                </p>
-              </q-card-section>
+            <div class="text-h4 q-mb-xs">Profile Settings</div>
 
+            <q-card
+              class="no-shadow q-ma-md q-pa-md"
+              style="background: transparent"
+              flat
+            >
               <q-card-section>
                 <q-form
                   class="q-gutter-md text-grey"
@@ -320,40 +308,46 @@
 
           <q-tab-panel
             name="account"
-            :class="
-              darkmode
-                ? 'text-light bg-background-dark'
-                : 'text-dark bg-background-light'
-            "
+            :class="darkmode ? 'text-light' : 'text-dark'"
+            style="background: transparent"
           >
-            <div class="text-h4 q-mb-md">Account Settings</div>
-            <q-card class="my-card">
+            <div class="text-h4 q-mb-xs">Account Settings</div>
+            <q-card style="background: transparent" flat>
               <q-card-section>
                 <div class="text-body1">Id: {{ this.account.account.id }}</div>
-                <div class="text-body1">
+                <q-separator />
+                <div class="text-body1 q-mt-md">
                   Username: {{ this.account.account.username }}
                 </div>
-                <div class="text-body1">
+                <q-separator />
+                <div class="text-body1 q-mt-md">
                   Email: {{ this.account.account.email }}
                 </div>
-                <div class="text-body1">
+                <q-separator />
+                <div class="text-body1 q-mt-md">
                   Role: {{ this.account.profile.role }}
                 </div>
-                <div class="text-body1">
+                <q-separator />
+                <div class="text-body1 q-mt-md">
                   Joined: {{ this.account.account.date_joined }}
                 </div>
-                <div class="text-body1">
+                <q-separator />
+                <div class="text-body1 q-mt-md">
                   Name: {{ this.account.profile.name }}
                 </div>
-                <div class="text-body1">
+                <q-separator />
+                <div class="text-body1 q-mt-md">
                   Last Seen: {{ this.account.profile.last_seen }}
                 </div>
-                <div class="text-body1">
+                <q-separator />
+                <div class="text-body1 q-mt-md">
                   Location: {{ this.account.profile.location }}
                 </div>
-                <div class="text-body1">
+                <q-separator />
+                <div class="text-body1 q-mt-md">
                   Status: {{ this.account.profile.status }}
                 </div>
+                <q-separator />
               </q-card-section>
 
               <q-card-actions vertical align="center">
@@ -580,7 +574,7 @@
                     />
                   </q-form>
                 </q-expansion-item>
-                <q-btn flat class="q-mt-xl" @click="confirm_delete = true"
+                <q-btn flat class="q-mt-md" @click="confirm_delete = true"
                   >Delete Account</q-btn
                 >
               </q-card-actions>
@@ -588,11 +582,8 @@
           </q-tab-panel>
           <q-tab-panel
             name="other"
-            :class="
-              darkmode
-                ? 'text-light bg-background-dark'
-                : 'text-dark bg-background-light'
-            "
+            :class="darkmode ? 'text-light' : 'text-dark'"
+            style="background: transparent"
           >
             <q-btn
               rounded

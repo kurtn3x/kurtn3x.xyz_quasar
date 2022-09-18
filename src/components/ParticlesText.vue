@@ -88,7 +88,7 @@
         inlineArrangement: 'equidistant',
         scale: 1.2,
         type: 'inline',
-        url: './assets/name.svg',
+        url: './public/name.svg',
         // url: './src/assets/name.svg',
       },
       // HERE
