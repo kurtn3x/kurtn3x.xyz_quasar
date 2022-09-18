@@ -169,6 +169,21 @@
                     style="max-width: 600px"
                   >
                     <template v-slot:append>
+                      <q-icon
+                        name="add_reaction"
+                        class="button_hover"
+                        v-if="name_edit"
+                      >
+                        <q-menu>
+                          <EmojiPicker
+                            :native="true"
+                            @select="onSelectEmojiName"
+                          />
+                        </q-menu>
+                        <q-tooltip> Add emoji</q-tooltip>
+                      </q-icon>
+                    </template>
+                    <template v-slot:after>
                       <q-btn
                         label="edit"
                         class="cursor-pointer bg-green"
@@ -190,6 +205,21 @@
                     style="max-width: 600px"
                   >
                     <template v-slot:append>
+                      <q-icon
+                        name="add_reaction"
+                        class="button_hover"
+                        v-if="location_edit"
+                      >
+                        <q-menu>
+                          <EmojiPicker
+                            :native="true"
+                            @select="onSelectEmojiLocation"
+                          />
+                        </q-menu>
+                        <q-tooltip> Add emoji</q-tooltip>
+                      </q-icon>
+                    </template>
+                    <template v-slot:after>
                       <q-btn
                         label="edit"
                         class="cursor-pointer bg-green"
@@ -212,6 +242,21 @@
                     style="max-width: 600px"
                   >
                     <template v-slot:append>
+                      <q-icon
+                        name="add_reaction"
+                        class="button_hover"
+                        v-if="status_edit"
+                      >
+                        <q-menu>
+                          <EmojiPicker
+                            :native="true"
+                            @select="onSelectEmojiStatus"
+                          />
+                        </q-menu>
+                        <q-tooltip> Add emoji</q-tooltip>
+                      </q-icon>
+                    </template>
+                    <template v-slot:after>
                       <q-btn
                         label="edit"
                         class="cursor-pointer bg-green"
@@ -222,6 +267,7 @@
 
                   <q-input
                     :readonly="!description_edit"
+                    type="textarea"
                     dense
                     square
                     filled
@@ -235,6 +281,21 @@
                     style="max-width: 600px"
                   >
                     <template v-slot:append>
+                      <q-icon
+                        name="add_reaction"
+                        class="button_hover"
+                        v-if="description_edit"
+                      >
+                        <q-menu>
+                          <EmojiPicker
+                            :native="true"
+                            @select="onSelectEmojiDescription"
+                          />
+                        </q-menu>
+                        <q-tooltip> Add emoji</q-tooltip>
+                      </q-icon>
+                    </template>
+                    <template v-slot:after>
                       <q-btn
                         label="edit"
                         class="cursor-pointer bg-green"
@@ -613,10 +674,11 @@ import {
   path_to_link_av,
   path_to_link_bg,
 } from 'src/models';
-
+import EmojiPicker from 'vue3-emoji-picker';
+import '../../../node_modules/vue3-emoji-picker/dist/style.css';
 export default {
   name: 'SettingsView',
-
+  components: { EmojiPicker },
   setup() {
     const settingsStore = useSettingsStore();
     const userStore = useUserStore();
@@ -687,6 +749,18 @@ export default {
         progress: true,
         multiLine: true,
       });
+    },
+    onSelectEmojiName(emoji) {
+      this.name += emoji.i;
+    },
+    onSelectEmojiLocation(emoji) {
+      this.location += emoji.i;
+    },
+    onSelectEmojiStatus(emoji) {
+      this.status += emoji.i;
+    },
+    onSelectEmojiDescription(emoji) {
+      this.description += emoji.i;
     },
 
     deleteAccount() {
@@ -901,4 +975,8 @@ export default {
 };
 </script>
 
-<style></style>
+<style>
+.button_hover:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+</style>
