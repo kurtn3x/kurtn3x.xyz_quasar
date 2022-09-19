@@ -1,4 +1,8 @@
 <template>
+  <q-dialog v-model="show_file_editor">
+    <WebViewer :initialDoc="this.initical_doc" />
+  </q-dialog>
+
   <q-dialog v-model="folder_delete_dialog">
     <q-card>
       <q-card-section class="row items-center">
@@ -250,6 +254,19 @@
             </q-item-section>
             <q-item-section side>
               <q-btn
+                label="Edit"
+                class="cursor-pointer full-width"
+                flat
+                @click="
+                  this.initical_doc =
+                    'https://api.kurtn3x.xyz/files/download/' + file.id;
+                  this.show_file_editor = !this.show_file_editor;
+                "
+                :loading="loading"
+              />
+            </q-item-section>
+            <q-item-section side>
+              <q-btn
                 label="Download"
                 class="cursor-pointer full-width text-green"
                 flat
@@ -280,9 +297,11 @@ import { useUserStore } from 'stores/user';
 import { useQuasar } from 'quasar';
 import { useSettingsStore } from 'stores/settings';
 import { api } from 'boot/axios';
+import WebViewer from '../../components/WebViewer.vue';
 
 export default defineComponent({
   name: 'FilesView',
+  components: { WebViewer },
   setup() {
     const userStore = useUserStore();
     const settings_store = useSettingsStore();
@@ -320,6 +339,8 @@ export default defineComponent({
       uploading: ref(false),
       folder_to_delete: ref(''),
       folder_delete_dialog: ref(false),
+      initical_doc: ref(''),
+      show_file_editor: ref(false),
     };
   },
   created() {

@@ -15,8 +15,9 @@ export default {
     onMounted(() => {
       WebViewer(
         {
-          path: 'webviewer',
+          path: '../webviewer',
           initialDoc: props.initialDoc,
+          documentType: 'pdf',
         },
         document.getElementById('webviewer')
       ).then((instance) => {
