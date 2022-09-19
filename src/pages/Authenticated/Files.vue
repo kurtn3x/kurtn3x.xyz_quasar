@@ -1,8 +1,11 @@
 <template>
-  <q-dialog v-model="show_file_editor">
-    <WebViewer :initialDoc="this.initical_doc" />
+  <q-dialog v-model="show_file_editor" style="width: 80%">
+    <WebViewer
+      :initialDoc="this.initical_doc"
+      :filename="this.initical_doc_filename"
+      style="width: 80%"
+    />
   </q-dialog>
-
   <q-dialog v-model="folder_delete_dialog">
     <q-card>
       <q-card-section class="row items-center">
@@ -71,15 +74,8 @@
   <q-page class="column q-ml-sm q-mr-sm" :style-fn="styleFn">
     <q-scroll-area class="col">
       <q-list padding class="rounded-borders">
-        <q-toolbar class="bg-primary" v-if="small">
-          <q-input
-            dark
-            dense
-            standout
-            v-model="search"
-            input-class="text-left"
-            class="absolute-left"
-            >center
+        <q-toolbar class="bg-primary">
+          <q-input dark dense standout v-model="search" input-class="text-left">
             <template v-slot:append>
               <q-icon v-if="search === ''" name="search" />
               <q-icon
@@ -91,92 +87,13 @@
             </template>
           </q-input>
           <q-space />
-          <q-btn stretch flat icon="add" label="Folder" class="text-light">
-            <q-menu>
-              <q-input
-                dense
-                standout
-                v-model="create_folder_name"
-                label="New Folder Name"
-                input-class="text-center"
-              />
-              <div class="row justify-center">
-                <q-btn
-                  label="Create"
-                  class="cursor-pointer full-width text-green"
-                  flat
-                  @click="createFolder"
-                  :loading="loading"
-                />
-              </div>
-            </q-menu>
-          </q-btn>
           <q-btn
             stretch
             flat
-            icon="add"
-            label="File"
+            icon="create_new_folder"
             class="text-light"
-            @click="upload_file_dialog = !upload_file_dialog"
-          />
-        </q-toolbar>
-        <q-toolbar class="bg-primary" v-if="small">
-          <div class="row">
-            <div>
-              <template v-for="name in path_names" :key="name">
-                <q-btn
-                  :label="name"
-                  flat
-                  class="text-light q-ml-lg text-body1"
-                  @click="getFolderPath(name)"
-                />
-                <a
-                  class="text-light text-h5 q-ml-xs"
-                  style="position: absolute; top: 20%"
-                  >/</a
-                >
-              </template>
-            </div>
-          </div>
-        </q-toolbar>
-        <q-toolbar class="bg-primary" v-if="!small">
-          <div class="row">
-            <div>
-              <template v-for="name in path_names" :key="name">
-                <q-btn
-                  :label="name"
-                  flat
-                  class="text-light q-ml-lg text-body1"
-                  @click="getFolderPath(name)"
-                />
-                <a
-                  class="text-light text-h5 q-ml-xs"
-                  style="position: absolute; top: 20%"
-                  >/</a
-                >
-              </template>
-            </div>
-          </div>
-          <q-input
-            dark
-            dense
-            standout
-            v-model="search"
-            input-class="text-left"
-            class="absolute-center"
+            label="Create Folder"
           >
-            <template v-slot:append>
-              <q-icon v-if="search === ''" name="search" />
-              <q-icon
-                v-else
-                name="clear"
-                class="cursor-pointer"
-                @click="search = ''"
-              />
-            </template>
-          </q-input>
-          <q-space />
-          <q-btn stretch flat icon="add" label="Folder" class="text-light">
             <q-menu>
               <q-input
                 dense
@@ -184,6 +101,7 @@
                 v-model="create_folder_name"
                 label="New Folder Name"
                 input-class="text-center"
+                class="full-width"
               />
               <div class="row justify-center">
                 <q-btn
@@ -199,20 +117,43 @@
           <q-btn
             stretch
             flat
-            icon="add"
-            label="File"
+            icon="file_upload"
+            label="Upload File(s)"
             class="text-light"
             @click="upload_file_dialog = !upload_file_dialog"
           />
         </q-toolbar>
-        <div class="q-mt-sm text-h6 q-mb-sm text-primary">Subfolders</div>
-        <q-separator />
+        <q-toolbar class="transparent">
+          <div class="row">
+            <div>
+              <template v-for="name in path_names" :key="name">
+                <q-btn
+                  :label="name"
+                  flat
+                  class="text-primary q-ml-lg text-body1 text-weight-bold"
+                  @click="getFolderPath(name)"
+                  style="text-decoration: underline"
+                />
+                <a
+                  class="text-primary text-h5 q-ml-xs"
+                  style="position: absolute; top: 20%"
+                  >/</a
+                >
+              </template>
+            </div>
+          </div>
+        </q-toolbar>
+        <q-separator size="2px" color="primary" />
+        <div class="q-mt-lg text-h6 q-mb-sm text-primary text-weight-bolder">
+          Subfolders
+        </div>
+        <q-separator size="2px" color="primary" />
         <template
           v-for="folder in folder_content.children.folders"
           :key="folder"
         >
           <div class="row">
-            <q-item clickable @click="getFolder(folder.id)" style="width: 75%">
+            <q-item clickable @click="getFolder(folder.id)" class="full-width">
               <q-item-section avatar top>
                 <q-avatar icon="folder" color="primary" text-color="white" />
               </q-item-section>
@@ -222,24 +163,26 @@
                   folder.name
                 }}</q-item-label>
               </q-item-section>
+              <q-item-section side>
+                <q-btn
+                  class="justify-end"
+                  flat
+                  icon="delete"
+                  @click.capture.stop="
+                    this.folder_to_delete = folder.id;
+                    folder_delete_dialog = !folder_delete_dialog;
+                  "
+                />
+              </q-item-section>
             </q-item>
-            <q-space />
-            <q-btn
-              class="justify-end"
-              flat
-              icon="delete"
-              @click="
-                this.folder_to_delete = folder.id;
-                folder_delete_dialog = !folder_delete_dialog;
-              "
-            />
-            <q-btn flat icon="more_vert" />
           </div>
 
           <q-separator />
         </template>
-        <div class="q-mt-lg text-h6 q-mb-sm text-primary">Files</div>
-        <q-separator />
+        <div class="q-mt-lg text-h6 q-mb-sm text-primary text-weight-bolder">
+          Files
+        </div>
+        <q-separator size="2px" color="primary" />
         <template
           v-for="file in folder_content.children.private_files"
           :key="file"
@@ -258,9 +201,8 @@
                 class="cursor-pointer full-width"
                 flat
                 @click="
-                  this.initical_doc =
-                    'https://api.kurtn3x.xyz/files/download/' + file.id;
-                  this.show_file_editor = !this.show_file_editor;
+                  runFileEditor(file.id);
+                  initical_doc_filename = file.name;
                 "
                 :loading="loading"
               />
@@ -341,6 +283,8 @@ export default defineComponent({
       folder_delete_dialog: ref(false),
       initical_doc: ref(''),
       show_file_editor: ref(false),
+      initical_doc_filename: ref(''),
+      test_blob: ref(''),
     };
   },
   created() {
@@ -356,6 +300,38 @@ export default defineComponent({
     },
   },
   methods: {
+    runFileEditor(fileid) {
+      // django private storage adds another layer between user and pdf file -> pdf file is seen as html not as pdf
+      // solution: load file into blob and edit the blob
+      const config = {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': this.q.cookies.get('csrftoken'),
+        },
+        responseType: 'blob',
+      };
+
+      api
+        .get('/files/download/' + fileid, config)
+        .then((response) => {
+          if (response.status == 200) {
+            const content = response.headers['content-type'];
+            console.log(content);
+            this.loading = false;
+            this.initical_doc = response.data;
+            this.show_file_editor = true;
+          } else {
+            this.notify('negative', '' + response.data.error);
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'API ERROR :/');
+          this.loading = false;
+          console.log(error);
+        });
+    },
+
     notify(type, message) {
       this.q.notify({
         type: type,
@@ -426,7 +402,7 @@ export default defineComponent({
     getFolder(folderid) {
       this.loading = true;
       api
-        .get('/files/list/' + 1, this.axios_config)
+        .get('/files/list/' + folderid, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.folder_content = response.data;

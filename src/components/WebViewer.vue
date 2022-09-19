@@ -8,7 +8,7 @@ import WebViewer from '@pdftron/webviewer';
 
 export default {
   name: 'WebViewer',
-  props: { initialDoc: { type: String } },
+  props: { initialDoc: { type: Blob }, filename: { type: String } },
 
   setup(props) {
     const viewer = ref(null);
@@ -16,13 +16,14 @@ export default {
       WebViewer(
         {
           path: '../webviewer',
-          initialDoc: props.initialDoc,
-          documentType: 'pdf',
         },
         document.getElementById('webviewer')
       ).then((instance) => {
         const { documentViewer, annotationManager, Annotations } =
           instance.Core;
+        instance.UI.loadDocument(props.initialDoc, {
+          filename: props.filename,
+        });
 
         documentViewer.addEventListener('documentLoaded', () => {
           const rectangleAnnot = new Annotations.RectangleAnnotation({
