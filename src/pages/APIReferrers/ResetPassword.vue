@@ -177,8 +177,7 @@ export default {
             this.$router.push('/');
           } else {
             this.loading = false;
-            var msg = 'Error: ' + response.data.error;
-            this.notify('negative', msg);
+            this.notify('negative', '' + response.data.error);
           }
         })
         .catch((error) => {

@@ -31,8 +31,6 @@ export default {
     this.getUser();
   },
 
-  computed: {},
-
   methods: {
     notify(type, message) {
       this.q.notify({
@@ -52,11 +50,11 @@ export default {
             this.$router.push('/user/' + response.data.account.username);
             this.notify('positive', 'Redirecting to user profile.');
           } else {
-            this.notify('negative', 'User does not exist.');
+            this.notify('negative', '' + response.data.error);
           }
         })
         .catch((error) => {
-          this.notify('negative', 'Something went wrong with the API :/');
+          this.notify('negative', 'API ERROR :/');
           console.log(error);
         });
     },

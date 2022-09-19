@@ -786,11 +786,11 @@ export default {
           } else if (response.status == 244) {
             this.notify('negative', 'Current Password is wrong.');
           } else {
-            this.notify('negative', 'Something went wrong :/');
+            this.notify('negative', '' + response.data.error);
           }
         })
         .catch((error) => {
-          this.notify('negative', 'Something went wrong with the API :/');
+          this.notify('negative', 'API ERROR :/');
           console.log(error);
         });
     },
@@ -822,11 +822,11 @@ export default {
           } else if (response.status == 244) {
             this.notify('negative', 'Current Password is wrong.');
           } else {
-            this.notify('negative', 'Something went wrong :/');
+            this.notify('negative', '' + response.data.error);
           }
         })
         .catch((error) => {
-          this.notify('negative', 'Something went wrong with the API :/');
+          this.notify('negative', 'API ERROR :/');
           console.log(error);
         });
     },
@@ -845,11 +845,11 @@ export default {
           } else if (response.status == 244) {
             this.notify('negative', 'Current Password is wrong.');
           } else {
-            this.notify('negative', 'Something went wrong :/');
+            this.notify('negative', '' + response.data.error);
           }
         })
         .catch((error) => {
-          this.notify('negative', 'Something went wrong with the API :/');
+          this.notify('negative', 'API ERROR :/');
           console.log(error);
         });
     },
@@ -868,11 +868,11 @@ export default {
           } else if (response.status == 244) {
             this.notify('negative', 'Current Password is wrong.');
           } else {
-            this.notify('negative', 'Something went wrong :/');
+            this.notify('negative', '' + response.data.error);
           }
         })
         .catch((error) => {
-          this.notify('negative', 'Something went wrong with the API :/');
+          this.notify('negative', 'API ERROR :/');
           console.log(error);
         });
     },
@@ -935,12 +935,12 @@ export default {
             );
           } else {
             this.loading = false;
-            this.notify('negative', 'User does not exist.');
+            this.notify('negative', '' + response.data.error);
           }
         })
         .catch((error) => {
           this.loading = false;
-          this.notify('negative', 'Something went wrong with the API :/');
+          this.notify('negative', 'API ERROR :/');
           console.log(error);
         });
     },
@@ -963,11 +963,11 @@ export default {
             this.description = response.data.profile.description;
             this.status = response.data.profile.status;
           } else {
-            this.notify('negative', 'Something went wrong :/');
+            this.notify('negative', '' + response.data.error);
           }
         })
         .catch((error) => {
-          this.notify('negative', 'Something went wrong with the API :/');
+          this.notify('negative', 'API ERROR :/');
           console.log(error);
         });
     },

@@ -154,7 +154,7 @@
               </div>
             </q-card-section>
           </div>
-          <q-card-actions vertical style="width: 10%">
+          <q-card-actions vertical style="width: 10%" v-if="authenticated">
             <q-btn size="xl" flat stretch color="primary" icon="chat">
               <q-tooltip
                 class="text-body2"
@@ -405,7 +405,7 @@ export default {
       page_load: ref(false),
       profile_tab: ref('about'),
       user_found: ref(false),
-      test: ref(true),
+      test: ref(false),
       userlink: ref('kurtn3x.xyz/id/'),
     };
   },
@@ -424,6 +424,9 @@ export default {
       } else {
         return false;
       }
+    },
+    authenticated() {
+      return this.userStore.authenticated;
     },
   },
 
@@ -456,7 +459,7 @@ export default {
             this.userlink = 'kurtn3x.xyz/id/' + this.user.id;
           } else {
             this.page_load = true;
-            this.notify('negative', 'User does not exist.');
+            this.notify('negative', '' + response.data.error);
           }
         })
         .catch((error) => {
@@ -465,7 +468,7 @@ export default {
             this.user = defaultUser();
             this.user.fetched = true;
           }
-          this.notify('negative', 'Something went wrong with the API :/');
+          this.notify('negative', 'API ERROR :/');
           console.log(error);
         });
     },
