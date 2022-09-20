@@ -1,14 +1,56 @@
 <template>
-  <!-- <WebViewer
-      :initialDoc="this.initical_doc"
-      :filename="this.initical_doc_filename"
-      style="width: 80%"
-    /> -->
-  <PdfViewer
-    :initialDoc="this.initial_doc"
+  <q-dialog
+    seamless
+    full-height
+    :maximized="this.pdf_viewer_maximized"
+    v-model="show_file_editor"
+    style="'width:800px"
+  >
+    <q-card>
+      <q-bar>
+        <q-icon name="laptop_chromebook" />
+        <div>File: {{ initial_doc_filename }}</div>
+
+        <q-space />
+
+        <q-btn
+          dense
+          flat
+          :icon="pdf_viewer_maximized ? 'close_fullscreen' : 'crop_square'"
+          @click="pdf_viewer_maximized = !pdf_viewer_maximized"
+        />
+        <q-btn
+          dense
+          flat
+          icon="close"
+          @click="show_file_editor = !show_file_editor"
+        />
+      </q-bar>
+
+      <q-slider
+        v-model="zoom"
+        :min="200"
+        :max="1200"
+        :step="100"
+        label
+        label-value="Zoom"
+      />
+      <div class="row justify-center">
+        <vue-pdf-embed
+          ref="pdfRef"
+          :source="this.initial_doc"
+          :height="zoom"
+          :width="zoom"
+        />
+      </div>
+    </q-card>
+  </q-dialog>
+
+  <!-- <PdfViewer
     v-if="show_file_editor"
-    style="width: 500px; height: 500px"
-  />
+    :initialDoc="this.initial_doc"
+    :show="this.show_file_editor"
+  /> -->
 
   <q-dialog v-model="folder_delete_dialog">
     <q-card>
@@ -206,7 +248,7 @@
                 flat
                 @click="
                   runFileEditor(file.id);
-                  initical_doc_filename = file.name;
+                  initial_doc_filename = file.name;
                 "
                 :loading="loading"
               />
@@ -249,7 +291,7 @@ import VuePdfEmbed from 'vue-pdf-embed';
 
 export default defineComponent({
   name: 'FilesView',
-  components: { PdfViewer },
+  components: { VuePdfEmbed },
   setup() {
     const userStore = useUserStore();
     const settings_store = useSettingsStore();
@@ -287,10 +329,13 @@ export default defineComponent({
       uploading: ref(false),
       folder_to_delete: ref(''),
       folder_delete_dialog: ref(false),
-      initical_doc: ref(''),
+      initial_doc: ref(''),
       show_file_editor: ref(false),
-      initical_doc_filename: ref(''),
+      initial_doc_filename: ref(''),
       test_blob: ref(''),
+
+      pdf_viewer_maximized: ref(false),
+      zoom: ref(800),
     };
   },
   created() {
@@ -306,6 +351,9 @@ export default defineComponent({
     },
   },
   methods: {
+    handleDocumentRender() {
+      this.pageCount = this.$refs.pdfRef.pageCount;
+    },
     runFileEditor(fileid) {
       // django private storage adds another layer between user and pdf file -> pdf file is seen as html not as pdf
       // solution: load file into blob and edit the blob
@@ -325,14 +373,18 @@ export default defineComponent({
             console.log(content);
             console.log(response.data);
             this.loading = false;
-            this.initical_doc = response.data.arrayBuffer();
+            // this.initial_doc = response.data.arrayBuffer();
+            const blob = new Blob([response.data]);
+            const objectUrl = URL.createObjectURL(blob);
+            this.initial_doc = objectUrl;
             // var reader = new FileReader();
             // reader.readAsDataURL(response.data);
             // reader.onloadend = function () {
-            //   this.initical_doc = reader.result;
+            //   this.initial_doc = reader.result;
             //   console.log(reader.result);
             // };
             this.show_file_editor = true;
+            console.log(this.initial_doc);
           } else {
             this.notify('negative', '' + response.data.error);
             this.loading = false;

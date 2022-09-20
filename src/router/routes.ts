@@ -33,6 +33,10 @@ const routes: RouteRecordRaw[] = [
         path: 'files',
         component: () => import('pages/Authenticated/Files.vue'),
       },
+      {
+        path: 'notes',
+        component: () => import('pages/Authenticated/NotesView.vue'),
+      },
     ],
   },
 

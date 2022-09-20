@@ -199,9 +199,14 @@
             <q-item-section> My Files </q-item-section>
           </q-item>
 
-          <q-item clickable v-ripple class="text-primary text-weight-bold">
+          <q-item
+            clickable
+            v-ripple
+            class="text-primary text-weight-bold"
+            to="/dashboard/notes"
+          >
             <q-item-section avatar>
-              <q-icon name="drafts" />
+              <q-icon name="edit_note" />
             </q-item-section>
 
             <q-item-section> Drafts </q-item-section>
