@@ -16,6 +16,8 @@ export default {
       WebViewer(
         {
           path: '../webviewer',
+          hideAnnotationPanel: true,
+          pdfnet: true,
         },
         document.getElementById('webviewer')
       ).then((instance) => {

@@ -1,11 +1,15 @@
 <template>
-  <q-dialog v-model="show_file_editor" style="width: 80%">
-    <WebViewer
+  <!-- <WebViewer
       :initialDoc="this.initical_doc"
       :filename="this.initical_doc_filename"
       style="width: 80%"
-    />
-  </q-dialog>
+    /> -->
+  <PdfViewer
+    :initialDoc="this.initial_doc"
+    v-if="show_file_editor"
+    style="width: 500px; height: 500px"
+  />
+
   <q-dialog v-model="folder_delete_dialog">
     <q-card>
       <q-card-section class="row items-center">
@@ -240,10 +244,12 @@ import { useQuasar } from 'quasar';
 import { useSettingsStore } from 'stores/settings';
 import { api } from 'boot/axios';
 import WebViewer from '../../components/WebViewer.vue';
+import PdfViewer from '../../components/PdfViewer.vue';
+import VuePdfEmbed from 'vue-pdf-embed';
 
 export default defineComponent({
   name: 'FilesView',
-  components: { WebViewer },
+  components: { PdfViewer },
   setup() {
     const userStore = useUserStore();
     const settings_store = useSettingsStore();
@@ -317,8 +323,15 @@ export default defineComponent({
           if (response.status == 200) {
             const content = response.headers['content-type'];
             console.log(content);
+            console.log(response.data);
             this.loading = false;
-            this.initical_doc = response.data;
+            this.initical_doc = response.data.arrayBuffer();
+            // var reader = new FileReader();
+            // reader.readAsDataURL(response.data);
+            // reader.onloadend = function () {
+            //   this.initical_doc = reader.result;
+            //   console.log(reader.result);
+            // };
             this.show_file_editor = true;
           } else {
             this.notify('negative', '' + response.data.error);
