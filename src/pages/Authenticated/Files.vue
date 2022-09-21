@@ -336,23 +336,27 @@ export default defineComponent({
           folders: [],
         },
       }),
+      loading: ref(false),
+      uploading: ref(false),
+      search: ref(''),
+
+      // file hader to show which path is currently opened and ability to go back
       path_names: ref([]),
       path_ids: ref([]),
+      // dialog to upload a new file
       upload_file_dialog: ref(false),
       upload_file_files: ref(null),
       upload_file_names: ref([]),
       upload_file_types: ref([]),
-      loading: ref(false),
+      // name of new folder
       create_folder_name: ref(''),
-      search: ref(''),
-      uploading: ref(false),
+      // delete folder
       folder_to_delete: ref(''),
       folder_delete_dialog: ref(false),
+      // pdf preview handlers
       initial_doc: ref(''),
       show_file_editor: ref(false),
       initial_doc_filename: ref(''),
-      test_blob: ref(''),
-
       pdf_viewer_maximized: ref(false),
       zoom: ref(800),
     };
@@ -370,9 +374,6 @@ export default defineComponent({
     },
   },
   methods: {
-    handleDocumentRender() {
-      this.pageCount = this.$refs.pdfRef.pageCount;
-    },
     runFileEditor(fileid) {
       // django private storage adds another layer between user and pdf file -> pdf file is seen as html not as pdf
       // solution: load file into blob and edit the blob
@@ -392,18 +393,10 @@ export default defineComponent({
             console.log(content);
             console.log(response.data);
             this.loading = false;
-            // this.initial_doc = response.data.arrayBuffer();
             const blob = new Blob([response.data]);
             const objectUrl = URL.createObjectURL(blob);
             this.initial_doc = objectUrl;
-            // var reader = new FileReader();
-            // reader.readAsDataURL(response.data);
-            // reader.onloadend = function () {
-            //   this.initial_doc = reader.result;
-            //   console.log(reader.result);
-            // };
             this.show_file_editor = true;
-            console.log(this.initial_doc);
           } else {
             this.notify('negative', '' + response.data.error);
             this.loading = false;
@@ -445,11 +438,6 @@ export default defineComponent({
           .pop();
         i += 1;
       }
-    },
-
-    styleFn(offset, height) {
-      let pageheight = height - offset;
-      return 'height: ' + pageheight + 'px';
     },
 
     getFolderPath(foldername) {
