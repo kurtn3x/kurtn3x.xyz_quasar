@@ -51,6 +51,42 @@
     :initialDoc="this.initial_doc"
     :show="this.show_file_editor"
   /> -->
+  <q-dialog
+    v-model="updateItemDialog"
+    @hide="
+      updateItemItem = '';
+      updateItemName = '';
+      updateItemParents = [];
+      updateItemNewParent = '';
+      allAvailableFolders = {};
+      updateItemType = '';
+    "
+  >
+    <q-card>
+      <q-input
+        dark
+        dense
+        standout
+        v-model="updateItemName"
+        label="Name"
+        input-class="text-center"
+        class="full-width text-primary"
+      />
+      <q-select
+        v-model="updateItemNewParent"
+        :options="updateItemParents"
+        label="Parent Folder"
+      />
+      <q-btn
+        label="Update"
+        class="cursor-pointer full-width text-green"
+        flat
+        @click="updateItem"
+        :loading="loading"
+        v-close-popup
+      />
+    </q-card>
+  </q-dialog>
 
   <q-dialog v-model="folder_delete_dialog">
     <q-card>
@@ -82,7 +118,7 @@
   <q-dialog v-model="upload_file_dialog">
     <q-card style="min-width: 200px">
       <q-file
-        color="teal"
+        color="primary"
         filled
         v-model="upload_file_files"
         label="Select/Drag & Drop"
@@ -91,6 +127,11 @@
         @update:model-value="fileNameVmodel"
         :loading="loading"
         counter
+        use-chips
+        standout
+        hide-bottom-space
+        outlined
+        square
       >
         <template v-slot:prepend>
           <q-icon name="cloud_upload" />
@@ -113,6 +154,7 @@
           class="cursor-pointer full-width text-green"
           flat
           @click="sendFile"
+          v-close-popup
         />
       </div>
     </q-card>
@@ -133,41 +175,50 @@
             </template>
           </q-input>
           <q-space />
-          <q-btn
-            stretch
-            flat
-            icon="create_new_folder"
-            class="text-light"
-            label="Create Folder"
-          >
-            <q-menu>
-              <q-input
-                dense
-                standout
-                v-model="create_folder_name"
-                label="New Folder Name"
-                input-class="text-center"
-                class="full-width"
+          <q-btn-dropdown icon="add" flat class="text-light">
+            <div>
+              <q-btn stretch flat icon="create_new_folder" label="New Folder">
+                <q-menu anchor="center left" self="top right">
+                  <q-input
+                    dark
+                    dense
+                    standout
+                    v-model="create_folder_name"
+                    label="New Folder Name"
+                    input-class="text-center"
+                    class="full-width text-primary"
+                  />
+                  <div class="row justify-center">
+                    <q-btn
+                      label="Create"
+                      class="cursor-pointer full-width text-green"
+                      flat
+                      @click="createFolder"
+                      :loading="loading"
+                    />
+                  </div>
+                </q-menu>
+              </q-btn>
+            </div>
+            <div>
+              <q-btn
+                stretch
+                flat
+                icon="file_upload"
+                label="Upload File(s)"
+                @click="upload_file_dialog = !upload_file_dialog"
               />
-              <div class="row justify-center">
-                <q-btn
-                  label="Create"
-                  class="cursor-pointer full-width text-green"
-                  flat
-                  @click="createFolder"
-                  :loading="loading"
-                />
-              </div>
-            </q-menu>
-          </q-btn>
-          <q-btn
-            stretch
-            flat
-            icon="file_upload"
-            label="Upload File(s)"
-            class="text-light"
-            @click="upload_file_dialog = !upload_file_dialog"
-          />
+            </div>
+            <div>
+              <q-btn
+                stretch
+                flat
+                icon="note_add"
+                label="New Document"
+                @click="upload_file_dialog = !upload_file_dialog"
+              />
+            </div>
+          </q-btn-dropdown>
         </q-toolbar>
         <q-toolbar class="transparent">
           <div class="row">
@@ -211,13 +262,33 @@
               </q-item-section>
               <q-item-section side>
                 <q-btn
-                  class="justify-end"
+                  icon="edit"
+                  class="cursor-pointer full-width"
+                  flat
+                  @click.capture.stop="
+                    updateItemDialog = true;
+                    updateItemItem = folder.id;
+                    updateItemName = folder.name;
+                    updateItemParents.push(folder_content.path);
+                    updateItemType = 'folder';
+                    updateItemNewParent = folder_content.path;
+                    fetchAllAvailableFolders();
+                  "
+                  :loading="loading"
+                  stretch
+                />
+              </q-item-section>
+              <q-item-section side>
+                <q-btn
+                  class="cursor-pointer full-width text-red"
                   flat
                   icon="delete"
                   @click.capture.stop="
                     this.folder_to_delete = folder.id;
                     folder_delete_dialog = !folder_delete_dialog;
                   "
+                  :loading="loading"
+                  stretch
                 />
               </q-item-section>
             </q-item>
@@ -233,7 +304,7 @@
           v-for="file in folder_content.children.private_files"
           :key="file"
         >
-          <q-item>
+          <q-item clickable @click="openInNewTab(file.id)" class="full-width">
             <q-item-section avatar top>
               <q-avatar icon="description" color="primary" text-color="white" />
             </q-item-section>
@@ -243,32 +314,45 @@
             </q-item-section>
             <q-item-section side>
               <q-btn
-                label="Edit"
+                label="Preview"
                 class="cursor-pointer full-width"
                 flat
-                @click="
+                @click.capture.stop="
                   runFileEditor(file.id);
                   initial_doc_filename = file.name;
                 "
                 :loading="loading"
-              />
+                stretch
+                v-if="file.name.includes('.pdf')"
+              >
+              </q-btn>
             </q-item-section>
             <q-item-section side>
               <q-btn
-                label="Download"
-                class="cursor-pointer full-width text-green"
+                icon="edit"
+                class="cursor-pointer full-width"
                 flat
-                @click="openInNewTab(file.id)"
+                @click.capture.stop="
+                  updateItemDialog = true;
+                  updateItemItem = file.id;
+                  updateItemName = file.name;
+                  updateItemParents.push(folder_content.path);
+                  updateItemType = 'file';
+                  updateItemNewParent = folder_content.path;
+                  fetchAllAvailableFolders();
+                "
                 :loading="loading"
+                stretch
               />
             </q-item-section>
             <q-item-section side>
               <q-btn
-                label="Delete"
+                icon="delete"
                 class="cursor-pointer full-width text-red"
                 flat
-                @click="deleteFile(file.id)"
+                @click.capture.stop="deleteFile(file.id)"
                 :loading="loading"
+                stretch
               />
             </q-item-section>
           </q-item>
@@ -286,7 +370,6 @@ import { useQuasar } from 'quasar';
 import { useSettingsStore } from 'stores/settings';
 import { api } from 'boot/axios';
 import VuePdfEmbed from 'vue-pdf-embed';
-
 // ADD
 // DOCUMENT VIEWS
 // 	POST
@@ -323,6 +406,7 @@ export default defineComponent({
     };
 
     return {
+      show: ref(false),
       axios_config,
       userStore,
       settings_store,
@@ -350,6 +434,14 @@ export default defineComponent({
       upload_file_types: ref([]),
       // name of new folder
       create_folder_name: ref(''),
+      // update file or folder or document name/parent (handled all in one, but different api calls depending on updateItemType)
+      updateItemDialog: ref(false),
+      updateItemItem: ref(''),
+      updateItemName: ref(''),
+      updateItemParents: ref([]),
+      updateItemNewParent: ref(''),
+      allAvailableFolders: ref({}),
+      updateItemType: ref(''),
       // delete folder
       folder_to_delete: ref(''),
       folder_delete_dialog: ref(false),
@@ -374,6 +466,70 @@ export default defineComponent({
     },
   },
   methods: {
+    updateItem() {
+      this.loading = true;
+      var update_id = 0;
+      for (var item in this.allAvailableFolders.folders) {
+        if (
+          this.allAvailableFolders.folders[item].path ==
+          this.updateItemNewParent
+        ) {
+          update_id = this.allAvailableFolders.folders[item].id;
+        }
+      }
+      var data = {
+        item_id: this.updateItemItem,
+        name: this.updateItemName,
+        new_parent_id: update_id,
+      };
+      api
+        .put('/files/update/' + this.updateItemType, data, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.notify('positive', 'Updated');
+            this.refreshFolder();
+            this.loading = false;
+          } else {
+            this.notify('negative', '' + response.data.error);
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'API ERROR :/');
+          this.loading = false;
+          console.log(error);
+        });
+    },
+
+    fetchAllAvailableFolders() {
+      api
+        .get('/files/list_all_available_folders', this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.allAvailableFolders = response.data;
+            for (var availableFolder of response.data.folders) {
+              if (
+                this.updateItemParents.indexOf(availableFolder.path) === -1 &&
+                availableFolder.id != this.updateItemItem
+              ) {
+                this.updateItemParents.push(availableFolder.path);
+              }
+            }
+          } else {
+            this.notify('negative', '' + response.data.error);
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'API ERROR :/');
+          this.loading = false;
+          console.log(error);
+        });
+    },
+    styleFn(offset, height) {
+      let pageheight = height - offset;
+      return 'height: ' + pageheight + 'px';
+    },
     runFileEditor(fileid) {
       // django private storage adds another layer between user and pdf file -> pdf file is seen as html not as pdf
       // solution: load file into blob and edit the blob
@@ -390,13 +546,11 @@ export default defineComponent({
         .then((response) => {
           if (response.status == 200) {
             const content = response.headers['content-type'];
-            console.log(content);
-            console.log(response.data);
-            this.loading = false;
             const blob = new Blob([response.data]);
             const objectUrl = URL.createObjectURL(blob);
             this.initial_doc = objectUrl;
             this.show_file_editor = true;
+            this.loading = false;
           } else {
             this.notify('negative', '' + response.data.error);
             this.loading = false;
@@ -604,6 +758,15 @@ export default defineComponent({
     },
 
     sendFile() {
+      var files_state = 0;
+      const length = this.upload_file_files.length;
+      const notif = this.q.notify({
+        group: false,
+        timeout: 0,
+        spinner: true,
+        message: 'Uploading file...',
+        caption: files_state + ' / ' + length,
+      });
       this.uploading = true;
       let config = {
         withCredentials: true,
@@ -626,8 +789,11 @@ export default defineComponent({
           .post('/files/create/file', form_data, config)
           .then((response) => {
             if (response.status == 200) {
+              files_state += 1;
               this.refreshFolder();
-              this.notify('positive', 'Uploaded');
+              notif({
+                caption: files_state + ' / ' + length,
+              });
               this.uploading = false;
             } else {
               this.notify('negative', '' + response.data.error);
@@ -643,6 +809,12 @@ export default defineComponent({
       this.upload_file_files = null;
       this.upload_file_names = [];
       this.upload_file_types = [];
+      notif({
+        icon: 'done', // we add an icon
+        spinner: false, // we reset the spinner setting so the icon can be displayed
+        message: 'Uploading done!',
+        timeout: 2500, // we will timeout it in 2.5s
+      });
     },
   },
 });

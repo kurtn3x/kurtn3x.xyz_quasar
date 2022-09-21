@@ -1,11 +1,36 @@
 <template>
+  <q-bar style="height: 50px; background-color: #00a4ef" class="text-light">
+    <q-icon name="feed" />
+    <div class="q-ml-md">DOCUMENT EDITOR</div>
+    <q-space />
+
+    <div class="q-ml-md">File: {{ filename }}</div>
+    <div class="q-ml-xl">Folder: {{ filename }}</div>
+    <q-space />
+
+    <q-btn
+      stretch
+      flat
+      label="Edit File Settings"
+      icon="edit"
+      @click="pdf_viewer_maximized = !pdf_viewer_maximized"
+      class="text-h6"
+    />
+    <q-btn
+      stretch
+      flat
+      label="Save"
+      icon="save"
+      @click="show_file_editor = !show_file_editor"
+      class="text-h6"
+    />
+  </q-bar>
   <ckeditor
     :editor="editor"
     v-model="editorData"
     :config="editorConfig"
     @ready="onReady"
   ></ckeditor>
-  <q-btn label="LOL" size="xl" @click="print" />
 </template>
 
 <script>
