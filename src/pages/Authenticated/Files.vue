@@ -285,9 +285,28 @@ import { useUserStore } from 'stores/user';
 import { useQuasar } from 'quasar';
 import { useSettingsStore } from 'stores/settings';
 import { api } from 'boot/axios';
-import WebViewer from '../../components/WebViewer.vue';
-import PdfViewer from '../../components/PdfViewer.vue';
 import VuePdfEmbed from 'vue-pdf-embed';
+
+// ADD
+// DOCUMENT VIEWS
+// 	POST
+// 		/create/document: data: name, text, current_folder_id
+
+// 	DELETE
+// 		/delete/document/<id>
+
+// 	GET
+// 		/get/document/<id>
+
+// 	PUT /update/document, data: id, (name, text, new_parent_id)
+
+// (PRIVATE) FILE VIEWS
+// 	PUT
+// 		/update/file, data: id, (name, new_parent_id)
+
+// FOLDER VIEWS
+// 	PUT
+// 		/update/folder, data: id, (name, new_parent_id)
 
 export default defineComponent({
   name: 'FilesView',
@@ -414,7 +433,6 @@ export default defineComponent({
 
     fileNameVmodel() {
       var i = 0;
-      console.log(this.upload_file_files);
       for (const file in this.upload_file_files) {
         // get the filename without extension
         this.upload_file_names[i] = this.upload_file_files[file].name.replace(
@@ -617,7 +635,7 @@ export default defineComponent({
           form_data.append('file', this.upload_file_files[file]);
         }
         api
-          .post('/files/upload', form_data, config)
+          .post('/files/create/file', form_data, config)
           .then((response) => {
             if (response.status == 200) {
               this.refreshFolder();
