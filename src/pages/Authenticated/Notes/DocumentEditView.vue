@@ -164,7 +164,9 @@ export default defineComponent({
           if (response.status == 200) {
             this.allAvailableFolders = response.data;
             for (var availableFolder of response.data.folders) {
-              this.availParents.push(availableFolder.path);
+              if (this.availParents.indexOf(availableFolder.path) === -1) {
+                this.availParents.push(availableFolder.path);
+              }
             }
           } else {
             this.notify('negative', '' + response.data.error);
