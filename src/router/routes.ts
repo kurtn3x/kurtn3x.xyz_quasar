@@ -14,6 +14,10 @@ const routes: RouteRecordRaw[] = [
         path: 'id/:id',
         component: () => import('pages/UserProfileIDReferrer.vue'),
       },
+      {
+        path: 'test',
+        component: () => import('pages/Test.vue'),
+      },
     ],
   },
 
@@ -34,8 +38,19 @@ const routes: RouteRecordRaw[] = [
         component: () => import('pages/Authenticated/Files.vue'),
       },
       {
-        path: 'notes',
-        component: () => import('pages/Authenticated/NotesView.vue'),
+        path: 'doc',
+        children: [
+          {
+            path: 'edit/:docid',
+            component: () =>
+              import('src/pages/Authenticated/Notes/DocumentEditView.vue'),
+          },
+          {
+            path: 'create/:current_folder_id',
+            component: () =>
+              import('src/pages/Authenticated/Notes/DocumentCreateView.vue'),
+          },
+        ],
       },
     ],
   },

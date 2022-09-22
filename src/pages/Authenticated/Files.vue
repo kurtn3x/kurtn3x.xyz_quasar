@@ -215,7 +215,7 @@
                 flat
                 icon="note_add"
                 label="New Document"
-                @click="upload_file_dialog = !upload_file_dialog"
+                :to="'doc/create/' + this.folder_content.id"
               />
             </div>
           </q-btn-dropdown>
@@ -351,6 +351,43 @@
                 class="cursor-pointer full-width text-red"
                 flat
                 @click.capture.stop="deleteFile(file.id)"
+                :loading="loading"
+                stretch
+              />
+            </q-item-section>
+          </q-item>
+          <q-separator />
+        </template>
+        <!-- DOCUMENTS -->
+        <template
+          v-for="document in folder_content.children.documents"
+          :key="document"
+        >
+          <q-item clickable @click="showDOCUMENT" class="full-width">
+            <q-item-section avatar top>
+              <q-avatar icon="description" color="primary" text-color="white" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label lines="1">{{ document.name }}</q-item-label>
+              <q-item-label caption lines="1">{{
+                document.changed
+              }}</q-item-label>
+            </q-item-section>
+            <q-item-section side>
+              <q-btn
+                icon="edit"
+                class="cursor-pointer full-width"
+                flat
+                :loading="loading"
+                stretch
+                :to="'doc/edit/' + document.id"
+              />
+            </q-item-section>
+            <q-item-section side>
+              <q-btn
+                icon="delete"
+                class="cursor-pointer full-width text-red"
+                flat
                 :loading="loading"
                 stretch
               />
@@ -761,6 +798,7 @@ export default defineComponent({
       var files_state = 0;
       const length = this.upload_file_files.length;
       const notif = this.q.notify({
+        type: 'positive',
         group: false,
         timeout: 0,
         spinner: true,
@@ -795,6 +833,15 @@ export default defineComponent({
                 caption: files_state + ' / ' + length,
               });
               this.uploading = false;
+              if (files_state == length) {
+                notif({
+                  type: 'positive',
+                  icon: 'done', // we add an icon
+                  spinner: false, // we reset the spinner setting so the icon can be displayed
+                  message: 'Uploading done!',
+                  timeout: 2500, // we will timeout it in 2.5s
+                });
+              }
             } else {
               this.notify('negative', '' + response.data.error);
               this.uploading = false;
@@ -809,12 +856,6 @@ export default defineComponent({
       this.upload_file_files = null;
       this.upload_file_names = [];
       this.upload_file_types = [];
-      notif({
-        icon: 'done', // we add an icon
-        spinner: false, // we reset the spinner setting so the icon can be displayed
-        message: 'Uploading done!',
-        timeout: 2500, // we will timeout it in 2.5s
-      });
     },
   },
 });

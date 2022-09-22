@@ -916,9 +916,11 @@ export default {
                 timeout: 8000,
                 progress: true,
                 actions: [
+                  { size: 'xs' },
                   {
                     label: 'Request new verification link',
                     type: 'info',
+                    class: 'full-width',
                     handler: () => {
                       const formData = {
                         username: this.saved_username,
