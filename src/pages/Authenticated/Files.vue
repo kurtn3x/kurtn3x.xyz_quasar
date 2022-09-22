@@ -1,4 +1,33 @@
 <template>
+  <q-dialog v-model="docCreateDialog" persistent>
+    <q-card>
+      <div class="text-h6 q-ma-md text-primary">CREATE A NEW DOCUMENT</div>
+      <q-input
+        dark
+        dense
+        standout
+        v-model="updatedDocName"
+        label="Name"
+        input-class="text-center"
+        class="full-width text-primary q-ma-md"
+      />
+      <q-select
+        v-model="updatedDocParent"
+        :options="availParents"
+        label="Parent Folder"
+        class="q-ma-md"
+      />
+      <q-btn
+        label="Create"
+        class="cursor-pointer full-width text-green"
+        flat
+        @click="createDocument"
+        :loading="loading"
+        size="lg"
+      />
+    </q-card>
+  </q-dialog>
+
   <q-dialog
     seamless
     full-height
@@ -56,7 +85,7 @@
     @hide="
       updateItemItem = '';
       updateItemName = '';
-      updateItemParents = [];
+      availParents = [];
       updateItemNewParent = '';
       allAvailableFolders = {};
       updateItemType = '';
@@ -74,7 +103,7 @@
       />
       <q-select
         v-model="updateItemNewParent"
-        :options="updateItemParents"
+        :options="availParents"
         label="Parent Folder"
       />
       <q-btn
@@ -215,7 +244,12 @@
                 flat
                 icon="note_add"
                 label="New Document"
-                :to="'doc/create/' + this.folder_content.id"
+                @click="
+                  docCreateDialog = !docCreateDialog;
+                  availParents.push(folder_content.path);
+                  updatedDocParent = folder_content.path;
+                  fetchAllAvailableFolders();
+                "
               />
             </div>
           </q-btn-dropdown>
@@ -269,7 +303,7 @@
                     updateItemDialog = true;
                     updateItemItem = folder.id;
                     updateItemName = folder.name;
-                    updateItemParents.push(folder_content.path);
+                    availParents.push(folder_content.path);
                     updateItemType = 'folder';
                     updateItemNewParent = folder_content.path;
                     fetchAllAvailableFolders();
@@ -336,7 +370,7 @@
                   updateItemDialog = true;
                   updateItemItem = file.id;
                   updateItemName = file.name;
-                  updateItemParents.push(folder_content.path);
+                  availParents.push(folder_content.path);
                   updateItemType = 'file';
                   updateItemNewParent = folder_content.path;
                   fetchAllAvailableFolders();
@@ -388,6 +422,7 @@
                 icon="delete"
                 class="cursor-pointer full-width text-red"
                 flat
+                @click.capture.stop="deleteDocument(document.id)"
                 :loading="loading"
                 stretch
               />
@@ -475,7 +510,7 @@ export default defineComponent({
       updateItemDialog: ref(false),
       updateItemItem: ref(''),
       updateItemName: ref(''),
-      updateItemParents: ref([]),
+      availParents: ref([]),
       updateItemNewParent: ref(''),
       allAvailableFolders: ref({}),
       updateItemType: ref(''),
@@ -488,6 +523,11 @@ export default defineComponent({
       initial_doc_filename: ref(''),
       pdf_viewer_maximized: ref(false),
       zoom: ref(800),
+
+      // update
+      updatedDocName: ref(''),
+      updatedDocParent: ref(''),
+      docCreateDialog: ref(false),
     };
   },
   created() {
@@ -503,6 +543,40 @@ export default defineComponent({
     },
   },
   methods: {
+    createDocument() {
+      this.loading = true;
+      var update_id = 0;
+      for (var item in this.allAvailableFolders.folders) {
+        if (
+          this.allAvailableFolders.folders[item].path == this.updatedDocParent
+        ) {
+          update_id = this.allAvailableFolders.folders[item].id;
+        }
+      }
+      var data = {
+        current_folder_id: update_id,
+        name: this.updatedDocName,
+        text: '',
+      };
+      api
+        .post('/files/create/document', data, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.notify('positive', 'Created');
+            this.loading = false;
+            this.refreshFolder();
+            this.docCreateDialog = false;
+          } else {
+            this.notify('negative', '' + response.data.error);
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'API ERROR :/');
+          this.loading = false;
+          console.log(error);
+        });
+    },
     updateItem() {
       this.loading = true;
       var update_id = 0;
@@ -546,10 +620,10 @@ export default defineComponent({
             this.allAvailableFolders = response.data;
             for (var availableFolder of response.data.folders) {
               if (
-                this.updateItemParents.indexOf(availableFolder.path) === -1 &&
+                this.availParents.indexOf(availableFolder.path) === -1 &&
                 availableFolder.id != this.updateItemItem
               ) {
-                this.updateItemParents.push(availableFolder.path);
+                this.availParents.push(availableFolder.path);
               }
             }
           } else {
@@ -746,6 +820,26 @@ export default defineComponent({
         });
     },
 
+    deleteDocument(id) {
+      this.loading = true;
+      api
+        .delete('/files/delete/document/' + id, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.notify('positive', 'Deleted');
+            this.loading = false;
+            this.refreshFolder();
+          } else {
+            this.notify('negative', '' + response.data.error);
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'API ERROR :/');
+          this.loading = false;
+          console.log(error);
+        });
+    },
     deleteFolder(id) {
       this.loading = true;
       api

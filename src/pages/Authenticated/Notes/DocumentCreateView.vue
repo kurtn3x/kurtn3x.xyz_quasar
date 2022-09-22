@@ -1,4 +1,32 @@
 <template>
+  <q-dialog v-model="editSettingsDialog" persistent @hide="availParents = []">
+    <q-card>
+      <div class="text-h6 q-ma-md text-primary">UPDATE DOCUMENT</div>
+      <q-input
+        dark
+        dense
+        standout
+        v-model="updatedDocName"
+        label="Name"
+        input-class="text-center"
+        class="full-width text-primary q-ma-md"
+      />
+      <q-select
+        v-model="updatedDocParent"
+        :options="availParents"
+        label="Parent Folder"
+        class="q-ma-md"
+      />
+      <q-btn
+        label="Create"
+        class="cursor-pointer full-width text-green"
+        flat
+        @click="saveDocumentInfo"
+        :loading="loading"
+        size="lg"
+      />
+    </q-card>
+  </q-dialog>
   <q-dialog v-model="initialDialog" persistent>
     <q-card>
       <div class="text-h6 q-ma-md text-primary">CREATE A NEW DOCUMENT</div>
@@ -6,13 +34,13 @@
         dark
         dense
         standout
-        v-model="docName"
+        v-model="updatedDocName"
         label="Name"
         input-class="text-center"
         class="full-width text-primary q-ma-md"
       />
       <q-select
-        v-model="docParent"
+        v-model="updatedDocParent"
         :options="availParents"
         label="Parent Folder"
         class="q-ma-md"
@@ -97,12 +125,17 @@ export default defineComponent({
       myeditor: DecoupledEditor,
       editorData: '<p>Content of the editor.</p>',
       editorConfig: {},
+      // permanent
       docName: ref(''),
       docParent: ref(''),
       availParents: ref([]),
       initialDialog: ref(true),
       currentParent: ref(0),
       allAvailableFolders: ref({}),
+
+      // update
+      updatedDocName: ref(''),
+      updatedDocParent: ref(''),
     };
   },
   created() {
@@ -117,6 +150,66 @@ export default defineComponent({
         progress: true,
         multiLine: true,
       });
+    },
+
+    saveDocumentInfo() {
+      this.loading = true;
+      var update_id = 0;
+      for (var item in this.allAvailableFolders.folders) {
+        if (
+          this.allAvailableFolders.folders[item].path == this.updatedDocParent
+        ) {
+          update_id = this.allAvailableFolders.folders[item].id;
+        }
+      }
+      var data = {
+        item_id: this.docId,
+        current_folder_id: update_id,
+        name: this.updatedDocName,
+      };
+      api
+        .put('/files/update/document', data, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.docName = this.updatedDocName;
+            this.docParent = this.updatedDocParent;
+            this.notify('positive', 'Updated');
+            this.loading = false;
+          } else {
+            this.notify('negative', '' + response.data.error);
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'API ERROR :/');
+          this.loading = false;
+          console.log(error);
+        });
+    },
+
+    saveDocumentText() {
+      this.loading = true;
+      var data = {
+        item_id: this.docId,
+        text: this.editorData,
+      };
+      api
+        .put('/files/update/document', data, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.notify('positive', 'Created');
+            this.loading = false;
+            this.initialDialog = false;
+          } else {
+            this.notify('negative', '' + response.data.error);
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'API ERROR :/');
+          this.loading = false;
+          console.log(error);
+        });
     },
 
     fetchAllAvailableFolders() {
@@ -146,13 +239,15 @@ export default defineComponent({
       this.loading = true;
       var update_id = 0;
       for (var item in this.allAvailableFolders.folders) {
-        if (this.allAvailableFolders.folders[item].path == this.docParent) {
+        if (
+          this.allAvailableFolders.folders[item].path == this.updatedDocParent
+        ) {
           update_id = this.allAvailableFolders.folders[item].id;
         }
       }
       var data = {
         current_folder_id: update_id,
-        name: this.docName,
+        name: this.updatedDocName,
         text: '',
       };
       api

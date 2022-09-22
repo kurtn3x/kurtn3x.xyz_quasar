@@ -1,29 +1,30 @@
 <template>
-  <q-dialog v-model="initialDialog" persistent>
+  <q-dialog v-model="editSettingsDialog" @hide="availParents = []">
     <q-card>
-      <div class="text-h6 q-ma-md text-primary">CREATE A NEW DOCUMENT</div>
+      <div class="text-h6 q-ma-md text-primary">UPDATE DOCUMENT</div>
       <q-input
         dark
         dense
         standout
-        v-model="docName"
+        v-model="updatedDocName"
         label="Name"
         input-class="text-center"
         class="full-width text-primary q-ma-md"
       />
       <q-select
-        v-model="docParent"
+        v-model="updatedDocParent"
         :options="availParents"
         label="Parent Folder"
         class="q-ma-md"
       />
       <q-btn
-        label="Create"
+        label="Update"
         class="cursor-pointer full-width text-green"
         flat
-        @click="createDocument"
+        @click="saveDocumentInfo"
         :loading="loading"
         size="lg"
+        v-close-popup
       />
     </q-card>
   </q-dialog>
@@ -43,7 +44,13 @@
         flat
         label="Edit File Settings"
         icon="edit"
-        @click="pdf_viewer_maximized = !pdf_viewer_maximized"
+        @click="
+          editSettingsDialog = !editSettingsDialog;
+          fetchAllAvailableFolders();
+          updatedDocName = this.docName;
+          updatedDocParent = this.docParent;
+          this.availParents.push(this.docParent);
+        "
         class="text-h6"
       />
       <q-btn
@@ -51,7 +58,7 @@
         flat
         label="Save"
         icon="save"
-        @click="show_file_editor = !show_file_editor"
+        @click="saveDocumentText()"
         class="text-h6"
       />
     </q-bar>
@@ -74,7 +81,7 @@ import CKEditor from '@ckeditor/ckeditor5-vue';
 import DecoupledEditor from '@ckeditor/ckeditor5-build-decoupled-document';
 
 export default defineComponent({
-  name: 'NotesView',
+  name: 'DocumentEditorView',
   components: {
     ckeditor: CKEditor.component,
   },
@@ -95,27 +102,41 @@ export default defineComponent({
       settings_store,
       q,
       myeditor: DecoupledEditor,
+      // permanent editor data
       editorData: '<p>Content of the editor.</p>',
       editorConfig: {},
+
+      // permanent doc name
       docName: ref(''),
+      // permanent doc parent path
       docParent: ref(''),
+      // available parents from fetchallparents
       availParents: ref([]),
-      initialDialog: ref(true),
+      // permanent doc id
       docId: 0,
+      // edit dialog
+      editSettingsDialog: ref(false),
+      // raw data from fetchallparents
+      allAvailableFolders: {},
+      // update
+      updatedDocName: ref(''),
+      updatedDocParent: ref(''),
+      dataSet: ref(false),
     };
   },
-  created() {
-    this.fetchAllAvailableFolders();
+  async created() {
     this.docId = this.$route.params.docid;
   },
   methods: {
-    getDoc() {
-      api
+    async getDoc() {
+      await api
         .get('/files/get/document/' + this.docId, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
-            this.editorData = response.data.text;
-            this.docName = response.data.name;
+            this.editorData = response.data.document.text;
+            this.docName = response.data.document.name;
+            this.docParent = response.data.path;
+            response.data.document.text;
           } else {
             this.notify('negative', '' + response.data.error);
             this.loading = false;
@@ -143,12 +164,7 @@ export default defineComponent({
           if (response.status == 200) {
             this.allAvailableFolders = response.data;
             for (var availableFolder of response.data.folders) {
-              if (
-                this.updateItemParents.indexOf(availableFolder.path) === -1 &&
-                availableFolder.id != this.updateItemItem
-              ) {
-                this.updateItemParents.push(availableFolder.path);
-              }
+              this.availParents.push(availableFolder.path);
             }
           } else {
             this.notify('negative', '' + response.data.error);
@@ -161,13 +177,69 @@ export default defineComponent({
           console.log(error);
         });
     },
-    createDocument() {
-      this.initialDialog = false;
+    saveDocumentInfo() {
+      this.loading = true;
+      var update_id = 0;
+      for (var item in this.allAvailableFolders.folders) {
+        if (
+          this.allAvailableFolders.folders[item].path == this.updatedDocParent
+        ) {
+          update_id = this.allAvailableFolders.folders[item].id;
+        }
+      }
+      var data = {
+        item_id: this.docId,
+        new_parent_id: update_id,
+        name: this.updatedDocName,
+      };
+      api
+        .put('/files/update/document', data, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.docName = this.updatedDocName;
+            this.docParent = this.updatedDocParent;
+            this.notify('positive', 'Updated');
+            this.loading = false;
+          } else {
+            this.notify('negative', '' + response.data.error);
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'API ERROR :/');
+          this.loading = false;
+          console.log(error);
+        });
     },
-    print() {
-      console.log(this.editorData);
+    saveDocumentText() {
+      this.loading = true;
+      var data = {
+        item_id: this.docId,
+        text: this.editorData,
+      };
+      api
+        .put('/files/update/document', data, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.notify('positive', 'Created');
+            this.loading = false;
+            this.initialDialog = false;
+          } else {
+            this.notify('negative', '' + response.data.error);
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'API ERROR :/');
+          this.loading = false;
+          console.log(error);
+        });
     },
-    onReady(editor) {
+    async onReady(editor) {
+      // handling the get request with await, cancerous but doesn't work otherwise
+      await this.getDoc();
+      editor.setData(this.editorData);
+
       // Insert the toolbar before the editable area.
       editor.ui
         .getEditableElement()
