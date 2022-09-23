@@ -16,7 +16,6 @@ export default {
     this.q.notify({
       type: 'positive',
       message: 'Successfully authenticated, you can now log in!',
-      position: 'top',
     });
     this.$router.push('/');
   },

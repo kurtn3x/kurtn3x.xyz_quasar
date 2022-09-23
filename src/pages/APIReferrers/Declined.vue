@@ -19,7 +19,6 @@ export default {
       type: 'negative',
       message:
         'Something went wrong. Please login to request a new verification E-Mail.',
-      position: 'top',
     });
     this.$router.push('/');
   },

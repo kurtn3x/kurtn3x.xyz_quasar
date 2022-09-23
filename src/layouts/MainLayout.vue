@@ -981,7 +981,6 @@ export default {
               type: 'positive',
               message:
                 'Successfully registered. Now validate your account with the link we e-mailed you!',
-              position: 'top',
               progress: true,
               multiLine: true,
             });

@@ -38,19 +38,8 @@ const routes: RouteRecordRaw[] = [
         component: () => import('pages/Authenticated/Files.vue'),
       },
       {
-        path: 'doc',
-        children: [
-          {
-            path: 'edit/:docid',
-            component: () =>
-              import('src/pages/Authenticated/Notes/DocumentEditView.vue'),
-          },
-          {
-            path: 'create/:current_folder_id',
-            component: () =>
-              import('src/pages/Authenticated/Notes/DocumentCreateView.vue'),
-          },
-        ],
+        path: 'doc/edit/:docid',
+        component: () => import('src/pages/Authenticated/DocumentEditView.vue'),
       },
     ],
   },

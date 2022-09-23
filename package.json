@@ -31,7 +31,8 @@
     "vue": "^3.0.0",
     "vue-pdf-embed": "^1.1.4",
     "vue-router": "^4.0.0",
-    "vue3-emoji-picker": "^1.1.4"
+    "vue3-emoji-picker": "^1.1.4",
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
     "@quasar/app-vite": "^1.0.0",

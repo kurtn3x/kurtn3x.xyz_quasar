@@ -223,7 +223,7 @@ export default defineComponent({
         .put('/files/update/document', data, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
-            this.notify('positive', 'Created');
+            this.notify('positive', 'Saved');
             this.loading = false;
             this.initialDialog = false;
           } else {
