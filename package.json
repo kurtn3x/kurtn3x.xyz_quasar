@@ -28,6 +28,7 @@
     "tsparticles-path-polygon": "^2.2.1",
     "tsparticles-plugin-polygon-mask": "^2.2.1",
     "tsparticles-updater-gradient": "^2.2.1",
+    "v-drag-drop": "^4.0.0",
     "vue": "^3.0.0",
     "vue-pdf-embed": "^1.1.4",
     "vue-router": "^4.0.0",

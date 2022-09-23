@@ -255,204 +255,207 @@
         </q-toolbar>
         <q-toolbar class="transparent">
           <div class="row">
-            <div>
-              <template v-for="name in path_names" :key="name">
-                <q-btn
-                  :label="name"
-                  flat
-                  class="text-primary q-ml-lg text-body1 text-weight-bold"
-                  @click="getFolderPath(name)"
-                  style="text-decoration: underline"
-                />
-                <a
-                  class="text-primary text-h5 q-ml-xs"
-                  style="position: absolute; top: 20%"
-                  >/</a
-                >
-              </template>
-            </div>
+            <q-item class="text-h6 text-weight-bolder">Path: </q-item>
+
+            <template v-for="itemname in path_names" :key="itemname">
+              <q-item
+                clickable
+                flat
+                class="text-primary q-ml-md text-h6 text-weight-bold"
+                @click="getFolderPath(itemname)"
+                style="text-decoration: underline"
+                @v-drag-enter="(e, x, y) => y.target.classList.add('active')"
+                @v-drag-over="(e, x, y) => y.target.classList.add('active')"
+                @v-drag-leave="(e, x, y) => y.target.classList.remove('active')"
+                @v-drag-drop="changeFolderToolbar($event, itemname)"
+                v-droppable
+              >
+                {{ itemname }}
+              </q-item>
+              <q-item class="text-primary q-ml-md text-h6 text-weight-bold"
+                >/</q-item
+              >
+            </template>
           </div>
         </q-toolbar>
         <q-separator size="2px" color="primary" />
-        <div>
-          <div class="q-mt-lg text-h6 q-mb-sm text-primary text-weight-bolder">
-            Subfolders
-          </div>
-          <q-separator size="2px" color="primary" />
-          <template
-            v-for="folder in folder_content.children.folders"
-            :key="folder"
-          >
-            <div class="row">
-              <q-item
-                clickable
-                @click="getFolder(folder.id)"
-                class="full-width"
-              >
-                <q-item-section avatar top>
-                  <q-avatar icon="folder" color="primary" text-color="white" />
-                </q-item-section>
-
-                <q-item-section>
-                  <q-item-label class="text-body1">{{
-                    folder.name
-                  }}</q-item-label>
-                </q-item-section>
-                <q-item-section side>
-                  <q-btn
-                    icon="edit"
-                    class="cursor-pointer full-width"
-                    flat
-                    @click.capture.stop="
-                      updateItemDialog = true;
-                      updateItemItem = folder.id;
-                      updateItemName = folder.name;
-                      availParents.push(folder_content.path);
-                      updateItemType = 'folder';
-                      updateItemNewParent = folder_content.path;
-                      fetchAllAvailableFolders();
-                    "
-                    :loading="loading"
-                    stretch
-                  />
-                </q-item-section>
-                <q-item-section side>
-                  <q-btn
-                    class="cursor-pointer full-width text-red"
-                    flat
-                    icon="delete"
-                    @click.capture.stop="
-                      this.folder_to_delete = folder.id;
-                      folder_delete_dialog = !folder_delete_dialog;
-                    "
-                    :loading="loading"
-                    stretch
-                  />
-                </q-item-section>
-              </q-item>
-            </div>
-
-            <q-separator />
-          </template>
-          <div class="q-mt-lg text-h6 q-mb-sm text-primary text-weight-bolder">
-            Files / Documents
-          </div>
-          <q-separator size="2px" color="primary" />
-          <div
-            :data-active="active"
-            @dragenter.prevent="setActive"
-            @dragover.prevent="setActive"
-            @dragleave.prevent="setInactive"
-            @drop.prevent="onDrop"
-          >
-            <template
-              v-for="file in folder_content.children.private_files"
-              :key="file"
-            >
-              <q-item
-                clickable
-                @click="openInNewTab(file.id)"
-                class="full-width"
-              >
-                <q-item-section avatar top>
-                  <q-avatar
-                    icon="description"
-                    color="primary"
-                    text-color="white"
-                  />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label lines="1">{{ file.name }}</q-item-label>
-                  <q-item-label caption lines="1">{{
-                    file.changed
-                  }}</q-item-label>
-                </q-item-section>
-                <q-item-section side>
-                  <q-btn
-                    label="Preview"
-                    class="cursor-pointer full-width"
-                    flat
-                    @click.capture.stop="
-                      runFileEditor(file.id);
-                      initial_doc_filename = file.name;
-                    "
-                    :loading="loading"
-                    stretch
-                    v-if="file.name.includes('.pdf')"
-                  >
-                  </q-btn>
-                </q-item-section>
-                <q-item-section side>
-                  <q-btn
-                    icon="edit"
-                    class="cursor-pointer full-width"
-                    flat
-                    @click.capture.stop="
-                      updateItemDialog = true;
-                      updateItemItem = file.id;
-                      updateItemName = file.name;
-                      availParents.push(folder_content.path);
-                      updateItemType = 'file';
-                      updateItemNewParent = folder_content.path;
-                      fetchAllAvailableFolders();
-                    "
-                    :loading="loading"
-                    stretch
-                  />
-                </q-item-section>
-                <q-item-section side>
-                  <q-btn
-                    icon="delete"
-                    class="cursor-pointer full-width text-red"
-                    flat
-                    @click.capture.stop="deleteFile(file.id)"
-                    :loading="loading"
-                    stretch
-                  />
-                </q-item-section>
-              </q-item>
-              <q-separator />
-            </template>
-            <!-- DOCUMENTS -->
-            <template
-              v-for="document in folder_content.children.documents"
-              :key="document"
-            >
-              <q-item clickable @click="showDOCUMENT" class="full-width">
-                <q-item-section avatar top>
-                  <q-avatar icon="article" color="primary" text-color="white" />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label lines="1">{{ document.name }}</q-item-label>
-                  <q-item-label caption lines="1">{{
-                    document.changed
-                  }}</q-item-label>
-                </q-item-section>
-                <q-item-section side>
-                  <q-btn
-                    icon="edit"
-                    class="cursor-pointer full-width"
-                    flat
-                    :loading="loading"
-                    stretch
-                    :to="'doc/edit/' + document.id"
-                  />
-                </q-item-section>
-                <q-item-section side>
-                  <q-btn
-                    icon="delete"
-                    class="cursor-pointer full-width text-red"
-                    flat
-                    @click.capture.stop="deleteDocument(document.id)"
-                    :loading="loading"
-                    stretch
-                  />
-                </q-item-section>
-              </q-item>
-              <q-separator />
-            </template>
-          </div>
+        <div class="q-mt-lg text-h6 q-mb-sm text-primary text-weight-bolder">
+          Subfolders
         </div>
+        <q-separator size="2px" color="primary" />
+        <template
+          v-for="folder in folder_content.children.folders"
+          :key="folder"
+        >
+          <div class="row">
+            <q-item
+              clickable
+              @click="getFolder(folder.id)"
+              class="full-width"
+              v-droppable
+              v-draggable="['folder', folder.id]"
+              :class="folder.drag_over ? 'bg-blue' : ''"
+              @v-drag-enter="folder.drag_over = true"
+              @v-drag-leave="folder.drag_over = false"
+              @v-drag-over="folder.drag_over = true"
+              @v-drag-drop="changeFolder($event, folder.id)"
+            >
+              <q-menu
+                anchor="center middle"
+                self="center middle"
+                v-model="folder.drag_over"
+                >Add to folder: {{ folder.name }}</q-menu
+              >
+              <q-item-section avatar top>
+                <q-avatar icon="folder" color="primary" text-color="white" />
+              </q-item-section>
+
+              <q-item-section>
+                <q-item-label class="text-body1"
+                  >{{ folder.name }}
+                </q-item-label>
+              </q-item-section>
+              <q-item-section side>
+                <q-btn
+                  icon="edit"
+                  class="cursor-pointer full-width"
+                  flat
+                  @click.capture.stop="
+                    updateItemDialog = true;
+                    updateItemItem = folder.id;
+                    updateItemName = folder.name;
+                    availParents.push(folder_content.path);
+                    updateItemType = 'folder';
+                    updateItemNewParent = folder_content.path;
+                    fetchAllAvailableFolders();
+                  "
+                  :loading="loading"
+                  stretch
+                />
+              </q-item-section>
+              <q-item-section side>
+                <q-btn
+                  class="cursor-pointer full-width text-red"
+                  flat
+                  icon="delete"
+                  @click.capture.stop="
+                    this.folder_to_delete = folder.id;
+                    folder_delete_dialog = !folder_delete_dialog;
+                  "
+                  :loading="loading"
+                  stretch
+                />
+              </q-item-section>
+            </q-item>
+          </div>
+
+          <q-separator />
+        </template>
+        <div class="q-mt-lg text-h6 q-mb-sm text-primary text-weight-bolder">
+          Files / Documents
+        </div>
+        <q-separator size="2px" color="primary" />
+        <template
+          v-for="file in folder_content.children.private_files"
+          :key="file"
+        >
+          <q-item clickable class="full-width" v-draggable="['file', file.id]">
+            <q-item-section avatar top>
+              <q-avatar icon="description" color="primary" text-color="white" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label lines="1">{{ file.name }}</q-item-label>
+              <q-item-label caption lines="1">{{ file.changed }}</q-item-label>
+            </q-item-section>
+            <q-item-section side>
+              <q-btn
+                label="Preview"
+                class="cursor-pointer full-width"
+                flat
+                @click.capture.stop="
+                  runFileEditor(file.id);
+                  initial_doc_filename = file.name;
+                "
+                :loading="loading"
+                stretch
+                v-if="file.name.includes('.pdf')"
+              >
+              </q-btn>
+            </q-item-section>
+            <q-item-section side>
+              <q-btn
+                icon="edit"
+                class="cursor-pointer full-width"
+                flat
+                @click.capture.stop="
+                  updateItemDialog = true;
+                  updateItemItem = file.id;
+                  updateItemName = file.name;
+                  availParents.push(folder_content.path);
+                  updateItemType = 'file';
+                  updateItemNewParent = folder_content.path;
+                  fetchAllAvailableFolders();
+                "
+                :loading="loading"
+                stretch
+              />
+            </q-item-section>
+            <q-item-section side>
+              <q-btn
+                icon="delete"
+                class="cursor-pointer full-width text-red"
+                flat
+                @click.capture.stop="deleteFile(file.id)"
+                :loading="loading"
+                stretch
+              />
+            </q-item-section>
+          </q-item>
+          <q-separator />
+        </template>
+        <!-- DOCUMENTS -->
+        <template
+          v-for="document in folder_content.children.documents"
+          :key="document"
+        >
+          <q-item
+            clickable
+            @click="showDOCUMENT"
+            class="full-width"
+            v-draggable="['document', document.id]"
+          >
+            <q-item-section avatar top>
+              <q-avatar icon="article" color="primary" text-color="white" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label lines="1">{{ document.name }}</q-item-label>
+              <q-item-label caption lines="1">{{
+                document.changed
+              }}</q-item-label>
+            </q-item-section>
+            <q-item-section side>
+              <q-btn
+                icon="edit"
+                class="cursor-pointer full-width"
+                flat
+                :loading="loading"
+                stretch
+                :to="'doc/edit/' + document.id"
+              />
+            </q-item-section>
+            <q-item-section side>
+              <q-btn
+                icon="delete"
+                class="cursor-pointer full-width text-red"
+                flat
+                @click.capture.stop="deleteDocument(document.id)"
+                :loading="loading"
+                stretch
+              />
+            </q-item-section>
+          </q-item>
+          <q-separator />
+        </template>
       </q-list>
     </q-scroll-area>
   </q-page>
@@ -465,8 +468,7 @@ import { useQuasar } from 'quasar';
 import { useSettingsStore } from 'stores/settings';
 import { api } from 'boot/axios';
 import VuePdfEmbed from 'vue-pdf-embed';
-import draggable from 'vuedraggable';
-
+import { draggable, droppable } from 'v-drag-drop';
 // ADD
 // DOCUMENT VIEWS
 // 	POST
@@ -490,7 +492,11 @@ import draggable from 'vuedraggable';
 
 export default defineComponent({
   name: 'FilesView',
-  components: { VuePdfEmbed, draggable },
+  directives: {
+    draggable,
+    droppable,
+  },
+  components: { VuePdfEmbed },
   setup() {
     const userStore = useUserStore();
     const settings_store = useSettingsStore();
@@ -511,10 +517,13 @@ export default defineComponent({
       upload: ref(null),
       folder_content: ref({
         name: 'root',
+        path: 'root',
+        id: 0,
         children: {
           private_files: [],
           public_files: [],
           folders: [],
+          documents: [],
         },
       }),
       loading: ref(false),
@@ -553,6 +562,9 @@ export default defineComponent({
       updatedDocName: ref(''),
       updatedDocParent: ref(''),
       docCreateDialog: ref(false),
+
+      //
+      folderIdDragNDrop: ref(''),
     };
   },
   created() {
@@ -567,8 +579,76 @@ export default defineComponent({
       }
     },
   },
-  // https://www.smashingmagazine.com/2022/ 03/drag-drop-file-uploader-vuejs-3/
   methods: {
+    showDOCUMENT() {
+      console.log();
+    },
+    changeFolderToolbar(itemProps, foldername) {
+      var folderid = '';
+      var i = 1;
+      for (var name of this.path_names) {
+        if (name == foldername) {
+          this.path_names.length = i;
+          this.path_ids.length = i;
+        }
+        folderid = this.path_ids[i - 1];
+        i += 1;
+      }
+      var itemtype = itemProps[0];
+      var itemid = itemProps[1];
+      var data = {
+        item_id: itemid,
+        new_parent_id: folderid,
+      };
+      if (folderid != itemid) {
+        this.loading = true;
+        api
+          .put('/files/update/' + itemtype, data, this.axios_config)
+          .then((response) => {
+            if (response.status == 200) {
+              this.notify('positive', 'Updated');
+              this.refreshFolder();
+              this.loading = false;
+            } else {
+              this.notify('negative', '' + response.data.error);
+              this.loading = false;
+            }
+          })
+          .catch((error) => {
+            this.notify('negative', 'API ERROR :/');
+            this.loading = false;
+            console.log(error);
+          });
+      }
+    },
+    changeFolder(itemProps, folderid) {
+      var itemtype = itemProps[0];
+      var itemid = itemProps[1];
+      var data = {
+        item_id: itemid,
+        new_parent_id: folderid,
+      };
+      if (folderid != itemid) {
+        this.loading = true;
+        api
+          .put('/files/update/' + itemtype, data, this.axios_config)
+          .then((response) => {
+            if (response.status == 200) {
+              this.notify('positive', 'Updated');
+              this.refreshFolder();
+              this.loading = false;
+            } else {
+              this.notify('negative', '' + response.data.error);
+              this.loading = false;
+            }
+          })
+          .catch((error) => {
+            this.notify('negative', 'API ERROR :/');
+            this.loading = false;
+            console.log(error);
+          });
+      }
+    },
     onDrop(wasd) {
       console.log(wasd);
     },
@@ -986,6 +1066,9 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.active {
+  background-color: #2196f3;
+}
 .disable-select {
   user-select: none; /* supported by Chrome and Opera */
   -webkit-user-select: none; /* Safari */
