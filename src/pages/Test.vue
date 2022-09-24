@@ -1,40 +1,153 @@
 <template>
-  <div class="disable-select text-primary">
-    <q-btn label="TEST" size="xl" @click="runTest" />
-  </div>
+  <q-dialog v-model="editSettingsDialog" @hide="availParents = []">
+    <q-card>
+      <div class="text-h6 q-ma-md text-primary">UPDATE DOCUMENT</div>
+      <q-input
+        dark
+        dense
+        standout
+        v-model="updatedDocName"
+        label="Name"
+        input-class="text-center"
+        class="full-width text-primary q-ma-md"
+      />
+      <q-select
+        v-model="updatedDocParent"
+        :options="availParents"
+        label="Parent Folder"
+        class="q-ma-md"
+      />
+      <q-btn
+        label="Update"
+        class="cursor-pointer full-width text-green"
+        flat
+        @click="saveDocumentInfo"
+        :loading="loading"
+        size="lg"
+        v-close-popup
+      />
+    </q-card>
+  </q-dialog>
+
+  <q-page>
+    <q-bar style="height: 50px; background-color: #00a4ef" class="text-light">
+      <q-icon name="feed" />
+      <div class="q-ml-md">DOCUMENT EDITOR</div>
+      <q-space />
+
+      <div class="q-ml-md">File: {{ docName }}</div>
+      <div class="q-ml-xl">Folder: {{ docParent }}</div>
+      <q-space />
+
+      <q-btn
+        stretch
+        flat
+        label="Edit File Settings"
+        icon="edit"
+        @click="
+          editSettingsDialog = !editSettingsDialog;
+          fetchAllAvailableFolders();
+          updatedDocName = this.docName;
+          updatedDocParent = this.docParent;
+          this.availParents.push(this.docParent);
+        "
+        class="text-h6"
+      />
+      <q-btn
+        stretch
+        flat
+        label="Save"
+        icon="save"
+        @click="saveDocumentText()"
+        class="text-h6"
+      />
+    </q-bar>
+    <ckeditor
+      :editor="myeditor"
+      v-model="editorData"
+      :config="editorConfig"
+      @ready="onReady"
+    ></ckeditor>
+  </q-page>
 </template>
 
 <script>
 import { defineComponent, ref } from 'vue';
 import { useUserStore } from 'stores/user';
-import { useQuasar, QSpinnerGears } from 'quasar';
+import { useQuasar } from 'quasar';
+import { api } from 'boot/axios';
 import { useSettingsStore } from 'stores/settings';
+import CKEditor from '@ckeditor/ckeditor5-vue';
+import DecoupledEditor from '@ckeditor/ckeditor-custom';
 
 export default defineComponent({
-  name: 'IndexPage',
-
+  name: 'TestView',
+  components: {
+    ckeditor: CKEditor.component,
+  },
   setup() {
     const userStore = useUserStore();
     const settings_store = useSettingsStore();
     const q = useQuasar();
+    const axios_config = {
+      withCredentials: true,
+      headers: {
+        'X-CSRFToken': q.cookies.get('csrftoken'),
+      },
+    };
 
     return {
+      axios_config,
       userStore,
       settings_store,
       q,
-      text_animation: ref(true),
+      myeditor: DecoupledEditor,
+      // permanent editor data
+      editorData: '<p>Content of the editor.</p>',
+      editorConfig: {},
+
+      // permanent doc name
+      docName: ref(''),
+      // permanent doc parent path
+      docParent: ref(''),
+      // available parents from fetchallparents
+      availParents: ref([]),
+      // permanent doc id
+      docId: 0,
+      // edit dialog
+      editSettingsDialog: ref(false),
+      // raw data from fetchallparents
+      allAvailableFolders: {},
+      // update
+      updatedDocName: ref(''),
+      updatedDocParent: ref(''),
+      dataSet: ref(false),
     };
   },
-  computed: {
-    mobile() {
-      if (this.q.screen.width < 600) {
-        return true;
-      } else {
-        return false;
-      }
-    },
+  async created() {
+    this.docId = this.$route.params.docid;
   },
   methods: {
+    async getDoc() {
+      await api
+        .get('/files/get/document/' + this.docId, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.editorData = response.data.document.text;
+            this.docName = response.data.document.name;
+            this.docParent = response.data.path;
+            response.data.document.text;
+          } else {
+            this.notify('negative', '' + response.data.error);
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'API ERROR :/');
+          this.loading = false;
+          console.log(error);
+        });
+    },
     notify(type, message) {
       this.q.notify({
         type: type,
@@ -43,23 +156,112 @@ export default defineComponent({
         multiLine: true,
       });
     },
-    runTest() {
-      this.q.notify({
-        message:
-          'Please click the activation link we sent you first to activate this account or request a new one.',
-        type: 'info',
-        spinner: QSpinnerGears,
-        timeout: 8000,
-        progress: true,
-        actions: [
-          {},
-          {
-            label: 'Request new link',
-            type: 'info',
-            size: 'md',
-            class: 'full-width',
-          },
-        ],
+
+    fetchAllAvailableFolders() {
+      api
+        .get('/files/list_all_available_folders', this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.allAvailableFolders = response.data;
+            for (var availableFolder of response.data.folders) {
+              if (this.availParents.indexOf(availableFolder.path) === -1) {
+                this.availParents.push(availableFolder.path);
+              }
+            }
+          } else {
+            this.notify('negative', '' + response.data.error);
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'API ERROR :/');
+          this.loading = false;
+          console.log(error);
+        });
+    },
+    saveDocumentInfo() {
+      this.loading = true;
+      var update_id = 0;
+      for (var item in this.allAvailableFolders.folders) {
+        if (
+          this.allAvailableFolders.folders[item].path == this.updatedDocParent
+        ) {
+          update_id = this.allAvailableFolders.folders[item].id;
+        }
+      }
+      var data = {
+        item_id: this.docId,
+        new_parent_id: update_id,
+        name: this.updatedDocName,
+      };
+      api
+        .put('/files/update/document', data, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.docName = this.updatedDocName;
+            this.docParent = this.updatedDocParent;
+            this.notify('positive', 'Updated');
+            this.loading = false;
+          } else {
+            this.notify('negative', '' + response.data.error);
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'API ERROR :/');
+          this.loading = false;
+          console.log(error);
+        });
+    },
+    saveDocumentText() {
+      this.loading = true;
+      var data = {
+        item_id: this.docId,
+        text: this.editorData,
+      };
+      api
+        .put('/files/update/document', data, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.notify('positive', 'Saved');
+            this.loading = false;
+            this.initialDialog = false;
+          } else {
+            this.notify('negative', '' + response.data.error);
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'API ERROR :/');
+          this.loading = false;
+          console.log(error);
+        });
+    },
+    async onReady(editor) {
+      // handling the get request with await, cancerous but doesn't work otherwise
+      await this.getDoc();
+      editor.setData(this.editorData);
+
+      // Insert the toolbar before the editable area.
+      editor.ui
+        .getEditableElement()
+        .parentElement.insertBefore(
+          editor.ui.view.toolbar.element,
+          editor.ui.getEditableElement()
+        );
+      const view = editor.editing.view;
+      const viewDocument = view.document;
+      // handle tab keys
+      viewDocument.on('keydown', (evt, data) => {
+        if (data.keyCode == 9 && viewDocument.isFocused) {
+          // with white space setting to pre
+          // editor.execute('input', { text: '\t' });
+          editor.execute('input', { text: '    ' });
+
+          evt.stop(); // Prevent executing the default handler.
+          data.preventDefault();
+          view.scrollToTheSelection();
+        }
       });
     },
   },
