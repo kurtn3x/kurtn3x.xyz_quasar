@@ -153,7 +153,7 @@
       mini-to-overlay
       bordered
       :breakpoint="600"
-      :width="217"
+      :width="220"
       v-if="authenticated"
     >
       <q-scroll-area class="fit">
@@ -196,19 +196,6 @@
             <q-item-section> My Files </q-item-section>
           </q-item>
 
-          <q-item
-            clickable
-            v-ripple
-            class="text-primary text-weight-bold"
-            to="/dashboard/notes"
-          >
-            <q-item-section avatar>
-              <q-icon name="edit_note" />
-            </q-item-section>
-
-            <q-item-section> Drafts </q-item-section>
-          </q-item>
-
           <q-space />
 
           <q-item
@@ -244,15 +231,13 @@
     <q-page-container>
       <q-dialog v-model="forgot_popup">
         <q-card bordered>
-          <p class="text-weight-bolder q-pt-md q-pl-md text-primary">
+          <p
+            class="text-weight-bolder text-center text-primary text-body1 q-mt-md"
+          >
             Request your Account Data
           </p>
           <q-card-section>
-            <q-form
-              class="q-gutter-md text-grey"
-              ref="forgotform"
-              @submit.prevent="submitForget"
-            >
+            <q-form ref="forgotform" @submit.prevent="submitForget">
               <q-input
                 dense
                 square
@@ -276,12 +261,12 @@
               </q-input>
 
               <q-toggle
+                class="q-mt-sm"
                 checked-icon="check"
                 color="green"
                 unchecked-icon="clear"
                 label="Request password reset link"
                 v-model="request_password"
-                :class="darkmode ? 'text-grey-2' : 'text-grey-8'"
               />
               <p></p>
               <q-toggle
@@ -290,7 +275,6 @@
                 unchecked-icon="clear"
                 label="Request username"
                 v-model="request_username"
-                :class="darkmode ? 'text-grey-2' : 'text-grey-8'"
               />
               <p
                 v-if="request_username && request_password"
@@ -309,7 +293,7 @@
                   rounded
                   size="md"
                   color="green"
-                  class="full-width"
+                  class="full-width q-mt-md"
                   label="Request"
                   type="submit"
                   :loading="loading"
@@ -325,7 +309,6 @@
           <q-tabs
             v-model="login_tab"
             dense
-            :class="darkmode ? 'text-grey-2' : 'text-grey-8'"
             align="justify"
             active-color="primary"
             indicator-color="primary"
@@ -338,13 +321,19 @@
 
           <q-tab-panels v-model="login_tab" animated>
             <q-tab-panel name="login">
-              <q-card square class="no-shadow" style="width: 100%">
-                <p class="text-weight-bolder text-primary">
+              <q-card
+                square
+                class="no-shadow"
+                style="width: 100%; min-width: 275px"
+              >
+                <p
+                  class="text-weight-bolder text-primary text-body1 text-center"
+                >
                   Login to your account
                 </p>
                 <q-card-section>
                   <q-form
-                    class="q-gutter-md text-grey"
+                    class="q-gutter-sm"
                     ref="loginform"
                     @submit.prevent="submitLogin"
                   >
@@ -400,7 +389,6 @@
                     <q-card-section class="q-pa-none">
                       <q-btn
                         class="full-width"
-                        :class="darkmode ? 'text-grey-2' : 'text-grey-8'"
                         flat
                         size="md"
                         @click="forgot_popup = !forgot_popup"
@@ -414,12 +402,19 @@
             </q-tab-panel>
 
             <q-tab-panel name="register">
-              <q-card square class="no-shadow" style="width: 100%">
-                <p class="text-weight-bolder text-primary">
+              <q-card
+                square
+                class="no-shadow"
+                style="width: 100%; min-width: 275px"
+              >
+                <p
+                  class="text-weight-bolder text-primary text-body1 text-center"
+                >
                   Register a new Account
                 </p>
+
                 <q-card-section>
-                  <q-form class="q-gutter-md" @submit.prevent="submitRegister">
+                  <q-form class="q-gutter-sm" @submit.prevent="submitRegister">
                     <q-input
                       dense
                       square

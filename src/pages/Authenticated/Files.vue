@@ -3,7 +3,6 @@
     <q-card>
       <div class="text-h6 q-ma-md text-primary">CREATE A NEW DOCUMENT</div>
       <q-input
-        dark
         dense
         standout
         v-model="updatedDocName"
@@ -79,8 +78,12 @@
     :initialDoc="this.initial_doc"
     :show="this.show_file_editor"
   /> -->
-  <q-dialog
+  <q-drawer
+    side="right"
     v-model="updateItemDialog"
+    show-if-above
+    bordered
+    :breakpoint="500"
     @hide="
       updateItemId = '';
       updateItemName = '';
@@ -90,9 +93,64 @@
       updateItemType = '';
     "
   >
-    <q-card>
+    <q-scroll-area class="fit">
+      <q-card class="full-height">
+        <q-toolbar>
+          <q-btn
+            icon="close"
+            class="text-red"
+            flat
+            @click="updateItemDialog = !updateItemDialog"
+          />
+          <a class="text-h6">{{ updateItemType }}: {{ updateItemName }}</a>
+        </q-toolbar>
+        <q-separator size="4px" />
+
+        <q-input
+          dense
+          standout
+          v-model="updateItemName"
+          label="Name"
+          input-class="text-center"
+          class="text-primary q-ma-md"
+        />
+        <q-select
+          v-model="updateItemNewParent"
+          :options="availParents"
+          label="Parent Folder"
+          class="q-ma-md"
+        />
+        <q-btn
+          label="Update"
+          class="cursor-pointer full-width text-green"
+          flat
+          @click="updateItem"
+          :loading="loading"
+        />
+      </q-card>
+    </q-scroll-area>
+  </q-drawer>
+  <!-- <q-dialog
+    v-model="updateItemDialog"
+    @hide="
+      updateItemId = '';
+      updateItemName = '';
+      availParents = [];
+      updateItemNewParent = '';
+      allAvailableFolders = {};
+      updateItemType = '';
+    "
+    seamless
+    position="right"
+  >
+    <q-card class="full-height">
+      <q-toolbar>
+        <q-btn icon="close" class="text-red" flat v-close-popup />
+        <a class="text-h6">{{ updateItemType }}: {{ updateItemName }}</a>
+      </q-toolbar>
+      <q-separator size="4px" />
+
       <q-input
-        dark
         dense
         standout
         v-model="updateItemName"
@@ -114,7 +172,7 @@
         :loading="loading"
       />
     </q-card>
-  </q-dialog>
+  </q-dialog> -->
 
   <q-dialog v-model="folder_delete_dialog">
     <q-card>
@@ -191,7 +249,7 @@
     <q-scroll-area class="col">
       <q-list padding class="rounded-borders">
         <q-toolbar class="bg-primary">
-          <q-input dark dense standout v-model="search" input-class="text-left">
+          <q-input dense standout v-model="search" input-class="text-left">
             <template v-slot:append>
               <q-icon v-if="search === ''" name="search" />
               <q-icon
@@ -208,7 +266,6 @@
               <q-btn stretch flat icon="create_new_folder" label="New Folder">
                 <q-menu anchor="center left" self="top right">
                   <q-input
-                    dark
                     dense
                     standout
                     v-model="create_folder_name"
@@ -539,12 +596,55 @@ export default defineComponent({
       rawFolderContent: ref({
         name: 'root',
         path: 'root',
-        id: 0,
+        id: 30,
         children: {
-          private_files: [],
+          private_files: [
+            {
+              name: 'Untitled.png',
+              id: 56,
+              changed: '2022-09-24 21:16:02',
+            },
+            {
+              name: 'ProjektClaudia_Kurt.docx',
+              id: 55,
+              changed: '2022-09-24 21:20:48',
+            },
+            {
+              name: 'DIAGRAMMITLF7.drawio',
+              id: 62,
+              changed: '2022-09-24 21:20:58',
+            },
+            {
+              name: '1663788962540645672255300633021.jpg',
+              id: 42,
+              changed: '2022-09-25 15:00:32',
+            },
+          ],
           public_files: [],
-          folders: [],
-          documents: [],
+          folders: [
+            {
+              name: 'test2',
+              id: 32,
+              path: 'root/test2',
+            },
+            {
+              name: 'test',
+              id: 31,
+              path: 'root/test',
+            },
+          ],
+          documents: [
+            {
+              name: 'test2',
+              id: 6,
+              changed: '2022-09-24 21:13:55',
+            },
+            {
+              name: 'dokument',
+              id: 7,
+              changed: '2022-09-23 10:29:34',
+            },
+          ],
         },
       }),
       // file hader to show which path is currently opened and ability to go back
@@ -579,6 +679,8 @@ export default defineComponent({
       updatedDocName: ref(''),
       updatedDocParent: ref(''),
       docCreateDialog: ref(false),
+
+      drawerRight: ref(true),
     };
   },
   created() {

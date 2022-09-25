@@ -3,7 +3,6 @@
     <q-card>
       <div class="text-h6 q-ma-md text-primary">UPDATE DOCUMENT</div>
       <q-input
-        dark
         dense
         standout
         v-model="updatedDocName"
