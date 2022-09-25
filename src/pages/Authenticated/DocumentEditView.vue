@@ -31,6 +31,9 @@
 
   <q-page>
     <q-bar style="height: 50px; background-color: #00a4ef" class="text-light">
+      <q-btn to="/dashboard/files" icon="arrow_back" flat class="text-white">
+        <q-tooltip>Go back</q-tooltip>
+      </q-btn>
       <q-icon name="feed" />
       <div class="q-ml-md">DOCUMENT EDITOR</div>
       <q-space />
@@ -62,12 +65,31 @@
         class="text-h6"
       />
     </q-bar>
-    <ckeditor
-      :editor="myeditor"
-      v-model="editorData"
-      :config="editorConfig"
-      @ready="onReady"
-    ></ckeditor>
+    <div
+      id="editor"
+      style="
+        size: 7in 9.25in;
+        margin: 0mm 16mm 0mm 16mm;
+        border-left: 1px solid;
+        border-right: 1px solid;
+      "
+    >
+      <ckeditor
+        :editor="myeditor"
+        v-model="editorData"
+        :config="editorConfig"
+        @ready="onReady"
+      ></ckeditor>
+    </div>
+    <q-separator />
+    <div class="row">
+      <q-space />
+      <div
+        class="q-mr-md q-mt-md"
+        :class="settingsStore.darkmode ? 'text-light' : 'text-dark'"
+        id="word-counter"
+      ></div>
+    </div>
   </q-page>
 </template>
 
@@ -78,16 +100,17 @@ import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { useSettingsStore } from 'stores/settings';
 import CKEditor from '@ckeditor/ckeditor5-vue';
-import DecoupledEditor from '@ckeditor/ckeditor5-build-decoupled-document';
+import DecoupledEditor from 'ckeditor-custom';
 
 export default defineComponent({
-  name: 'DocumentEditorView',
+  name: 'DocEditorView',
   components: {
     ckeditor: CKEditor.component,
   },
+
   setup() {
     const userStore = useUserStore();
-    const settings_store = useSettingsStore();
+    const settingsStore = useSettingsStore();
     const q = useQuasar();
     const axios_config = {
       withCredentials: true,
@@ -99,12 +122,51 @@ export default defineComponent({
     return {
       axios_config,
       userStore,
-      settings_store,
+      settingsStore,
       q,
       myeditor: DecoupledEditor,
       // permanent editor data
-      editorData: '<p>Content of the editor.</p>',
-      editorConfig: {},
+      editorData: '',
+      editorConfig: {
+        toolbar: [
+          'heading',
+          'Alignment',
+          '|',
+          'fontColor',
+          'fontFamily',
+          'fontSize',
+          'fontBackgroundColor',
+          '|',
+          'bold',
+          'italic',
+          'underline',
+          '|',
+          'bulletedList',
+          'numberedList',
+          'toDoList',
+          '|',
+          'Outdent',
+          'Indent',
+          '|',
+          'link',
+          'uploadImage',
+          'insertImage',
+          'insertMedia',
+          'Blockquote',
+          'insertTable',
+          'code',
+          'codeBlock',
+          'specialCharacters',
+          '|',
+          'undo',
+          'redo',
+          '|',
+          'horizontalLine',
+          'sourceEditing',
+          'findAndReplace',
+          'pageBreak',
+        ],
+      },
 
       // permanent doc name
       docName: ref(''),
@@ -122,6 +184,8 @@ export default defineComponent({
       updatedDocName: ref(''),
       updatedDocParent: ref(''),
       dataSet: ref(false),
+
+      parentId: ref(''),
     };
   },
   async created() {
@@ -136,6 +200,7 @@ export default defineComponent({
             this.editorData = response.data.document.text;
             this.docName = response.data.document.name;
             this.docParent = response.data.path;
+            this.parentId = response.data.parentid;
             response.data.document.text;
           } else {
             this.notify('negative', '' + response.data.error);
@@ -238,17 +303,24 @@ export default defineComponent({
         });
     },
     async onReady(editor) {
+      const wordCountPlugin = editor.plugins.get('WordCount');
+      const wordCountWrapper = document.getElementById('word-counter');
+      wordCountWrapper.appendChild(wordCountPlugin.wordCountContainer);
+
       // handling the get request with await, cancerous but doesn't work otherwise
+
       await this.getDoc();
       editor.setData(this.editorData);
 
       // Insert the toolbar before the editable area.
-      editor.ui
-        .getEditableElement()
-        .parentElement.insertBefore(
-          editor.ui.view.toolbar.element,
-          editor.ui.getEditableElement()
-        );
+      const container = document.getElementById('editor');
+      container.parentNode.insertBefore(
+        editor.ui.view.toolbar.element,
+        container
+      );
+      window.editor = editor;
+
+      // Set a custom container for the toolbar.
       const view = editor.editing.view;
       const viewDocument = view.document;
       // handle tab keys

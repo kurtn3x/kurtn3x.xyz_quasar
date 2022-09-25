@@ -82,7 +82,7 @@
   <q-dialog
     v-model="updateItemDialog"
     @hide="
-      updateItemItem = '';
+      updateItemId = '';
       updateItemName = '';
       availParents = [];
       updateItemNewParent = '';
@@ -152,7 +152,7 @@
         label="Select/Drag & Drop"
         multiple
         append
-        @update:model-value="fileNameVmodel"
+        @update:model-value="uploaderHandleFilenames"
         :loading="loading"
         counter
         use-chips
@@ -181,7 +181,7 @@
           label="Upload"
           class="cursor-pointer full-width text-green"
           flat
-          @click="sendFile"
+          @click="uploadFiles"
           v-close-popup
         />
       </div>
@@ -245,8 +245,8 @@
                 label="New Document"
                 @click="
                   docCreateDialog = !docCreateDialog;
-                  availParents.push(folder_content.path);
-                  updatedDocParent = folder_content.path;
+                  availParents.push(rawFolderContent.path);
+                  updatedDocParent = rawFolderContent.path;
                   fetchAllAvailableFolders();
                 "
               />
@@ -255,13 +255,20 @@
         </q-toolbar>
         <q-toolbar class="transparent">
           <div class="row">
-            <q-item class="text-h6 text-weight-bolder">Path: </q-item>
-
+            <q-btn
+              v-if="this.rawFolderContent.name != 'root'"
+              icon="arrow_back"
+              flat
+              class="text-primary"
+              @click="navGoBack"
+            >
+              <q-tooltip>Go back</q-tooltip>
+            </q-btn>
             <template v-for="itemname in path_names" :key="itemname">
               <q-item
                 clickable
                 flat
-                class="text-primary q-ml-md text-h6 text-weight-bold"
+                class="text-primary q-ml-sm text-h6 text-weight-bold"
                 @click="getFolderPath(itemname)"
                 style="text-decoration: underline"
                 @v-drag-enter="(e, x, y) => y.target.classList.add('active')"
@@ -270,9 +277,10 @@
                 @v-drag-drop="changeFolderToolbar($event, itemname)"
                 v-droppable
               >
-                {{ itemname }}
+                <div v-if="itemname != 'root'">{{ itemname }}</div>
+                <div v-if="itemname == 'root'"><q-icon name="home" /></div>
               </q-item>
-              <q-item class="text-primary q-ml-md text-h6 text-weight-bold"
+              <q-item class="text-primary q-ml-xs text-h6 text-weight-bold"
                 >/</q-item
               >
             </template>
@@ -284,13 +292,13 @@
         </div>
         <q-separator size="2px" color="primary" />
         <template
-          v-for="folder in folder_content.children.folders"
+          v-for="folder in rawFolderContent.children.folders"
           :key="folder"
         >
           <div class="row">
             <q-item
               clickable
-              @click="getFolder(folder.id)"
+              @click="getFolderId(folder.id)"
               class="full-width"
               v-droppable
               v-draggable="['folder', folder.id]"
@@ -322,11 +330,11 @@
                   flat
                   @click.capture.stop="
                     updateItemDialog = true;
-                    updateItemItem = folder.id;
+                    updateItemId = folder.id;
                     updateItemName = folder.name;
-                    availParents.push(folder_content.path);
+                    availParents.push(rawFolderContent.path);
                     updateItemType = 'folder';
-                    updateItemNewParent = folder_content.path;
+                    updateItemNewParent = rawFolderContent.path;
                     fetchAllAvailableFolders();
                   "
                   :loading="loading"
@@ -356,12 +364,21 @@
         </div>
         <q-separator size="2px" color="primary" />
         <template
-          v-for="file in folder_content.children.private_files"
+          v-for="file in rawFolderContent.children.private_files"
           :key="file"
         >
-          <q-item clickable class="full-width" v-draggable="['file', file.id]">
+          <q-item
+            clickable
+            class="full-width"
+            v-draggable="['file', file.id]"
+            @click="openInNewTab(file.id)"
+          >
             <q-item-section avatar top>
-              <q-avatar icon="description" color="primary" text-color="white" />
+              <q-avatar
+                icon="file_present"
+                color="primary"
+                text-color="white"
+              />
             </q-item-section>
             <q-item-section>
               <q-item-label lines="1">{{ file.name }}</q-item-label>
@@ -373,7 +390,7 @@
                 class="cursor-pointer full-width"
                 flat
                 @click.capture.stop="
-                  runFileEditor(file.id);
+                  previewPDF(file.id);
                   initial_doc_filename = file.name;
                 "
                 :loading="loading"
@@ -389,11 +406,11 @@
                 flat
                 @click.capture.stop="
                   updateItemDialog = true;
-                  updateItemItem = file.id;
+                  updateItemId = file.id;
                   updateItemName = file.name;
-                  availParents.push(folder_content.path);
+                  availParents.push(rawFolderContent.path);
                   updateItemType = 'file';
-                  updateItemNewParent = folder_content.path;
+                  updateItemNewParent = rawFolderContent.path;
                   fetchAllAvailableFolders();
                 "
                 :loading="loading"
@@ -415,7 +432,7 @@
         </template>
         <!-- DOCUMENTS -->
         <template
-          v-for="document in folder_content.children.documents"
+          v-for="document in rawFolderContent.children.documents"
           :key="document"
         >
           <q-item
@@ -425,7 +442,7 @@
             v-draggable="['document', document.id]"
           >
             <q-item-section avatar top>
-              <q-avatar icon="article" color="primary" text-color="white" />
+              <q-avatar icon="article" color="light-blue" text-color="white" />
             </q-item-section>
             <q-item-section>
               <q-item-label lines="1">{{ document.name }}</q-item-label>
@@ -515,7 +532,11 @@ export default defineComponent({
       settings_store,
       q,
       upload: ref(null),
-      folder_content: ref({
+      loading: ref(false),
+      search: ref(''),
+
+      // raw content including children of current folder
+      rawFolderContent: ref({
         name: 'root',
         path: 'root',
         id: 0,
@@ -526,10 +547,6 @@ export default defineComponent({
           documents: [],
         },
       }),
-      loading: ref(false),
-      uploading: ref(false),
-      search: ref(''),
-
       // file hader to show which path is currently opened and ability to go back
       path_names: ref([]),
       path_ids: ref([]),
@@ -538,16 +555,16 @@ export default defineComponent({
       upload_file_files: ref(null),
       upload_file_names: ref([]),
       upload_file_types: ref([]),
-      // name of new folder
+      // create new folder
       create_folder_name: ref(''),
       // update file or folder or document name/parent (handled all in one, but different api calls depending on updateItemType)
       updateItemDialog: ref(false),
-      updateItemItem: ref(''),
+      updateItemId: ref(''),
       updateItemName: ref(''),
-      availParents: ref([]),
-      updateItemNewParent: ref(''),
-      allAvailableFolders: ref({}),
       updateItemType: ref(''),
+      updateItemNewParent: ref(''),
+      availParents: ref([]),
+      allAvailableFolders: ref({}),
       // delete folder
       folder_to_delete: ref(''),
       folder_delete_dialog: ref(false),
@@ -562,9 +579,6 @@ export default defineComponent({
       updatedDocName: ref(''),
       updatedDocParent: ref(''),
       docCreateDialog: ref(false),
-
-      //
-      folderIdDragNDrop: ref(''),
     };
   },
   created() {
@@ -583,15 +597,39 @@ export default defineComponent({
     showDOCUMENT() {
       console.log();
     },
+    // go back navbar button
+    navGoBack() {
+      this.loading = true;
+      api
+        .get('/files/list/' + this.rawFolderContent.parentid, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.rawFolderContent = response.data;
+            this.path_names.pop();
+            this.path_ids.pop();
+            // this.path_names.push(response.data.name);
+            // this.path_ids.push(response.data.id);
+            this.loading = false;
+          } else {
+            this.notify('negative', '' + response.data.error);
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'API ERROR :/');
+          this.loading = false;
+          console.log(error);
+        });
+    },
+
+    // drag and drop change parent folder on nav toolbar
     changeFolderToolbar(itemProps, foldername) {
       var folderid = '';
       var i = 1;
       for (var name of this.path_names) {
         if (name == foldername) {
-          this.path_names.length = i;
-          this.path_ids.length = i;
+          folderid = this.path_ids[i - 1];
         }
-        folderid = this.path_ids[i - 1];
         i += 1;
       }
       var itemtype = itemProps[0];
@@ -621,6 +659,8 @@ export default defineComponent({
           });
       }
     },
+
+    // drag and drop update parent folder
     changeFolder(itemProps, folderid) {
       var itemtype = itemProps[0];
       var itemid = itemProps[1];
@@ -649,43 +689,8 @@ export default defineComponent({
           });
       }
     },
-    onDrop(wasd) {
-      console.log(wasd);
-    },
-    createDocument() {
-      this.loading = true;
-      var update_id = 0;
-      for (var item in this.allAvailableFolders.folders) {
-        if (
-          this.allAvailableFolders.folders[item].path == this.updatedDocParent
-        ) {
-          update_id = this.allAvailableFolders.folders[item].id;
-        }
-      }
-      var data = {
-        current_folder_id: update_id,
-        name: this.updatedDocName,
-        text: '',
-      };
-      api
-        .post('/files/create/document', data, this.axios_config)
-        .then((response) => {
-          if (response.status == 200) {
-            this.notify('positive', 'Created');
-            this.loading = false;
-            this.refreshFolder();
-            this.docCreateDialog = false;
-          } else {
-            this.notify('negative', '' + response.data.error);
-            this.loading = false;
-          }
-        })
-        .catch((error) => {
-          this.notify('negative', 'API ERROR :/');
-          this.loading = false;
-          console.log(error);
-        });
-    },
+
+    // update the configuration (name / parent) of a doc, folder or file
     updateItem() {
       this.loading = true;
       var update_id = 0;
@@ -698,7 +703,7 @@ export default defineComponent({
         }
       }
       var data = {
-        item_id: this.updateItemItem,
+        item_id: this.updateItemId,
         name: this.updateItemName,
         new_parent_id: update_id,
       };
@@ -722,6 +727,7 @@ export default defineComponent({
         });
     },
 
+    // fetch all available folders on user ( for changing folder path of a file)
     fetchAllAvailableFolders() {
       api
         .get('/files/list_all_available_folders', this.axios_config)
@@ -731,7 +737,7 @@ export default defineComponent({
             for (var availableFolder of response.data.folders) {
               if (
                 this.availParents.indexOf(availableFolder.path) === -1 &&
-                availableFolder.id != this.updateItemItem
+                availableFolder.id != this.updateItemId
               ) {
                 this.availParents.push(availableFolder.path);
               }
@@ -751,7 +757,7 @@ export default defineComponent({
       let pageheight = height - offset;
       return 'height: ' + pageheight + 'px';
     },
-    runFileEditor(fileid) {
+    previewPDF(fileid) {
       // django private storage adds another layer between user and pdf file -> pdf file is seen as html not as pdf
       // solution: load file into blob and edit the blob
       const config = {
@@ -799,7 +805,7 @@ export default defineComponent({
         .focus();
     },
 
-    fileNameVmodel() {
+    uploaderHandleFilenames() {
       var i = 0;
       for (const file in this.upload_file_files) {
         // get the filename without extension
@@ -815,7 +821,29 @@ export default defineComponent({
       }
     },
 
+    refreshFolder() {
+      this.loading = true;
+      api
+        .get('/files/list/' + this.rawFolderContent.id, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.rawFolderContent = response.data;
+            this.loading = false;
+          } else {
+            this.notify('negative', '' + response.data.error);
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'API ERROR :/');
+          this.loading = false;
+          console.log(error);
+        });
+    },
+
+    // get folder content with folder name
     getFolderPath(foldername) {
+      this.previousFolder = this.rawFolderContent.id;
       this.loading = true;
       var folderid = '';
       var i = 1;
@@ -831,7 +859,7 @@ export default defineComponent({
         .get('/files/list/' + folderid, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
-            this.folder_content = response.data;
+            this.rawFolderContent = response.data;
             this.loading = false;
           } else {
             this.notify('negative', '' + response.data.error);
@@ -845,13 +873,15 @@ export default defineComponent({
         });
     },
 
-    getFolder(folderid) {
+    // get Folder content with folderid
+    getFolderId(folderid) {
+      this.previousFolder = this.rawFolderContent.id;
       this.loading = true;
       api
         .get('/files/list/' + folderid, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
-            this.folder_content = response.data;
+            this.rawFolderContent = response.data;
             this.path_names.push(response.data.name);
             this.path_ids.push(response.data.id);
             this.loading = false;
@@ -867,33 +897,14 @@ export default defineComponent({
         });
     },
 
-    refreshFolder() {
-      this.loading = true;
-      api
-        .get('/files/list/' + this.folder_content.id, this.axios_config)
-        .then((response) => {
-          if (response.status == 200) {
-            this.folder_content = response.data;
-            this.loading = false;
-          } else {
-            this.notify('negative', '' + response.data.error);
-            this.loading = false;
-          }
-        })
-        .catch((error) => {
-          this.notify('negative', 'API ERROR :/');
-          this.loading = false;
-          console.log(error);
-        });
-    },
-
+    // get root folder content on initial page load
     getRootFolder() {
       this.loading = true;
       api
         .get('/files/list_root', this.axios_config)
         .then((response) => {
           if (response.status == 200) {
-            this.folder_content = response.data;
+            this.rawFolderContent = response.data;
             this.path_names.push(response.data.name);
             this.path_ids.push(response.data.id);
             this.loading = false;
@@ -908,6 +919,8 @@ export default defineComponent({
           console.log(error);
         });
     },
+
+    // delete files, folders, documents
 
     deleteFile(id) {
       this.loading = true;
@@ -971,21 +984,31 @@ export default defineComponent({
         });
     },
 
-    createFolder() {
+    // create document, files, folders
+
+    createDocument() {
       this.loading = true;
+      var update_id = 0;
+      for (var item in this.allAvailableFolders.folders) {
+        if (
+          this.allAvailableFolders.folders[item].path == this.updatedDocParent
+        ) {
+          update_id = this.allAvailableFolders.folders[item].id;
+        }
+      }
       var data = {
-        current_folder_id: this.folder_content.id,
-        foldername: this.create_folder_name,
+        current_folder_id: update_id,
+        name: this.updatedDocName,
+        text: '',
       };
       api
-        .post('/files/create/folder', data, this.axios_config)
+        .post('/files/create/document', data, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
-            console.log(this.folder_content);
-            this.refreshFolder();
             this.notify('positive', 'Created');
             this.loading = false;
-            this.create_folder_name = ref('');
+            this.refreshFolder();
+            this.docCreateDialog = false;
           } else {
             this.notify('negative', '' + response.data.error);
             this.loading = false;
@@ -998,7 +1021,39 @@ export default defineComponent({
         });
     },
 
-    sendFile() {
+    createFolder() {
+      if (this.create_folder_name != 'root') {
+        this.loading = true;
+        var data = {
+          current_folder_id: this.rawFolderContent.id,
+          foldername: this.create_folder_name,
+        };
+
+        api
+          .post('/files/create/folder', data, this.axios_config)
+          .then((response) => {
+            if (response.status == 200) {
+              console.log(this.rawFolderContent);
+              this.refreshFolder();
+              this.notify('positive', 'Created');
+              this.loading = false;
+              this.create_folder_name = ref('');
+            } else {
+              this.notify('negative', '' + response.data.error);
+              this.loading = false;
+            }
+          })
+          .catch((error) => {
+            this.notify('negative', 'API ERROR :/');
+            this.loading = false;
+            console.log(error);
+          });
+      } else {
+        this.notify('negative', 'you cant name your folder root.');
+      }
+    },
+
+    uploadFiles() {
       var files_state = 0;
       const length = this.upload_file_files.length;
       const notif = this.q.notify({
@@ -1009,7 +1064,6 @@ export default defineComponent({
         message: 'Uploading file...',
         caption: files_state + ' / ' + length,
       });
-      this.uploading = true;
       let config = {
         withCredentials: true,
         headers: {
@@ -1023,7 +1077,7 @@ export default defineComponent({
           'filename',
           this.upload_file_names[file] + '.' + this.upload_file_types[file]
         );
-        form_data.append('current_folder_id', this.folder_content.id);
+        form_data.append('current_folder_id', this.rawFolderContent.id);
         if (this.upload_file_files != null) {
           form_data.append('file', this.upload_file_files[file]);
         }
@@ -1036,7 +1090,6 @@ export default defineComponent({
               notif({
                 caption: files_state + ' / ' + length,
               });
-              this.uploading = false;
               if (files_state == length) {
                 notif({
                   type: 'positive',
@@ -1048,12 +1101,10 @@ export default defineComponent({
               }
             } else {
               this.notify('negative', '' + response.data.error);
-              this.uploading = false;
             }
           })
           .catch((error) => {
             this.notify('negative', 'API ERROR :/');
-            this.uploading = false;
             console.log(error);
           });
       }

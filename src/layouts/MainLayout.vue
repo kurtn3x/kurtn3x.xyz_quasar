@@ -20,9 +20,6 @@
           label="Menu"
           v-if="authenticated"
         />
-        <q-separator vertical v-if="authenticated" />
-        <q-btn stretch flat icon="home" to="/" />
-
         <q-space v-if="authenticated" />
         <q-input
           dark
