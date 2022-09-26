@@ -48,7 +48,6 @@ export default {
         .then((response) => {
           if (response.status == 200) {
             this.$router.push('/user/' + response.data.account.username);
-            this.notify('positive', 'Redirecting to user profile.');
           } else {
             this.notify('negative', '' + response.data.error);
           }
