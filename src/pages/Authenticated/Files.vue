@@ -207,7 +207,7 @@
           label="Continue"
           color="green"
           v-close-popup
-          @click="deleteFolder(this.folder_to_delete)"
+          @click="deleteItem(this.folder_to_delete, 'folder')"
         />
       </q-card-actions>
     </q-card>
@@ -289,22 +289,57 @@
       />
     </q-card>
   </q-dialog>
-  <q-page class="column q-ml-sm q-mr-sm" :style-fn="styleFn">
-    <q-scroll-area class="col">
-      <!-- <q-toolbar class="bg-primary">
-          <q-input dense outlined v-model="search" input-class="text-left">
-            <template v-slot:append>
-              <q-icon v-if="search === ''" name="search" />
-              <q-icon
-                v-else
-                name="clear"
-                class="cursor-pointer"
-                @click="search = ''"
-              />
-            </template>
-          </q-input>
-          <q-space />
-          <q-btn-dropdown icon="add" flat class="text-light">
+  <q-page class="column q-ml-md q-mr-md" :style-fn="styleFn">
+    <q-toolbar class="transparent q-mt-md q-mb-sm">
+      <div class="row">
+        <q-btn
+          v-if="this.rawFolderContent.name != 'root'"
+          icon="arrow_back"
+          flat
+          class="text-primary"
+          @click="navGoBack"
+        >
+          <q-tooltip>Go back</q-tooltip>
+        </q-btn>
+        <template v-for="itemname in path_names" :key="itemname">
+          <q-item
+            clickable
+            flat
+            class="text-primary q-ml-sm text-h5 text-weight-bold"
+            @click="getFolderPath(itemname)"
+            @v-drag-enter="(e, x, y) => y.target.classList.add('active')"
+            @v-drag-over="(e, x, y) => y.target.classList.add('active')"
+            @v-drag-leave="(e, x, y) => y.target.classList.remove('active')"
+            @v-drag-drop="changeFolderToolbar($event, itemname)"
+            v-droppable
+            v-if="itemname != 'root'"
+          >
+            {{ itemname }}
+          </q-item>
+          <q-item
+            clickable
+            flat
+            class="text-primary q-ml-sm text-h5 text-weight-bold"
+            @click="getFolderPath(itemname)"
+            @v-drag-enter="(e, x, y) => y.target.classList.add('active')"
+            @v-drag-over="(e, x, y) => y.target.classList.add('active')"
+            @v-drag-leave="(e, x, y) => y.target.classList.remove('active')"
+            @v-drag-drop="changeFolderToolbar($event, itemname)"
+            v-droppable
+            v-if="itemname == 'root'"
+          >
+            <q-icon
+              color="primary"
+              name="home"
+              class="full-width full-height"
+            />
+          </q-item>
+          <q-item class="text-primary q-ml-xs text-h4 text-weight-bold">
+            <q-icon name="arrow_forward_ios" />
+          </q-item>
+        </template>
+        <q-btn icon="add" class="text-primary" size="md" outline>
+          <q-menu>
             <div>
               <q-btn stretch flat icon="create_new_folder" label="New Folder">
                 <q-menu anchor="center left" self="top right">
@@ -319,7 +354,7 @@
                   <div class="row justify-center">
                     <q-btn
                       label="Create"
-                      class="cursor-pointer full-width text-green"
+                      class="cursor-pointer full-width bg-green"
                       flat
                       @click="createFolder"
                       :loading="loading"
@@ -351,130 +386,51 @@
                 "
               />
             </div>
-          </q-btn-dropdown>
-        </q-toolbar> -->
-      <q-toolbar class="transparent q-mt-md q-mb-sm">
-        <div class="row">
-          <q-btn
-            v-if="this.rawFolderContent.name != 'root'"
-            icon="arrow_back"
-            flat
-            class="text-primary"
-            @click="navGoBack"
-          >
-            <q-tooltip>Go back</q-tooltip>
-          </q-btn>
-          <template v-for="itemname in path_names" :key="itemname">
-            <q-item
-              clickable
-              flat
-              class="text-primary q-ml-sm text-h6 text-weight-bold"
-              @click="getFolderPath(itemname)"
-              @v-drag-enter="(e, x, y) => y.target.classList.add('active')"
-              @v-drag-over="(e, x, y) => y.target.classList.add('active')"
-              @v-drag-leave="(e, x, y) => y.target.classList.remove('active')"
-              @v-drag-drop="changeFolderToolbar($event, itemname)"
-              v-droppable
-            >
-              <div v-if="itemname != 'root'" class="text-h5">
-                {{ itemname }}
-              </div>
-              <div v-if="itemname == 'root'" class="text-h5">⌂</div>
-            </q-item>
-            <q-item class="text-primary q-ml-xs text-h4 text-weight-bold">
-              <q-icon name="arrow_forward_ios" />
-            </q-item>
-          </template>
-          <q-btn icon="add" class="text-primary" size="md" outline>
-            <q-menu>
-              <div>
-                <q-btn stretch flat icon="create_new_folder" label="New Folder">
-                  <q-menu anchor="center left" self="top right">
-                    <q-input
-                      dense
-                      outlined
-                      v-model="create_folder_name"
-                      label="New Folder Name"
-                      input-class="text-center"
-                      class="full-width text-primary"
-                    />
-                    <div class="row justify-center">
-                      <q-btn
-                        label="Create"
-                        class="cursor-pointer full-width bg-green"
-                        flat
-                        @click="createFolder"
-                        :loading="loading"
-                      />
-                    </div>
-                  </q-menu>
-                </q-btn>
-              </div>
-              <div>
-                <q-btn
-                  stretch
-                  flat
-                  icon="file_upload"
-                  label="Upload File(s)"
-                  @click="upload_file_dialog = !upload_file_dialog"
-                />
-              </div>
-              <div>
-                <q-btn
-                  stretch
-                  flat
-                  icon="note_add"
-                  label="New Document"
-                  @click="
-                    docCreateDialog = !docCreateDialog;
-                    availParents.push(rawFolderContent.path);
-                    updatedDocParent = rawFolderContent.path;
-                    fetchAllAvailableFolders();
-                  "
-                />
-              </div>
-            </q-menu>
-          </q-btn>
-        </div>
-      </q-toolbar>
-      <q-toolbar class="transparent q-mt-md">
-        <q-space />
-        <q-input
-          dense
-          outlined
-          v-model="search"
-          input-class="text-left"
-          class="justify-center"
-        >
-          <template v-slot:append>
-            <q-icon v-if="search === ''" name="search" />
-            <q-icon
-              v-else
-              name="clear"
-              class="cursor-pointer"
-              @click="search = ''"
-            />
-          </template>
-          <q-toggle
-            v-model="optnShowFolders"
-            color="green"
-            label="Show Folders"
+          </q-menu>
+        </q-btn>
+      </div>
+    </q-toolbar>
+    <q-toolbar class="transparent q-mt-md">
+      <q-input
+        dense
+        outlined
+        v-model="search"
+        input-class="text-left"
+        style="width: 30%"
+        label="Search"
+      >
+        <template v-slot:append>
+          <q-icon v-if="search === ''" name="search" />
+          <q-icon
+            v-else
+            name="clear"
+            class="cursor-pointer"
+            @click="search = ''"
           />
-          <q-toggle v-model="optnShowFiles" color="green" label="Show Files" />
-          <q-toggle
-            v-model="optnShowDocuments"
-            color="green"
-            label="Show Documents"
-          />
-        </q-input>
-        <q-space />
-      </q-toolbar>
-      <q-separator size="2px" color="primary" />
+        </template>
+      </q-input>
+      <q-space />
+
+      <q-toggle v-model="optnShowFolders" color="green" label="Show Folders" />
+      <q-toggle v-model="optnShowFiles" color="green" label="Show Files" />
+      <q-toggle
+        v-model="optnShowDocuments"
+        color="green"
+        label="Show Documents"
+      />
+    </q-toolbar>
+    <q-separator size="2px" color="primary" />
+    <div id="drop_zone" @drop.prevent="onDrop" @dragover.prevent>
       <template
         v-for="folder in rawFolderContent.children.folders"
         :key="folder"
       >
-        <div class="row">
+        <div
+          v-if="
+            (optnShowFolders && search == '') ||
+            (optnShowFolders && folder.name.includes(search))
+          "
+        >
           <q-item
             clickable
             @click="getFolderId(folder.id)"
@@ -540,109 +496,127 @@
         v-for="file in rawFolderContent.children.private_files"
         :key="file"
       >
-        <q-item
-          clickable
-          class="full-width"
-          v-draggable="['file', file.id]"
-          @click="openInNewTab(file.id)"
+        <div
+          v-if="
+            (optnShowFiles && search == '') ||
+            (optnShowFiles && file.name.includes(search))
+          "
         >
-          <q-item-section avatar top>
-            <q-avatar icon="file_present" color="primary" text-color="white" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label lines="1">{{ file.name }}</q-item-label>
-            <q-item-label caption lines="1">{{ file.changed }}</q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <q-btn
-              label="Preview"
-              class="cursor-pointer full-width"
-              flat
-              @click.capture.stop="
-                previewPDF(file.id);
-                initial_doc_filename = file.name;
-              "
-              :loading="loading"
-              stretch
-              v-if="file.name.includes('.pdf')"
-            >
-            </q-btn>
-          </q-item-section>
-          <q-item-section side>
-            <q-btn
-              icon="edit"
-              class="cursor-pointer full-width"
-              flat
-              @click.capture.stop="
-                updateItemDrawer = true;
-                updateItemId = file.id;
-                updateItemName = file.name;
-                availParents.push(rawFolderContent.path);
-                updateItemType = 'file';
-                updateItemNewParent = rawFolderContent.path;
-                fetchAllAvailableFolders();
-              "
-              :loading="loading"
-              stretch
-            />
-          </q-item-section>
-          <q-item-section side>
-            <q-btn
-              icon="delete"
-              class="cursor-pointer full-width text-red"
-              flat
-              @click.capture.stop="deleteFile(file.id)"
-              :loading="loading"
-              stretch
-            />
-          </q-item-section>
-        </q-item>
-        <q-separator />
+          <q-item
+            clickable
+            class="full-width"
+            v-draggable="['file', file.id]"
+            @click="openInNewTab(file.id)"
+          >
+            <q-item-section avatar top>
+              <q-avatar
+                icon="file_present"
+                color="primary"
+                text-color="white"
+              />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label lines="1">{{ file.name }}</q-item-label>
+              <q-item-label caption lines="1">{{ file.changed }}</q-item-label>
+            </q-item-section>
+            <q-item-section side>
+              <q-btn
+                label="Preview"
+                class="cursor-pointer full-width"
+                flat
+                @click.capture.stop="
+                  previewPDF(file.id);
+                  initial_doc_filename = file.name;
+                "
+                :loading="loading"
+                stretch
+                v-if="file.name.includes('.pdf')"
+              >
+              </q-btn>
+            </q-item-section>
+            <q-item-section side>
+              <q-btn
+                icon="edit"
+                class="cursor-pointer full-width"
+                flat
+                @click.capture.stop="
+                  updateItemDrawer = true;
+                  updateItemId = file.id;
+                  updateItemName = file.name;
+                  availParents.push(rawFolderContent.path);
+                  updateItemType = 'file';
+                  updateItemNewParent = rawFolderContent.path;
+                  fetchAllAvailableFolders();
+                "
+                :loading="loading"
+                stretch
+              />
+            </q-item-section>
+            <q-item-section side>
+              <q-btn
+                icon="delete"
+                class="cursor-pointer full-width text-red"
+                flat
+                @click.capture.stop="deleteItem(file.id, 'file')"
+                :loading="loading"
+                stretch
+              />
+            </q-item-section>
+          </q-item>
+          <q-separator />
+        </div>
       </template>
       <!-- DOCUMENTS -->
       <template
         v-for="document in rawFolderContent.children.documents"
         :key="document"
       >
-        <q-item
-          clickable
-          @click="showDOCUMENT"
-          class="full-width"
-          v-draggable="['document', document.id]"
+        <div
+          v-if="
+            (optnShowDocuments && search == '') ||
+            (optnShowDocuments && document.name.includes(search))
+          "
         >
-          <q-item-section avatar top>
-            <q-avatar icon="article" color="light-blue" text-color="white" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label lines="1">{{ document.name }}</q-item-label>
-            <q-item-label caption lines="1">{{
-              document.changed
-            }}</q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <q-btn
-              icon="edit"
-              class="cursor-pointer full-width"
-              flat
-              :loading="loading"
-              stretch
-              :to="'doc/edit/' + document.id"
-            />
-          </q-item-section>
-          <q-item-section side>
-            <q-btn
-              icon="delete"
-              class="cursor-pointer full-width text-red"
-              flat
-              @click.capture.stop="deleteDocument(document.id)"
-              :loading="loading"
-              stretch
-            />
-          </q-item-section>
-        </q-item>
-        <q-separator />
+          <q-item
+            clickable
+            @click="showDOCUMENT"
+            class="full-width"
+            v-draggable="['document', document.id]"
+          >
+            <q-item-section avatar top>
+              <q-avatar icon="article" color="light-blue" text-color="white" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label lines="1">{{ document.name }}</q-item-label>
+              <q-item-label caption lines="1">{{
+                document.changed
+              }}</q-item-label>
+            </q-item-section>
+            <q-item-section side>
+              <q-btn
+                icon="edit"
+                class="cursor-pointer full-width"
+                flat
+                :loading="loading"
+                stretch
+                :to="'doc/edit/' + document.id"
+              />
+            </q-item-section>
+            <q-item-section side>
+              <q-btn
+                icon="delete"
+                class="cursor-pointer full-width text-red"
+                flat
+                @click.capture.stop="deleteItem(document.id, 'document')"
+                :loading="loading"
+                stretch
+              />
+            </q-item-section>
+          </q-item>
+          <q-separator />
+        </div>
       </template>
-    </q-scroll-area>
+    </div>
   </q-page>
 </template>
 
@@ -654,26 +628,6 @@ import { useSettingsStore } from 'stores/settings';
 import { api } from 'boot/axios';
 import VuePdfEmbed from 'vue-pdf-embed';
 import { draggable, droppable } from 'v-drag-drop';
-// ADD
-// DOCUMENT VIEWS
-// 	POST
-// 		/create/document: data: name, text, current_folder_id
-
-// 	DELETE
-// 		/delete/document/<id>
-
-// 	GET
-// 		/get/document/<id>
-
-// 	PUT /update/document, data: id, (name, text, new_parent_id)
-
-// (PRIVATE) FILE VIEWS
-// 	PUT
-// 		/update/file, data: id, (name, new_parent_id)
-
-// FOLDER VIEWS
-// 	PUT
-// 		/update/folder, data: id, (name, new_parent_id)
 
 export default defineComponent({
   name: 'FilesView',
@@ -791,6 +745,12 @@ export default defineComponent({
       updatedDocName: ref(''),
       updatedDocParent: ref(''),
       docCreateDialog: ref(false),
+
+      optnShowFolders: ref(true),
+      optnShowFiles: ref(true),
+      optnShowDocuments: ref(true),
+
+      fileDraggedMain: ref(false),
     };
   },
   created() {
@@ -815,6 +775,28 @@ export default defineComponent({
     },
   },
   methods: {
+    dragEnter(item) {
+      console.log(item);
+    },
+    onDrop(ev) {
+      console.log('File(s) dropped');
+
+      if (ev.dataTransfer.items) {
+        // Use DataTransferItemList interface to access the file(s)
+        [...ev.dataTransfer.items].forEach((item, i) => {
+          // If dropped items aren't files, reject them
+          if (item.kind === 'file') {
+            const file = item.getAsFile();
+            console.log(`… file[${i}].name = ${file.name}`);
+          }
+        });
+      } else {
+        // Use DataTransfer interface to access the file(s)
+        [...ev.dataTransfer.files].forEach((file, i) => {
+          console.log(`… file[${i}].name = ${file.name}`);
+        });
+      }
+    },
     showDOCUMENT() {
       console.log();
     },
@@ -1143,51 +1125,10 @@ export default defineComponent({
 
     // delete files, folders, documents
 
-    deleteFile(id) {
+    deleteItem(id, type) {
       this.loading = true;
       api
-        .delete('/files/delete/file/' + id, this.axios_config)
-        .then((response) => {
-          if (response.status == 200) {
-            this.notify('positive', 'Deleted');
-            this.loading = false;
-            this.refreshFolder();
-          } else {
-            this.notify('negative', '' + response.data.error);
-            this.loading = false;
-          }
-        })
-        .catch((error) => {
-          this.notify('negative', 'API ERROR :/');
-          this.loading = false;
-          console.log(error);
-        });
-    },
-
-    deleteDocument(id) {
-      this.loading = true;
-      api
-        .delete('/files/delete/document/' + id, this.axios_config)
-        .then((response) => {
-          if (response.status == 200) {
-            this.notify('positive', 'Deleted');
-            this.loading = false;
-            this.refreshFolder();
-          } else {
-            this.notify('negative', '' + response.data.error);
-            this.loading = false;
-          }
-        })
-        .catch((error) => {
-          this.notify('negative', 'API ERROR :/');
-          this.loading = false;
-          console.log(error);
-        });
-    },
-    deleteFolder(id) {
-      this.loading = true;
-      api
-        .delete('/files/delete/folder/' + id, this.axios_config)
+        .delete('/files/delete/' + type + '/' + id, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.notify('positive', 'Deleted');
