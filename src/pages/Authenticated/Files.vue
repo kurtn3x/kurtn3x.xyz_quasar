@@ -1,5 +1,5 @@
 <template>
-  <q-dialog v-model="docCreateDialog">
+  <q-dialog v-model="docCreateDialog" @hide="availParents = []">
     <q-card bordered>
       <q-toolbar class="justify-center">
         <div class="text-h6 q-ma-md text-primary text-center text-weight-bold">
@@ -10,14 +10,14 @@
       <q-input
         outlined
         dense
-        v-model="updatedDocName"
+        v-model="createDocName"
         label="Name"
         input-class="text-center"
         class="text-primary q-ma-md"
       />
       <q-select
         outlined
-        v-model="updatedDocParent"
+        v-model="createDocParent"
         :options="availParents"
         label="Parent Folder"
         class="q-ma-md"
@@ -101,6 +101,11 @@
     "
   >
     <q-toolbar>
+      <q-icon size="lg" name="article" v-if="updateItemType == 'document'" />
+      <q-icon size="lg" name="file_present" v-if="updateItemType == 'file'" />
+      <q-icon size="lg" name="folder" v-if="updateItemType == 'folder'" />
+      <a class="text-h5 text-weight-bold q-ml-md">Settings</a>
+      <q-space />
       <q-btn
         icon="close"
         class="bg-red text-white"
@@ -109,11 +114,8 @@
       />
     </q-toolbar>
     <q-card bordered flat>
-      <div class="text-h6 q-ml-md">
-        Type: <a class="q-ml-lg">{{ updateItemType }}</a>
-      </div>
-      <div class="text-h6 q-ml-md">
-        Name: <a class="q-ml-lg">{{ updateItemName }}</a>
+      <div class="text-h5 q-mt-md text-center">
+        {{ drawerItemName }}
       </div>
 
       <q-input
@@ -125,12 +127,26 @@
         class="text-primary q-ma-md"
       />
       <q-select
+        dense
         outlined
         v-model="updateItemNewParent"
         :options="availParents"
         label="Parent Folder"
         class="q-ma-md"
       />
+      <q-btn
+        label="Preview"
+        class="cursor-pointer full-width"
+        flat
+        @click.capture.stop="
+          previewPDF(updateItemId);
+          initial_doc_filename = drawerItemName;
+        "
+        :loading="loading"
+        stretch
+        v-if="drawerItemName.includes('.pdf')"
+      >
+      </q-btn>
       <q-btn
         label="Update"
         class="cursor-pointer full-width bg-green text-white"
@@ -261,7 +277,7 @@
         />
       </template>
       <q-btn
-        v-if="upload_file_files_exist"
+        v-if="filesInUploadField"
         flat
         label="Edit Filename with extension"
         icon="edit"
@@ -340,52 +356,66 @@
         </template>
         <q-btn icon="add" class="text-primary" size="md" outline>
           <q-menu>
-            <div>
-              <q-btn stretch flat icon="create_new_folder" label="New Folder">
-                <q-menu anchor="center left" self="top right">
-                  <q-input
-                    dense
-                    outlined
-                    v-model="create_folder_name"
-                    label="New Folder Name"
-                    input-class="text-center"
-                    class="full-width text-primary"
-                  />
-                  <div class="row justify-center">
-                    <q-btn
-                      label="Create"
-                      class="cursor-pointer full-width bg-green"
-                      flat
-                      @click="createFolder"
-                      :loading="loading"
+            <q-card bordered>
+              <div>
+                <q-btn
+                  stretch
+                  flat
+                  icon="create_new_folder"
+                  label="New Folder"
+                  class="full-width"
+                >
+                  <q-menu anchor="center left" self="top right">
+                    <q-input
+                      dense
+                      outlined
+                      v-model="create_folder_name"
+                      label="New Folder Name"
+                      input-class="text-center"
+                      class="full-width text-primary"
                     />
-                  </div>
-                </q-menu>
-              </q-btn>
-            </div>
-            <div>
-              <q-btn
-                stretch
-                flat
-                icon="file_upload"
-                label="Upload File(s)"
-                @click="upload_file_dialog = !upload_file_dialog"
-              />
-            </div>
-            <div>
-              <q-btn
-                stretch
-                flat
-                icon="note_add"
-                label="New Document"
-                @click="
-                  docCreateDialog = !docCreateDialog;
-                  availParents.push(rawFolderContent.path);
-                  updatedDocParent = rawFolderContent.path;
-                  fetchAllAvailableFolders();
-                "
-              />
-            </div>
+                    <div class="row justify-center">
+                      <q-btn
+                        label="Create"
+                        class="cursor-pointer full-width bg-green"
+                        flat
+                        @click="createFolder"
+                        :loading="loading"
+                      />
+                    </div>
+                  </q-menu>
+                </q-btn>
+              </div>
+              <q-separator />
+              <div>
+                <q-btn
+                  stretch
+                  flat
+                  icon="file_upload"
+                  label="Upload File(s)"
+                  @click="
+                    upload_file_dialog = !upload_file_dialog;
+                    fetchAllAvailableFolders();
+                  "
+                  class="full-width"
+                />
+              </div>
+              <q-separator />
+              <div>
+                <q-btn
+                  stretch
+                  flat
+                  class="full-width"
+                  icon="note_add"
+                  label="New Document"
+                  @click="
+                    docCreateDialog = !docCreateDialog;
+                    createDocParent = rawFolderContent.path;
+                    fetchAllAvailableFolders();
+                  "
+                />
+              </div>
+            </q-card>
           </q-menu>
         </q-btn>
       </div>
@@ -465,9 +495,9 @@
                   updateItemDrawer = true;
                   updateItemId = folder.id;
                   updateItemName = folder.name;
-                  availParents.push(rawFolderContent.path);
                   updateItemType = 'folder';
                   updateItemNewParent = rawFolderContent.path;
+                  drawerItemName = folder.name;
                   fetchAllAvailableFolders();
                 "
                 :loading="loading"
@@ -521,21 +551,6 @@
             </q-item-section>
             <q-item-section side>
               <q-btn
-                label="Preview"
-                class="cursor-pointer full-width"
-                flat
-                @click.capture.stop="
-                  previewPDF(file.id);
-                  initial_doc_filename = file.name;
-                "
-                :loading="loading"
-                stretch
-                v-if="file.name.includes('.pdf')"
-              >
-              </q-btn>
-            </q-item-section>
-            <q-item-section side>
-              <q-btn
                 icon="edit"
                 class="cursor-pointer full-width"
                 flat
@@ -543,9 +558,9 @@
                   updateItemDrawer = true;
                   updateItemId = file.id;
                   updateItemName = file.name;
-                  availParents.push(rawFolderContent.path);
                   updateItemType = 'file';
                   updateItemNewParent = rawFolderContent.path;
+                  drawerItemName = file.name;
                   fetchAllAvailableFolders();
                 "
                 :loading="loading"
@@ -593,13 +608,28 @@
               }}</q-item-label>
             </q-item-section>
             <q-item-section side>
-              <q-btn
+              <!-- <q-btn
                 icon="edit"
                 class="cursor-pointer full-width"
                 flat
                 :loading="loading"
                 stretch
                 :to="'doc/edit/' + document.id"
+              /> -->
+              <q-btn
+                icon="edit"
+                class="cursor-pointer full-width"
+                flat
+                @click.capture.stop="
+                  updateItemDrawer = true;
+                  updateItemId = document.id;
+                  updateItemName = document.name;
+                  updateItemType = 'document';
+                  updateItemNewParent = rawFolderContent.path;
+                  drawerItemName = document.name;
+                "
+                :loading="loading"
+                stretch
               />
             </q-item-section>
             <q-item-section side>
@@ -621,7 +651,7 @@
 </template>
 
 <script>
-import { defineComponent, ref, onMounted, onUnmounted } from 'vue';
+import { defineComponent, ref } from 'vue';
 import { useUserStore } from 'stores/user';
 import { useQuasar } from 'quasar';
 import { useSettingsStore } from 'stores/settings';
@@ -655,67 +685,28 @@ export default defineComponent({
       q,
       upload: ref(null),
       loading: ref(false),
-      search: ref(''),
 
       // raw content including children of current folder
       rawFolderContent: ref({
         name: 'root',
         path: 'root',
-        id: 30,
+        id: 0,
         children: {
-          private_files: [
-            {
-              name: 'Untitled.png',
-              id: 56,
-              changed: '2022-09-24 21:16:02',
-            },
-            {
-              name: 'ProjektClaudia_Kurt.docx',
-              id: 55,
-              changed: '2022-09-24 21:20:48',
-            },
-            {
-              name: 'DIAGRAMMITLF7.drawio',
-              id: 62,
-              changed: '2022-09-24 21:20:58',
-            },
-            {
-              name: '1663788962540645672255300633021.jpg',
-              id: 42,
-              changed: '2022-09-25 15:00:32',
-            },
-          ],
+          private_files: [],
           public_files: [],
-          folders: [
-            {
-              name: 'test2',
-              id: 32,
-              path: 'root/test2',
-            },
-            {
-              name: 'test',
-              id: 31,
-              path: 'root/test',
-            },
-          ],
-          documents: [
-            {
-              name: 'test2',
-              id: 6,
-              changed: '2022-09-24 21:13:55',
-            },
-            {
-              name: 'dokument',
-              id: 7,
-              changed: '2022-09-23 10:29:34',
-            },
-          ],
+          folders: [],
+          documents: [],
         },
       }),
-      // file hader to show which path is currently opened and ability to go back
-      path_names: ref(['root', 'test', 'test2']),
+      // toolbar handlers
+      path_names: ref([]),
       path_ids: ref([]),
-      // dialog to upload a new file
+      optnShowFolders: ref(true),
+      optnShowFiles: ref(true),
+      optnShowDocuments: ref(true),
+      search: ref(''),
+
+      // file upload dialog handlers
       upload_file_dialog: ref(false),
       upload_file_files: ref(null),
       upload_file_names: ref([]),
@@ -729,8 +720,11 @@ export default defineComponent({
       updateItemName: ref(''),
       updateItemType: ref(''),
       updateItemNewParent: ref(''),
-      availParents: ref([]),
       allAvailableFolders: ref({}),
+      drawerItemName: ref(''),
+      // lists all available parents (all folders of user) for q-select
+      availParents: ref([]),
+
       // delete folder
       folder_to_delete: ref(''),
       folder_delete_dialog: ref(false),
@@ -741,14 +735,10 @@ export default defineComponent({
       pdf_viewer_maximized: ref(false),
       zoom: ref(800),
 
-      // update
-      updatedDocName: ref(''),
-      updatedDocParent: ref(''),
+      // create new doc
+      createDocName: ref(''),
+      createDocParent: ref(''),
       docCreateDialog: ref(false),
-
-      optnShowFolders: ref(true),
-      optnShowFiles: ref(true),
-      optnShowDocuments: ref(true),
 
       fileDraggedMain: ref(false),
     };
@@ -757,7 +747,7 @@ export default defineComponent({
     this.getRootFolder();
   },
   computed: {
-    upload_file_files_exist() {
+    filesInUploadField() {
       if (this.upload_file_files == null) {
         return false;
       } else if (this.upload_file_files.length == 0) {
@@ -808,6 +798,8 @@ export default defineComponent({
         .then((response) => {
           if (response.status == 200) {
             this.rawFolderContent = response.data;
+            this.updateItemDrawer = false;
+
             this.path_names.pop();
             this.path_ids.pop();
             // this.path_names.push(response.data.name);
@@ -918,6 +910,7 @@ export default defineComponent({
             this.refreshFolder();
             this.loading = false;
             this.updateItemDrawer = false;
+            this.availParents = [];
           } else {
             this.notify('negative', '' + response.data.error);
             this.loading = false;
@@ -932,29 +925,33 @@ export default defineComponent({
 
     // fetch all available folders on user ( for changing folder path of a file)
     fetchAllAvailableFolders() {
-      api
-        .get('/files/list_all_available_folders', this.axios_config)
-        .then((response) => {
-          if (response.status == 200) {
-            this.allAvailableFolders = response.data;
-            for (var availableFolder of response.data.folders) {
-              if (
-                this.availParents.indexOf(availableFolder.path) === -1 &&
-                availableFolder.id != this.updateItemId
-              ) {
-                this.availParents.push(availableFolder.path);
+      console.log('Y');
+      if (this.availParents.length == 0 || this.availParents.length == 1) {
+        console.log('X');
+        api
+          .get('/files/list_all_available_folders', this.axios_config)
+          .then((response) => {
+            if (response.status == 200) {
+              this.allAvailableFolders = response.data;
+              for (var availableFolder of response.data.folders) {
+                if (
+                  this.availParents.indexOf(availableFolder.path) === -1 &&
+                  availableFolder.id != this.updateItemId
+                ) {
+                  this.availParents.push(availableFolder.path);
+                }
               }
+            } else {
+              this.notify('negative', '' + response.data.error);
+              this.loading = false;
             }
-          } else {
-            this.notify('negative', '' + response.data.error);
+          })
+          .catch((error) => {
+            this.notify('negative', 'API ERROR :/');
             this.loading = false;
-          }
-        })
-        .catch((error) => {
-          this.notify('negative', 'API ERROR :/');
-          this.loading = false;
-          console.log(error);
-        });
+            console.log(error);
+          });
+      }
     },
     styleFn(offset, height) {
       let pageheight = height - offset;
@@ -1032,6 +1029,8 @@ export default defineComponent({
           if (response.status == 200) {
             this.rawFolderContent = response.data;
             this.loading = false;
+            this.updateItemDrawer = false;
+            this.availParents = [];
           } else {
             this.notify('negative', '' + response.data.error);
             this.loading = false;
@@ -1064,6 +1063,8 @@ export default defineComponent({
           if (response.status == 200) {
             this.rawFolderContent = response.data;
             this.loading = false;
+            this.updateItemDrawer = false;
+            this.availParents = [];
           } else {
             this.notify('negative', '' + response.data.error);
             this.loading = false;
@@ -1088,6 +1089,8 @@ export default defineComponent({
             this.path_names.push(response.data.name);
             this.path_ids.push(response.data.id);
             this.loading = false;
+            this.updateItemDrawer = false;
+            this.availParents = [];
           } else {
             this.notify('negative', '' + response.data.error);
             this.loading = false;
@@ -1153,14 +1156,14 @@ export default defineComponent({
       var update_id = 0;
       for (var item in this.allAvailableFolders.folders) {
         if (
-          this.allAvailableFolders.folders[item].path == this.updatedDocParent
+          this.allAvailableFolders.folders[item].path == this.createDocParent
         ) {
           update_id = this.allAvailableFolders.folders[item].id;
         }
       }
       var data = {
         current_folder_id: update_id,
-        name: this.updatedDocName,
+        name: this.createDocName,
         text: '',
       };
       api
