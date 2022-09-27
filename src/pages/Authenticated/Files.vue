@@ -348,6 +348,11 @@
               color="primary"
               name="home"
               class="full-width full-height"
+              @dragover="
+                (ev) => {
+                  ev.srcElement.parentNode.classList.add('active');
+                }
+              "
             />
           </q-item>
           <q-item class="text-primary q-ml-xs text-h4 text-weight-bold">
@@ -423,7 +428,6 @@
     <q-toolbar class="transparent q-mt-md">
       <q-input
         dense
-        outlined
         v-model="search"
         input-class="text-left"
         style="width: 30%"
@@ -440,17 +444,58 @@
         </template>
       </q-input>
       <q-space />
-
-      <q-toggle v-model="optnShowFolders" color="green" label="Show Folders" />
-      <q-toggle v-model="optnShowFiles" color="green" label="Show Files" />
-      <q-toggle
-        v-model="optnShowDocuments"
-        color="green"
-        label="Show Documents"
-      />
+      <q-btn-dropdown icon="settings" flat>
+        <q-card bordered style="min-width: 190px; max-width: 190px">
+          <q-toggle
+            v-model="optnShowFolders"
+            color="green"
+            label="Show Folders"
+            class="full-width"
+          />
+          <q-separator />
+          <q-toggle
+            v-model="optnShowFiles"
+            color="green"
+            label="Show Files"
+            class="full-width"
+          />
+          <q-separator />
+          <q-toggle
+            v-model="optnShowDocuments"
+            color="green"
+            label="Show Documents"
+            class="full-width"
+          />
+        </q-card>
+      </q-btn-dropdown>
     </q-toolbar>
-    <q-separator size="2px" color="primary" />
-    <div id="drop_zone" @drop.prevent="onDrop" @dragover.prevent>
+    <q-separator size="2px" color="primary" class="q-mt-sm" />
+    <div
+      id="drop_zone"
+      @drop.prevent="onDrop"
+      @dragover.prevent="
+        (ev) => {
+          if (ev.dataTransfer.items[0].kind == 'file') {
+            this.fileDraggedMain = true;
+          }
+        }
+      "
+      @dragenter.self="
+        (ev) => {
+          if (ev.dataTransfer.items[0].kind == 'file') {
+            this.fileDraggedMain = true;
+          }
+        }
+      "
+      @dragleave.prevent="
+        (ev) => {
+          if (ev.dataTransfer.items[0].kind == 'file') {
+            this.fileDraggedMain = false;
+          }
+        }
+      "
+      :class="fileDraggedMain ? 'bg-blue' : ''"
+    >
       <template
         v-for="folder in rawFolderContent.children.folders"
         :key="folder"
@@ -468,22 +513,35 @@
             v-droppable
             v-draggable="['folder', folder.id]"
             :class="folder.drag_over ? 'bg-blue' : ''"
-            @v-drag-enter="folder.drag_over = true"
+            @v-drag-enter="
+              (ev) => {
+                if (ev[1] != folder.id) {
+                  folder.drag_over = true;
+                }
+              }
+            "
             @v-drag-leave="folder.drag_over = false"
-            @v-drag-over="folder.drag_over = true"
+            @v-drag-over="
+              (ev) => {
+                if (ev[1] != folder.id) {
+                  folder.drag_over = true;
+                }
+              }
+            "
             @v-drag-drop="changeFolder($event, folder.id)"
           >
             <q-menu
+              style="pointer-events: none"
               anchor="center middle"
               self="center middle"
               v-model="folder.drag_over"
               >Add to folder: {{ folder.name }}</q-menu
             >
-            <q-item-section avatar top>
+            <q-item-section avatar top style="pointer-events: none">
               <q-avatar icon="folder" color="primary" text-color="white" />
             </q-item-section>
 
-            <q-item-section>
+            <q-item-section style="pointer-events: none">
               <q-item-label class="text-body1">{{ folder.name }} </q-item-label>
             </q-item-section>
             <q-item-section side>
@@ -657,7 +715,8 @@ import { useQuasar } from 'quasar';
 import { useSettingsStore } from 'stores/settings';
 import { api } from 'boot/axios';
 import VuePdfEmbed from 'vue-pdf-embed';
-import { draggable, droppable } from 'v-drag-drop';
+import { draggable } from '../../components/draggable.js';
+import { droppable } from '../../components/droppable.js';
 
 export default defineComponent({
   name: 'FilesView',
@@ -690,16 +749,54 @@ export default defineComponent({
       rawFolderContent: ref({
         name: 'root',
         path: 'root',
-        id: 0,
+        id: 30,
         children: {
-          private_files: [],
+          private_files: [
+            {
+              name: 'Untitled.png',
+              id: 56,
+              changed: '2022-09-26 06:51:04',
+            },
+            {
+              name: 'Addressen_fuer_netzwerkplan.odt',
+              id: 63,
+              changed: '2022-09-26 07:38:39',
+            },
+          ],
           public_files: [],
-          folders: [],
-          documents: [],
+          folders: [
+            {
+              name: 'Projekt',
+              id: 35,
+              path: 'root/Projekt',
+            },
+            {
+              name: 'test2',
+              id: 32,
+              path: 'root/test2',
+            },
+            {
+              name: 'testx',
+              id: 31,
+              path: 'root/testx',
+            },
+          ],
+          documents: [
+            {
+              name: 'test2',
+              id: 6,
+              changed: '2022-09-24 21:13:55',
+            },
+            {
+              name: 'dokument',
+              id: 7,
+              changed: '2022-09-23 10:29:34',
+            },
+          ],
         },
       }),
       // toolbar handlers
-      path_names: ref([]),
+      path_names: ref(['root', 'test', 'tester']),
       path_ids: ref([]),
       optnShowFolders: ref(true),
       optnShowFiles: ref(true),
@@ -765,27 +862,33 @@ export default defineComponent({
     },
   },
   methods: {
-    dragEnter(item) {
-      console.log(item);
+    test(a, b, c, d) {
+      console.log(a);
     },
+    onDragEnter(ev) {
+      [...ev.dataTransfer.items].forEach((item, i) => {
+        if (item.kind == 'file') {
+          this.fileDraggedMain = true;
+        }
+      });
+    },
+    onDragLeave(ev) {
+      [...ev.dataTransfer.items].forEach((item, i) => {
+        if (item.kind == 'file') {
+          this.fileDraggedMain = false;
+        }
+      });
+    },
+
     onDrop(ev) {
       console.log('File(s) dropped');
 
-      if (ev.dataTransfer.items) {
-        // Use DataTransferItemList interface to access the file(s)
-        [...ev.dataTransfer.items].forEach((item, i) => {
-          // If dropped items aren't files, reject them
-          if (item.kind === 'file') {
-            const file = item.getAsFile();
-            console.log(`… file[${i}].name = ${file.name}`);
-          }
-        });
-      } else {
-        // Use DataTransfer interface to access the file(s)
-        [...ev.dataTransfer.files].forEach((file, i) => {
-          console.log(`… file[${i}].name = ${file.name}`);
-        });
-      }
+      [...ev.dataTransfer.items].forEach((item, i) => {
+        if (item.kind === 'file') {
+          const file = item.getAsFile();
+          console.log(`… file[${i}].name = ${file.name}SSSSSS`);
+        }
+      });
     },
     showDOCUMENT() {
       console.log();

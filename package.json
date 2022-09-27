@@ -16,6 +16,7 @@
     "@ckeditor/ckeditor5-horizontal-line": "^35.1.0",
     "@ckeditor/ckeditor5-upload": "^35.1.0",
     "@ckeditor/ckeditor5-vue": "^4.0.1",
+    "@matrx/dragster": "^0.6.0",
     "@pdftron/webviewer": "^8.8.0",
     "@quasar/extras": "^1.0.0",
     "axios": "^0.21.1",
