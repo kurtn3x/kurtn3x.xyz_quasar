@@ -14,7 +14,7 @@ const droppable = {
       'dragenter',
       function (event) {
         event.preventDefault();
-        if (event.dataTransfer.items[0].type == 'text/plain') {
+        if (event.dataTransfer.items[0].kind == 'string') {
           if (vnode.props.onVDragEnter) {
             const { dragData } =
               Common.transferredData[Common.dragInProgressKey];
@@ -28,7 +28,7 @@ const droppable = {
     el.addEventListener(
       'dragover',
       function (event) {
-        if (event.dataTransfer.items[0].type == 'text/plain') {
+        if (event.dataTransfer.items[0].kind == 'string') {
           const { dragData } = Common.transferredData[Common.dragInProgressKey];
           const dropAllowed = isDropAllowed();
 
@@ -48,7 +48,7 @@ const droppable = {
       'dragleave',
       function (event) {
         event.preventDefault();
-        if (event.dataTransfer.items[0].type == 'text/plain') {
+        if (event.dataTransfer.items[0].kind == 'string') {
           if (vnode.props.onVDragLeave) {
             const { dragData } =
               Common.transferredData[Common.dragInProgressKey];
@@ -64,18 +64,19 @@ const droppable = {
       function (event) {
         event.stopPropagation();
         event.preventDefault();
+        if (event.dataTransfer.items[0].kind == 'string') {
+          const transferKey = event.dataTransfer.getData('text');
+          const { dragData } = Common.transferredData[transferKey];
 
-        const transferKey = event.dataTransfer.getData('text');
-        const { dragData } = Common.transferredData[transferKey];
-
-        Common.transferredData[transferKey].onDropCallback = function () {
-          if (vnode.props.onVDragLeave) {
-            vnode.props.onVDragLeave(dragData, true, event);
-          }
-          if (vnode.props.onVDragDrop) {
-            vnode.props.onVDragDrop(dragData, true, event);
-          }
-        };
+          Common.transferredData[transferKey].onDropCallback = function () {
+            if (vnode.props.onVDragLeave) {
+              vnode.props.onVDragLeave(dragData, true, event);
+            }
+            if (vnode.props.onVDragDrop) {
+              vnode.props.onVDragDrop(dragData, true, event);
+            }
+          };
+        }
       },
       false
     );

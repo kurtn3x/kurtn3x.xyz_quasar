@@ -13,7 +13,7 @@
         v-model="createDocName"
         label="Name"
         input-class="text-center"
-        class="text-primary q-ma-md"
+        class="text-primary text-body1 q-ma-md"
       />
       <q-select
         outlined
@@ -21,7 +21,7 @@
         :options="availParents"
         label="Parent Folder"
         class="q-ma-md"
-        input-class="text-center"
+        input-class="text-center text-body1"
       />
       <q-btn
         label="Create"
@@ -100,20 +100,20 @@
       updateItemType = '';
     "
   >
-    <q-toolbar>
-      <q-icon size="lg" name="article" v-if="updateItemType == 'document'" />
-      <q-icon size="lg" name="file_present" v-if="updateItemType == 'file'" />
-      <q-icon size="lg" name="folder" v-if="updateItemType == 'folder'" />
-      <a class="text-h5 text-weight-bold q-ml-md">Settings</a>
-      <q-space />
-      <q-btn
-        icon="close"
-        class="bg-red text-white"
-        flat
-        @click="updateItemDrawer = !updateItemDrawer"
-      />
-    </q-toolbar>
-    <q-card bordered flat>
+    <q-card bordered flat class="full-height">
+      <q-toolbar>
+        <q-icon size="lg" name="article" v-if="updateItemType == 'document'" />
+        <q-icon size="lg" name="file_present" v-if="updateItemType == 'file'" />
+        <q-icon size="lg" name="folder" v-if="updateItemType == 'folder'" />
+        <a class="text-h5 text-weight-bold q-ml-md">Settings</a>
+        <q-space />
+        <q-btn
+          icon="close"
+          class="bg-red text-white"
+          flat
+          @click="updateItemDrawer = !updateItemDrawer"
+        />
+      </q-toolbar>
       <div class="text-h5 q-mt-md text-center">
         {{ drawerItemName }}
       </div>
@@ -124,7 +124,7 @@
         v-model="updateItemName"
         label="Name"
         input-class="text-center"
-        class="text-primary q-ma-md"
+        class="text-primary q-ma-md text-body1"
       />
       <q-select
         dense
@@ -132,7 +132,7 @@
         v-model="updateItemNewParent"
         :options="availParents"
         label="Parent Folder"
-        class="q-ma-md"
+        class="q-ma-md text-body1"
       />
       <q-btn
         label="Preview"
@@ -145,8 +145,17 @@
         :loading="loading"
         stretch
         v-if="drawerItemName.includes('.pdf')"
-      >
-      </q-btn>
+      />
+      <q-btn
+        label="Open in Document Editor"
+        class="cursor-pointer full-width"
+        flat
+        :to="'doc/edit/' + updateItemId"
+        :loading="loading"
+        stretch
+        v-if="updateItemType == 'document'"
+      />
+
       <q-btn
         label="Update"
         class="cursor-pointer full-width bg-green text-white"
@@ -154,80 +163,41 @@
         @click="updateItem"
         :loading="loading"
       />
+      <div style="position: absolute; bottom: 0; right: 0" class="full-width">
+        <q-btn
+          v-if="updateItemType == 'folder'"
+          class="cursor-pointer full-width bg-red text-white"
+          flat
+          icon="delete"
+          @click.capture.stop="
+            this.folder_to_delete = updateItemId.id;
+            folder_delete_dialog = !folder_delete_dialog;
+          "
+          :loading="loading"
+          stretch
+        />
+        <q-btn
+          v-if="updateItemType == 'file'"
+          class="cursor-pointer full-width bg-red text-white"
+          flat
+          icon="delete"
+          @click.capture.stop="deleteItem(updateItemId, 'file')"
+          :loading="loading"
+          stretch
+        />
+        <q-btn
+          v-if="updateItemType == 'document'"
+          class="cursor-pointer full-width bg-red text-white"
+          flat
+          icon="delete"
+          @click.capture.stop="deleteItem(updateItemId, 'document')"
+          :loading="loading"
+          stretch
+        />
+      </div>
     </q-card>
   </q-drawer>
-  <!-- <q-dialog
-    v-model="updateItemDrawer"
-    @hide="
-      updateItemId = '';
-      updateItemName = '';
-      availParents = [];
-      updateItemNewParent = '';
-      allAvailableFolders = {};
-      updateItemType = '';
-    "
-    seamless
-    position="right"
-  >
-    <q-card class="full-height">
-      <q-toolbar>
-        <q-btn icon="close" class="text-red" flat v-close-popup />
-        <a class="text-h6">{{ updateItemType }}: {{ updateItemName }}</a>
-      </q-toolbar>
-      <q-separator size="4px" />
 
-      <q-input
-        dense
-        outlined
-        v-model="updateItemName"
-        label="Name"
-        input-class="text-center"
-        class="text-primary q-ma-md"
-      />
-      <q-select
-      outlined
-        v-model="updateItemNewParent"
-        :options="availParents"
-        label="Parent Folder"
-        class="q-ma-md"
-      />
-      <q-btn
-        label="Update"
-        class="cursor-pointer full-width text-green"
-        flat
-        @click="updateItem"
-        :loading="loading"
-      />
-    </q-card>
-  </q-dialog> -->
-
-  <q-dialog v-model="folder_delete_dialog">
-    <q-card bordered>
-      <q-card-section class="row items-center">
-        <span class="q-ml-sm"
-          >This action will delete all subfiles and subfolders contained in this
-          folder.</span
-        >
-      </q-card-section>
-
-      <q-card-actions align="right">
-        <q-btn
-          flat
-          label="Cancel"
-          color="red"
-          v-close-popup
-          @click="this.folder_to_delete = ''"
-        />
-        <q-btn
-          flat
-          label="Continue"
-          color="green"
-          v-close-popup
-          @click="deleteItem(this.folder_to_delete, 'folder')"
-        />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
   <q-dialog v-model="upload_file_dialog">
     <q-card style="min-width: 200px" bordered>
       <q-toolbar class="justify-center">
@@ -266,6 +236,7 @@
           input-class="text-center"
           :suffix="'.' + upload_file_types[index]"
           v-if="!upload_file_freeEdit"
+          class="text-body1"
         />
         <q-input
           dense
@@ -274,6 +245,7 @@
           :label="'File ' + index + ' Name'"
           input-class="text-center"
           v-if="upload_file_freeEdit"
+          class="text-body1"
         />
       </template>
       <q-btn
@@ -309,7 +281,7 @@
     <q-toolbar class="transparent q-mt-md q-mb-sm">
       <div class="row">
         <q-btn
-          v-if="this.rawFolderContent.name != 'root'"
+          v-if="this.rawFolderContent.name != 'Home'"
           icon="arrow_back"
           flat
           class="text-primary"
@@ -328,7 +300,7 @@
             @v-drag-leave="(e, x, y) => y.target.classList.remove('active')"
             @v-drag-drop="changeFolderToolbar($event, itemname)"
             v-droppable
-            v-if="itemname != 'root'"
+            v-if="itemname != 'Home'"
           >
             {{ itemname }}
           </q-item>
@@ -342,7 +314,7 @@
             @v-drag-leave="(e, x, y) => y.target.classList.remove('active')"
             @v-drag-drop="changeFolderToolbar($event, itemname)"
             v-droppable
-            v-if="itemname == 'root'"
+            v-if="itemname == 'Home'"
           >
             <q-icon
               color="primary"
@@ -353,76 +325,17 @@
                   ev.srcElement.parentNode.classList.add('active');
                 }
               "
+              @drop="
+                (ev) => {
+                  ev.srcElement.parentNode.classList.remove('active');
+                }
+              "
             />
           </q-item>
           <q-item class="text-primary q-ml-xs text-h4 text-weight-bold">
             <q-icon name="arrow_forward_ios" />
           </q-item>
         </template>
-        <q-btn icon="add" class="text-primary" size="md" outline>
-          <q-menu>
-            <q-card bordered>
-              <div>
-                <q-btn
-                  stretch
-                  flat
-                  icon="create_new_folder"
-                  label="New Folder"
-                  class="full-width"
-                >
-                  <q-menu anchor="center left" self="top right">
-                    <q-input
-                      dense
-                      outlined
-                      v-model="create_folder_name"
-                      label="New Folder Name"
-                      input-class="text-center"
-                      class="full-width text-primary"
-                    />
-                    <div class="row justify-center">
-                      <q-btn
-                        label="Create"
-                        class="cursor-pointer full-width bg-green"
-                        flat
-                        @click="createFolder"
-                        :loading="loading"
-                      />
-                    </div>
-                  </q-menu>
-                </q-btn>
-              </div>
-              <q-separator />
-              <div>
-                <q-btn
-                  stretch
-                  flat
-                  icon="file_upload"
-                  label="Upload File(s)"
-                  @click="
-                    upload_file_dialog = !upload_file_dialog;
-                    fetchAllAvailableFolders();
-                  "
-                  class="full-width"
-                />
-              </div>
-              <q-separator />
-              <div>
-                <q-btn
-                  stretch
-                  flat
-                  class="full-width"
-                  icon="note_add"
-                  label="New Document"
-                  @click="
-                    docCreateDialog = !docCreateDialog;
-                    createDocParent = rawFolderContent.path;
-                    fetchAllAvailableFolders();
-                  "
-                />
-              </div>
-            </q-card>
-          </q-menu>
-        </q-btn>
       </div>
     </q-toolbar>
     <q-toolbar class="transparent q-mt-md">
@@ -432,6 +345,7 @@
         input-class="text-left"
         style="width: 30%"
         label="Search"
+        class="text-body1"
       >
         <template v-slot:append>
           <q-icon v-if="search === ''" name="search" />
@@ -546,7 +460,7 @@
             </q-item-section>
             <q-item-section side>
               <q-btn
-                icon="edit"
+                icon="more_vert"
                 class="cursor-pointer full-width"
                 flat
                 @click.capture.stop="
@@ -557,19 +471,6 @@
                   updateItemNewParent = rawFolderContent.path;
                   drawerItemName = folder.name;
                   fetchAllAvailableFolders();
-                "
-                :loading="loading"
-                stretch
-              />
-            </q-item-section>
-            <q-item-section side>
-              <q-btn
-                class="cursor-pointer full-width text-red"
-                flat
-                icon="delete"
-                @click.capture.stop="
-                  this.folder_to_delete = folder.id;
-                  folder_delete_dialog = !folder_delete_dialog;
                 "
                 :loading="loading"
                 stretch
@@ -609,7 +510,7 @@
             </q-item-section>
             <q-item-section side>
               <q-btn
-                icon="edit"
+                icon="more_vert"
                 class="cursor-pointer full-width"
                 flat
                 @click.capture.stop="
@@ -621,16 +522,6 @@
                   drawerItemName = file.name;
                   fetchAllAvailableFolders();
                 "
-                :loading="loading"
-                stretch
-              />
-            </q-item-section>
-            <q-item-section side>
-              <q-btn
-                icon="delete"
-                class="cursor-pointer full-width text-red"
-                flat
-                @click.capture.stop="deleteItem(file.id, 'file')"
                 :loading="loading"
                 stretch
               />
@@ -675,7 +566,7 @@
                 :to="'doc/edit/' + document.id"
               /> -->
               <q-btn
-                icon="edit"
+                icon="more_vert"
                 class="cursor-pointer full-width"
                 flat
                 @click.capture.stop="
@@ -685,17 +576,8 @@
                   updateItemType = 'document';
                   updateItemNewParent = rawFolderContent.path;
                   drawerItemName = document.name;
+                  fetchAllAvailableFolders();
                 "
-                :loading="loading"
-                stretch
-              />
-            </q-item-section>
-            <q-item-section side>
-              <q-btn
-                icon="delete"
-                class="cursor-pointer full-width text-red"
-                flat
-                @click.capture.stop="deleteItem(document.id, 'document')"
                 :loading="loading"
                 stretch
               />
@@ -705,6 +587,55 @@
         </div>
       </template>
     </div>
+    <q-page-sticky position="bottom-right" :offset="[18, 18]">
+      <q-fab color="primary" text-color="white" icon="add" direction="left">
+        <q-fab-action
+          color="primary"
+          text-color="white"
+          @click="
+            upload_file_dialog = !upload_file_dialog;
+            fetchAllAvailableFolders();
+          "
+          icon="file_upload"
+          label="Upload Files"
+        />
+        <q-fab-action
+          color="primary"
+          text-color="white"
+          @click="
+            docCreateDialog = !docCreateDialog;
+            createDocParent = rawFolderContent.path;
+            fetchAllAvailableFolders();
+          "
+          icon="note_add"
+          label="New Document"
+        />
+        <q-fab-action
+          color="primary"
+          text-color="white"
+          icon="create_new_folder"
+          label="New Folder"
+        >
+          <q-menu anchor="center right" self="center middle">
+            <q-card bordered>
+              <q-input
+                v-model="create_folder_name"
+                label="New Folder Name"
+                input-class="text-center"
+                class="full-width text-primary text-body1"
+              />
+              <q-btn
+                label="Create"
+                class="cursor-pointer full-width bg-green"
+                flat
+                @click="createFolder"
+                :loading="loading"
+              />
+            </q-card>
+          </q-menu>
+        </q-fab-action>
+      </q-fab>
+    </q-page-sticky>
   </q-page>
 </template>
 
@@ -747,56 +678,41 @@ export default defineComponent({
 
       // raw content including children of current folder
       rawFolderContent: ref({
-        name: 'root',
-        path: 'root',
-        id: 30,
+        name: 'Home',
+        path: 'Home',
+        id: 39,
         children: {
           private_files: [
             {
-              name: 'Untitled.png',
-              id: 56,
-              changed: '2022-09-26 06:51:04',
-            },
-            {
-              name: 'Addressen_fuer_netzwerkplan.odt',
-              id: 63,
-              changed: '2022-09-26 07:38:39',
+              name: 'img_avatar.png',
+              id: 67,
+              changed: '2022-09-28 09:18:08',
             },
           ],
           public_files: [],
           folders: [
             {
-              name: 'Projekt',
-              id: 35,
-              path: 'root/Projekt',
+              name: 'Hi',
+              id: 40,
+              path: 'Home/Hi',
             },
             {
-              name: 'test2',
-              id: 32,
-              path: 'root/test2',
-            },
-            {
-              name: 'testx',
-              id: 31,
-              path: 'root/testx',
+              name: 'Test2',
+              id: 41,
+              path: 'Home/Test2',
             },
           ],
           documents: [
             {
-              name: 'test2',
-              id: 6,
-              changed: '2022-09-24 21:13:55',
-            },
-            {
-              name: 'dokument',
-              id: 7,
-              changed: '2022-09-23 10:29:34',
+              name: 'TestDoc',
+              id: 10,
+              changed: '2022-09-28 09:18:44',
             },
           ],
         },
       }),
       // toolbar handlers
-      path_names: ref(['root', 'test', 'tester']),
+      path_names: ref([]),
       path_ids: ref([]),
       optnShowFolders: ref(true),
       optnShowFiles: ref(true),
@@ -838,10 +754,11 @@ export default defineComponent({
       docCreateDialog: ref(false),
 
       fileDraggedMain: ref(false),
+      itemClickable: ref(true),
     };
   },
   created() {
-    this.getRootFolder();
+    this.getHomeFolder();
   },
   computed: {
     filesInUploadField() {
@@ -881,12 +798,85 @@ export default defineComponent({
     },
 
     onDrop(ev) {
-      console.log('File(s) dropped');
+      this.fileDraggedMain = false;
+      var files_state = 0;
+      const length = ev.dataTransfer.items.length;
+      const notif = this.q.notify({
+        type: 'positive',
+        group: false,
+        timeout: 0,
+        spinner: true,
+        message: 'Uploading file...',
+        caption: files_state + ' / ' + length,
+      });
+      console.log(ev);
+      let config = {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': this.q.cookies.get('csrftoken'),
+          'Content-Type': 'multipart/form-data',
+        },
+      };
 
       [...ev.dataTransfer.items].forEach((item, i) => {
         if (item.kind === 'file') {
           const file = item.getAsFile();
-          console.log(`… file[${i}].name = ${file.name}SSSSSS`);
+          let form_data = new FormData();
+          form_data.append('filename', file.name);
+          form_data.append('current_folder_id', this.rawFolderContent.id);
+          form_data.append('file', file);
+          api
+            .post('/files/create/file', form_data, config)
+            .then((response) => {
+              if (response.status == 200) {
+                files_state += 1;
+                this.refreshFolder();
+                notif({
+                  caption: files_state + ' / ' + length,
+                });
+                if (files_state == length) {
+                  notif({
+                    type: 'positive',
+                    icon: 'done', // we add an icon
+                    spinner: false, // we reset the spinner setting so the icon can be displayed
+                    message: 'Uploading done!',
+                    timeout: 2500, // we will timeout it in 2.5s
+                  });
+                }
+              } else {
+                files_state += 1;
+                notif({
+                  type: 'negative',
+                  caption: files_state + ' / ' + length,
+                });
+                if (files_state == length) {
+                  notif({
+                    type: 'negative',
+                    icon: 'done', // we add an icon
+                    spinner: false, // we reset the spinner setting so the icon can be displayed
+                    message: 'Something went wrong',
+                    timeout: 2500, // we will timeout it in 2.5s
+                  });
+                }
+              }
+            })
+            .catch((error) => {
+              files_state += 1;
+              notif({
+                type: 'negative',
+                caption: files_state + ' / ' + length,
+              });
+              if (files_state == length) {
+                notif({
+                  type: 'negative',
+                  icon: 'done', // we add an icon
+                  spinner: false, // we reset the spinner setting so the icon can be displayed
+                  message: 'Something went wrong.',
+                  timeout: 2500, // we will timeout it in 2.5s
+                });
+              }
+              console.log(error);
+            });
         }
       });
     },
@@ -1206,11 +1196,11 @@ export default defineComponent({
         });
     },
 
-    // get root folder content on initial page load
-    getRootFolder() {
+    // get Home folder content on initial page load
+    getHomeFolder() {
       this.loading = true;
       api
-        .get('/files/list_root', this.axios_config)
+        .get('/files/list_home', this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.rawFolderContent = response.data;
@@ -1290,7 +1280,10 @@ export default defineComponent({
     },
 
     createFolder() {
-      if (this.create_folder_name != 'root') {
+      if (
+        this.create_folder_name != 'Home' &&
+        this.create_folder_name != 'home'
+      ) {
         this.loading = true;
         var data = {
           current_folder_id: this.rawFolderContent.id,
@@ -1317,7 +1310,7 @@ export default defineComponent({
             console.log(error);
           });
       } else {
-        this.notify('negative', 'you cant name your folder root.');
+        this.notify('negative', 'you cant name your folder Home.');
       }
     },
 
