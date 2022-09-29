@@ -33,6 +33,23 @@
       />
     </q-card>
   </q-dialog>
+  <q-dialog v-model="folder_delete_dialog" @hide="availParents = []">
+    <q-card bordered>
+      <div class="text-body1 text-center q-ma-md">
+        This will delete the folder and all its subfolders and files.
+      </div>
+      <q-card-actions align="right">
+        <q-btn v-close-popup flat class="bg-red text-light">Cancel</q-btn>
+        <q-btn
+          v-close-popup
+          flat
+          class="bg-green text-light"
+          @click="deleteItem(folder_to_delete, 'folder')"
+          >Continue</q-btn
+        >
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 
   <q-dialog
     seamless
@@ -339,13 +356,19 @@
       </div>
     </q-toolbar>
     <q-toolbar class="transparent q-mt-md">
+      <q-checkbox
+        v-model="allSelected"
+        color="green"
+        class="q-ml-xs"
+        @click="selectAllItems"
+      />
       <q-input
         dense
         v-model="search"
         input-class="text-left"
         style="width: 30%"
         label="Search"
-        class="text-body1"
+        class="text-body1 q-ml-lg"
       >
         <template v-slot:append>
           <q-icon v-if="search === ''" name="search" />
@@ -357,7 +380,58 @@
           />
         </template>
       </q-input>
+
       <q-space />
+      <div
+        v-if="
+          selectedFolders.length +
+            selectedFiles.length +
+            selectedDocuments.length >
+          0
+        "
+        class="text-h6"
+      >
+        <q-btn-dropdown flat icon="more_horiz">
+          <q-btn
+            label="Move to..."
+            class="full-width bg-blue text-light"
+            @click="
+              fetchAllAvailableFolders();
+              selectionNewParent = this.rawFolderContent.path;
+            "
+          >
+            <q-menu @hide="availParents = []">
+              <q-select
+                outlined
+                dense
+                v-model="selectionNewParent"
+                :options="availParents"
+                label="Parent Folder"
+                input-class="text-center text-body1"
+              />
+              <q-btn
+                @click="moveSelection"
+                label="Move"
+                class="full-width bg-blue"
+              />
+            </q-menu>
+          </q-btn>
+          <q-btn
+            label="Delete"
+            class="full-width bg-red text-light"
+            @click="deleteSelection"
+          />
+        </q-btn-dropdown>
+
+        <a class="q-mr-lg">
+          {{
+            selectedFolders.length +
+            selectedFiles.length +
+            selectedDocuments.length
+          }}
+          Item(s) selected
+        </a>
+      </div>
       <q-btn-dropdown icon="settings" flat>
         <q-card bordered style="min-width: 190px; max-width: 190px">
           <q-toggle
@@ -384,180 +458,210 @@
       </q-btn-dropdown>
     </q-toolbar>
     <q-separator size="2px" color="primary" class="q-mt-sm" />
-    <div
-      id="drop_zone"
-      @drop.prevent="onDrop"
-      @dragover.prevent="
-        (ev) => {
-          if (ev.dataTransfer.items[0].kind == 'file') {
-            this.fileDraggedMain = true;
+    <q-scroll-area class="col">
+      <div
+        id="drop_zone"
+        @drop.prevent="onDrop"
+        @dragover.prevent="
+          (ev) => {
+            if (ev.dataTransfer.items[0].kind == 'file') {
+              this.fileDraggedMain = true;
+            }
           }
-        }
-      "
-      @dragenter.self="
-        (ev) => {
-          if (ev.dataTransfer.items[0].kind == 'file') {
-            this.fileDraggedMain = true;
+        "
+        @dragenter.self="
+          (ev) => {
+            if (ev.dataTransfer.items[0].kind == 'file') {
+              this.fileDraggedMain = true;
+            }
           }
-        }
-      "
-      @dragleave.prevent="
-        (ev) => {
-          if (ev.dataTransfer.items[0].kind == 'file') {
-            this.fileDraggedMain = false;
+        "
+        @dragleave.prevent="
+          (ev) => {
+            if (ev.dataTransfer.items[0].kind == 'file') {
+              this.fileDraggedMain = false;
+            }
           }
-        }
-      "
-      :class="fileDraggedMain ? 'bg-blue' : ''"
-    >
-      <template
-        v-for="folder in rawFolderContent.children.folders"
-        :key="folder"
+        "
+        :class="fileDraggedMain ? 'bg-blue' : ''"
       >
-        <div
-          v-if="
-            (optnShowFolders && search == '') ||
-            (optnShowFolders && folder.name.includes(search))
-          "
+        <template
+          v-for="folder in rawFolderContent.children.folders"
+          :key="folder"
         >
-          <q-item
-            clickable
-            @click="getFolderId(folder.id)"
-            class="full-width"
-            v-droppable
-            v-draggable="['folder', folder.id]"
-            :class="folder.drag_over ? 'bg-blue' : ''"
-            @v-drag-enter="
-              (ev) => {
-                if (ev[1] != folder.id) {
-                  folder.drag_over = true;
-                }
-              }
+          <div
+            v-if="
+              (optnShowFolders && search == '') ||
+              (optnShowFolders && folder.name.includes(search))
             "
-            @v-drag-leave="folder.drag_over = false"
-            @v-drag-over="
-              (ev) => {
-                if (ev[1] != folder.id) {
-                  folder.drag_over = true;
-                }
-              }
-            "
-            @v-drag-drop="changeFolder($event, folder.id)"
           >
-            <q-menu
-              style="pointer-events: none"
-              anchor="center middle"
-              self="center middle"
-              v-model="folder.drag_over"
-              >Add to folder: {{ folder.name }}</q-menu
+            <q-item
+              clickable
+              @click="getFolderId(folder.id)"
+              class="full-width"
+              v-droppable
+              v-draggable="['folder', folder.id]"
+              :class="folder.drag_over ? 'bg-blue' : ''"
+              @v-drag-enter="
+                (ev) => {
+                  if (ev[1] != folder.id) {
+                    folder.drag_over = true;
+                  }
+                }
+              "
+              @v-drag-leave="folder.drag_over = false"
+              @v-drag-over="
+                (ev) => {
+                  if (ev[1] != folder.id) {
+                    folder.drag_over = true;
+                  }
+                }
+              "
+              @v-drag-drop="changeFolder($event, folder.id)"
             >
-            <q-item-section avatar top style="pointer-events: none">
-              <q-avatar icon="folder" color="primary" text-color="white" />
-            </q-item-section>
+              <q-menu
+                style="pointer-events: none"
+                anchor="center middle"
+                self="center middle"
+                v-model="folder.drag_over"
+                >Add to folder: {{ folder.name }}</q-menu
+              >
+              <q-item-section avatar>
+                <q-checkbox
+                  v-model="selectedFolders"
+                  :val="folder.id"
+                  color="green"
+                />
+              </q-item-section>
+              <q-item-section avatar top style="pointer-events: none">
+                <q-avatar icon="folder" color="primary" text-color="white" />
+              </q-item-section>
 
-            <q-item-section style="pointer-events: none">
-              <q-item-label class="text-body1">{{ folder.name }} </q-item-label>
-            </q-item-section>
-            <q-item-section side>
-              <q-btn
-                icon="more_vert"
-                class="cursor-pointer full-width"
-                flat
-                @click.capture.stop="
-                  updateItemDrawer = true;
-                  updateItemId = folder.id;
-                  updateItemName = folder.name;
-                  updateItemType = 'folder';
-                  updateItemNewParent = rawFolderContent.path;
-                  drawerItemName = folder.name;
-                  fetchAllAvailableFolders();
-                "
-                :loading="loading"
-                stretch
-              />
-            </q-item-section>
-          </q-item>
-        </div>
+              <q-item-section style="pointer-events: none">
+                <q-item-label class="text-body1"
+                  >{{ folder.name }}
+                </q-item-label>
+              </q-item-section>
+              <q-item-section side>
+                <q-btn
+                  icon="more_vert"
+                  class="cursor-pointer full-width"
+                  flat
+                  @click.capture.stop="
+                    updateItemDrawer = true;
+                    updateItemId = folder.id;
+                    updateItemName = folder.name;
+                    updateItemType = 'folder';
+                    updateItemNewParent = rawFolderContent.path;
+                    drawerItemName = folder.name;
+                    fetchAllAvailableFolders();
+                  "
+                  :loading="loading"
+                  stretch
+                />
+              </q-item-section>
+            </q-item>
+          </div>
 
-        <q-separator />
-      </template>
-      <template
-        v-for="file in rawFolderContent.children.private_files"
-        :key="file"
-      >
-        <div
-          v-if="
-            (optnShowFiles && search == '') ||
-            (optnShowFiles && file.name.includes(search))
-          "
-        >
-          <q-item
-            clickable
-            class="full-width"
-            v-draggable="['file', file.id]"
-            @click="openInNewTab(file.id)"
-          >
-            <q-item-section avatar top>
-              <q-avatar
-                icon="file_present"
-                color="primary"
-                text-color="white"
-              />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label lines="1">{{ file.name }}</q-item-label>
-              <q-item-label caption lines="1">{{ file.changed }}</q-item-label>
-            </q-item-section>
-            <q-item-section side>
-              <q-btn
-                icon="more_vert"
-                class="cursor-pointer full-width"
-                flat
-                @click.capture.stop="
-                  updateItemDrawer = true;
-                  updateItemId = file.id;
-                  updateItemName = file.name;
-                  updateItemType = 'file';
-                  updateItemNewParent = rawFolderContent.path;
-                  drawerItemName = file.name;
-                  fetchAllAvailableFolders();
-                "
-                :loading="loading"
-                stretch
-              />
-            </q-item-section>
-          </q-item>
           <q-separator />
-        </div>
-      </template>
-      <!-- DOCUMENTS -->
-      <template
-        v-for="document in rawFolderContent.children.documents"
-        :key="document"
-      >
-        <div
-          v-if="
-            (optnShowDocuments && search == '') ||
-            (optnShowDocuments && document.name.includes(search))
-          "
+        </template>
+        <template
+          v-for="file in rawFolderContent.children.private_files"
+          :key="file"
         >
-          <q-item
-            clickable
-            @click="showDOCUMENT"
-            class="full-width"
-            v-draggable="['document', document.id]"
+          <div
+            v-if="
+              (optnShowFiles && search == '') ||
+              (optnShowFiles && file.name.includes(search))
+            "
           >
-            <q-item-section avatar top>
-              <q-avatar icon="article" color="light-blue" text-color="white" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label lines="1">{{ document.name }}</q-item-label>
-              <q-item-label caption lines="1">{{
-                document.changed
-              }}</q-item-label>
-            </q-item-section>
-            <q-item-section side>
-              <!-- <q-btn
+            <q-item
+              clickable
+              class="full-width"
+              v-draggable="['file', file.id]"
+              @click="openInNewTab(file.id)"
+            >
+              <q-item-section avatar>
+                <q-checkbox
+                  v-model="selectedFiles"
+                  :val="file.id"
+                  color="green"
+                />
+              </q-item-section>
+              <q-item-section avatar top>
+                <q-avatar
+                  icon="file_present"
+                  color="primary"
+                  text-color="white"
+                />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label lines="1">{{ file.name }}</q-item-label>
+                <q-item-label caption lines="1">{{
+                  file.changed
+                }}</q-item-label>
+              </q-item-section>
+              <q-item-section side>
+                <q-btn
+                  icon="more_vert"
+                  class="cursor-pointer full-width"
+                  flat
+                  @click.capture.stop="
+                    updateItemDrawer = true;
+                    updateItemId = file.id;
+                    updateItemName = file.name;
+                    updateItemType = 'file';
+                    updateItemNewParent = rawFolderContent.path;
+                    drawerItemName = file.name;
+                    fetchAllAvailableFolders();
+                  "
+                  :loading="loading"
+                  stretch
+                />
+              </q-item-section>
+            </q-item>
+            <q-separator />
+          </div>
+        </template>
+        <!-- DOCUMENTS -->
+        <template
+          v-for="document in rawFolderContent.children.documents"
+          :key="document"
+        >
+          <div
+            v-if="
+              (optnShowDocuments && search == '') ||
+              (optnShowDocuments && document.name.includes(search))
+            "
+          >
+            <q-item
+              clickable
+              @click="showDOCUMENT"
+              class="full-width"
+              v-draggable="['document', document.id]"
+            >
+              <q-item-section avatar>
+                <q-checkbox
+                  v-model="selectedDocuments"
+                  :val="document.id"
+                  color="green"
+                />
+              </q-item-section>
+              <q-item-section avatar top>
+                <q-avatar
+                  icon="article"
+                  color="light-blue"
+                  text-color="white"
+                />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label lines="1">{{ document.name }}</q-item-label>
+                <q-item-label caption lines="1">{{
+                  document.changed
+                }}</q-item-label>
+              </q-item-section>
+              <q-item-section side>
+                <!-- <q-btn
                 icon="edit"
                 class="cursor-pointer full-width"
                 flat
@@ -565,28 +669,30 @@
                 stretch
                 :to="'doc/edit/' + document.id"
               /> -->
-              <q-btn
-                icon="more_vert"
-                class="cursor-pointer full-width"
-                flat
-                @click.capture.stop="
-                  updateItemDrawer = true;
-                  updateItemId = document.id;
-                  updateItemName = document.name;
-                  updateItemType = 'document';
-                  updateItemNewParent = rawFolderContent.path;
-                  drawerItemName = document.name;
-                  fetchAllAvailableFolders();
-                "
-                :loading="loading"
-                stretch
-              />
-            </q-item-section>
-          </q-item>
-          <q-separator />
-        </div>
-      </template>
-    </div>
+                <q-btn
+                  icon="more_vert"
+                  class="cursor-pointer full-width"
+                  flat
+                  @click.capture.stop="
+                    updateItemDrawer = true;
+                    updateItemId = document.id;
+                    updateItemName = document.name;
+                    updateItemType = 'document';
+                    updateItemNewParent = rawFolderContent.path;
+                    drawerItemName = document.name;
+                    fetchAllAvailableFolders();
+                  "
+                  :loading="loading"
+                  stretch
+                />
+              </q-item-section>
+            </q-item>
+            <q-separator />
+          </div>
+        </template>
+      </div>
+    </q-scroll-area>
+
     <q-page-sticky position="bottom-right" :offset="[18, 18]">
       <q-fab color="primary" text-color="white" icon="add" direction="left">
         <q-fab-action
@@ -684,6 +790,41 @@ export default defineComponent({
         children: {
           private_files: [
             {
+              name: 'sky.jpg',
+              id: 74,
+              changed: '2022-09-28 15:34:41',
+            },
+            {
+              name: 'ezgif-5-ae46088894.gif',
+              id: 73,
+              changed: '2022-09-28 15:34:41',
+            },
+            {
+              name: 'favicon.gif',
+              id: 72,
+              changed: '2022-09-28 15:34:40',
+            },
+            {
+              name: 'ee17e599efdd2c010908ac31362d6458.ico.png',
+              id: 71,
+              changed: '2022-09-28 15:34:40',
+            },
+            {
+              name: 'favicon.ico',
+              id: 70,
+              changed: '2022-09-28 15:34:40',
+            },
+            {
+              name: 'App.vue',
+              id: 69,
+              changed: '2022-09-28 15:34:40',
+            },
+            {
+              name: 'main.js',
+              id: 68,
+              changed: '2022-09-28 15:34:39',
+            },
+            {
               name: 'img_avatar.png',
               id: 67,
               changed: '2022-09-28 09:18:08',
@@ -755,6 +896,12 @@ export default defineComponent({
 
       fileDraggedMain: ref(false),
       itemClickable: ref(true),
+
+      selectedFolders: ref([]),
+      selectedFiles: ref([]),
+      selectedDocuments: ref([]),
+      allSelected: ref(false),
+      selectionNewParent: ref(''),
     };
   },
   created() {
@@ -779,8 +926,59 @@ export default defineComponent({
     },
   },
   methods: {
-    test(a, b, c, d) {
-      console.log(a);
+    deleteSelection() {
+      for (var folder_id of this.selectedFolders) {
+        this.deleteItem(folder_id, 'folder');
+      }
+      for (var file_id of this.selectedFiles) {
+        this.deleteItem(file_id, 'file');
+      }
+      for (var document_id of this.selectedDocuments) {
+        this.deleteItem(document_id, 'document');
+      }
+      this.selectedFolders = [];
+      this.selectedFiles = [];
+      this.selectedDocuments = [];
+      this.allSelected = False;
+    },
+    moveSelection() {
+      for (var folder_id of this.selectedFolders) {
+        this.updateItemParent(this.selectionNewParent, folder_id, 'folder');
+      }
+      for (var file_id of this.selectedFiles) {
+        this.updateItemParent(this.selectionNewParent, file_id, 'file');
+      }
+      for (var document_id of this.selectedDocuments) {
+        this.updateItemParent(this.selectionNewParent, document_id, 'document');
+      }
+      this.selectedFolders = [];
+      this.selectedFiles = [];
+      this.selectedDocuments = [];
+      this.allSelected = False;
+    },
+    selectAllItems() {
+      if (this.allSelected == true) {
+        for (var folder of this.rawFolderContent.children.folders) {
+          if (!this.selectedFolders.includes(folder.id)) {
+            this.selectedFolders.push(folder.id);
+          }
+        }
+        for (var file of this.rawFolderContent.children.private_files) {
+          if (!this.selectedFiles.includes(file.id)) {
+            this.selectedFiles.push(file.id);
+          }
+        }
+        for (var document of this.rawFolderContent.children.documents) {
+          if (!this.selectedDocuments.includes(document.id)) {
+            this.selectedDocuments.push(document.id);
+          }
+        }
+        console.log(this.selectedFiles);
+      } else {
+        this.selectedFolders = [];
+        this.selectedFiles = [];
+        this.selectedDocuments = [];
+      }
     },
     onDragEnter(ev) {
       [...ev.dataTransfer.items].forEach((item, i) => {
@@ -799,85 +997,182 @@ export default defineComponent({
 
     onDrop(ev) {
       this.fileDraggedMain = false;
-      var files_state = 0;
-      const length = ev.dataTransfer.items.length;
-      const notif = this.q.notify({
-        type: 'positive',
-        group: false,
-        timeout: 0,
-        spinner: true,
-        message: 'Uploading file...',
-        caption: files_state + ' / ' + length,
-      });
-      console.log(ev);
-      let config = {
-        withCredentials: true,
-        headers: {
-          'X-CSRFToken': this.q.cookies.get('csrftoken'),
-          'Content-Type': 'multipart/form-data',
-        },
-      };
+      if (ev.dataTransfer.items[0].kind != 'string') {
+        var errors = [];
+        var files_state = 0;
+        var succ_files = 0;
+        const length = ev.dataTransfer.items.length;
+        const notif = this.q.notify({
+          type: 'positive',
+          group: false,
+          timeout: 0,
+          spinner: true,
+          message: 'Uploading file...',
+          caption: files_state + ' / ' + length,
+        });
 
-      [...ev.dataTransfer.items].forEach((item, i) => {
-        if (item.kind === 'file') {
-          const file = item.getAsFile();
-          let form_data = new FormData();
-          form_data.append('filename', file.name);
-          form_data.append('current_folder_id', this.rawFolderContent.id);
-          form_data.append('file', file);
-          api
-            .post('/files/create/file', form_data, config)
-            .then((response) => {
-              if (response.status == 200) {
-                files_state += 1;
-                this.refreshFolder();
-                notif({
-                  caption: files_state + ' / ' + length,
-                });
-                if (files_state == length) {
-                  notif({
-                    type: 'positive',
-                    icon: 'done', // we add an icon
-                    spinner: false, // we reset the spinner setting so the icon can be displayed
-                    message: 'Uploading done!',
-                    timeout: 2500, // we will timeout it in 2.5s
+        let config = {
+          withCredentials: true,
+          headers: {
+            'X-CSRFToken': this.q.cookies.get('csrftoken'),
+            'Content-Type': 'multipart/form-data',
+          },
+        };
+
+        [...ev.dataTransfer.items].forEach((item, i) => {
+          if (item.kind === 'file') {
+            const file = item.getAsFile();
+            // check if its a file
+            this.isThisAFile(file)
+              .then((validFile) => {
+                let form_data = new FormData();
+                form_data.append('filename', validFile.name);
+                form_data.append('current_folder_id', this.rawFolderContent.id);
+                form_data.append('file', validFile);
+                api
+                  .post('/files/create/file', form_data, config)
+                  .then((response) => {
+                    if (response.status == 200) {
+                      succ_files += 1;
+                      files_state += 1;
+                      this.refreshFolder();
+                      notif({
+                        caption: files_state + ' / ' + length,
+                      });
+                      if (files_state == length) {
+                        if (errors.length == 0) {
+                          notif({
+                            type: 'positive',
+                            icon: 'done', // we add an icon
+                            spinner: false, // we reset the spinner setting so the icon can be displayed
+                            message:
+                              'Uploaded ' +
+                              succ_files +
+                              '/' +
+                              length +
+                              ' files!',
+                            timeout: 2500, // we will timeout it in 2.5s
+                          });
+                        } else {
+                          var message =
+                            'Uploaded ' +
+                            succ_files +
+                            '/' +
+                            length +
+                            " Files, following files couldn't be uploaded: ";
+                          for (var err_file of errors) {
+                            message += err_file + ', ';
+                          }
+                          notif({
+                            type: 'negative',
+                            icon: 'error', // we add an icon
+                            spinner: false, // we reset the spinner setting so the icon can be displayed
+                            message: message,
+                            timeout: 4000, // we will timeout it in 2.5s
+                            caption: '',
+                          });
+                        }
+                      }
+                    } else {
+                      files_state += 1;
+                      notif({
+                        type: 'negative',
+                        caption: files_state + ' / ' + length,
+                      });
+                      errors.push(file.name);
+                      if (files_state == length) {
+                        var message =
+                          'Uploaded ' +
+                          succ_files +
+                          '/' +
+                          length +
+                          " Files, following files couldn't be uploaded: ";
+                        for (var err_file of errors) {
+                          message += err_file + ', ';
+                        }
+                        notif({
+                          type: 'negative',
+                          icon: 'error', // we add an icon
+                          spinner: false, // we reset the spinner setting so the icon can be displayed
+                          message: message,
+                          timeout: 4000, // we will timeout it in 2.5s
+                          caption: '',
+                        });
+                      }
+                    }
+                  })
+                  .catch((error) => {
+                    files_state += 1;
+                    errors.push(file.name);
+                    notif({
+                      type: 'negative',
+                      caption: files_state + ' / ' + length,
+                    });
+                    if (files_state == length) {
+                      var message =
+                        'Uploaded ' +
+                        succ_files +
+                        '/' +
+                        length +
+                        " Files, following files couldn't be uploaded: ";
+                      for (var err_file of errors) {
+                        message += err_file + ', ';
+                      }
+                      notif({
+                        type: 'negative',
+                        icon: 'error', // we add an icon
+                        spinner: false, // we reset the spinner setting so the icon can be displayed
+                        message: message,
+                        timeout: 4000, // we will timeout it in 2.5s
+                        caption: '',
+                      });
+                    }
                   });
-                }
-              } else {
+              })
+              .catch((error) => {
                 files_state += 1;
-                notif({
-                  type: 'negative',
-                  caption: files_state + ' / ' + length,
-                });
+                errors.push(file.name);
                 if (files_state == length) {
+                  var message =
+                    'Uploaded ' +
+                    succ_files +
+                    '/' +
+                    length +
+                    " Files, following files couldn't be uploaded: ";
+                  for (var err_file of errors) {
+                    message += err_file + ', ';
+                  }
                   notif({
                     type: 'negative',
-                    icon: 'done', // we add an icon
+                    icon: 'error', // we add an icon
                     spinner: false, // we reset the spinner setting so the icon can be displayed
-                    message: 'Something went wrong',
-                    timeout: 2500, // we will timeout it in 2.5s
+                    message: message,
+                    timeout: 4000, // we will timeout it in 2.5s
+                    caption: '',
                   });
                 }
-              }
-            })
-            .catch((error) => {
-              files_state += 1;
-              notif({
-                type: 'negative',
-                caption: files_state + ' / ' + length,
               });
-              if (files_state == length) {
-                notif({
-                  type: 'negative',
-                  icon: 'done', // we add an icon
-                  spinner: false, // we reset the spinner setting so the icon can be displayed
-                  message: 'Something went wrong.',
-                  timeout: 2500, // we will timeout it in 2.5s
-                });
-              }
-              console.log(error);
-            });
+          }
+        });
+      }
+    },
+    isThisAFile(maybeFile) {
+      return new Promise(function (resolve, reject) {
+        if (maybeFile.type !== '') {
+          return resolve(maybeFile);
         }
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (
+            reader.error &&
+            (reader.error.name === 'NotFoundError' ||
+              reader.error.name === 'NotReadableError')
+          ) {
+            return reject(reader.error.name);
+          }
+          resolve(maybeFile);
+        };
+        reader.readAsBinaryString(maybeFile);
       });
     },
     showDOCUMENT() {
@@ -895,6 +1190,11 @@ export default defineComponent({
 
             this.path_names.pop();
             this.path_ids.pop();
+            this.selectedFolders = [];
+            this.selectedFiles = [];
+            this.selectedDocuments = [];
+            this.allSelected = False;
+
             // this.path_names.push(response.data.name);
             // this.path_ids.push(response.data.id);
             this.loading = false;
@@ -935,6 +1235,10 @@ export default defineComponent({
               this.notify('positive', 'Updated');
               this.refreshFolder();
               this.loading = false;
+              this.selectedFolders = [];
+              this.selectedFiles = [];
+              this.selectedDocuments = [];
+              this.allSelected = False;
             } else {
               this.notify('negative', '' + response.data.error);
               this.loading = false;
@@ -965,6 +1269,10 @@ export default defineComponent({
               this.notify('positive', 'Updated');
               this.refreshFolder();
               this.loading = false;
+              this.selectedFolders = [];
+              this.selectedFiles = [];
+              this.selectedDocuments = [];
+              this.allSelected = False;
             } else {
               this.notify('negative', '' + response.data.error);
               this.loading = false;
@@ -978,16 +1286,46 @@ export default defineComponent({
       }
     },
 
+    updateItemParent(id, new_parent_path, itemtype) {
+      this.loading = true;
+      var update_id = 0;
+      for (var item of this.allAvailableFolders.folders) {
+        if (item.path == new_parent_path) {
+          update_id = item.id;
+        }
+      }
+      var data = {
+        item_id: id,
+        new_parent_id: update_id,
+      };
+      api
+        .put('/files/update/' + itemtype, data, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.notify('positive', 'Updated');
+            this.refreshFolder();
+            this.loading = false;
+            this.updateItemDrawer = false;
+            this.availParents = [];
+          } else {
+            this.notify('negative', '' + response.data.error);
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'API ERROR :/');
+          this.loading = false;
+          console.log(error);
+        });
+    },
+
     // update the configuration (name / parent) of a doc, folder or file
     updateItem() {
       this.loading = true;
       var update_id = 0;
-      for (var item in this.allAvailableFolders.folders) {
-        if (
-          this.allAvailableFolders.folders[item].path ==
-          this.updateItemNewParent
-        ) {
-          update_id = this.allAvailableFolders.folders[item].id;
+      for (var item of this.allAvailableFolders.folders) {
+        if (item.path == this.updateItemNewParent) {
+          update_id = item.id;
         }
       }
       var data = {
@@ -1004,6 +1342,10 @@ export default defineComponent({
             this.loading = false;
             this.updateItemDrawer = false;
             this.availParents = [];
+            this.selectedFolders = [];
+            this.selectedFiles = [];
+            this.selectedDocuments = [];
+            this.allSelected = False;
           } else {
             this.notify('negative', '' + response.data.error);
             this.loading = false;
@@ -1158,6 +1500,10 @@ export default defineComponent({
             this.loading = false;
             this.updateItemDrawer = false;
             this.availParents = [];
+            this.selectedFolders = [];
+            this.selectedFiles = [];
+            this.selectedDocuments = [];
+            this.allSelected = False;
           } else {
             this.notify('negative', '' + response.data.error);
             this.loading = false;
@@ -1184,6 +1530,10 @@ export default defineComponent({
             this.loading = false;
             this.updateItemDrawer = false;
             this.availParents = [];
+            this.selectedFolders = [];
+            this.selectedFiles = [];
+            this.selectedDocuments = [];
+            this.allSelected = False;
           } else {
             this.notify('negative', '' + response.data.error);
             this.loading = false;
@@ -1315,7 +1665,9 @@ export default defineComponent({
     },
 
     uploadFiles() {
+      var errors = [];
       var files_state = 0;
+      var succ_files = 0;
       const length = this.upload_file_files.length;
       const notif = this.q.notify({
         type: 'positive',
@@ -1325,6 +1677,7 @@ export default defineComponent({
         message: 'Uploading file...',
         caption: files_state + ' / ' + length,
       });
+
       let config = {
         withCredentials: true,
         headers: {
@@ -1332,37 +1685,62 @@ export default defineComponent({
           'Content-Type': 'multipart/form-data',
         },
       };
-      for (const file in this.upload_file_files) {
+
+      for (var index in this.upload_file_files) {
+        // check if its a file
         let form_data = new FormData();
+        var filename = '';
         if (this.upload_file_freeEdit) {
-          form_data.append('filename', this.upload_file_files[file].name);
+          filename = this.upload_file_files[index].name;
         } else {
-          form_data.append(
-            'filename',
-            this.upload_file_names[file] + '.' + this.upload_file_types[file]
-          );
+          filename =
+            this.upload_file_names[index] + '.' + this.upload_file_types[index];
         }
+        form_data.append('filename', filename);
+
         form_data.append('current_folder_id', this.rawFolderContent.id);
         if (this.upload_file_files != null) {
-          form_data.append('file', this.upload_file_files[file]);
+          form_data.append('file', this.upload_file_files[index]);
         }
         api
           .post('/files/create/file', form_data, config)
           .then((response) => {
             if (response.status == 200) {
+              succ_files += 1;
               files_state += 1;
               this.refreshFolder();
               notif({
                 caption: files_state + ' / ' + length,
               });
               if (files_state == length) {
-                notif({
-                  type: 'positive',
-                  icon: 'done', // we add an icon
-                  spinner: false, // we reset the spinner setting so the icon can be displayed
-                  message: 'Uploading done!',
-                  timeout: 2500, // we will timeout it in 2.5s
-                });
+                if (errors.length == 0) {
+                  notif({
+                    type: 'positive',
+                    icon: 'done', // we add an icon
+                    spinner: false, // we reset the spinner setting so the icon can be displayed
+                    message:
+                      'Uploaded ' + succ_files + '/' + length + ' files!',
+                    timeout: 2500, // we will timeout it in 2.5s
+                  });
+                } else {
+                  var message =
+                    'Uploaded ' +
+                    succ_files +
+                    '/' +
+                    length +
+                    " Files, following files couldn't be uploaded: ";
+                  for (var err_file of errors) {
+                    message += err_file + ', ';
+                  }
+                  notif({
+                    type: 'negative',
+                    icon: 'error', // we add an icon
+                    spinner: false, // we reset the spinner setting so the icon can be displayed
+                    message: message,
+                    timeout: 4000, // we will timeout it in 2.5s
+                    caption: '',
+                  });
+                }
               }
             } else {
               files_state += 1;
@@ -1370,35 +1748,57 @@ export default defineComponent({
                 type: 'negative',
                 caption: files_state + ' / ' + length,
               });
+              errors.push(filename);
               if (files_state == length) {
+                var message =
+                  'Uploaded ' +
+                  succ_files +
+                  '/' +
+                  length +
+                  " Files, following files couldn't be uploaded: ";
+                for (var err_file of errors) {
+                  message += err_file + ', ';
+                }
                 notif({
                   type: 'negative',
-                  icon: 'done', // we add an icon
+                  icon: 'error', // we add an icon
                   spinner: false, // we reset the spinner setting so the icon can be displayed
-                  message: 'Something went wrong',
-                  timeout: 2500, // we will timeout it in 2.5s
+                  message: message,
+                  timeout: 4000, // we will timeout it in 2.5s
+                  caption: '',
                 });
               }
             }
           })
           .catch((error) => {
             files_state += 1;
+            errors.push(filename);
             notif({
               type: 'negative',
               caption: files_state + ' / ' + length,
             });
             if (files_state == length) {
+              var message =
+                'Uploaded ' +
+                succ_files +
+                '/' +
+                length +
+                " Files, following files couldn't be uploaded: ";
+              for (var err_file of errors) {
+                message += err_file + ', ';
+              }
               notif({
                 type: 'negative',
-                icon: 'done', // we add an icon
+                icon: 'error', // we add an icon
                 spinner: false, // we reset the spinner setting so the icon can be displayed
-                message: 'Something went wrong.',
-                timeout: 2500, // we will timeout it in 2.5s
+                message: message,
+                timeout: 4000, // we will timeout it in 2.5s
+                caption: '',
               });
             }
-            console.log(error);
           });
       }
+
       this.upload_file_files = null;
       this.upload_file_names = [];
       this.upload_file_types = [];
