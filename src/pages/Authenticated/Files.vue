@@ -392,6 +392,16 @@
         class="text-h6"
       >
         <q-btn-dropdown flat icon="more_horiz">
+          <div class="row justify-center">
+            <a class="q-mr-lg text-body2 text-center" v-if="mobile">
+              {{
+                selectedFolders.length +
+                selectedFiles.length +
+                selectedDocuments.length
+              }}
+              Item(s) selected
+            </a>
+          </div>
           <q-btn
             label="Move to..."
             class="full-width bg-blue text-light"
@@ -423,7 +433,7 @@
           />
         </q-btn-dropdown>
 
-        <a class="q-mr-lg">
+        <a class="q-mr-lg" v-if="!mobile">
           {{
             selectedFolders.length +
             selectedFiles.length +
@@ -460,6 +470,8 @@
     <q-separator size="2px" color="primary" class="q-mt-sm" />
     <q-scroll-area class="col">
       <div
+        class="item_parent_container"
+        :style="item_parent_container_height"
         id="drop_zone"
         @drop.prevent="onDrop"
         @dragover.prevent="
@@ -596,7 +608,17 @@
                 />
               </q-item-section>
               <q-item-section>
-                <q-item-label lines="1">{{ file.name }}</q-item-label>
+                <q-item-label
+                  class="item_text"
+                  lines="1"
+                  style="
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  "
+                  :style="item_text_width"
+                  >{{ file.name }}</q-item-label
+                >
                 <q-item-label caption lines="1">{{
                   file.changed
                 }}</q-item-label>
@@ -693,8 +715,13 @@
       </div>
     </q-scroll-area>
 
-    <q-page-sticky position="bottom-right" :offset="[18, 18]">
-      <q-fab color="primary" text-color="white" icon="add" direction="left">
+    <q-page-sticky position="bottom-right" :offset="[50, 18]">
+      <q-fab
+        color="primary"
+        text-color="white"
+        icon="add"
+        :direction="mobile ? 'up' : 'left'"
+      >
         <q-fab-action
           color="primary"
           text-color="white"
@@ -788,68 +815,10 @@ export default defineComponent({
         path: 'Home',
         id: 39,
         children: {
-          private_files: [
-            {
-              name: 'sky.jpg',
-              id: 74,
-              changed: '2022-09-28 15:34:41',
-            },
-            {
-              name: 'ezgif-5-ae46088894.gif',
-              id: 73,
-              changed: '2022-09-28 15:34:41',
-            },
-            {
-              name: 'favicon.gif',
-              id: 72,
-              changed: '2022-09-28 15:34:40',
-            },
-            {
-              name: 'ee17e599efdd2c010908ac31362d6458.ico.png',
-              id: 71,
-              changed: '2022-09-28 15:34:40',
-            },
-            {
-              name: 'favicon.ico',
-              id: 70,
-              changed: '2022-09-28 15:34:40',
-            },
-            {
-              name: 'App.vue',
-              id: 69,
-              changed: '2022-09-28 15:34:40',
-            },
-            {
-              name: 'main.js',
-              id: 68,
-              changed: '2022-09-28 15:34:39',
-            },
-            {
-              name: 'img_avatar.png',
-              id: 67,
-              changed: '2022-09-28 09:18:08',
-            },
-          ],
+          private_files: [],
           public_files: [],
-          folders: [
-            {
-              name: 'Hi',
-              id: 40,
-              path: 'Home/Hi',
-            },
-            {
-              name: 'Test2',
-              id: 41,
-              path: 'Home/Test2',
-            },
-          ],
-          documents: [
-            {
-              name: 'TestDoc',
-              id: 10,
-              changed: '2022-09-28 09:18:44',
-            },
-          ],
+          folders: [],
+          documents: [],
         },
       }),
       // toolbar handlers
@@ -917,12 +886,29 @@ export default defineComponent({
         return true;
       }
     },
+    mobile() {
+      if (this.q.screen.width < 700) {
+        return true;
+      } else {
+        return false;
+      }
+    },
     small() {
       if (this.q.screen.width < 1024) {
         return true;
       } else {
         return false;
       }
+    },
+
+    item_parent_container_height() {
+      var height = this.q.screen.height - 300;
+      return { '--min-height': height + 'px' };
+    },
+
+    item_text_width() {
+      var width = this.q.screen.width - 250;
+      return { '--max-width': width + 'px' };
     },
   },
   methods: {
@@ -939,22 +925,22 @@ export default defineComponent({
       this.selectedFolders = [];
       this.selectedFiles = [];
       this.selectedDocuments = [];
-      this.allSelected = False;
+      this.allSelected = false;
     },
     moveSelection() {
       for (var folder_id of this.selectedFolders) {
-        this.updateItemParent(this.selectionNewParent, folder_id, 'folder');
+        this.updateItemParent(folder_id, this.selectionNewParent, 'folder');
       }
       for (var file_id of this.selectedFiles) {
-        this.updateItemParent(this.selectionNewParent, file_id, 'file');
+        this.updateItemParent(file_id, this.selectionNewParent, 'file');
       }
       for (var document_id of this.selectedDocuments) {
-        this.updateItemParent(this.selectionNewParent, document_id, 'document');
+        this.updateItemParent(document_id, this.selectionNewParent, 'document');
       }
       this.selectedFolders = [];
       this.selectedFiles = [];
       this.selectedDocuments = [];
-      this.allSelected = False;
+      this.allSelected = false;
     },
     selectAllItems() {
       if (this.allSelected == true) {
@@ -1193,7 +1179,7 @@ export default defineComponent({
             this.selectedFolders = [];
             this.selectedFiles = [];
             this.selectedDocuments = [];
-            this.allSelected = False;
+            this.allSelected = false;
 
             // this.path_names.push(response.data.name);
             // this.path_ids.push(response.data.id);
@@ -1238,7 +1224,7 @@ export default defineComponent({
               this.selectedFolders = [];
               this.selectedFiles = [];
               this.selectedDocuments = [];
-              this.allSelected = False;
+              this.allSelected = false;
             } else {
               this.notify('negative', '' + response.data.error);
               this.loading = false;
@@ -1272,7 +1258,7 @@ export default defineComponent({
               this.selectedFolders = [];
               this.selectedFiles = [];
               this.selectedDocuments = [];
-              this.allSelected = False;
+              this.allSelected = false;
             } else {
               this.notify('negative', '' + response.data.error);
               this.loading = false;
@@ -1345,7 +1331,7 @@ export default defineComponent({
             this.selectedFolders = [];
             this.selectedFiles = [];
             this.selectedDocuments = [];
-            this.allSelected = False;
+            this.allSelected = false;
           } else {
             this.notify('negative', '' + response.data.error);
             this.loading = false;
@@ -1503,7 +1489,7 @@ export default defineComponent({
             this.selectedFolders = [];
             this.selectedFiles = [];
             this.selectedDocuments = [];
-            this.allSelected = False;
+            this.allSelected = false;
           } else {
             this.notify('negative', '' + response.data.error);
             this.loading = false;
@@ -1533,7 +1519,7 @@ export default defineComponent({
             this.selectedFolders = [];
             this.selectedFiles = [];
             this.selectedDocuments = [];
-            this.allSelected = False;
+            this.allSelected = false;
           } else {
             this.notify('negative', '' + response.data.error);
             this.loading = false;
@@ -1706,9 +1692,9 @@ export default defineComponent({
           .post('/files/create/file', form_data, config)
           .then((response) => {
             if (response.status == 200) {
+              this.refreshFolder();
               succ_files += 1;
               files_state += 1;
-              this.refreshFolder();
               notif({
                 caption: files_state + ' / ' + length,
               });
@@ -1808,6 +1794,12 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.item_parent_container {
+  min-height: var(--min-height);
+}
+.item_text {
+  max-width: var(--max-width);
+}
 .active {
   background-color: #2196f3;
 }
