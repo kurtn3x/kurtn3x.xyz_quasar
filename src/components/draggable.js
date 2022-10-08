@@ -2,6 +2,10 @@ import Common from './common';
 
 const dataMap = new WeakMap();
 
+var selected = [];
+
+export var selected;
+
 function updateDragData(el, binding) {
   dataMap.set(el, binding.modifiers.image ? binding.value.data : binding.value);
 }
@@ -30,7 +34,12 @@ const draggable = {
     el.addEventListener(
       'dragstart',
       function (event) {
+        // for (var el of selected) {
+        //   console.log(el);
         const dragData = dataMap.get(el);
+        // console.log('dragdata');
+        // console.log(dragData);
+
         Common.dragInProgressKey = transferKey;
 
         Common.transferredData[transferKey] = {
@@ -43,18 +52,16 @@ const draggable = {
         event.dataTransfer.effectAllowed = 'move';
         event.dataTransfer.dropEffect = 'move';
 
-        if (binding.modifiers.image) {
-          event.dataTransfer.setDragImage(binding.value.image, 10, 10);
-        }
-
         if (vnode.props.onVDragStart) {
           vnode.props.onVDragStart(dragData, event);
         }
+        // }
       },
       false
     );
 
     el.addEventListener('drag', function (event) {
+      // for (var el of selected) {
       if (binding.modifiers.dynamic) {
         Common.transferredData[transferKey].namespace =
           Common.getNamespace(binding);
@@ -63,6 +70,7 @@ const draggable = {
       if (vnode.props.onVDragMove) {
         vnode.props.onVDragMove(dataMap.get(el), event);
       }
+      // }
     });
 
     el.addEventListener('dragend', function (event) {

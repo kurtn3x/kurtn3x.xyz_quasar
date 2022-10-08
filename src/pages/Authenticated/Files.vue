@@ -118,22 +118,30 @@
     "
   >
     <q-card bordered flat class="full-height">
-      <q-toolbar>
+      <q-toolbar class="q-mt-sm q-mb-sm">
         <q-icon size="lg" name="article" v-if="updateItemType == 'document'" />
         <q-icon size="lg" name="file_present" v-if="updateItemType == 'file'" />
         <q-icon size="lg" name="folder" v-if="updateItemType == 'folder'" />
         <a class="text-h5 text-weight-bold q-ml-md">Settings</a>
         <q-space />
         <q-btn
+          push
           icon="close"
           class="bg-red text-white"
-          flat
           @click="updateItemDrawer = !updateItemDrawer"
         />
       </q-toolbar>
-      <div class="text-h5 q-mt-md text-center">
+      <q-separator />
+      <div class="text-h5 q-mt-md text-center text-weight-bold">
         {{ drawerItemName }}
       </div>
+      <div class="text-body1 q-mt-md q-ml-sm">Type: {{ updateItemType }}</div>
+      <div class="text-body1 q-mt-md q-ml-sm">Created: {{ drawerCreated }}</div>
+      <div class="text-body1 q-mt-md q-ml-sm">
+        Modified: {{ drawerModified }}
+      </div>
+      <q-separator class="q-mt-lg q-mb-lg" />
+      <div class="text-h6 q-mt-lg q-ml-sm">Update Item</div>
 
       <q-input
         dense
@@ -141,76 +149,69 @@
         v-model="updateItemName"
         label="Name"
         input-class="text-center"
-        class="text-primary q-ma-md text-body1"
+        class="text-primary q-ma-md text-body1 q-mt-lg"
       />
       <q-select
-        dense
         outlined
         v-model="updateItemNewParent"
         :options="availParents"
         label="Parent Folder"
         class="q-ma-md text-body1"
       />
-      <q-btn
-        label="Preview"
-        class="cursor-pointer full-width"
-        flat
-        @click.capture.stop="
-          previewPDF(updateItemId);
-          initial_doc_filename = drawerItemName;
-        "
-        :loading="loading"
-        stretch
-        v-if="drawerItemName.includes('.pdf')"
-      />
-      <q-btn
-        label="Open in Document Editor"
-        class="cursor-pointer full-width"
-        flat
-        :to="'doc/edit/' + updateItemId"
-        :loading="loading"
-        stretch
-        v-if="updateItemType == 'document'"
-      />
 
-      <q-btn
-        label="Update"
-        class="cursor-pointer full-width bg-green text-white"
-        flat
-        @click="updateItem"
-        :loading="loading"
-      />
-      <div style="position: absolute; bottom: 0; right: 0" class="full-width">
+      <div style="position: absolute; bottom: 0; right: 0">
         <q-btn
-          v-if="updateItemType == 'folder'"
-          class="cursor-pointer full-width bg-red text-white"
-          flat
-          icon="delete"
+          label="Preview"
+          class="cursor-pointer full-width q-mb-md"
+          outline
+          size="lg"
           @click.capture.stop="
-            this.folder_to_delete = updateItemId.id;
-            folder_delete_dialog = !folder_delete_dialog;
+            previewPDF(updateItemId);
+            initial_doc_filename = drawerItemName;
           "
           :loading="loading"
           stretch
+          v-if="drawerItemName.includes('.pdf')"
         />
         <q-btn
-          v-if="updateItemType == 'file'"
-          class="cursor-pointer full-width bg-red text-white"
-          flat
-          icon="delete"
-          @click.capture.stop="deleteItem(updateItemId, 'file')"
+          icon="share"
+          size="lg"
+          label="Share"
+          color="blue"
+          class="cursor-pointer full-width"
           :loading="loading"
           stretch
         />
-        <q-btn
-          v-if="updateItemType == 'document'"
-          class="cursor-pointer full-width bg-red text-white"
-          flat
-          icon="delete"
-          @click.capture.stop="deleteItem(updateItemId, 'document')"
-          :loading="loading"
-          stretch
-        />
+        <div class="row q-mb-xs">
+          <q-btn
+            label="Save"
+            class="cursor-pointer bg-green text-white"
+            flat
+            @click="updateItem"
+            :loading="loading"
+            style="width: 240px"
+            size="xl"
+          />
+          <q-btn
+            v-if="updateItemType == 'folder'"
+            class="cursor-pointer bg-red text-white"
+            flat
+            icon="delete"
+            @click.capture.stop="
+              this.folder_to_delete = updateItemId.id;
+              folder_delete_dialog = !folder_delete_dialog;
+            "
+            :loading="loading"
+          />
+          <q-btn
+            v-if="updateItemType != 'folder'"
+            class="cursor-pointer bg-red text-white"
+            flat
+            icon="delete"
+            @click.capture.stop="deleteItem(updateItemId, updateItemType)"
+            :loading="loading"
+          />
+        </div>
       </div>
     </q-card>
   </q-drawer>
@@ -393,7 +394,7 @@
       >
         <q-btn-dropdown flat icon="more_horiz">
           <div class="row justify-center">
-            <a class="q-mr-lg text-body2 text-center" v-if="mobile">
+            <a class="q-ma-sm text-body1 text-center" v-if="mobile">
               {{
                 selectedFolders.length +
                 selectedFiles.length +
@@ -403,17 +404,17 @@
             </a>
           </div>
           <q-btn
-            label="Move to..."
+            label="Move"
             class="full-width bg-blue text-light"
             @click="
               fetchAllAvailableFolders();
               selectionNewParent = this.rawFolderContent.path;
             "
+            size="lg"
           >
-            <q-menu @hide="availParents = []">
+            <q-menu @hide="availParents = []" style="min-width: 200px">
               <q-select
                 outlined
-                dense
                 v-model="selectionNewParent"
                 :options="availParents"
                 label="Parent Folder"
@@ -430,6 +431,7 @@
             label="Delete"
             class="full-width bg-red text-light"
             @click="deleteSelection"
+            size="lg"
           />
         </q-btn-dropdown>
 
@@ -513,7 +515,10 @@
               class="full-width"
               v-droppable
               v-draggable="['folder', folder.id]"
-              :class="folder.drag_over ? 'bg-blue' : ''"
+              :class="[
+                folder.drag_over ? 'bg-blue' : '',
+                folder.selected ? 'bg-light-blue-4' : '',
+              ]"
               @v-drag-enter="
                 (ev) => {
                   if (ev[1] != folder.id) {
@@ -543,6 +548,7 @@
                   v-model="selectedFolders"
                   :val="folder.id"
                   color="green"
+                  @click="folder.selected = !folder.selected"
                 />
               </q-item-section>
               <q-item-section avatar top style="pointer-events: none">
@@ -592,12 +598,14 @@
               class="full-width"
               v-draggable="['file', file.id]"
               @click="openInNewTab(file.id)"
+              :class="file.selected ? 'bg-light-blue-4' : ''"
             >
               <q-item-section avatar>
                 <q-checkbox
                   v-model="selectedFiles"
                   :val="file.id"
                   color="green"
+                  @click="file.selected = !file.selected"
                 />
               </q-item-section>
               <q-item-section avatar top>
@@ -636,6 +644,8 @@
                     updateItemNewParent = rawFolderContent.path;
                     drawerItemName = file.name;
                     fetchAllAvailableFolders();
+                    drawerCreated = file.changed;
+                    drawerModified = file.changed;
                   "
                   :loading="loading"
                   stretch
@@ -658,15 +668,17 @@
           >
             <q-item
               clickable
-              @click="showDOCUMENT"
+              @click="openDocEditor(document.id)"
               class="full-width"
               v-draggable="['document', document.id]"
+              :class="document.selected ? 'bg-light-blue-4' : ''"
             >
               <q-item-section avatar>
                 <q-checkbox
                   v-model="selectedDocuments"
                   :val="document.id"
                   color="green"
+                  @click="document.selected = !document.selected"
                 />
               </q-item-section>
               <q-item-section avatar top>
@@ -703,6 +715,8 @@
                     updateItemNewParent = rawFolderContent.path;
                     drawerItemName = document.name;
                     fetchAllAvailableFolders();
+                    drawerCreated = document.changed;
+                    drawerModified = document.changed;
                   "
                   :loading="loading"
                   stretch
@@ -715,13 +729,8 @@
       </div>
     </q-scroll-area>
 
-    <q-page-sticky position="bottom-right" :offset="[50, 18]">
-      <q-fab
-        color="primary"
-        text-color="white"
-        icon="add"
-        :direction="mobile ? 'up' : 'left'"
-      >
+    <q-page-sticky position="bottom-right" :offset="[120, 18]">
+      <q-fab color="primary" text-color="white" icon="add" direction="up">
         <q-fab-action
           color="primary"
           text-color="white"
@@ -763,10 +772,66 @@
                 flat
                 @click="createFolder"
                 :loading="loading"
+                v-close-popup
               />
             </q-card>
           </q-menu>
         </q-fab-action>
+      </q-fab>
+    </q-page-sticky>
+
+    <q-page-sticky
+      position="bottom-right"
+      :offset="[240, 18]"
+      v-if="
+        selectedFolders.length +
+          selectedFiles.length +
+          selectedDocuments.length >
+        0
+      "
+    >
+      <q-fab
+        color="primary"
+        text-color="white"
+        icon="checklist"
+        :direction="mobile ? 'up' : 'left'"
+      >
+        <q-fab-action
+          color="primary"
+          text-color="white"
+          @click="
+            fetchAllAvailableFolders();
+            selectionNewParent = this.rawFolderContent.path;
+          "
+          label="Move Selection"
+          icon="trending_flat"
+        >
+          <q-menu @hide="availParents = []" style="min-width: 200px">
+            <q-select
+              outlined
+              v-model="selectionNewParent"
+              :options="availParents"
+              label="Parent Folder"
+              input-class="text-center text-body1"
+            />
+            <q-btn
+              @click="moveSelection"
+              label="Move"
+              class="bg-blue full-width text-white"
+              size="lg"
+            />
+          </q-menu>
+        </q-fab-action>
+        <q-fab-action
+          label="Delete Selection"
+          text-color="white"
+          @click="
+            fetchAllAvailableFolders();
+            selectionNewParent = this.rawFolderContent.path;
+          "
+          icon="delete"
+          class="bg-red text-light"
+        />
       </q-fab>
     </q-page-sticky>
   </q-page>
@@ -779,7 +844,7 @@ import { useQuasar } from 'quasar';
 import { useSettingsStore } from 'stores/settings';
 import { api } from 'boot/axios';
 import VuePdfEmbed from 'vue-pdf-embed';
-import { draggable } from '../../components/draggable.js';
+import { draggable, selected } from '../../components/draggable.js';
 import { droppable } from '../../components/droppable.js';
 
 export default defineComponent({
@@ -801,6 +866,7 @@ export default defineComponent({
     };
 
     return {
+      selected,
       show: ref(false),
       axios_config,
       userStore,
@@ -813,12 +879,29 @@ export default defineComponent({
       rawFolderContent: ref({
         name: 'Home',
         path: 'Home',
-        id: 39,
+        id: 'b2ea057d-fa9b-4f42-a50f-d9db1bc510e4',
         children: {
           private_files: [],
           public_files: [],
-          folders: [],
-          documents: [],
+          folders: [
+            {
+              name: 'dwadwad',
+              id: '810f5804-5a81-443a-806b-c24829f88223',
+              path: 'Home/dwadwad',
+            },
+            {
+              name: 'Test2',
+              id: 'c022875a-587c-4454-9677-3248c76cda03',
+              path: 'Home/Test2',
+            },
+          ],
+          documents: [
+            {
+              name: 'Test',
+              id: 'c5eab6e6-b8b2-4029-a749-7cf8203dceae',
+              changed: '2022-10-08 15:31:16',
+            },
+          ],
         },
       }),
       // toolbar handlers
@@ -845,6 +928,8 @@ export default defineComponent({
       updateItemNewParent: ref(''),
       allAvailableFolders: ref({}),
       drawerItemName: ref(''),
+      drawerCreated: ref(''),
+      drawerModified: ref(''),
       // lists all available parents (all folders of user) for q-select
       availParents: ref([]),
 
@@ -912,6 +997,12 @@ export default defineComponent({
     },
   },
   methods: {
+    openDocEditor(docId) {
+      this.$router.push('doc/edit/' + docId);
+    },
+    addFileCheckbox(el) {
+      this.selected.push(el.target.parentElement.parentNode.offsetParent);
+    },
     deleteSelection() {
       for (var folder_id of this.selectedFolders) {
         this.deleteItem(folder_id, 'folder');
@@ -947,20 +1038,34 @@ export default defineComponent({
         for (var folder of this.rawFolderContent.children.folders) {
           if (!this.selectedFolders.includes(folder.id)) {
             this.selectedFolders.push(folder.id);
+            this.selected.push(folder.id);
+            folder.selected = true;
           }
         }
         for (var file of this.rawFolderContent.children.private_files) {
           if (!this.selectedFiles.includes(file.id)) {
             this.selectedFiles.push(file.id);
+            this.selected.push(file.id);
+            file.selected = true;
           }
         }
         for (var document of this.rawFolderContent.children.documents) {
           if (!this.selectedDocuments.includes(document.id)) {
             this.selectedDocuments.push(document.id);
+            this.selected.push(document.id);
+            document.selected = true;
           }
         }
-        console.log(this.selectedFiles);
       } else {
+        for (var folder of this.rawFolderContent.children.folders) {
+          folder.selected = false;
+        }
+        for (var file of this.rawFolderContent.children.private_files) {
+          file.selected = false;
+        }
+        for (var document of this.rawFolderContent.children.documents) {
+          document.selected = false;
+        }
         this.selectedFolders = [];
         this.selectedFiles = [];
         this.selectedDocuments = [];
@@ -1342,6 +1447,7 @@ export default defineComponent({
           this.loading = false;
           console.log(error);
         });
+      this.loading = false;
     },
 
     // fetch all available folders on user ( for changing folder path of a file)

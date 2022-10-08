@@ -1,21 +1,6 @@
 <template>
   <div class="disable-select text-primary">
     <h1 class="text-center">login / register to continue.</h1>
-    <ParticlesText ref="textAnimation" v-if="!mobile" />
-    <div class="row justify-center">
-      <q-toggle
-        v-if="!mobile"
-        v-model="text_animation"
-        checked-icon="check"
-        color="primary"
-        unchecked-icon="clear"
-        label="Text Animation"
-        @click="toogleTextAnimation(text_animation)"
-        size="xl"
-        class="text-h4"
-        style="position: absolute; bottom: 10%"
-      />
-    </div>
   </div>
 </template>
 
@@ -25,11 +10,9 @@ import { useUserStore } from 'stores/user';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { useSettingsStore } from 'stores/settings';
-import ParticlesText from 'components/ParticlesText.vue';
 
 export default defineComponent({
   name: 'IndexPage',
-  components: { ParticlesText },
 
   setup() {
     const userStore = useUserStore();
