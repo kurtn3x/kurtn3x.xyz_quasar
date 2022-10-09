@@ -107,7 +107,6 @@
     side="right"
     v-model="updateItemDrawer"
     bordered
-    :breakpoint="500"
     @hide="
       updateItemId = '';
       updateItemName = '';
@@ -132,7 +131,11 @@
         />
       </q-toolbar>
       <q-separator />
-      <div class="text-h5 q-mt-md text-center text-weight-bold">
+      <div
+        class="text-h5 q-mt-md text-center text-weight-bold"
+        style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis"
+        :style="item_text_width"
+      >
         {{ drawerItemName }}
       </div>
       <q-tabs v-model="drawerTab" class="q-mt-md">
@@ -140,7 +143,7 @@
         <q-tab name="edit" icon="edit" />
         <q-tab name="share" icon="share" />
       </q-tabs>
-      <q-tab-panels v-model="drawerTab" animated style="height: 75%">
+      <q-tab-panels v-model="drawerTab" animated style="height: 70%">
         <q-tab-panel name="info">
           <div class="text-h6 q-mb-md q-mt-sm">Info</div>
           <div class="text-body1 q-mt-md q-ml-sm">
@@ -221,7 +224,7 @@
             v-if="updateItemType == 'document'"
           />
 
-          <div style="position: absolute; bottom: 0; right: 0">
+          <div style="position: absolute; bottom: 0; right: 0" class="q-mt-xl">
             <div class="row">
               <q-btn
                 label="Save"
@@ -937,7 +940,7 @@ export default defineComponent({
           public_files: [],
           folders: [
             {
-              name: 'dwadwad',
+              name: 'SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS.pdf',
               id: '810f5804-5a81-443a-806b-c24829f88223',
               path: 'Home/dwadwad',
             },
@@ -1046,7 +1049,13 @@ export default defineComponent({
     },
 
     item_text_width() {
-      var width = this.q.screen.width - 250;
+      var width = this.q.screen.width;
+      if (this.updateItemDrawer) {
+        width -= 650;
+      } else {
+        width -= 250;
+      }
+
       return { '--max-width': width + 'px' };
     },
   },
