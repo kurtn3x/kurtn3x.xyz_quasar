@@ -135,84 +135,129 @@
       <div class="text-h5 q-mt-md text-center text-weight-bold">
         {{ drawerItemName }}
       </div>
-      <div class="text-body1 q-mt-md q-ml-sm">Type: {{ updateItemType }}</div>
-      <div class="text-body1 q-mt-md q-ml-sm">Created: {{ drawerCreated }}</div>
-      <div class="text-body1 q-mt-md q-ml-sm">
-        Modified: {{ drawerModified }}
-      </div>
-      <q-separator class="q-mt-lg q-mb-lg" />
-      <div class="text-h6 q-mt-lg q-ml-sm">Update Item</div>
-
-      <q-input
-        dense
-        outlined
-        v-model="updateItemName"
-        label="Name"
-        input-class="text-center"
-        class="text-primary q-ma-md text-body1 q-mt-lg"
-      />
-      <q-select
-        outlined
-        v-model="updateItemNewParent"
-        :options="availParents"
-        label="Parent Folder"
-        class="q-ma-md text-body1"
-      />
-
-      <div style="position: absolute; bottom: 0; right: 0">
-        <q-btn
-          label="Preview"
-          class="cursor-pointer full-width q-mb-md"
-          outline
-          size="lg"
-          @click.capture.stop="
-            previewPDF(updateItemId);
-            initial_doc_filename = drawerItemName;
-          "
-          :loading="loading"
-          stretch
-          v-if="drawerItemName.includes('.pdf')"
-        />
-        <q-btn
-          icon="share"
-          size="lg"
-          label="Share"
-          color="blue"
-          class="cursor-pointer full-width"
-          :loading="loading"
-          stretch
-        />
-        <div class="row q-mb-xs">
+      <q-tabs v-model="drawerTab" class="q-mt-md">
+        <q-tab name="info" icon="info" />
+        <q-tab name="edit" icon="edit" />
+        <q-tab name="share" icon="share" />
+      </q-tabs>
+      <q-tab-panels v-model="drawerTab" animated style="height: 75%">
+        <q-tab-panel name="info">
+          <div class="text-h6 q-mb-md q-mt-sm">Info</div>
+          <div class="text-body1 q-mt-md q-ml-sm">
+            Type: {{ updateItemType }}
+          </div>
+          <div
+            class="text-body1 q-mt-md q-ml-sm"
+            v-if="updateItemType != 'document'"
+          >
+            Size: {{ drawerSize }}
+          </div>
+          <div class="text-body1 q-mt-md q-ml-sm">
+            Created: {{ drawerCreated }}
+          </div>
+          <div class="text-body1 q-mt-md q-ml-sm">
+            Modified: {{ drawerModified }}
+          </div>
+          <div class="text-body1 q-mt-md q-ml-sm">
+            Folder: {{ rawFolderContent.path }}
+          </div>
           <q-btn
-            label="Save"
-            class="cursor-pointer bg-green text-white"
-            flat
-            @click="updateItem"
-            :loading="loading"
-            style="width: 240px"
-            size="xl"
-          />
-          <q-btn
-            v-if="updateItemType == 'folder'"
-            class="cursor-pointer bg-red text-white"
-            flat
-            icon="delete"
+            label="Preview PDF"
+            class="cursor-pointer full-width q-mt-lg"
+            outline
+            size="lg"
             @click.capture.stop="
-              this.folder_to_delete = updateItemId.id;
-              folder_delete_dialog = !folder_delete_dialog;
+              previewPDF(updateItemId);
+              initial_doc_filename = drawerItemName;
             "
             :loading="loading"
+            stretch
+            v-if="drawerItemName.includes('.pdf')"
           />
+
+          <div
+            style="position: absolute; bottom: 0; right: 0"
+            class="full-width"
+            v-if="updateItemType == 'file'"
+          >
+            <q-btn
+              label="Download"
+              icon="file_download"
+              class="cursor-pointer bg-green text-white full-width"
+              flat
+              @click="openInNewTab(updateItemId)"
+              :loading="loading"
+              size="xl"
+            />
+          </div>
+        </q-tab-panel>
+        <q-tab-panel name="edit">
+          <div class="text-h6 q-mb-md q-mt-sm">Update Item</div>
+
+          <q-input
+            dense
+            outlined
+            v-model="updateItemName"
+            label="Name"
+            input-class="text-center"
+            class="text-primary q-ma-md text-body1 q-mt-lg"
+          />
+          <q-select
+            outlined
+            v-model="updateItemNewParent"
+            :options="availParents"
+            label="Parent Folder"
+            class="q-ma-md text-body1"
+          />
+
           <q-btn
-            v-if="updateItemType != 'folder'"
-            class="cursor-pointer bg-red text-white"
-            flat
-            icon="delete"
-            @click.capture.stop="deleteItem(updateItemId, updateItemType)"
+            label="Edit Document"
+            class="cursor-pointer full-width q-mt-lg"
+            outline
+            size="lg"
             :loading="loading"
+            stretch
+            :to="'doc/edit/' + updateItemId"
+            v-if="updateItemType == 'document'"
           />
-        </div>
-      </div>
+
+          <div style="position: absolute; bottom: 0; right: 0">
+            <div class="row">
+              <q-btn
+                label="Save"
+                class="cursor-pointer bg-green text-white"
+                flat
+                @click="updateItem"
+                :loading="loading"
+                style="width: 240px"
+                size="xl"
+              />
+              <q-btn
+                v-if="updateItemType == 'folder'"
+                class="cursor-pointer bg-red text-white"
+                flat
+                icon="delete"
+                @click.capture.stop="
+                  this.folder_to_delete = updateItemId.id;
+                  folder_delete_dialog = !folder_delete_dialog;
+                "
+                :loading="loading"
+              />
+              <q-btn
+                v-if="updateItemType != 'folder'"
+                class="cursor-pointer bg-red text-white"
+                flat
+                icon="delete"
+                @click.capture.stop="deleteItem(updateItemId, updateItemType)"
+                :loading="loading"
+              />
+            </div>
+          </div>
+        </q-tab-panel>
+        <q-tab-panel name="share">
+          <div class="text-h6 q-mb-md q-mt-sm">Sharing</div>
+        </q-tab-panel>
+      </q-tab-panels>
     </q-card>
   </q-drawer>
 
@@ -573,6 +618,9 @@
                     updateItemNewParent = rawFolderContent.path;
                     drawerItemName = folder.name;
                     fetchAllAvailableFolders();
+                    drawerCreated = folder.created;
+                    drawerModified = folder.modified;
+                    drawerSize = folder.size;
                   "
                   :loading="loading"
                   stretch
@@ -628,7 +676,7 @@
                   >{{ file.name }}</q-item-label
                 >
                 <q-item-label caption lines="1">{{
-                  file.changed
+                  file.modified
                 }}</q-item-label>
               </q-item-section>
               <q-item-section side>
@@ -644,8 +692,9 @@
                     updateItemNewParent = rawFolderContent.path;
                     drawerItemName = file.name;
                     fetchAllAvailableFolders();
-                    drawerCreated = file.changed;
-                    drawerModified = file.changed;
+                    drawerCreated = file.created;
+                    drawerModified = file.modified;
+                    drawerSize = file.size;
                   "
                   :loading="loading"
                   stretch
@@ -691,7 +740,7 @@
               <q-item-section>
                 <q-item-label lines="1">{{ document.name }}</q-item-label>
                 <q-item-label caption lines="1">{{
-                  document.changed
+                  document.modified
                 }}</q-item-label>
               </q-item-section>
               <q-item-section side>
@@ -715,8 +764,8 @@
                     updateItemNewParent = rawFolderContent.path;
                     drawerItemName = document.name;
                     fetchAllAvailableFolders();
-                    drawerCreated = document.changed;
-                    drawerModified = document.changed;
+                    drawerCreated = document.created;
+                    drawerModified = document.modified;
                   "
                   :loading="loading"
                   stretch
@@ -825,10 +874,7 @@
         <q-fab-action
           label="Delete Selection"
           text-color="white"
-          @click="
-            fetchAllAvailableFolders();
-            selectionNewParent = this.rawFolderContent.path;
-          "
+          @click="deleteSelection"
           icon="delete"
           class="bg-red text-light"
         />
@@ -881,7 +927,13 @@ export default defineComponent({
         path: 'Home',
         id: 'b2ea057d-fa9b-4f42-a50f-d9db1bc510e4',
         children: {
-          private_files: [],
+          private_files: [
+            {
+              name: 'test.pdf',
+              id: 'c5eab6e6-b8b2-4029-a749-7cf8203dceae',
+              changed: '2022-10-08 15:31:16',
+            },
+          ],
           public_files: [],
           folders: [
             {
@@ -930,6 +982,8 @@ export default defineComponent({
       drawerItemName: ref(''),
       drawerCreated: ref(''),
       drawerModified: ref(''),
+      drawerSize: ref(''),
+      drawerTab: ref('info'),
       // lists all available parents (all folders of user) for q-select
       availParents: ref([]),
 

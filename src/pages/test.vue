@@ -203,7 +203,6 @@ export default defineComponent({
       var wnd = window.open('about:blank', '', '_blank');
       console.log(this.editorData);
       wnd.document.write('<br>');
-
       wnd.document.write(this.editorData);
       wnd.document.write(
         "<head><style type='text/css' media='print'> @page {size: auto; margin-top: 0; margin-bottom:0; margin-left: 16mm; margin-right:16mm; } </style> </head>"

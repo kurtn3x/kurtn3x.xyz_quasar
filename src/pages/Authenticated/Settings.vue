@@ -813,9 +813,11 @@ export default {
               .then((response) => {
                 if (response.status == 200) {
                   this.userStore.setAuthState(false);
-                  this.userStore.setHeaderInfo(defaultHeaderInformation());
-                  this.$router.push('/');
+                  LocalStorage.clear();
+                  this.userStore.setHeaderInfo();
                   LocalStorage.remove('header');
+                  this.$router.push('/');
+                  this.notify('positive', 'Please log in again.');
                 }
               })
               .catch();
@@ -841,7 +843,19 @@ export default {
         .then((response) => {
           if (response.status == 200) {
             this.notify('positive', 'Password has been changed.');
-            logout();
+            api
+              .post('/auth/logout', '', this.axios_config)
+              .then((response) => {
+                if (response.status == 200) {
+                  this.userStore.setAuthState(false);
+                  LocalStorage.clear();
+                  this.userStore.setHeaderInfo();
+                  LocalStorage.remove('header');
+                  this.$router.push('/');
+                  this.notify('positive', 'Please log in again.');
+                }
+              })
+              .catch();
           } else if (response.status == 244) {
             this.notify('negative', 'Current Password is wrong.');
           } else {
@@ -864,7 +878,19 @@ export default {
         .then((response) => {
           if (response.status == 200) {
             this.notify('positive', 'Email has been changed.');
-            logout();
+            api
+              .post('/auth/logout', '', this.axios_config)
+              .then((response) => {
+                if (response.status == 200) {
+                  this.userStore.setAuthState(false);
+                  LocalStorage.clear();
+                  this.userStore.setHeaderInfo();
+                  LocalStorage.remove('header');
+                  this.$router.push('/');
+                  this.notify('positive', 'Please log in again.');
+                }
+              })
+              .catch();
           } else if (response.status == 244) {
             this.notify('negative', 'Current Password is wrong.');
           } else {
