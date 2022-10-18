@@ -51,53 +51,6 @@
     </q-card>
   </q-dialog>
 
-  <q-dialog
-    seamless
-    full-height
-    :maximized="this.pdf_viewer_maximized"
-    v-model="show_file_editor"
-    style="'width:800px"
-  >
-    <q-card bordered>
-      <q-bar>
-        <q-icon name="laptop_chromebook" />
-        <div>File: {{ initial_doc_filename }}</div>
-
-        <q-space />
-
-        <q-btn
-          dense
-          flat
-          :icon="pdf_viewer_maximized ? 'close_fullscreen' : 'crop_square'"
-          @click="pdf_viewer_maximized = !pdf_viewer_maximized"
-        />
-        <q-btn
-          dense
-          flat
-          icon="close"
-          @click="show_file_editor = !show_file_editor"
-        />
-      </q-bar>
-
-      <q-slider
-        v-model="zoom"
-        :min="200"
-        :max="1200"
-        :step="100"
-        label
-        label-value="Zoom"
-      />
-      <div class="row justify-center">
-        <vue-pdf-embed
-          ref="pdfRef"
-          :source="this.initial_doc"
-          :height="zoom"
-          :width="zoom"
-        />
-      </div>
-    </q-card>
-  </q-dialog>
-
   <!-- <PdfViewer
     v-if="show_file_editor"
     :initialDoc="this.initial_doc"
@@ -165,19 +118,6 @@
           <div class="text-body1 q-mt-md q-ml-sm">
             Folder: {{ rawFolderContent.path }}
           </div>
-          <q-btn
-            label="Preview PDF"
-            class="cursor-pointer full-width q-mt-lg"
-            outline
-            size="lg"
-            @click.capture.stop="
-              previewPDF(updateItemId);
-              initial_doc_filename = drawerItemName;
-            "
-            :loading="loading"
-            stretch
-            v-if="drawerItemName.includes('.pdf')"
-          />
 
           <q-btn
             label="Download"
@@ -276,11 +216,13 @@
             v-model="itemShareLink"
             readonly
             class="q-mt-sm"
+            v-if="drawerSharing"
           />
           <q-item
             clickable
             @click="copyuserlink(itemShareLink)"
             class="justify-center text-body2"
+            v-if="drawerSharing"
           >
             Copy the link</q-item
           >
@@ -639,9 +581,19 @@
               </q-item-section>
 
               <q-item-section style="pointer-events: none">
-                <q-item-label class="text-body1"
-                  >{{ folder.name }}
-                </q-item-label>
+                <q-item-label
+                  class="item_text"
+                  lines="1"
+                  style="
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  "
+                  :style="item_text_width"
+                >
+                  <q-icon name="share" v-if="folder.shared" />
+                  {{ folder.name }}</q-item-label
+                >
               </q-item-section>
               <q-item-section side>
                 <q-btn
@@ -659,6 +611,9 @@
                     drawerCreated = folder.created;
                     drawerModified = folder.modified;
                     drawerSize = folder.size;
+                    drawerSharing = folder.shared;
+                    drawerSharingAllowAllRead = folder.allow_all_read;
+                    drawerSharingAllowedWrite = folder.allow_all_write;
                   "
                   :loading="loading"
                   stretch
@@ -668,6 +623,81 @@
           </div>
 
           <q-separator />
+        </template>
+        <template
+          v-for="folder_link in rawFolderContent.children.folder_links"
+          :key="folder_link"
+        >
+          <div
+            v-if="
+              (optnShowFiles && search == '') ||
+              (optnShowFiles && folder_link.name.includes(search))
+            "
+          >
+            <q-item
+              clickable
+              class="full-width"
+              v-draggable="['file', folder_link.id]"
+              @click="openInNewTab(folder_link.id)"
+              :class="folder_link.selected ? 'bg-light-blue-4' : ''"
+            >
+              <q-item-section avatar>
+                <q-checkbox
+                  v-model="selectedFiles"
+                  :val="folder_link.id"
+                  color="green"
+                  @click="folder_link.selected = !folder_link.selected"
+                />
+              </q-item-section>
+              <q-item-section avatar top>
+                <q-avatar
+                  icon="file_present"
+                  color="primary"
+                  text-color="white"
+                />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label
+                  class="item_text"
+                  lines="1"
+                  style="
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  "
+                  :style="item_text_width"
+                >
+                  <q-icon name="share" v-if="folder_link.shared" />
+                  {{ folder_link.name }}</q-item-label
+                >
+                <q-item-label caption lines="1">{{
+                  folder_link.modified
+                }}</q-item-label>
+              </q-item-section>
+              <q-item-section side>
+                <q-btn
+                  icon="more_vert"
+                  class="cursor-pointer full-width"
+                  flat
+                  @click.capture.stop="
+                    updateItemDrawer = true;
+                    updateItemId = folder_link.id;
+                    updateItemName = folder_link.name;
+                    updateItemType = 'folder_link';
+                    updateItemNewParent = rawFolderContent.path;
+                    drawerItemName = folder_link.name;
+                    fetchAllAvailableFolders();
+                    drawerCreated = folder_link.created;
+                    drawerModified = folder_link.modified;
+                    drawerSize = folder_link.size;
+                  "
+                  :loading="loading"
+                  stretch
+                />
+              </q-item-section>
+            </q-item>
+            <q-separator />
+          </div>
         </template>
         <template
           v-for="file in rawFolderContent.children.private_files"
@@ -711,7 +741,9 @@
                     text-overflow: ellipsis;
                   "
                   :style="item_text_width"
-                  >{{ file.name }}</q-item-label
+                >
+                  <q-icon name="share" v-if="file.shared" />
+                  {{ file.name }}</q-item-label
                 >
                 <q-item-label caption lines="1">{{
                   file.modified
@@ -776,20 +808,24 @@
                 />
               </q-item-section>
               <q-item-section>
-                <q-item-label lines="1">{{ document.name }}</q-item-label>
+                <q-item-label
+                  class="item_text"
+                  lines="1"
+                  style="
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  "
+                  :style="item_text_width"
+                >
+                  <q-icon name="share" v-if="document.shared" />
+                  {{ document.name }}</q-item-label
+                >
                 <q-item-label caption lines="1">{{
                   document.modified
                 }}</q-item-label>
               </q-item-section>
               <q-item-section side>
-                <!-- <q-btn
-                icon="edit"
-                class="cursor-pointer full-width"
-                flat
-                :loading="loading"
-                stretch
-                :to="'doc/edit/' + document.id"
-              /> -->
                 <q-btn
                   icon="more_vert"
                   class="cursor-pointer full-width"
@@ -927,7 +963,6 @@ import { useUserStore } from 'stores/user';
 import { useQuasar } from 'quasar';
 import { useSettingsStore } from 'stores/settings';
 import { api } from 'boot/axios';
-import VuePdfEmbed from 'vue-pdf-embed';
 import { draggable, selected } from '../../components/draggable.js';
 import { droppable } from '../../components/droppable.js';
 
@@ -937,7 +972,6 @@ export default defineComponent({
     draggable,
     droppable,
   },
-  components: { VuePdfEmbed },
   setup() {
     const userStore = useUserStore();
     const settings_store = useSettingsStore();
@@ -985,6 +1019,7 @@ export default defineComponent({
               path: 'Home/Test2',
             },
           ],
+          folder_links: [],
           documents: [
             {
               name: 'Test',
@@ -1036,12 +1071,6 @@ export default defineComponent({
       // delete folder
       folder_to_delete: ref(''),
       folder_delete_dialog: ref(false),
-      // pdf preview handlers
-      initial_doc: ref(''),
-      show_file_editor: ref(false),
-      initial_doc_filename: ref(''),
-      pdf_viewer_maximized: ref(false),
-      zoom: ref(800),
 
       // create new doc
       createDocName: ref(''),
@@ -1636,38 +1665,6 @@ export default defineComponent({
     styleFn(offset, height) {
       let pageheight = height - offset;
       return 'height: ' + pageheight + 'px';
-    },
-    previewPDF(fileid) {
-      // django private storage adds another layer between user and pdf file -> pdf file is seen as html not as pdf
-      // solution: load file into blob and edit the blob
-      const config = {
-        withCredentials: true,
-        headers: {
-          'X-CSRFToken': this.q.cookies.get('csrftoken'),
-        },
-        responseType: 'blob',
-      };
-
-      api
-        .get('/files/download/' + fileid, config)
-        .then((response) => {
-          if (response.status == 200) {
-            const content = response.headers['content-type'];
-            const blob = new Blob([response.data]);
-            const objectUrl = URL.createObjectURL(blob);
-            this.initial_doc = objectUrl;
-            this.show_file_editor = true;
-            this.loading = false;
-          } else {
-            this.notify('negative', '' + response.data.error);
-            this.loading = false;
-          }
-        })
-        .catch((error) => {
-          this.notify('negative', 'API ERROR :/');
-          this.loading = false;
-          console.log(error);
-        });
     },
 
     notify(type, message) {
