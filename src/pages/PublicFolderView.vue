@@ -98,7 +98,14 @@
         </div>
         <q-tabs v-model="drawerTab" class="q-mt-md">
           <q-tab name="info" icon="info" />
-          <q-tab name="edit" icon="edit" />
+          <q-tab
+            name="edit"
+            icon="edit"
+            v-if="
+              rawFolderContent.permissions.includes('write') ||
+              rawFolderContent.permissions.includes('owner')
+            "
+          />
         </q-tabs>
         <q-tab-panels v-model="drawerTab" animated style="height: 70%">
           <q-tab-panel name="info">
@@ -133,7 +140,13 @@
               size="xl"
             />
           </q-tab-panel>
-          <q-tab-panel name="edit">
+          <q-tab-panel
+            name="edit"
+            v-if="
+              rawFolderContent.permissions.includes('write') ||
+              rawFolderContent.permissions.includes('owner')
+            "
+          >
             <div class="text-h6 q-mb-md q-mt-sm">Update Item</div>
 
             <q-input
@@ -360,6 +373,62 @@
           </template>
         </q-input>
 
+        <q-fab
+          color="primary"
+          text-color="white"
+          icon="add"
+          direction="down"
+          class="q-ml-lg"
+          flat
+          v-if="
+            rawFolderContent.permissions.includes('write') ||
+            rawFolderContent.permissions.includes('owner')
+          "
+        >
+          <q-fab-action
+            color="primary"
+            text-color="white"
+            @click="upload_file_dialog = !upload_file_dialog"
+            icon="file_upload"
+            label="Upload Files"
+          />
+          <q-fab-action
+            color="primary"
+            text-color="white"
+            @click="
+              docCreateDialog = !docCreateDialog;
+              createDocParent = rawFolderContent.path;
+            "
+            icon="note_add"
+            label="New Document"
+          />
+          <q-fab-action
+            color="primary"
+            text-color="white"
+            icon="create_new_folder"
+            label="New Folder"
+          >
+            <q-menu anchor="bottom middle" self="center middle">
+              <q-card bordered>
+                <q-input
+                  v-model="create_folder_name"
+                  label="New Folder Name"
+                  input-class="text-center"
+                  class="full-width text-primary text-body1"
+                />
+                <q-btn
+                  label="Create"
+                  class="cursor-pointer full-width bg-green"
+                  flat
+                  @click="createFolder"
+                  :loading="loading"
+                  v-close-popup
+                />
+              </q-card>
+            </q-menu>
+          </q-fab-action>
+        </q-fab>
+
         <q-space />
         <div
           v-if="
@@ -382,10 +451,13 @@
               </a>
             </div>
             <q-btn
+              v-if="
+                rawFolderContent.permsissions.includes('write') ||
+                rawFolderContent.permissions.includes('owner')
+              "
               label="Delete"
               class="full-width bg-red text-light"
               @click="deleteSelection"
-              size="lg"
             />
           </q-btn-dropdown>
 
@@ -777,76 +849,33 @@
         </div>
       </q-scroll-area>
 
-      <q-page-sticky position="bottom-right" :offset="[120, 18]">
-        <q-fab color="primary" text-color="white" icon="add" direction="up">
-          <q-fab-action
-            color="primary"
-            text-color="white"
-            @click="upload_file_dialog = !upload_file_dialog"
-            icon="file_upload"
-            label="Upload Files"
-          />
-          <q-fab-action
-            color="primary"
-            text-color="white"
-            @click="
-              docCreateDialog = !docCreateDialog;
-              createDocParent = rawFolderContent.path;
-            "
-            icon="note_add"
-            label="New Document"
-          />
-          <q-fab-action
-            color="primary"
-            text-color="white"
-            icon="create_new_folder"
-            label="New Folder"
-          >
-            <q-menu anchor="center right" self="center middle">
-              <q-card bordered>
-                <q-input
-                  v-model="create_folder_name"
-                  label="New Folder Name"
-                  input-class="text-center"
-                  class="full-width text-primary text-body1"
-                />
-                <q-btn
-                  label="Create"
-                  class="cursor-pointer full-width bg-green"
-                  flat
-                  @click="createFolder"
-                  :loading="loading"
-                  v-close-popup
-                />
-              </q-card>
-            </q-menu>
-          </q-fab-action>
-        </q-fab>
-      </q-page-sticky>
-
-      <q-page-sticky
-        position="bottom-right"
-        :offset="[240, 18]"
-        v-if="
-          selectedFolders.length +
-            selectedFiles.length +
-            selectedDocuments.length >
-          0
-        "
-      >
-        <q-fab
-          color="primary"
-          text-color="white"
-          icon="checklist"
-          :direction="mobile ? 'up' : 'left'"
-        >
-          <q-fab-action
-            label="Delete Selection"
-            text-color="white"
-            @click="deleteSelection"
-            icon="delete"
-            class="bg-red text-light"
-          />
+      <q-page-sticky position="bottom">
+        <q-fab icon="info" text-color="white" color="primary" direction="up">
+          <q-card style="width: 250px">
+            <q-card-section>
+              <a class="text-body1 q-ma-sm"> Folder Information</a>
+              <q-separator class="q-ma-sm" />
+              <div class="text-body2 q-ma-sm">
+                Owner: {{ rawFolderContent.owner }}
+              </div>
+              <div class="text-body2 q-mt-sm q-ml-sm q-mr-sm">
+                Permissions: {{ rawFolderContent.permissions }}
+              </div>
+            </q-card-section>
+            <q-btn
+              label="Create Folder Link"
+              icon="folder_shared"
+              class="full-width"
+              flat
+              color="green"
+              @click="createFolderLink"
+            >
+              <q-tooltip>
+                This will create a link to this Folder in your Home
+                directory.</q-tooltip
+              >
+            </q-btn>
+          </q-card>
         </q-fab>
       </q-page-sticky>
     </q-page>
@@ -895,35 +924,14 @@ export default defineComponent({
         name: 'Home',
         path: 'Home',
         id: 'b2ea057d-fa9b-4f42-a50f-d9db1bc510e4',
+        permissions: 'read write',
+        owner: 'bla',
         children: {
-          private_files: [
-            {
-              name: 'test.pdf',
-              id: 'c5eab6e6-b8b2-4029-a749-7cf8203dceae',
-              changed: '2022-10-08 15:31:16',
-            },
-          ],
+          private_files: [],
           public_files: [],
-          folders: [
-            {
-              name: 'SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS.pdf',
-              id: '810f5804-5a81-443a-806b-c24829f88223',
-              path: 'Home/dwadwad',
-            },
-            {
-              name: 'Test2',
-              id: 'c022875a-587c-4454-9677-3248c76cda03',
-              path: 'Home/Test2',
-            },
-          ],
+          folders: [],
           folder_links: [],
-          documents: [
-            {
-              name: 'Test',
-              id: 'c5eab6e6-b8b2-4029-a749-7cf8203dceae',
-              changed: '2022-10-08 15:31:16',
-            },
-          ],
+          documents: [],
         },
       }),
       // toolbar handlers
@@ -1020,6 +1028,10 @@ export default defineComponent({
       return { '--min-height': height + 'px' };
     },
 
+    width() {
+      return this.q.screen.width;
+    },
+
     item_text_width() {
       var width = this.q.screen.width;
       if (this.updateItemDrawer) {
@@ -1032,6 +1044,25 @@ export default defineComponent({
     },
   },
   methods: {
+    createFolderLink() {
+      var data = {
+        folderid: this.rawFolderContent.id,
+        foldername: this.rawFolderContent.name,
+      };
+      api
+        .post('/files/create/folder_link', data, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.notify('positive', 'Link created in your home directory.');
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'API ERROR :/');
+          this.loading = false;
+          console.log(error);
+          this.allowed = false;
+        });
+    },
     getInitialFolder() {
       var folderid = this.$route.params.id;
       this.previousFolder = this.rawFolderContent.id;

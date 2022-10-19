@@ -25,6 +25,7 @@
       />
       <q-btn
         label="Create"
+        text-color="white"
         class="cursor-pointer full-width bg-green"
         size="lg"
         flat
@@ -95,7 +96,11 @@
       <q-tabs v-model="drawerTab" class="q-mt-md">
         <q-tab name="info" icon="info" />
         <q-tab name="edit" icon="edit" />
-        <q-tab name="share" icon="share" />
+        <q-tab
+          name="share"
+          icon="share"
+          v-if="updateItemType != 'folder_link'"
+        />
       </q-tabs>
       <q-tab-panels v-model="drawerTab" animated style="height: 70%">
         <q-tab-panel name="info">
@@ -105,14 +110,22 @@
           </div>
           <div
             class="text-body1 q-mt-md q-ml-sm"
-            v-if="updateItemType != 'document'"
+            v-if="
+              updateItemType != 'document' && updateItemType != 'folder_link'
+            "
           >
             Size: {{ drawerSize }}
           </div>
-          <div class="text-body1 q-mt-md q-ml-sm">
+          <div
+            class="text-body1 q-mt-md q-ml-sm"
+            v-if="updateItemType != 'folder_link'"
+          >
             Created: {{ drawerCreated }}
           </div>
-          <div class="text-body1 q-mt-md q-ml-sm">
+          <div
+            class="text-body1 q-mt-md q-ml-sm"
+            v-if="updateItemType != 'folder_link'"
+          >
             Modified: {{ drawerModified }}
           </div>
           <div class="text-body1 q-mt-md q-ml-sm">
@@ -192,7 +205,7 @@
             :loading="loading"
           />
         </q-tab-panel>
-        <q-tab-panel name="share">
+        <q-tab-panel name="share" v-if="updateItemType != 'folder_link'">
           <div class="text-h6 q-mb-md q-mt-sm">Sharing</div>
           <q-checkbox
             v-model="drawerSharing"
@@ -407,10 +420,61 @@
         </template>
       </q-input>
 
+      <q-fab icon="add" direction="down" class="q-ml-lg" flat>
+        <q-fab-action
+          color="primary"
+          text-color="white"
+          @click="
+            upload_file_dialog = !upload_file_dialog;
+            fetchAllAvailableFolders();
+          "
+          icon="file_upload"
+          label="Upload Files"
+        />
+        <q-fab-action
+          color="primary"
+          text-color="white"
+          @click="
+            docCreateDialog = !docCreateDialog;
+            createDocParent = rawFolderContent.path;
+            fetchAllAvailableFolders();
+          "
+          icon="note_add"
+          label="New Document"
+        />
+        <q-fab-action
+          color="primary"
+          text-color="white"
+          icon="create_new_folder"
+          label="New Folder"
+        >
+          <q-menu anchor="center right" self="center middle">
+            <q-card bordered>
+              <q-input
+                v-model="create_folder_name"
+                label="New Folder Name"
+                input-class="text-center"
+                class="full-width text-primary text-body1"
+              />
+              <q-btn
+                label="Create"
+                class="cursor-pointer full-width bg-green"
+                flat
+                text-color="white"
+                @click="createFolder"
+                :loading="loading"
+                v-close-popup
+              />
+            </q-card>
+          </q-menu>
+        </q-fab-action>
+      </q-fab>
+
       <q-space />
       <div
         v-if="
-          selectedFolders.length +
+          selectedFolderLinks.length +
+            selectedFolders.length +
             selectedFiles.length +
             selectedDocuments.length >
           0
@@ -421,6 +485,7 @@
           <div class="row justify-center">
             <a class="q-ma-sm text-body1 text-center" v-if="mobile">
               {{
+                selectedFolderLinks.length +
                 selectedFolders.length +
                 selectedFiles.length +
                 selectedDocuments.length
@@ -462,6 +527,7 @@
 
         <a class="q-mr-lg" v-if="!mobile">
           {{
+            selectedFolderLinks.length +
             selectedFolders.length +
             selectedFiles.length +
             selectedDocuments.length
@@ -630,33 +696,61 @@
         >
           <div
             v-if="
-              (optnShowFiles && search == '') ||
-              (optnShowFiles && folder_link.name.includes(search))
+              (optnShowFolders && search == '') ||
+              (optnShowFolders && folder_link.name.includes(search))
             "
           >
             <q-item
               clickable
+              @click="getFolderLinkId(folder_link.id)"
               class="full-width"
-              v-draggable="['file', folder_link.id]"
-              @click="openInNewTab(folder_link.id)"
-              :class="folder_link.selected ? 'bg-light-blue-4' : ''"
+              v-droppable
+              v-draggable="['folder', folder_link.id]"
+              :class="[
+                folder_link.drag_over ? 'bg-blue' : '',
+                folder_link.selected ? 'bg-light-blue-4' : '',
+              ]"
+              @v-drag-enter="
+                (ev) => {
+                  if (ev[1] != folder_link.id) {
+                    folder_link.drag_over = true;
+                  }
+                }
+              "
+              @v-drag-leave="folder_link.drag_over = false"
+              @v-drag-over="
+                (ev) => {
+                  if (ev[1] != folder_link.id) {
+                    folder_link.drag_over = true;
+                  }
+                }
+              "
+              @v-drag-drop="changeFolder($event, folder_link.id)"
             >
+              <q-menu
+                style="pointer-events: none"
+                anchor="center middle"
+                self="center middle"
+                v-model="folder_link.drag_over"
+                >Add to folder: {{ folder_link.name }}</q-menu
+              >
               <q-item-section avatar>
                 <q-checkbox
-                  v-model="selectedFiles"
+                  v-model="selectedFolderLinks"
                   :val="folder_link.id"
                   color="green"
                   @click="folder_link.selected = !folder_link.selected"
                 />
               </q-item-section>
-              <q-item-section avatar top>
+              <q-item-section avatar top style="pointer-events: none">
                 <q-avatar
-                  icon="file_present"
+                  icon="folder_shared"
                   color="primary"
                   text-color="white"
                 />
               </q-item-section>
-              <q-item-section>
+
+              <q-item-section style="pointer-events: none">
                 <q-item-label
                   class="item_text"
                   lines="1"
@@ -667,12 +761,9 @@
                   "
                   :style="item_text_width"
                 >
-                  <q-icon name="share" v-if="folder_link.shared" />
+                  <q-icon name="share" />
                   {{ folder_link.name }}</q-item-label
                 >
-                <q-item-label caption lines="1">{{
-                  folder_link.modified
-                }}</q-item-label>
               </q-item-section>
               <q-item-section side>
                 <q-btn
@@ -690,14 +781,18 @@
                     drawerCreated = folder_link.created;
                     drawerModified = folder_link.modified;
                     drawerSize = folder_link.size;
+                    drawerSharing = folder_link.shared;
+                    drawerSharingAllowAllRead = folder_link.allow_all_read;
+                    drawerSharingAllowedWrite = folder_link.allow_all_write;
                   "
                   :loading="loading"
                   stretch
                 />
               </q-item-section>
             </q-item>
-            <q-separator />
           </div>
+
+          <q-separator />
         </template>
         <template
           v-for="file in rawFolderContent.children.private_files"
@@ -851,109 +946,6 @@
         </template>
       </div>
     </q-scroll-area>
-
-    <q-page-sticky position="bottom-right" :offset="[120, 18]">
-      <q-fab color="primary" text-color="white" icon="add" direction="up">
-        <q-fab-action
-          color="primary"
-          text-color="white"
-          @click="
-            upload_file_dialog = !upload_file_dialog;
-            fetchAllAvailableFolders();
-          "
-          icon="file_upload"
-          label="Upload Files"
-        />
-        <q-fab-action
-          color="primary"
-          text-color="white"
-          @click="
-            docCreateDialog = !docCreateDialog;
-            createDocParent = rawFolderContent.path;
-            fetchAllAvailableFolders();
-          "
-          icon="note_add"
-          label="New Document"
-        />
-        <q-fab-action
-          color="primary"
-          text-color="white"
-          icon="create_new_folder"
-          label="New Folder"
-        >
-          <q-menu anchor="center right" self="center middle">
-            <q-card bordered>
-              <q-input
-                v-model="create_folder_name"
-                label="New Folder Name"
-                input-class="text-center"
-                class="full-width text-primary text-body1"
-              />
-              <q-btn
-                label="Create"
-                class="cursor-pointer full-width bg-green"
-                flat
-                @click="createFolder"
-                :loading="loading"
-                v-close-popup
-              />
-            </q-card>
-          </q-menu>
-        </q-fab-action>
-      </q-fab>
-    </q-page-sticky>
-
-    <q-page-sticky
-      position="bottom-right"
-      :offset="[240, 18]"
-      v-if="
-        selectedFolders.length +
-          selectedFiles.length +
-          selectedDocuments.length >
-        0
-      "
-    >
-      <q-fab
-        color="primary"
-        text-color="white"
-        icon="checklist"
-        :direction="mobile ? 'up' : 'left'"
-      >
-        <q-fab-action
-          color="primary"
-          text-color="white"
-          @click="
-            fetchAllAvailableFolders();
-            selectionNewParent = this.rawFolderContent.path;
-          "
-          label="Move Selection"
-          icon="trending_flat"
-        >
-          <q-menu @hide="availParents = []" style="min-width: 200px">
-            <q-select
-              outlined
-              v-model="selectionNewParent"
-              :options="availParents"
-              label="Parent Folder"
-              input-class="text-center text-body1"
-            />
-            <q-btn
-              @click="moveSelection"
-              label="Move"
-              class="bg-blue full-width text-white"
-              size="lg"
-            />
-          </q-menu>
-        </q-fab-action>
-        <q-fab-action
-          label="Delete Selection"
-          text-color="white"
-          @click="deleteSelection"
-          icon="delete"
-          class="bg-red text-light"
-        />
-      </q-fab>
-    </q-page-sticky>
   </q-page>
 </template>
 
@@ -999,34 +991,11 @@ export default defineComponent({
         path: 'Home',
         id: 'b2ea057d-fa9b-4f42-a50f-d9db1bc510e4',
         children: {
-          private_files: [
-            {
-              name: 'test.pdf',
-              id: 'c5eab6e6-b8b2-4029-a749-7cf8203dceae',
-              changed: '2022-10-08 15:31:16',
-            },
-          ],
+          private_files: [],
           public_files: [],
-          folders: [
-            {
-              name: 'SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS.pdf',
-              id: '810f5804-5a81-443a-806b-c24829f88223',
-              path: 'Home/dwadwad',
-            },
-            {
-              name: 'Test2',
-              id: 'c022875a-587c-4454-9677-3248c76cda03',
-              path: 'Home/Test2',
-            },
-          ],
+          folders: [],
           folder_links: [],
-          documents: [
-            {
-              name: 'Test',
-              id: 'c5eab6e6-b8b2-4029-a749-7cf8203dceae',
-              changed: '2022-10-08 15:31:16',
-            },
-          ],
+          documents: [],
         },
       }),
       // toolbar handlers
@@ -1079,7 +1048,7 @@ export default defineComponent({
 
       fileDraggedMain: ref(false),
       itemClickable: ref(true),
-
+      selectedFolderLinks: ref([]),
       selectedFolders: ref([]),
       selectedFiles: ref([]),
       selectedDocuments: ref([]),
@@ -1154,6 +1123,10 @@ export default defineComponent({
       for (var document_id of this.selectedDocuments) {
         this.deleteItem(document_id, 'document');
       }
+      for (var folder_link_id of this.selectedFolderLinks) {
+        this.deleteItem(folder_link_id, 'folder_link');
+      }
+      this.selectedFolderLinks = [];
       this.selectedFolders = [];
       this.selectedFiles = [];
       this.selectedDocuments = [];
@@ -1169,6 +1142,14 @@ export default defineComponent({
       for (var document_id of this.selectedDocuments) {
         this.updateItemParent(document_id, this.selectionNewParent, 'document');
       }
+      for (var folder_link_id of this.selectedFolderLinks) {
+        this.updateItemParent(
+          folder_link_id,
+          this.selectionNewParent,
+          'folder_link'
+        );
+      }
+      this.selectedFolderLinks = [];
       this.selectedFolders = [];
       this.selectedFiles = [];
       this.selectedDocuments = [];
@@ -1422,6 +1403,7 @@ export default defineComponent({
 
             this.path_names.pop();
             this.path_ids.pop();
+            this.selectedFolderLinks = [];
             this.selectedFolders = [];
             this.selectedFiles = [];
             this.selectedDocuments = [];
@@ -1467,6 +1449,7 @@ export default defineComponent({
               this.notify('positive', 'Updated');
               this.refreshFolder();
               this.loading = false;
+              this.selectedFolderLinks = [];
               this.selectedFolders = [];
               this.selectedFiles = [];
               this.selectedDocuments = [];
@@ -1501,6 +1484,7 @@ export default defineComponent({
               this.notify('positive', 'Updated');
               this.refreshFolder();
               this.loading = false;
+              this.selectedFolderLinks = [];
               this.selectedFolders = [];
               this.selectedFiles = [];
               this.selectedDocuments = [];
@@ -1575,6 +1559,7 @@ export default defineComponent({
             this.loading = false;
             this.updateItemDrawer = false;
             this.availParents = [];
+            this.selectedFolderLinks = [];
             this.selectedFolders = [];
             this.selectedFiles = [];
             this.selectedDocuments = [];
@@ -1615,6 +1600,7 @@ export default defineComponent({
             this.loading = false;
             this.updateItemDrawer = false;
             this.availParents = [];
+            this.selectedFolderLinks = [];
             this.selectedFolders = [];
             this.selectedFiles = [];
             this.selectedDocuments = [];
@@ -1742,6 +1728,8 @@ export default defineComponent({
             this.loading = false;
             this.updateItemDrawer = false;
             this.availParents = [];
+            this.selectedFolderLinks = [];
+
             this.selectedFolders = [];
             this.selectedFiles = [];
             this.selectedDocuments = [];
@@ -1772,6 +1760,39 @@ export default defineComponent({
             this.loading = false;
             this.updateItemDrawer = false;
             this.availParents = [];
+            this.selectedFolderLinks = [];
+
+            this.selectedFolders = [];
+            this.selectedFiles = [];
+            this.selectedDocuments = [];
+            this.allSelected = false;
+          } else {
+            this.notify('negative', '' + response.data.error);
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'API ERROR :/');
+          this.loading = false;
+          console.log(error);
+        });
+    },
+
+    // get Folder content with folderid
+    getFolderLinkId(folderid) {
+      this.previousFolder = this.rawFolderContent.id;
+      this.loading = true;
+      api
+        .get('/files/public/list/' + folderid, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.rawFolderContent = response.data;
+            this.path_names.push(response.data.name);
+            this.path_ids.push(response.data.id);
+            this.loading = false;
+            this.updateItemDrawer = false;
+            this.availParents = [];
+            this.selectedFolderLinks = [];
             this.selectedFolders = [];
             this.selectedFiles = [];
             this.selectedDocuments = [];
