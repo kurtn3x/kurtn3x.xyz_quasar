@@ -637,7 +637,7 @@
               <q-item
                 clickable
                 class="full-width"
-                v-draggable="['file', folder_link.id]"
+                v-draggable="['file_folder', folder_link.id]"
                 @click="openInNewTab(folder_link.id)"
                 :class="folder_link.selected ? 'bg-light-blue-4' : ''"
               >

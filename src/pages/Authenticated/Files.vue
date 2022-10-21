@@ -705,7 +705,7 @@
               @click="getFolderLinkId(folder_link.id)"
               class="full-width"
               v-droppable
-              v-draggable="['folder', folder_link.id]"
+              v-draggable="['folder_link', folder_link.id]"
               :class="[
                 folder_link.drag_over ? 'bg-blue' : '',
                 folder_link.selected ? 'bg-light-blue-4' : '',
