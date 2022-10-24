@@ -1,6 +1,6 @@
 <template>
-  <div v-if="!allowed && !loading">Not allowed</div>
-  <div v-if="allowed && !loading">
+  <!-- <div v-if="!allowed && !loading">Not allowed</div> -->
+  <div v-if="!allowed && !loading">
     <q-dialog v-model="docCreateDialog" @hide="availParents = []">
       <q-card bordered>
         <q-toolbar class="justify-center">
