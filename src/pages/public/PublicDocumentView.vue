@@ -1,104 +1,107 @@
 <template>
-  <q-dialog v-model="editSettingsDialog" @hide="availParents = []">
-    <q-card>
-      <div class="text-h6 q-ma-md text-primary">UPDATE DOCUMENT</div>
-      <q-input
-        dense
-        standout
-        v-model="updatedDocName"
-        label="Name"
-        input-class="text-center"
-        class="full-width text-primary q-ma-md"
-      />
-      <q-select
-        v-model="updatedDocParent"
-        :options="availParents"
-        label="Parent Folder"
-        class="q-ma-md"
-      />
-      <q-btn
-        label="Update"
-        class="cursor-pointer full-width text-green"
-        flat
-        @click="saveDocumentInfo"
-        :loading="loading"
-        size="lg"
-        v-close-popup
-      />
-    </q-card>
-  </q-dialog>
+  <div v-if="!allowed && !loading">Not allowed.</div>
+  <div v-if="allowed && !loading">
+    <q-dialog v-model="editSettingsDialog" @hide="availParents = []">
+      <q-card>
+        <div class="text-h6 q-ma-md text-primary">UPDATE DOCUMENT</div>
+        <q-input
+          dense
+          standout
+          v-model="updatedDocName"
+          label="Name"
+          input-class="text-center"
+          class="full-width text-primary q-ma-md"
+        />
+        <q-select
+          v-model="updatedDocParent"
+          :options="availParents"
+          label="Parent Folder"
+          class="q-ma-md"
+        />
+        <q-btn
+          label="Update"
+          class="cursor-pointer full-width text-green"
+          flat
+          @click="saveDocumentInfo"
+          :loading="loading"
+          size="lg"
+          v-close-popup
+        />
+      </q-card>
+    </q-dialog>
 
-  <q-page>
-    <q-bar style="height: 50px; background-color: #00a4ef" class="text-light">
-      <q-btn to="/dashboard/files" icon="arrow_back" flat class="text-white">
-        <q-tooltip>Go back</q-tooltip>
-      </q-btn>
-      <q-icon name="feed" />
-      <div class="q-ml-md">DOCUMENT EDITOR</div>
-      <q-space />
+    <q-page>
+      <q-bar style="height: 50px; background-color: #00a4ef" class="text-light">
+        <q-btn to="/dashboard/files" icon="arrow_back" flat class="text-white">
+          <q-tooltip>Go back</q-tooltip>
+        </q-btn>
+        <q-icon name="feed" />
+        <div class="q-ml-md">DOCUMENT EDITOR</div>
+        <q-space />
 
-      <div class="q-ml-md">File: {{ docName }}</div>
-      <div class="q-ml-xl">Folder: {{ docParent }}</div>
-      <q-space />
+        <div class="q-ml-md">File: {{ docName }}</div>
+        <div class="q-ml-xl">Folder: {{ docParent }}</div>
+        <q-space />
 
-      <q-btn
-        stretch
-        flat
-        label="Print (to PDF)"
-        icon="print"
-        @click="printDocument()"
-        class="text-h6"
-      />
+        <q-btn
+          stretch
+          flat
+          label="Print (to PDF)"
+          icon="print"
+          @click="printDocument()"
+          class="text-h6"
+        />
 
-      <q-btn
-        stretch
-        flat
-        label="Edit File Settings"
-        icon="edit"
-        @click="
-          editSettingsDialog = !editSettingsDialog;
-          fetchAllAvailableFolders();
-          updatedDocName = this.docName;
-          updatedDocParent = this.docParent;
-          this.availParents.push(this.docParent);
-        "
-        class="text-h6"
-      />
-      <q-btn
-        stretch
-        flat
-        label="Save"
-        icon="save"
-        @click="saveDocumentText()"
-        class="text-h6"
-      />
-    </q-bar>
-    <div
-      id="editor"
-      style="
-        size: 7in 9.25in;
-        margin: 0mm 16mm 0mm 16mm;
-        border-left: 1px solid;
-        border-right: 1px solid;
-      "
-    >
-      <ckeditor
-        :editor="myeditor"
-        v-model="editorData"
-        :config="editorConfig"
-        @ready="onReady"
-      ></ckeditor>
-    </div>
-    <q-separator />
-    <div class="row">
-      <q-space />
+        <q-btn
+          stretch
+          flat
+          label="Edit File Settings"
+          icon="edit"
+          @click="
+            editSettingsDialog = !editSettingsDialog;
+            fetchAllAvailableFolders();
+            updatedDocName = this.docName;
+            updatedDocParent = this.docParent;
+            this.availParents.push(this.docParent);
+          "
+          class="text-h6"
+        />
+        <q-btn
+          stretch
+          flat
+          label="Save"
+          icon="save"
+          @click="saveDocumentText()"
+          class="text-h6"
+        />
+      </q-bar>
       <div
-        class="q-mr-md q-mt-md"
-        :class="settingsStore.darkmode ? 'text-light' : 'text-dark'"
-        id="word-counter"
-      ></div>
-    </div>
-  </q-page>
+        id="editor"
+        style="
+          size: 7in 9.25in;
+          margin: 0mm 16mm 0mm 16mm;
+          border-left: 1px solid;
+          border-right: 1px solid;
+        "
+      >
+        <ckeditor
+          :editor="myeditor"
+          v-model="editorData"
+          :config="editorConfig"
+          @ready="onReady"
+        ></ckeditor>
+      </div>
+      <q-separator />
+      <div class="row">
+        <q-space />
+        <div
+          class="q-mr-md q-mt-md"
+          :class="settingsStore.darkmode ? 'text-light' : 'text-dark'"
+          id="word-counter"
+        ></div>
+      </div>
+    </q-page>
+  </div>
 </template>
 
 <script>
@@ -194,10 +197,12 @@ export default defineComponent({
       dataSet: ref(false),
 
       parentId: ref(''),
+      allowed: ref(false),
+      loading: ref(true),
     };
   },
   async created() {
-    this.docId = this.$route.params.docid;
+    this.docId = this.$route.params.id;
   },
   methods: {
     printDocument() {
@@ -212,7 +217,7 @@ export default defineComponent({
     },
     async getDoc() {
       await api
-        .get('/files/document/' + this.docId, this.axios_config)
+        .get('/files/public/document/' + this.docId, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.editorData = response.data.document.text;
@@ -220,14 +225,18 @@ export default defineComponent({
             this.docParent = response.data.path;
             this.parentId = response.data.parentid;
             response.data.document.text;
+            this.loading = false;
+            this.allowed = true;
           } else {
             this.notify('negative', '' + response.data.error);
             this.loading = false;
+            this.allowed = false;
           }
         })
         .catch((error) => {
           this.notify('negative', 'API ERROR :/');
           this.loading = false;
+          this.allowed = false;
           console.log(error);
         });
     },

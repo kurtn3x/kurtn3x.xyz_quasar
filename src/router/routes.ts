@@ -15,12 +15,27 @@ const routes: RouteRecordRaw[] = [
         component: () => import('pages/UserProfileIDReferrer.vue'),
       },
       {
-        path: 'folder/:id',
-        component: () => import('pages/PublicFolderView.vue'),
-      },
-      {
         path: 'test',
         component: () => import('pages/test.vue'),
+      },
+    ],
+  },
+
+  {
+    path: '/public',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'document/:id',
+        component: () => import('pages/public/PublicDocumentView.vue'),
+      },
+      {
+        path: 'file/:id',
+        component: () => import('pages/public/PublicFileView.vue'),
+      },
+      {
+        path: 'folder/:id',
+        component: () => import('pages/public/PublicFolderView.vue'),
       },
     ],
   },

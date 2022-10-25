@@ -888,8 +888,8 @@ import { useUserStore } from 'stores/user';
 import { useQuasar } from 'quasar';
 import { useSettingsStore } from 'stores/settings';
 import { api } from 'boot/axios';
-import { draggable, selected } from '../components/draggable.js';
-import { droppable } from '../components/droppable.js';
+import { draggable, selected } from '../../components/draggable.js';
+import { droppable } from '../../components/droppable.js';
 
 export default defineComponent({
   name: 'PublicFilesView',
@@ -1728,7 +1728,7 @@ export default defineComponent({
     getHomeFolder() {
       this.loading = true;
       api
-        .get('/files/list_home', this.axios_config)
+        .get('/files/home', this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.rawFolderContent = response.data;

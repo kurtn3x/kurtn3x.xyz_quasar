@@ -1,39 +1,4 @@
 <template>
-  <q-dialog v-model="docCreateDialog" @hide="availParents = []">
-    <q-card bordered>
-      <q-toolbar class="justify-center">
-        <div class="text-h6 q-ma-md text-primary text-center text-weight-bold">
-          CREATE A NEW DOCUMENT
-        </div>
-      </q-toolbar>
-      <q-separator />
-      <q-input
-        outlined
-        dense
-        v-model="createDocName"
-        label="Name"
-        input-class="text-center"
-        class="text-primary text-body1 q-ma-md"
-      />
-      <q-select
-        outlined
-        v-model="createDocParent"
-        :options="availParents"
-        label="Parent Folder"
-        class="q-ma-md"
-        input-class="text-center text-body1"
-      />
-      <q-btn
-        label="Create"
-        text-color="white"
-        class="cursor-pointer full-width bg-green"
-        size="lg"
-        flat
-        @click="createDocument"
-        :loading="loading"
-      />
-    </q-card>
-  </q-dialog>
   <q-dialog v-model="folder_delete_dialog" @hide="availParents = []">
     <q-card bordered>
       <div class="text-body1 text-center q-ma-md">
@@ -95,7 +60,7 @@
       </div>
       <q-tabs v-model="drawerTab" class="q-mt-md">
         <q-tab name="info" icon="info" />
-        <q-tab name="edit" icon="edit" />
+        <q-tab name="edit" icon="edit" @click="fetchAllAvailableFolders()" />
         <q-tab
           name="share"
           icon="share"
@@ -222,6 +187,18 @@
             color="green"
             label="Allow everyone to write"
           />
+          <q-checkbox
+            v-if="updateItemType == 'folder'"
+            v-model="drawerSharingRecursive"
+            color="green"
+            label="Apply Recursively"
+          />
+          <q-icon name="info" class="q-ml-md" v-if="updateItemType == 'folder'"
+            ><q-tooltip class="text-body2">
+              Apply these Settings to all subfolders & subfiles in this
+              folder.</q-tooltip
+            ></q-icon
+          >
           <div class="text-body1 q-mt-md q-ml-sm">Share Link:</div>
           <q-input
             filled
@@ -435,9 +412,8 @@
           color="primary"
           text-color="white"
           @click="
-            docCreateDialog = !docCreateDialog;
-            createDocParent = rawFolderContent.path;
-            fetchAllAvailableFolders();
+            newObjShow = true;
+            newObjType = 'document';
           "
           icon="note_add"
           label="New Document"
@@ -447,27 +423,11 @@
           text-color="white"
           icon="create_new_folder"
           label="New Folder"
-        >
-          <q-menu anchor="center right" self="center middle">
-            <q-card bordered>
-              <q-input
-                v-model="create_folder_name"
-                label="New Folder Name"
-                input-class="text-center"
-                class="full-width text-primary text-body1"
-              />
-              <q-btn
-                label="Create"
-                class="cursor-pointer full-width bg-green"
-                flat
-                text-color="white"
-                @click="createFolder"
-                :loading="loading"
-                v-close-popup
-              />
-            </q-card>
-          </q-menu>
-        </q-fab-action>
+          @click="
+            newObjShow = true;
+            newObjType = 'folder';
+          "
+        />
       </q-fab>
 
       <q-space />
@@ -590,6 +550,61 @@
         "
         :class="fileDraggedMain ? 'bg-blue' : ''"
       >
+        <q-item class="full-width bg-light-green-2" v-if="newObjShow">
+          <q-item-section avatar> </q-item-section>
+          <q-item-section avatar top style="pointer-events: none">
+            <q-avatar
+              icon="folder"
+              color="primary"
+              text-color="white"
+              v-if="newObjType == 'folder'"
+            />
+            <q-avatar
+              icon="article"
+              color="primary"
+              text-color="white"
+              v-if="newObjType == 'document'"
+            />
+          </q-item-section>
+
+          <q-item-section>
+            <q-input
+              standout
+              dense
+              dark
+              v-model="newObjName"
+              :label="'New ' + newObjType + ' Name'"
+              class="text-body1 q-ml-md"
+              input-class="text-dark"
+              label-color="dark"
+              autofocus
+              clearable
+              @keyup.enter="createObj"
+            />
+          </q-item-section>
+          <q-item-section side class="row">
+            <div>
+              <q-btn
+                icon="done"
+                class="q-ml-md bg-green text-white"
+                round
+                flat
+                @click="newObj"
+              />
+              <q-btn
+                icon="close"
+                class="q-ml-md bg-red text-white"
+                round
+                flat
+                @click="
+                  newObjShow = false;
+                  newObjName = '';
+                  newObjType = '';
+                "
+              />
+            </div>
+          </q-item-section>
+        </q-item>
         <template
           v-for="folder in rawFolderContent.children.folders"
           :key="folder"
@@ -673,7 +688,6 @@
                     updateItemType = 'folder';
                     updateItemNewParent = rawFolderContent.path;
                     drawerItemName = folder.name;
-                    fetchAllAvailableFolders();
                     drawerCreated = folder.created;
                     drawerModified = folder.modified;
                     drawerSize = folder.size;
@@ -777,7 +791,6 @@
                     updateItemType = 'folder_link';
                     updateItemNewParent = rawFolderContent.path;
                     drawerItemName = folder_link.name;
-                    fetchAllAvailableFolders();
                     drawerCreated = folder_link.created;
                     drawerModified = folder_link.modified;
                     drawerSize = folder_link.size;
@@ -856,7 +869,6 @@
                     updateItemType = 'file';
                     updateItemNewParent = rawFolderContent.path;
                     drawerItemName = file.name;
-                    fetchAllAvailableFolders();
                     drawerCreated = file.created;
                     drawerModified = file.modified;
                     drawerSize = file.size;
@@ -932,7 +944,6 @@
                     updateItemType = 'document';
                     updateItemNewParent = rawFolderContent.path;
                     drawerItemName = document.name;
-                    fetchAllAvailableFolders();
                     drawerCreated = document.created;
                     drawerModified = document.modified;
                   "
@@ -989,12 +1000,26 @@ export default defineComponent({
       rawFolderContent: ref({
         name: 'Home',
         path: 'Home',
-        id: 'b2ea057d-fa9b-4f42-a50f-d9db1bc510e4',
+        id: '45e46e48-c79e-4577-98b9-88e14ba27a31',
         children: {
-          private_files: [],
-          public_files: [],
-          folders: [],
+          private_files: [
+            {
+              name: 'dropped text.txt',
+              id: '3163e0ae-62eb-421c-a691-c54e865bf53f',
+              modified: '2022-10-25, 11:48:11',
+              created: '2022-10-25, 11:48:11',
+              size: 49,
+            },
+            {
+              name: 'dropped text.txt',
+              id: '55ddcc3d-b093-4173-ae16-c244161dbc74',
+              modified: '2022-10-25, 11:48:59',
+              created: '2022-10-25, 11:48:59',
+              size: 49,
+            },
+          ],
           folder_links: [],
+          folders: [],
           documents: [],
         },
       }),
@@ -1012,8 +1037,6 @@ export default defineComponent({
       upload_file_names: ref([]),
       upload_file_types: ref([]),
       upload_file_freeEdit: ref(false),
-      // create new folder
-      create_folder_name: ref(''),
       // update file or folder or document name/parent (handled all in one, but different api calls depending on updateItemType)
       updateItemDrawer: ref(false),
       updateItemId: ref(''),
@@ -1032,19 +1055,13 @@ export default defineComponent({
       drawerSharingAllowAllWrite: ref(false),
       drawerSharingAllowedWrite: ref(''),
       drawerSharingAllowedRead: ref(''),
-      drawerSharingPassword: ref(false),
-      drawerSharingPasswordPW: ref(''),
+      drawerSharingRecursive: ref(true),
       // lists all available parents (all folders of user) for q-select
       availParents: ref([]),
 
       // delete folder
       folder_to_delete: ref(''),
       folder_delete_dialog: ref(false),
-
-      // create new doc
-      createDocName: ref(''),
-      createDocParent: ref(''),
-      docCreateDialog: ref(false),
 
       fileDraggedMain: ref(false),
       itemClickable: ref(true),
@@ -1054,6 +1071,10 @@ export default defineComponent({
       selectedDocuments: ref([]),
       allSelected: ref(false),
       selectionNewParent: ref(''),
+
+      newObjShow: ref(false),
+      newObjName: ref(''),
+      newObjType: ref(''),
     };
   },
   created() {
@@ -1061,7 +1082,12 @@ export default defineComponent({
   },
   computed: {
     itemShareLink() {
-      return 'https://kurtn3x.xyz/folder/' + this.updateItemId;
+      return (
+        'https://kurtn3x.xyz/public/' +
+        this.updateItemType +
+        '/' +
+        this.updateItemId
+      );
     },
     filesInUploadField() {
       if (this.upload_file_files == null) {
@@ -1242,6 +1268,8 @@ export default defineComponent({
                 form_data.append('filename', validFile.name);
                 form_data.append('current_folder_id', this.rawFolderContent.id);
                 form_data.append('file', validFile);
+                form_data.append('size', validFile.size);
+                console.log(validFile);
                 api
                   .post('/files/create/file', form_data, config)
                   .then((response) => {
@@ -1395,7 +1423,10 @@ export default defineComponent({
     navGoBack() {
       this.loading = true;
       api
-        .get('/files/list/' + this.rawFolderContent.parentid, this.axios_config)
+        .get(
+          '/files/folder/' + this.rawFolderContent.parentid,
+          this.axios_config
+        )
         .then((response) => {
           if (response.status == 200) {
             this.rawFolderContent = response.data;
@@ -1543,8 +1574,7 @@ export default defineComponent({
         shared: this.drawerSharing,
         shared_allow_all_read: this.drawerSharingAllowAllRead,
         shared_allow_all_write: this.drawerSharingAllowAllWrite,
-        password_protected: this.drawerSharingPassword,
-        password: this.drawerSharingPasswordPW,
+        shared_recursive: this.drawerSharingRecursive,
       };
       api
         .put(
@@ -1687,7 +1717,7 @@ export default defineComponent({
     refreshFolder() {
       this.loading = true;
       api
-        .get('/files/list/' + this.rawFolderContent.id, this.axios_config)
+        .get('/files/folder/' + this.rawFolderContent.id, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.rawFolderContent = response.data;
@@ -1721,7 +1751,7 @@ export default defineComponent({
         i += 1;
       }
       api
-        .get('/files/list/' + folderid, this.axios_config)
+        .get('/files/folder/' + folderid, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.rawFolderContent = response.data;
@@ -1751,7 +1781,7 @@ export default defineComponent({
       this.previousFolder = this.rawFolderContent.id;
       this.loading = true;
       api
-        .get('/files/list/' + folderid, this.axios_config)
+        .get('/files/folder/' + folderid, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.rawFolderContent = response.data;
@@ -1813,7 +1843,7 @@ export default defineComponent({
     getHomeFolder() {
       this.loading = true;
       api
-        .get('/files/list_home', this.axios_config)
+        .get('/files/home', this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.rawFolderContent = response.data;
@@ -1857,29 +1887,21 @@ export default defineComponent({
 
     // create document, files, folders
 
-    createDocument() {
+    createObj() {
       this.loading = true;
-      var update_id = 0;
-      for (var item in this.allAvailableFolders.folders) {
-        if (
-          this.allAvailableFolders.folders[item].path == this.createDocParent
-        ) {
-          update_id = this.allAvailableFolders.folders[item].id;
-        }
-      }
       var data = {
-        current_folder_id: update_id,
-        name: this.createDocName,
-        text: '',
+        folderid: this.rawFolderContent.id,
+        name: this.newObjName,
       };
       api
-        .post('/files/create/document', data, this.axios_config)
+        .post('/files/create/' + this.newObjType, data, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
+            this.newObjName = '';
+            this.newObjShow = false;
             this.notify('positive', 'Created');
             this.loading = false;
             this.refreshFolder();
-            this.docCreateDialog = false;
           } else {
             this.notify('negative', '' + response.data.error);
             this.loading = false;
@@ -1890,41 +1912,6 @@ export default defineComponent({
           this.loading = false;
           console.log(error);
         });
-    },
-
-    createFolder() {
-      if (
-        this.create_folder_name != 'Home' &&
-        this.create_folder_name != 'home'
-      ) {
-        this.loading = true;
-        var data = {
-          current_folder_id: this.rawFolderContent.id,
-          foldername: this.create_folder_name,
-        };
-
-        api
-          .post('/files/create/folder', data, this.axios_config)
-          .then((response) => {
-            if (response.status == 200) {
-              console.log(this.rawFolderContent);
-              this.refreshFolder();
-              this.notify('positive', 'Created');
-              this.loading = false;
-              this.create_folder_name = ref('');
-            } else {
-              this.notify('negative', '' + response.data.error);
-              this.loading = false;
-            }
-          })
-          .catch((error) => {
-            this.notify('negative', 'API ERROR :/');
-            this.loading = false;
-            console.log(error);
-          });
-      } else {
-        this.notify('negative', 'you cant name your folder Home.');
-      }
     },
 
     uploadFiles() {
@@ -1964,6 +1951,7 @@ export default defineComponent({
         form_data.append('current_folder_id', this.rawFolderContent.id);
         if (this.upload_file_files != null) {
           form_data.append('file', this.upload_file_files[index]);
+          form_data.append('size', this.upload_file_files[index].size);
         }
         api
           .post('/files/create/file', form_data, config)
