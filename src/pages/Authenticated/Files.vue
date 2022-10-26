@@ -582,8 +582,8 @@
         class="item_parent_container"
         :style="item_parent_container_height"
         id="drop_zone"
-        @drop.prevent="onDrop"
-        @dragover.prevent="
+        @drop.self.prevent="onBackgroundDrop"
+        @dragover.self.prevent="
           (ev) => {
             if (ev.dataTransfer.items[0].kind == 'file') {
               this.fileDraggedMain = true;
@@ -597,7 +597,7 @@
             }
           }
         "
-        @dragleave.prevent="
+        @dragleave.self.prevent="
           (ev) => {
             if (ev.dataTransfer.items[0].kind == 'file') {
               this.fileDraggedMain = false;
@@ -673,7 +673,7 @@
           >
             <q-item
               clickable
-              @click="getFolderId(folder.id)"
+              @click="getFolderId(folder.id, false)"
               class="full-width"
               v-droppable
               v-draggable="['folder', folder.id]"
@@ -697,6 +697,31 @@
                 }
               "
               @v-drag-drop="changeFolder($event, folder.id)"
+              @drop.self.prevent="
+                onFolderDrop($event, folder.id);
+                folder.drag_over = false;
+              "
+              @dragover.self.prevent="
+                (ev) => {
+                  if (ev.dataTransfer.items[0].kind == 'file') {
+                    folder.drag_over = true;
+                  }
+                }
+              "
+              @dragenter.self="
+                (ev) => {
+                  if (ev.dataTransfer.items[0].kind == 'file') {
+                    folder.drag_over = true;
+                  }
+                }
+              "
+              @dragleave.self.prevent="
+                (ev) => {
+                  if (ev.dataTransfer.items[0].kind == 'file') {
+                    folder.drag_over = false;
+                  }
+                }
+              "
             >
               <q-menu
                 style="pointer-events: none"
@@ -1313,7 +1338,8 @@ export default defineComponent({
       });
     },
 
-    onDrop(ev) {
+    // drag & drop upload when dropping on free space ( current folder)
+    onBackgroundDrop(ev) {
       this.fileDraggedMain = false;
       if (ev.dataTransfer.items[0].kind != 'string') {
         var errors = [];
@@ -1345,7 +1371,7 @@ export default defineComponent({
               const validFile = item.getAsFile();
               let form_data = new FormData();
               form_data.append('filename', validFile.name);
-              form_data.append('current_folder_id', this.rawFolderContent.id);
+              form_data.append('new_parent_id', this.rawFolderContent.id);
               form_data.append('file', validFile);
               form_data.append('size', validFile.size);
               api
@@ -1510,24 +1536,222 @@ export default defineComponent({
       }
     },
 
+    // drag & drop upload when dropping on a folder
+    onFolderDrop(ev, folderid) {
+      if (ev.dataTransfer.items[0].kind != 'string') {
+        var errors = [];
+        var files_state = 0;
+        var succ_files = 0;
+        const length = ev.dataTransfer.items.length;
+        const notif = this.q.notify({
+          type: 'positive',
+          group: false,
+          timeout: 0,
+          spinner: true,
+          message: 'Uploading file...',
+          caption: files_state + ' / ' + length,
+        });
+
+        let config = {
+          withCredentials: true,
+          headers: {
+            'X-CSRFToken': this.q.cookies.get('csrftoken'),
+            'Content-Type': 'multipart/form-data',
+          },
+        };
+
+        [...ev.dataTransfer.items].forEach((item, i) => {
+          if (item.kind === 'file') {
+            // check if its a file
+            if (item.webkitGetAsEntry().isFile) {
+              const validFile = item.getAsFile();
+              let form_data = new FormData();
+              form_data.append('filename', validFile.name);
+              form_data.append('new_parent_id', folderid);
+              form_data.append('file', validFile);
+              form_data.append('size', validFile.size);
+              api
+                .post('/files/create/file', form_data, config)
+                .then((response) => {
+                  if (response.status == 200) {
+                    succ_files += 1;
+                    files_state += 1;
+                    notif({
+                      caption: files_state + ' / ' + length,
+                    });
+                    if (files_state == length) {
+                      if (errors.length == 0) {
+                        notif({
+                          type: 'positive',
+                          icon: 'done', // we add an icon
+                          spinner: false, // we reset the spinner setting so the icon can be displayed
+                          message:
+                            'Uploaded ' + succ_files + '/' + length + ' files!',
+                          timeout: 2500, // we will timeout it in 2.5s
+                        });
+                      } else {
+                        var message =
+                          'Uploaded ' +
+                          succ_files +
+                          '/' +
+                          length +
+                          " Files, following files couldn't be uploaded: ";
+                        for (var err_file of errors) {
+                          message += err_file + ', ';
+                        }
+                        notif({
+                          type: 'negative',
+                          icon: 'error', // we add an icon
+                          spinner: false, // we reset the spinner setting so the icon can be displayed
+                          message: message,
+                          timeout: 4000, // we will timeout it in 2.5s
+                          caption: '',
+                        });
+                      }
+                    }
+                  } else {
+                    files_state += 1;
+                    notif({
+                      type: 'negative',
+                      caption: files_state + ' / ' + length,
+                    });
+                    errors.push(validFile.name);
+                    if (files_state == length) {
+                      var message =
+                        'Uploaded ' +
+                        succ_files +
+                        '/' +
+                        length +
+                        " Files, following files couldn't be uploaded: ";
+                      for (var err_file of errors) {
+                        message += err_file + ', ';
+                      }
+                      notif({
+                        type: 'negative',
+                        icon: 'error', // we add an icon
+                        spinner: false, // we reset the spinner setting so the icon can be displayed
+                        message: message,
+                        timeout: 4000, // we will timeout it in 2.5s
+                        caption: '',
+                      });
+                    }
+                  }
+                })
+                .catch((error) => {
+                  files_state += 1;
+                  errors.push(validFile.name);
+                  notif({
+                    type: 'negative',
+                    caption: files_state + ' / ' + length,
+                  });
+                  if (files_state == length) {
+                    var message =
+                      'Uploaded ' +
+                      succ_files +
+                      '/' +
+                      length +
+                      " Files, following files couldn't be uploaded: ";
+                    for (var err_file of errors) {
+                      message += err_file + ', ';
+                    }
+                    notif({
+                      type: 'negative',
+                      icon: 'error', // we add an icon
+                      spinner: false, // we reset the spinner setting so the icon can be displayed
+                      message: message,
+                      timeout: 4000, // we will timeout it in 2.5s
+                      caption: '',
+                    });
+                  }
+                });
+            } else if (item.webkitGetAsEntry().isDirectory) {
+              // HANDLE DIRECTORY DRAG&DROP
+              var item = item.webkitGetAsEntry();
+              this.handleObj(item, folderid);
+              succ_files += 1;
+              files_state += 1;
+              notif({
+                caption: files_state + ' / ' + length,
+              });
+              if (files_state == length) {
+                if (errors.length == 0) {
+                  notif({
+                    type: 'positive',
+                    icon: 'done', // we add an icon
+                    spinner: false, // we reset the spinner setting so the icon can be displayed
+                    message:
+                      'Uploaded ' + succ_files + '/' + length + ' files!',
+                    timeout: 2500, // we will timeout it in 2.5s
+                  });
+                } else {
+                  var message =
+                    'Uploaded ' +
+                    succ_files +
+                    '/' +
+                    length +
+                    " Files, following files couldn't be uploaded: ";
+                  for (var err_file of errors) {
+                    message += err_file + ', ';
+                  }
+                  notif({
+                    type: 'negative',
+                    icon: 'error', // we add an icon
+                    spinner: false, // we reset the spinner setting so the icon can be displayed
+                    message: message,
+                    timeout: 4000, // we will timeout it in 2.5s
+                    caption: '',
+                  });
+                }
+              }
+            } else {
+              files_state += 1;
+              if (files_state == length) {
+                var message =
+                  'Uploaded ' +
+                  succ_files +
+                  '/' +
+                  length +
+                  " Files, following files couldn't be uploaded: ";
+                for (var err_file of errors) {
+                  message += err_file + ', ';
+                }
+                notif({
+                  type: 'negative',
+                  icon: 'error', // we add an icon
+                  spinner: false, // we reset the spinner setting so the icon can be displayed
+                  message: message,
+                  timeout: 4000, // we will timeout it in 2.5s
+                  caption: '',
+                });
+              }
+            }
+          }
+        });
+      }
+    },
+
+    // used with drag&drop uploads of folders
     async handleObj(obj, parentid) {
       if (obj.isDirectory) {
         // obj is a directory
         // create the directory
-        var ID = await this.createFolder(obj.name, parentid);
-        console.log(ID);
-        console.log('creating folder ' + obj.name);
-        var directoryReader = obj.createReader();
-        directoryReader.readEntries((entries) => {
-          entries.forEach((entry) => {
-            this.handleObj(entry, ID);
-          });
+        await this.createFolder(obj.name, parentid).then((response) => {
+          if (response.status == 200) {
+            var ID = response.data.ID;
+            var directoryReader = obj.createReader();
+            directoryReader.readEntries((entries) => {
+              entries.forEach((entry) => {
+                this.handleObj(entry, ID);
+              });
+            });
+          }
         });
       } else {
         this.handleFile(obj, parentid);
       }
     },
 
+    // used with drag&drop uploads of folders
     uploadFile(file) {
       let config = {
         withCredentials: true,
@@ -1538,7 +1762,7 @@ export default defineComponent({
       };
       let form_data = new FormData();
       form_data.append('filename', file.name);
-      form_data.append('current_folder_id', this.dirUploadParentId);
+      form_data.append('new_parent_id', this.dirUploadParentId);
       form_data.append('file', file);
       form_data.append('size', file.size);
       api.post('/files/create/file', form_data, config).then((response) => {
@@ -1547,60 +1771,42 @@ export default defineComponent({
       });
     },
 
+    // used with drag&drop uploads of folders
     handleFile(file, parentid) {
       this.dirUploadParentId = parentid;
       file.file(this.uploadFile);
     },
 
+    // create folder and return the response, used when drag&drop uploading nested folders
     async createFolder(name, parentid) {
       this.loading = true;
       var data = {
         folderid: parentid,
         name: name,
       };
+      var reval = 0;
       await api
         .post('/files/create/folder', data, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.loading = false;
             this.refreshFolder();
-            console.log(response.data.ID);
-            return response.data.ID;
+            reval = response;
           } else {
             this.notify('negative', '' + response.data.error);
             this.loading = false;
-            return 0;
+            reval = response;
           }
         })
         .catch((error) => {
           this.notify('negative', 'API ERROR :/');
           this.loading = false;
           console.log(error);
-          return 0;
+          reval = error;
         });
+      return reval;
     },
-    // isThisAFile(maybeFile) {
-    //   return new Promise(function (resolve, reject) {
-    //     if (maybeFile.type !== '') {
-    //       return resolve(maybeFile);
-    //     }
-    //     const reader = new FileReader();
-    //     reader.onloadend = () => {
-    //       if (
-    //         reader.error &&
-    //         (reader.error.name === 'NotFoundError' ||
-    //           reader.error.name === 'NotReadableError')
-    //       ) {
-    //         return reject(reader.error.name);
-    //       }
-    //       resolve(maybeFile);
-    //     };
-    //     reader.readAsBinaryString(maybeFile);
-    //   });
-    // },
-    showDOCUMENT() {
-      console.log();
-    },
+
     // go back navbar button
     navGoBack() {
       this.loading = true;
@@ -1715,6 +1921,7 @@ export default defineComponent({
       }
     },
 
+    // update parent of an item using the path string
     updateItemParent(id, new_parent_path, itemtype) {
       this.loading = true;
       var update_id = 0;
@@ -1748,7 +1955,7 @@ export default defineComponent({
         });
     },
 
-    // update the configuration (name / parent) of a doc, folder or file
+    // update sharing information of an object
     updateSharing() {
       this.loading = true;
       var data = {
@@ -1822,11 +2029,9 @@ export default defineComponent({
       this.loading = false;
     },
 
-    // fetch all available folders on user ( for changing folder path of a file)
+    // fetch all available folders on user (for changing folder path of a file)
     fetchAllAvailableFolders() {
-      console.log('Y');
       if (this.availParents.length == 0 || this.availParents.length == 1) {
-        console.log('X');
         api
           .get('/files/list_all_available_folders', this.axios_config)
           .then((response) => {
@@ -1852,6 +2057,8 @@ export default defineComponent({
           });
       }
     },
+
+    // universal
     styleFn(offset, height) {
       let pageheight = height - offset;
       return 'height: ' + pageheight + 'px';
@@ -1866,12 +2073,14 @@ export default defineComponent({
       });
     },
 
+    // open a file for download
     openInNewTab(id) {
       window
         .open('https://api.kurtn3x.xyz/files/download/' + id, '_blank')
         .focus();
     },
 
+    // handle filenames and their extension on file upload dialog
     uploaderHandleFilenames() {
       for (const file in this.upload_file_files) {
         // get the filename without extension
@@ -1897,6 +2106,7 @@ export default defineComponent({
       }
     },
 
+    // universal function to refetch the current folder when any change is made
     refreshFolder() {
       this.loading = true;
       api
@@ -1919,7 +2129,7 @@ export default defineComponent({
         });
     },
 
-    // get folder content with folder name
+    // get folder content with folder name ( from toolbar on top )
     getFolderPath(foldername) {
       this.previousFolder = this.rawFolderContent.id;
       this.loading = true;
@@ -1960,11 +2170,16 @@ export default defineComponent({
     },
 
     // get Folder content with folderid
-    getFolderId(folderid) {
+    getFolderId(folderid, publicfolder) {
       this.previousFolder = this.rawFolderContent.id;
       this.loading = true;
+      if (publicfolder) {
+        var getstr = '/files/public/folder/' + folderid;
+      } else {
+        var getstr = '/files/folder/' + folderid;
+      }
       api
-        .get('/files/folder/' + folderid, this.axios_config)
+        .get(getstr, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.rawFolderContent = response.data;
@@ -1975,37 +2190,6 @@ export default defineComponent({
             this.availParents = [];
             this.selectedFolderLinks = [];
 
-            this.selectedFolders = [];
-            this.selectedFiles = [];
-            this.selectedDocuments = [];
-            this.allSelected = false;
-          } else {
-            this.notify('negative', '' + response.data.error);
-            this.loading = false;
-          }
-        })
-        .catch((error) => {
-          this.notify('negative', 'API ERROR :/');
-          this.loading = false;
-          console.log(error);
-        });
-    },
-
-    // get Folder content with folderid
-    getFolderLinkId(folderid) {
-      this.previousFolder = this.rawFolderContent.id;
-      this.loading = true;
-      api
-        .get('/files/public/folder/' + folderid, this.axios_config)
-        .then((response) => {
-          if (response.status == 200) {
-            this.rawFolderContent = response.data;
-            this.path_names.push(response.data.name);
-            this.path_ids.push(response.data.id);
-            this.loading = false;
-            this.updateItemDrawer = false;
-            this.availParents = [];
-            this.selectedFolderLinks = [];
             this.selectedFolders = [];
             this.selectedFiles = [];
             this.selectedDocuments = [];
@@ -2046,7 +2230,6 @@ export default defineComponent({
     },
 
     // delete files, folders, documents
-
     deleteItem(id, type) {
       this.loading = true;
       api
@@ -2068,8 +2251,7 @@ export default defineComponent({
         });
     },
 
-    // create document, files, folders
-
+    // create documents and folders from add button
     createObj() {
       this.loading = true;
       var data = {
@@ -2097,6 +2279,7 @@ export default defineComponent({
         });
     },
 
+    // upload file(s) from add button
     uploadFiles() {
       var errors = [];
       var files_state = 0;
@@ -2137,7 +2320,7 @@ export default defineComponent({
         }
         form_data.append('filename', filename);
 
-        form_data.append('current_folder_id', this.rawFolderContent.id);
+        form_data.append('new_parent_id', this.rawFolderContent.id);
         if (this.upload_file_files != null) {
           form_data.append('file', this.upload_file_files[index]);
           form_data.append('size', this.upload_file_files[index].size);

@@ -26,7 +26,7 @@
     "particles.vue3": "^2.1.4",
     "pinia": "^2.0.11",
     "quasar": "^2.6.0",
-    "tsparticles": "^2.1.4",
+    "tsparticles": "^2.3.4",
     "tsparticles-interaction-light": "^2.2.1",
     "tsparticles-path-polygon": "^2.2.1",
     "tsparticles-plugin-polygon-mask": "^2.2.1",
