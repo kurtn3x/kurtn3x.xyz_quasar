@@ -27,19 +27,19 @@
     v-model="updateItemDrawer"
     bordered
     @hide="
-      updateItemId = '';
-      updateItemName = '';
+      drawerItemId = '';
+      drawerItemNewName = '';
       availParents = [];
-      updateItemNewParent = '';
+      drawerItemNewParent = '';
       allAvailableFolders = {};
-      updateItemType = '';
+      drawerItemType = '';
     "
   >
     <q-card bordered flat class="full-height">
       <q-toolbar class="q-mt-sm q-mb-sm">
-        <q-icon size="lg" name="article" v-if="updateItemType == 'document'" />
-        <q-icon size="lg" name="file_present" v-if="updateItemType == 'file'" />
-        <q-icon size="lg" name="folder" v-if="updateItemType == 'folder'" />
+        <q-icon size="lg" name="article" v-if="drawerItemType == 'document'" />
+        <q-icon size="lg" name="file_present" v-if="drawerItemType == 'file'" />
+        <q-icon size="lg" name="folder" v-if="drawerItemType == 'folder'" />
         <a class="text-h5 text-weight-bold q-ml-md">Settings</a>
         <q-space />
         <q-btn
@@ -52,11 +52,17 @@
       <q-separator />
       <div
         class="text-h5 q-mt-md text-center text-weight-bold q-ml-sm"
-        style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis"
+        style="
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          text-decoration: underline;
+          text-decoration-thickness: 3px;
+        "
         :style="item_text_width"
       >
         {{ drawerItemName }}
-        <q-tooltip> {{ drawerItemName }}</q-tooltip>
+        <q-tooltip class="text-body1"> {{ drawerItemName }}</q-tooltip>
       </div>
       <q-tabs v-model="drawerTab" class="q-mt-md">
         <q-tab name="info" icon="info" />
@@ -64,32 +70,33 @@
         <q-tab
           name="share"
           icon="share"
-          v-if="updateItemType != 'folder_link'"
+          v-if="drawerItemType != 'folder_link'"
         />
       </q-tabs>
       <q-tab-panels v-model="drawerTab" animated style="height: 70%">
         <q-tab-panel name="info">
-          <div class="text-h6 q-mb-md q-mt-sm">Info</div>
+          <div class="text-h6 q-mt-sm">Info</div>
+          <q-separator size="3px" />
           <div class="text-body1 q-mt-md q-ml-sm">
-            Type: {{ updateItemType }}
+            Type: {{ drawerItemType }}
           </div>
           <div
             class="text-body1 q-mt-md q-ml-sm"
             v-if="
-              updateItemType != 'document' && updateItemType != 'folder_link'
+              drawerItemType != 'document' && drawerItemType != 'folder_link'
             "
           >
-            Size: {{ drawerSize }}
+            Size: {{ drawerSize }} Bytes
           </div>
           <div
             class="text-body1 q-mt-md q-ml-sm"
-            v-if="updateItemType != 'folder_link'"
+            v-if="drawerItemType != 'folder_link'"
           >
             Created: {{ drawerCreated }}
           </div>
           <div
             class="text-body1 q-mt-md q-ml-sm"
-            v-if="updateItemType != 'folder_link'"
+            v-if="drawerItemType != 'folder_link'"
           >
             Modified: {{ drawerModified }}
           </div>
@@ -100,28 +107,30 @@
           <q-btn
             label="Download"
             icon="file_download"
-            class="cursor-pointer bg-green text-white full-width q-mt-sm"
+            class="cursor-pointer bg-green text-white full-width q-mt-md"
             flat
-            @click="openInNewTab(updateItemId)"
+            @click="openInNewTab(drawerItemId)"
             :loading="loading"
-            v-if="updateItemType == 'file'"
+            v-if="drawerItemType == 'file'"
             size="xl"
           />
         </q-tab-panel>
         <q-tab-panel name="edit">
-          <div class="text-h6 q-mb-md q-mt-sm">Update Item</div>
+          <div class="text-h6 q-mt-sm">Update Item</div>
+
+          <q-separator size="3px" />
 
           <q-input
             dense
             outlined
-            v-model="updateItemName"
+            v-model="drawerItemNewName"
             label="Name"
             input-class="text-center"
             class="text-primary q-ma-md text-body1 q-mt-lg"
           />
           <q-select
             outlined
-            v-model="updateItemNewParent"
+            v-model="drawerItemNewParent"
             :options="availParents"
             label="Parent Folder"
             class="q-ma-md text-body1"
@@ -134,8 +143,8 @@
             size="lg"
             :loading="loading"
             stretch
-            :to="'doc/edit/' + updateItemId"
-            v-if="updateItemType == 'document'"
+            :to="'doc/edit/' + drawerItemId"
+            v-if="drawerItemType == 'document'"
           />
 
           <q-btn
@@ -149,57 +158,68 @@
             size="lg"
           />
           <q-btn
-            v-if="updateItemType == 'folder'"
-            class="cursor-pointer bg-red text-white q-mt-sm full-width"
+            v-if="drawerItemType == 'folder'"
+            class="cursor-pointer bg-red text-white q-mt-md full-width"
             flat
             label="Delete"
             icon="delete"
             @click.capture.stop="
-              this.folder_to_delete = updateItemId.id;
+              this.folder_to_delete = drawerItemId.id;
               folder_delete_dialog = !folder_delete_dialog;
             "
             :loading="loading"
           />
           <q-btn
-            v-if="updateItemType != 'folder'"
-            class="cursor-pointer bg-red text-white full-width q-mt-sm"
+            v-if="drawerItemType != 'folder'"
+            class="cursor-pointer bg-red text-white full-width q-mt-md"
             label="Delete"
             flat
             icon="delete"
-            @click.capture.stop="deleteItem(updateItemId, updateItemType)"
+            @click.capture.stop="deleteItem(drawerItemId, drawerItemType)"
             :loading="loading"
           />
         </q-tab-panel>
-        <q-tab-panel name="share" v-if="updateItemType != 'folder_link'">
-          <div class="text-h6 q-mb-md q-mt-sm">Sharing</div>
+        <q-tab-panel name="share" v-if="drawerItemType != 'folder_link'">
+          <div class="text-h6 q-mt-sm">Sharing</div>
+          <q-separator size="3px" />
+          <q-checkbox
+            v-if="drawerItemType == 'folder'"
+            v-model="drawerSharingRecursive"
+            color="green"
+            label="Apply recursively"
+            class="q-mt-sm q-mb-xs"
+          />
+          <div
+            class="q-mb-sm text-body1 text-center"
+            v-if="drawerSharingRecursive"
+          >
+            This will apply the following settings for all subcontent contained
+            in this folder.
+          </div>
+          <q-separator size="3px" v-if="drawerItemType == 'folder'" />
+
           <q-checkbox
             v-model="drawerSharing"
             color="green"
             label="Enable Sharing"
+            class="q-mt-md"
+            @click="updateSharing"
           />
           <q-checkbox
             v-model="drawerSharingAllowAllRead"
             color="green"
             label="Allow everyone to read"
+            @click="updateSharing"
           />
           <q-checkbox
             v-model="drawerSharingAllowAllWrite"
             color="green"
             label="Allow everyone to write"
+            @click="updateSharing"
           />
-          <q-checkbox
-            v-if="updateItemType == 'folder'"
-            v-model="drawerSharingRecursive"
-            color="green"
-            label="Apply Recursively"
-          />
-          <q-icon name="info" class="q-ml-md" v-if="updateItemType == 'folder'"
-            ><q-tooltip class="text-body2">
-              Apply these Settings to all subfolders & subfiles in this
-              folder.</q-tooltip
-            ></q-icon
-          >
-          <div class="text-body1 q-mt-md q-ml-sm">Share Link:</div>
+          <div class="text-body1 q-mt-md q-ml-sm" v-if="drawerSharing">
+            Share Link:
+          </div>
           <q-input
             filled
             square
@@ -210,55 +230,71 @@
           />
           <q-item
             clickable
-            @click="copyuserlink(itemShareLink)"
+            @click="copyToClipboard(itemShareLink)"
             class="justify-center text-body2"
             v-if="drawerSharing"
           >
             Copy the link</q-item
           >
-
-          <q-btn
-            label="Save"
-            class="cursor-pointer bg-green text-white q-mt-sm full-width"
-            flat
-            icon="save"
-            @click="updateSharing"
-            :loading="loading"
-            size="lg"
-          />
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
   </q-drawer>
 
   <q-dialog v-model="upload_file_dialog">
-    <q-card style="min-width: 200px" bordered>
+    <q-card style="min-width: 300px" bordered>
       <q-toolbar class="justify-center">
-        <div class="text-h6 q-ma-md text-primary text-center text-weight-bold">
+        <div class="text-h5 q-mt-md text-primary text-center text-weight-bold">
           UPLOAD FILES
         </div>
         <q-separator />
       </q-toolbar>
 
       <q-file
-        color="primary"
-        filled
+        style="min-height: 300px; min-width: 300px"
         v-model="upload_file_files"
-        label="Select/Drag & Drop"
+        label="&nbsp;&nbsp;&nbsp;&nbsp; Click me / Drag & Drop Files here"
         multiple
         append
         @update:model-value="uploaderHandleFilenames"
         :loading="loading"
         counter
         use-chips
-        outlined
         hide-bottom-space
         square
-        class="q-ma-md"
+        class="q-ma-md fileupload"
+        label-color="white"
+        borderless
+        @dragover.prevent="
+          (ev) => {
+            if (ev.dataTransfer.items[0].kind == 'file') {
+              this.upload_file_dragged = true;
+            }
+          }
+        "
+        @dragenter.self="
+          (ev) => {
+            if (ev.dataTransfer.items[0].kind == 'file') {
+              this.upload_file_dragged = true;
+            }
+          }
+        "
+        @dragleave.prevent="
+          (ev) => {
+            if (ev.dataTransfer.items[0].kind == 'file') {
+              this.upload_file_dragged = false;
+            }
+          }
+        "
+        @drop="
+          (ev) => {
+            if (ev.dataTransfer.items[0].kind == 'file') {
+              this.upload_file_dragged = false;
+            }
+          }
+        "
+        :class="upload_file_dragged ? 'bg-blue' : ''"
       >
-        <template v-slot:prepend>
-          <q-icon name="cloud_upload" />
-        </template>
       </q-file>
       <template v-for="(file, index) in upload_file_files" :key="file">
         <q-input
@@ -267,7 +303,9 @@
           v-model="upload_file_names[index]"
           :label="'File ' + index + ' Name'"
           input-class="text-center"
-          :suffix="'.' + upload_file_types[index]"
+          :suffix="
+            upload_file_types[index] == '' ? '' : '.' + upload_file_types[index]
+          "
           v-if="!upload_file_freeEdit"
           class="text-body1"
         />
@@ -287,18 +325,8 @@
         label="Edit Filename with extension"
         icon="edit"
         @click="upload_file_freeEdit = !upload_file_freeEdit"
-        class="full-width q-mt-md"
+        class="full-width q-mt-md q-mb-md"
       />
-      <div class="row justify-center">
-        <div
-          v-if="upload_file_freeEdit"
-          style="max-width: 260px"
-          class="text-center text-body2 justify-center q-mb-sm q-mt-sm"
-        >
-          Preview features depend on the file extension. Your File will stay
-          untouched.
-        </div>
-      </div>
 
       <q-btn
         label="Upload"
@@ -310,7 +338,11 @@
       />
     </q-card>
   </q-dialog>
-  <q-page class="column q-ml-md q-mr-md" :style-fn="styleFn">
+  <q-page
+    class="column"
+    :class="mobile ? 'q-ml-xs q-mr-xs' : 'q-mr-md q-ml-md'"
+    :style-fn="styleFn"
+  >
     <q-toolbar class="transparent q-mt-md q-mb-sm">
       <div class="row">
         <q-btn
@@ -322,56 +354,80 @@
         >
           <q-tooltip>Go back</q-tooltip>
         </q-btn>
-        <template v-for="itemname in path_names" :key="itemname">
-          <q-item
-            clickable
-            flat
-            class="text-primary q-ml-sm text-h5 text-weight-bold"
-            @click="getFolderPath(itemname)"
-            @v-drag-enter="(e, x, y) => y.target.classList.add('active')"
-            @v-drag-over="(e, x, y) => y.target.classList.add('active')"
-            @v-drag-leave="(e, x, y) => y.target.classList.remove('active')"
-            @v-drag-drop="changeFolderToolbar($event, itemname)"
-            v-droppable
-            v-if="itemname != 'Home'"
-          >
-            {{ itemname }}
-          </q-item>
-          <q-item
-            clickable
-            flat
-            class="text-primary q-ml-sm text-h5 text-weight-bold"
-            @click="getFolderPath(itemname)"
-            @v-drag-enter="(e, x, y) => y.target.classList.add('active')"
-            @v-drag-over="(e, x, y) => y.target.classList.add('active')"
-            @v-drag-leave="(e, x, y) => y.target.classList.remove('active')"
-            @v-drag-drop="changeFolderToolbar($event, itemname)"
-            v-droppable
-            v-if="itemname == 'Home'"
-          >
-            <q-icon
-              color="primary"
-              name="home"
-              class="full-width full-height"
-              @dragover="
-                (ev) => {
-                  ev.srcElement.parentNode.classList.add('active');
-                }
+        <q-breadcrumbs style="font-size: 20px" separator=">">
+          <template v-for="itemname in path_names" :key="itemname">
+            <q-breadcrumbs-el
+              clickable
+              flat
+              class="text-primary text-weight-bold pathitem"
+              :class="mobile ? 'text-h6 ' : 'text-h4'"
+              @click="getFolderPath(itemname)"
+              @v-drag-enter="
+                (e, x, y) =>
+                  y.target.classList.add(dark ? 'active-dark' : 'active')
               "
-              @drop="
-                (ev) => {
-                  ev.srcElement.parentNode.classList.remove('active');
-                }
+              @v-drag-over="
+                (e, x, y) =>
+                  y.target.classList.add(dark ? 'active-dark' : 'active')
               "
-            />
-          </q-item>
-          <q-item class="text-primary q-ml-xs text-h4 text-weight-bold">
-            <q-icon name="arrow_forward_ios" />
-          </q-item>
-        </template>
+              @v-drag-leave="
+                (e, x, y) => y.target.classList.remove('active', 'active-dark')
+              "
+              @v-drag-drop="changeFolderToolbar($event, itemname)"
+              v-droppable
+              v-if="itemname != 'Home'"
+            >
+              <a>
+                {{ itemname }}
+              </a>
+            </q-breadcrumbs-el>
+            <q-breadcrumbs-el
+              clickable
+              flat
+              class="text-primary text-weight-bold pathitem"
+              :class="mobile ? 'text-h6 ' : 'text-h4'"
+              @click="getFolderPath(itemname)"
+              @v-drag-enter="
+                (e, x, y) =>
+                  y.target.classList.add(dark ? 'active-dark' : 'active')
+              "
+              @v-drag-over="
+                (e, x, y) =>
+                  y.target.classList.add(dark ? 'active-dark' : 'active')
+              "
+              @v-drag-leave="
+                (e, x, y) => y.target.classList.remove('active', 'active-dark')
+              "
+              @v-drag-drop="changeFolderToolbar($event, itemname)"
+              v-droppable
+              v-if="itemname == 'Home'"
+            >
+              <q-icon
+                color="primary"
+                name="home"
+                class="full-width full-height"
+                @dragover="
+                  (ev) => {
+                    ev.srcElement.parentNode.classList.add('active');
+                  }
+                "
+                @drop="
+                  (ev) => {
+                    ev.srcElement.parentNode.classList.remove('active');
+                  }
+                "
+                @dragleave="
+                  (ev) => {
+                    ev.srcElement.parentNode.classList.remove('active');
+                  }
+                "
+              />
+            </q-breadcrumbs-el>
+          </template>
+        </q-breadcrumbs>
       </div>
     </q-toolbar>
-    <q-toolbar class="transparent q-mt-md">
+    <q-toolbar class="transparent q-mt-xs">
       <q-checkbox
         v-model="allSelected"
         color="green"
@@ -397,7 +453,7 @@
         </template>
       </q-input>
 
-      <q-fab icon="add" direction="down" class="q-ml-lg" flat>
+      <q-fab icon="add" direction="down" class="q-ml-lg" flat color="green">
         <q-fab-action
           color="primary"
           text-color="white"
@@ -551,7 +607,7 @@
         :class="fileDraggedMain ? 'bg-blue' : ''"
       >
         <q-item class="full-width bg-light-green-2" v-if="newObjShow">
-          <q-item-section avatar> </q-item-section>
+          <q-item-section avatar v-if="!mobile"> </q-item-section>
           <q-item-section avatar top style="pointer-events: none">
             <q-avatar
               icon="folder"
@@ -589,7 +645,7 @@
                 class="q-ml-md bg-green text-white"
                 round
                 flat
-                @click="newObj"
+                @click="createObj"
               />
               <q-btn
                 icon="close"
@@ -683,10 +739,10 @@
                   flat
                   @click.capture.stop="
                     updateItemDrawer = true;
-                    updateItemId = folder.id;
-                    updateItemName = folder.name;
-                    updateItemType = 'folder';
-                    updateItemNewParent = rawFolderContent.path;
+                    drawerItemId = folder.id;
+                    drawerItemNewName = folder.name;
+                    drawerItemType = 'folder';
+                    drawerItemNewParent = rawFolderContent.path;
                     drawerItemName = folder.name;
                     drawerCreated = folder.created;
                     drawerModified = folder.modified;
@@ -786,10 +842,10 @@
                   flat
                   @click.capture.stop="
                     updateItemDrawer = true;
-                    updateItemId = folder_link.id;
-                    updateItemName = folder_link.name;
-                    updateItemType = 'folder_link';
-                    updateItemNewParent = rawFolderContent.path;
+                    drawerItemId = folder_link.id;
+                    drawerItemNewName = folder_link.name;
+                    drawerItemType = 'folder_link';
+                    drawerItemNewParent = rawFolderContent.path;
                     drawerItemName = folder_link.name;
                     drawerCreated = folder_link.created;
                     drawerModified = folder_link.modified;
@@ -864,10 +920,10 @@
                   flat
                   @click.capture.stop="
                     updateItemDrawer = true;
-                    updateItemId = file.id;
-                    updateItemName = file.name;
-                    updateItemType = 'file';
-                    updateItemNewParent = rawFolderContent.path;
+                    drawerItemId = file.id;
+                    drawerItemNewName = file.name;
+                    drawerItemType = 'file';
+                    drawerItemNewParent = rawFolderContent.path;
                     drawerItemName = file.name;
                     drawerCreated = file.created;
                     drawerModified = file.modified;
@@ -939,10 +995,10 @@
                   flat
                   @click.capture.stop="
                     updateItemDrawer = true;
-                    updateItemId = document.id;
-                    updateItemName = document.name;
-                    updateItemType = 'document';
-                    updateItemNewParent = rawFolderContent.path;
+                    drawerItemId = document.id;
+                    drawerItemNewName = document.name;
+                    drawerItemType = 'document';
+                    drawerItemNewParent = rawFolderContent.path;
                     drawerItemName = document.name;
                     drawerCreated = document.created;
                     drawerModified = document.modified;
@@ -1002,24 +1058,32 @@ export default defineComponent({
         path: 'Home',
         id: '45e46e48-c79e-4577-98b9-88e14ba27a31',
         children: {
-          private_files: [
+          private_files: [],
+          folder_links: [],
+          folders: [
             {
-              name: 'dropped text.txt',
-              id: '3163e0ae-62eb-421c-a691-c54e865bf53f',
-              modified: '2022-10-25, 11:48:11',
-              created: '2022-10-25, 11:48:11',
-              size: 49,
+              name: 'Ordner',
+              id: '6c0556b1-a12c-41be-8db2-7f5c15ff2fb5',
+              path: 'Home/Ordner',
+              modified: '2022-10-25, 14:03:41',
+              created: '2022-10-25, 13:44:16',
+              size: 0,
+              shared: false,
+              allow_all_read: false,
+              allow_all_write: false,
             },
             {
-              name: 'dropped text.txt',
-              id: '55ddcc3d-b093-4173-ae16-c244161dbc74',
-              modified: '2022-10-25, 11:48:59',
-              created: '2022-10-25, 11:48:59',
-              size: 49,
+              name: 'dudyd',
+              id: '8b994c36-5583-430f-aaa2-07233571ca08',
+              path: 'Home/dudyd',
+              modified: '2022-10-26, 07:19:25',
+              created: '2022-10-26, 07:19:25',
+              size: 0,
+              shared: false,
+              allow_all_read: false,
+              allow_all_write: false,
             },
           ],
-          folder_links: [],
-          folders: [],
           documents: [],
         },
       }),
@@ -1037,19 +1101,27 @@ export default defineComponent({
       upload_file_names: ref([]),
       upload_file_types: ref([]),
       upload_file_freeEdit: ref(false),
-      // update file or folder or document name/parent (handled all in one, but different api calls depending on updateItemType)
-      updateItemDrawer: ref(false),
-      updateItemId: ref(''),
-      updateItemName: ref(''),
-      updateItemType: ref(''),
-      updateItemNewParent: ref(''),
+      upload_file_dragged: ref(false),
+
       allAvailableFolders: ref({}),
+
+      //drawer general
+      updateItemDrawer: ref(false),
+      drawerTab: ref('info'),
+      drawerItemType: ref(''),
+      drawerItemId: ref(''),
+
+      // drawer info tab
       drawerItemName: ref(''),
       drawerCreated: ref(''),
       drawerModified: ref(''),
       drawerSize: ref(''),
-      drawerTab: ref('info'),
 
+      // drawer edit tab
+      drawerItemNewName: ref(''),
+      drawerItemNewParent: ref(''),
+
+      // drawer sharing tab
       drawerSharing: ref(false),
       drawerSharingAllowAllRead: ref(false),
       drawerSharingAllowAllWrite: ref(false),
@@ -1072,9 +1144,13 @@ export default defineComponent({
       allSelected: ref(false),
       selectionNewParent: ref(''),
 
+      // new doc/folder handlers
       newObjShow: ref(false),
       newObjName: ref(''),
       newObjType: ref(''),
+
+      // for folder drag & drop
+      dirUploadParentId: ref(''),
     };
   },
   created() {
@@ -1084,10 +1160,13 @@ export default defineComponent({
     itemShareLink() {
       return (
         'https://kurtn3x.xyz/public/' +
-        this.updateItemType +
+        this.drawerItemType +
         '/' +
-        this.updateItemId
+        this.drawerItemId
       );
+    },
+    dark() {
+      return this.settings_store.darkmode;
     },
     filesInUploadField() {
       if (this.upload_file_files == null) {
@@ -1130,7 +1209,7 @@ export default defineComponent({
     },
   },
   methods: {
-    copyuserlink(link) {
+    copyToClipboard(link) {
       navigator.clipboard.writeText(link);
     },
     openDocEditor(docId) {
@@ -1259,69 +1338,37 @@ export default defineComponent({
         };
 
         [...ev.dataTransfer.items].forEach((item, i) => {
+          console.log(item.webkitGetAsEntry().isFile);
           if (item.kind === 'file') {
-            const file = item.getAsFile();
             // check if its a file
-            this.isThisAFile(file)
-              .then((validFile) => {
-                let form_data = new FormData();
-                form_data.append('filename', validFile.name);
-                form_data.append('current_folder_id', this.rawFolderContent.id);
-                form_data.append('file', validFile);
-                form_data.append('size', validFile.size);
-                console.log(validFile);
-                api
-                  .post('/files/create/file', form_data, config)
-                  .then((response) => {
-                    if (response.status == 200) {
-                      succ_files += 1;
-                      files_state += 1;
-                      this.refreshFolder();
-                      notif({
-                        caption: files_state + ' / ' + length,
-                      });
-                      if (files_state == length) {
-                        if (errors.length == 0) {
-                          notif({
-                            type: 'positive',
-                            icon: 'done', // we add an icon
-                            spinner: false, // we reset the spinner setting so the icon can be displayed
-                            message:
-                              'Uploaded ' +
-                              succ_files +
-                              '/' +
-                              length +
-                              ' files!',
-                            timeout: 2500, // we will timeout it in 2.5s
-                          });
-                        } else {
-                          var message =
-                            'Uploaded ' +
-                            succ_files +
-                            '/' +
-                            length +
-                            " Files, following files couldn't be uploaded: ";
-                          for (var err_file of errors) {
-                            message += err_file + ', ';
-                          }
-                          notif({
-                            type: 'negative',
-                            icon: 'error', // we add an icon
-                            spinner: false, // we reset the spinner setting so the icon can be displayed
-                            message: message,
-                            timeout: 4000, // we will timeout it in 2.5s
-                            caption: '',
-                          });
-                        }
-                      }
-                    } else {
-                      files_state += 1;
-                      notif({
-                        type: 'negative',
-                        caption: files_state + ' / ' + length,
-                      });
-                      errors.push(file.name);
-                      if (files_state == length) {
+            if (item.webkitGetAsEntry().isFile) {
+              const validFile = item.getAsFile();
+              let form_data = new FormData();
+              form_data.append('filename', validFile.name);
+              form_data.append('current_folder_id', this.rawFolderContent.id);
+              form_data.append('file', validFile);
+              form_data.append('size', validFile.size);
+              api
+                .post('/files/create/file', form_data, config)
+                .then((response) => {
+                  if (response.status == 200) {
+                    succ_files += 1;
+                    files_state += 1;
+                    this.refreshFolder();
+                    notif({
+                      caption: files_state + ' / ' + length,
+                    });
+                    if (files_state == length) {
+                      if (errors.length == 0) {
+                        notif({
+                          type: 'positive',
+                          icon: 'done', // we add an icon
+                          spinner: false, // we reset the spinner setting so the icon can be displayed
+                          message:
+                            'Uploaded ' + succ_files + '/' + length + ' files!',
+                          timeout: 2500, // we will timeout it in 2.5s
+                        });
+                      } else {
                         var message =
                           'Uploaded ' +
                           succ_files +
@@ -1341,14 +1388,13 @@ export default defineComponent({
                         });
                       }
                     }
-                  })
-                  .catch((error) => {
+                  } else {
                     files_state += 1;
-                    errors.push(file.name);
                     notif({
                       type: 'negative',
                       caption: files_state + ' / ' + length,
                     });
+                    errors.push(validFile.name);
                     if (files_state == length) {
                       var message =
                         'Uploaded ' +
@@ -1368,12 +1414,56 @@ export default defineComponent({
                         caption: '',
                       });
                     }
+                  }
+                })
+                .catch((error) => {
+                  files_state += 1;
+                  errors.push(validFile.name);
+                  notif({
+                    type: 'negative',
+                    caption: files_state + ' / ' + length,
                   });
-              })
-              .catch((error) => {
-                files_state += 1;
-                errors.push(file.name);
-                if (files_state == length) {
+                  if (files_state == length) {
+                    var message =
+                      'Uploaded ' +
+                      succ_files +
+                      '/' +
+                      length +
+                      " Files, following files couldn't be uploaded: ";
+                    for (var err_file of errors) {
+                      message += err_file + ', ';
+                    }
+                    notif({
+                      type: 'negative',
+                      icon: 'error', // we add an icon
+                      spinner: false, // we reset the spinner setting so the icon can be displayed
+                      message: message,
+                      timeout: 4000, // we will timeout it in 2.5s
+                      caption: '',
+                    });
+                  }
+                });
+            } else if (item.webkitGetAsEntry().isDirectory) {
+              // HANDLE DIRECTORY DRAG&DROP
+              var item = item.webkitGetAsEntry();
+              this.handleObj(item, this.rawFolderContent.id);
+              succ_files += 1;
+              files_state += 1;
+              this.refreshFolder();
+              notif({
+                caption: files_state + ' / ' + length,
+              });
+              if (files_state == length) {
+                if (errors.length == 0) {
+                  notif({
+                    type: 'positive',
+                    icon: 'done', // we add an icon
+                    spinner: false, // we reset the spinner setting so the icon can be displayed
+                    message:
+                      'Uploaded ' + succ_files + '/' + length + ' files!',
+                    timeout: 2500, // we will timeout it in 2.5s
+                  });
+                } else {
                   var message =
                     'Uploaded ' +
                     succ_files +
@@ -1392,30 +1482,122 @@ export default defineComponent({
                     caption: '',
                   });
                 }
-              });
+              }
+            } else {
+              files_state += 1;
+              if (files_state == length) {
+                var message =
+                  'Uploaded ' +
+                  succ_files +
+                  '/' +
+                  length +
+                  " Files, following files couldn't be uploaded: ";
+                for (var err_file of errors) {
+                  message += err_file + ', ';
+                }
+                notif({
+                  type: 'negative',
+                  icon: 'error', // we add an icon
+                  spinner: false, // we reset the spinner setting so the icon can be displayed
+                  message: message,
+                  timeout: 4000, // we will timeout it in 2.5s
+                  caption: '',
+                });
+              }
+            }
           }
         });
       }
     },
-    isThisAFile(maybeFile) {
-      return new Promise(function (resolve, reject) {
-        if (maybeFile.type !== '') {
-          return resolve(maybeFile);
+
+    async handleObj(obj, parentid) {
+      if (obj.isDirectory) {
+        // obj is a directory
+        // create the directory
+        var ID = await this.createFolder(obj.name, parentid);
+        console.log(ID);
+        console.log('creating folder ' + obj.name);
+        var directoryReader = obj.createReader();
+        directoryReader.readEntries((entries) => {
+          entries.forEach((entry) => {
+            this.handleObj(entry, ID);
+          });
+        });
+      } else {
+        this.handleFile(obj, parentid);
+      }
+    },
+
+    uploadFile(file) {
+      let config = {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': this.q.cookies.get('csrftoken'),
+          'Content-Type': 'multipart/form-data',
+        },
+      };
+      let form_data = new FormData();
+      form_data.append('filename', file.name);
+      form_data.append('current_folder_id', this.dirUploadParentId);
+      form_data.append('file', file);
+      form_data.append('size', file.size);
+      api.post('/files/create/file', form_data, config).then((response) => {
+        if (response.status == 200) {
         }
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          if (
-            reader.error &&
-            (reader.error.name === 'NotFoundError' ||
-              reader.error.name === 'NotReadableError')
-          ) {
-            return reject(reader.error.name);
-          }
-          resolve(maybeFile);
-        };
-        reader.readAsBinaryString(maybeFile);
       });
     },
+
+    handleFile(file, parentid) {
+      this.dirUploadParentId = parentid;
+      file.file(this.uploadFile);
+    },
+
+    async createFolder(name, parentid) {
+      this.loading = true;
+      var data = {
+        folderid: parentid,
+        name: name,
+      };
+      await api
+        .post('/files/create/folder', data, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.loading = false;
+            this.refreshFolder();
+            console.log(response.data.ID);
+            return response.data.ID;
+          } else {
+            this.notify('negative', '' + response.data.error);
+            this.loading = false;
+            return 0;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'API ERROR :/');
+          this.loading = false;
+          console.log(error);
+          return 0;
+        });
+    },
+    // isThisAFile(maybeFile) {
+    //   return new Promise(function (resolve, reject) {
+    //     if (maybeFile.type !== '') {
+    //       return resolve(maybeFile);
+    //     }
+    //     const reader = new FileReader();
+    //     reader.onloadend = () => {
+    //       if (
+    //         reader.error &&
+    //         (reader.error.name === 'NotFoundError' ||
+    //           reader.error.name === 'NotReadableError')
+    //       ) {
+    //         return reject(reader.error.name);
+    //       }
+    //       resolve(maybeFile);
+    //     };
+    //     reader.readAsBinaryString(maybeFile);
+    //   });
+    // },
     showDOCUMENT() {
       console.log();
     },
@@ -1570,7 +1752,7 @@ export default defineComponent({
     updateSharing() {
       this.loading = true;
       var data = {
-        item_id: this.updateItemId,
+        item_id: this.drawerItemId,
         shared: this.drawerSharing,
         shared_allow_all_read: this.drawerSharingAllowAllRead,
         shared_allow_all_write: this.drawerSharingAllowAllWrite,
@@ -1578,22 +1760,14 @@ export default defineComponent({
       };
       api
         .put(
-          '/files/update-sharing/' + this.updateItemType,
+          '/files/update-sharing/' + this.drawerItemType,
           data,
           this.axios_config
         )
         .then((response) => {
           if (response.status == 200) {
-            this.notify('positive', 'Updated');
-            this.refreshFolder();
+            this.notify('positive', 'Sharing settings saved.');
             this.loading = false;
-            this.updateItemDrawer = false;
-            this.availParents = [];
-            this.selectedFolderLinks = [];
-            this.selectedFolders = [];
-            this.selectedFiles = [];
-            this.selectedDocuments = [];
-            this.allSelected = false;
           } else {
             this.notify('negative', '' + response.data.error);
             this.loading = false;
@@ -1612,17 +1786,17 @@ export default defineComponent({
       this.loading = true;
       var update_id = 0;
       for (var item of this.allAvailableFolders.folders) {
-        if (item.path == this.updateItemNewParent) {
+        if (item.path == this.drawerItemNewParent) {
           update_id = item.id;
         }
       }
       var data = {
-        item_id: this.updateItemId,
-        name: this.updateItemName,
+        item_id: this.drawerItemId,
+        name: this.drawerItemNewName,
         new_parent_id: update_id,
       };
       api
-        .put('/files/update/' + this.updateItemType, data, this.axios_config)
+        .put('/files/update/' + this.drawerItemType, data, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.notify('positive', 'Updated');
@@ -1661,7 +1835,7 @@ export default defineComponent({
               for (var availableFolder of response.data.folders) {
                 if (
                   this.availParents.indexOf(availableFolder.path) === -1 &&
-                  availableFolder.id != this.updateItemId
+                  availableFolder.id != this.drawerItemId
                 ) {
                   this.availParents.push(availableFolder.path);
                 }
@@ -1699,18 +1873,27 @@ export default defineComponent({
     },
 
     uploaderHandleFilenames() {
-      var i = 0;
       for (const file in this.upload_file_files) {
         // get the filename without extension
-        this.upload_file_names[i] = this.upload_file_files[file].name.replace(
-          /\.[^/.]+$/,
-          ''
-        );
-        // get file extension as suffix
-        this.upload_file_types[i] = this.upload_file_files[file].name
-          .split('.')
-          .pop();
-        i += 1;
+        if (this.upload_file_files[file].name.includes('.')) {
+          this.upload_file_names[file] = this.upload_file_files[
+            file
+          ].name.replace(/\.[^/.]+$/, '');
+
+          if (this.upload_file_names[file] == '') {
+            this.upload_file_names[file] = this.upload_file_files[file].name;
+
+            this.upload_file_types[file] = '';
+          } else {
+            // get file extension as suffix
+            this.upload_file_types[file] = this.upload_file_files[file].name
+              .split('.')
+              .pop();
+          }
+        } else {
+          this.upload_file_names[file] = this.upload_file_files[file].name;
+          this.upload_file_types[file] = '';
+        }
       }
     },
 
@@ -1813,7 +1996,7 @@ export default defineComponent({
       this.previousFolder = this.rawFolderContent.id;
       this.loading = true;
       api
-        .get('/files/public/list/' + folderid, this.axios_config)
+        .get('/files/public/folder/' + folderid, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.rawFolderContent = response.data;
@@ -1943,8 +2126,14 @@ export default defineComponent({
         if (this.upload_file_freeEdit) {
           filename = this.upload_file_files[index].name;
         } else {
-          filename =
-            this.upload_file_names[index] + '.' + this.upload_file_types[index];
+          if (this.upload_file_types[index] == '') {
+            filename = this.upload_file_names[index];
+          } else {
+            filename =
+              this.upload_file_names[index] +
+              '.' +
+              this.upload_file_types[index];
+          }
         }
         form_data.append('filename', filename);
 
@@ -2058,16 +2247,42 @@ export default defineComponent({
 });
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .item_parent_container {
   min-height: var(--min-height);
 }
 .item_text {
   max-width: var(--max-width);
 }
-.active {
-  background-color: #2196f3;
+.active-dark {
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  background: rgba(224, 255, 255, 0.2);
 }
+
+.active {
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  background: rgba(26, 0, 175, 0.2);
+}
+
+.fileupload {
+  background-color: $grey;
+}
+.fileupload:hover {
+  background-color: $grey-4;
+}
+
+.fileuploadhover {
+  background-color: $grey-4;
+}
+
+.pathitem:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  cursor: pointer;
+}
+
 .disable-select {
   user-select: none; /* supported by Chrome and Opera */
   -webkit-user-select: none; /* Safari */

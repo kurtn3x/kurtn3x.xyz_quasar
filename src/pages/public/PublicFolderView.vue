@@ -1068,7 +1068,7 @@ export default defineComponent({
       this.previousFolder = this.rawFolderContent.id;
       this.loading = true;
       api
-        .get('/files/public/list/' + folderid, this.axios_config)
+        .get('/files/public/folder/' + folderid, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.rawFolderContent = response.data;
@@ -1374,7 +1374,7 @@ export default defineComponent({
       this.loading = true;
       api
         .get(
-          '/files/public/list/' + this.rawFolderContent.parentid,
+          '/files/public/folder/' + this.rawFolderContent.parentid,
           this.axios_config
         )
         .then((response) => {
@@ -1635,7 +1635,7 @@ export default defineComponent({
       this.loading = true;
       api
         .get(
-          '/files/public/list/' + this.rawFolderContent.id,
+          '/files/public/folder/' + this.rawFolderContent.id,
           this.axios_config
         )
         .then((response) => {
@@ -1671,7 +1671,7 @@ export default defineComponent({
         i += 1;
       }
       api
-        .get('/files/public/list/' + folderid, this.axios_config)
+        .get('/files/public/folder/' + folderid, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.rawFolderContent = response.data;
@@ -1699,7 +1699,7 @@ export default defineComponent({
       this.previousFolder = this.rawFolderContent.id;
       this.loading = true;
       api
-        .get('/files/public/list/' + folderid, this.axios_config)
+        .get('/files/public/folder/' + folderid, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.rawFolderContent = response.data;
