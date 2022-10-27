@@ -1339,20 +1339,20 @@ export default defineComponent({
     },
 
     // drag & drop upload when dropping on free space ( current folder)
-    onBackgroundDrop(ev) {
+    async onBackgroundDrop(ev) {
       this.fileDraggedMain = false;
       if (ev.dataTransfer.items[0].kind != 'string') {
         var errors = [];
-        var files_state = 0;
-        var succ_files = 0;
+        var handledObjects = 0;
+        var successfulObjects = 0;
         const length = ev.dataTransfer.items.length;
         const notif = this.q.notify({
           type: 'positive',
           group: false,
           timeout: 0,
           spinner: true,
-          message: 'Uploading file...',
-          caption: files_state + ' / ' + length,
+          message: 'Uploading...',
+          caption: handledObjects + ' / ' + length,
         });
 
         let config = {
@@ -1363,44 +1363,50 @@ export default defineComponent({
           },
         };
 
-        [...ev.dataTransfer.items].forEach((item, i) => {
-          console.log(item.webkitGetAsEntry().isFile);
+        for (item of ev.dataTransfer.items) {
           if (item.kind === 'file') {
             // check if its a file
             if (item.webkitGetAsEntry().isFile) {
               const validFile = item.getAsFile();
+              notif({
+                message:
+                  'Uploading File ' + item.webkitGetAsEntry().name + '...',
+              });
               let form_data = new FormData();
               form_data.append('filename', validFile.name);
               form_data.append('new_parent_id', this.rawFolderContent.id);
               form_data.append('file', validFile);
               form_data.append('size', validFile.size);
-              api
+              await api
                 .post('/files/create/file', form_data, config)
                 .then((response) => {
                   if (response.status == 200) {
-                    succ_files += 1;
-                    files_state += 1;
                     this.refreshFolder();
+                    successfulObjects += 1;
+                    handledObjects += 1;
                     notif({
-                      caption: files_state + ' / ' + length,
+                      caption: handledObjects + ' / ' + length,
                     });
-                    if (files_state == length) {
+                    if (handledObjects == length) {
                       if (errors.length == 0) {
                         notif({
                           type: 'positive',
                           icon: 'done', // we add an icon
                           spinner: false, // we reset the spinner setting so the icon can be displayed
                           message:
-                            'Uploaded ' + succ_files + '/' + length + ' files!',
+                            'Uploaded everything! ' +
+                            successfulObjects +
+                            '/' +
+                            length,
                           timeout: 2500, // we will timeout it in 2.5s
                         });
                       } else {
                         var message =
                           'Uploaded ' +
-                          succ_files +
+                          successfulObjects +
                           '/' +
                           length +
-                          " Files, following files couldn't be uploaded: ";
+                          ", following things couldn't be uploaded: ";
                         for (var err_file of errors) {
                           message += err_file + ', ';
                         }
@@ -1415,19 +1421,18 @@ export default defineComponent({
                       }
                     }
                   } else {
-                    files_state += 1;
+                    handledObjects += 1;
                     notif({
-                      type: 'negative',
-                      caption: files_state + ' / ' + length,
+                      caption: handledObjects + ' / ' + length,
                     });
                     errors.push(validFile.name);
-                    if (files_state == length) {
+                    if (handledObjects == length) {
                       var message =
                         'Uploaded ' +
-                        succ_files +
+                        successfulObjects +
                         '/' +
                         length +
-                        " Files, following files couldn't be uploaded: ";
+                        ", following things couldn't be uploaded: ";
                       for (var err_file of errors) {
                         message += err_file + ', ';
                       }
@@ -1443,19 +1448,18 @@ export default defineComponent({
                   }
                 })
                 .catch((error) => {
-                  files_state += 1;
+                  handledObjects += 1;
                   errors.push(validFile.name);
                   notif({
-                    type: 'negative',
-                    caption: files_state + ' / ' + length,
+                    caption: handledObjects + ' / ' + length,
                   });
-                  if (files_state == length) {
+                  if (handledObjects == length) {
                     var message =
                       'Uploaded ' +
-                      succ_files +
+                      successfulObjects +
                       '/' +
                       length +
-                      " Files, following files couldn't be uploaded: ";
+                      ", following things couldn't be uploaded: ";
                     for (var err_file of errors) {
                       message += err_file + ', ';
                     }
@@ -1472,52 +1476,86 @@ export default defineComponent({
             } else if (item.webkitGetAsEntry().isDirectory) {
               // HANDLE DIRECTORY DRAG&DROP
               var item = item.webkitGetAsEntry();
-              this.handleObj(item, this.rawFolderContent.id);
-              succ_files += 1;
-              files_state += 1;
-              this.refreshFolder();
               notif({
-                caption: files_state + ' / ' + length,
+                message: 'Uploading Folder ' + item.name + '...',
               });
-              if (files_state == length) {
-                if (errors.length == 0) {
+              await this.handleObj(item, this.rawFolderContent.id)
+                .then((reva) => {
+                  this.refreshFolder();
+                  successfulObjects += 1;
+                  handledObjects += 1;
                   notif({
-                    type: 'positive',
-                    icon: 'done', // we add an icon
-                    spinner: false, // we reset the spinner setting so the icon can be displayed
-                    message:
-                      'Uploaded ' + succ_files + '/' + length + ' files!',
-                    timeout: 2500, // we will timeout it in 2.5s
+                    caption: handledObjects + ' / ' + length,
                   });
-                } else {
-                  var message =
-                    'Uploaded ' +
-                    succ_files +
-                    '/' +
-                    length +
-                    " Files, following files couldn't be uploaded: ";
-                  for (var err_file of errors) {
-                    message += err_file + ', ';
+                  if (handledObjects == length) {
+                    if (errors.length == 0) {
+                      notif({
+                        type: 'positive',
+                        icon: 'done', // we add an icon
+                        spinner: false, // we reset the spinner setting so the icon can be displayed
+                        message:
+                          'Uploaded everything! ' +
+                          successfulObjects +
+                          '/' +
+                          length,
+                        timeout: 2500, // we will timeout it in 2.5s
+                      });
+                    } else {
+                      var message =
+                        'Uploaded ' +
+                        successfulObjects +
+                        '/' +
+                        length +
+                        ", following things couldn't be uploaded: ";
+                      for (var err_file of errors) {
+                        message += err_file + ', ';
+                      }
+                      notif({
+                        type: 'negative',
+                        icon: 'error', // we add an icon
+                        spinner: false, // we reset the spinner setting so the icon can be displayed
+                        message: message,
+                        timeout: 4000, // we will timeout it in 2.5s
+                        caption: '',
+                      });
+                    }
                   }
+                })
+                .catch(() => {
+                  handledObjects += 1;
                   notif({
-                    type: 'negative',
-                    icon: 'error', // we add an icon
-                    spinner: false, // we reset the spinner setting so the icon can be displayed
-                    message: message,
-                    timeout: 4000, // we will timeout it in 2.5s
-                    caption: '',
+                    caption: handledObjects + ' / ' + length,
                   });
-                }
-              }
+                  if (handledObjects == length) {
+                    errors.push(item.name);
+                    var message =
+                      'Uploaded ' +
+                      successfulObjects +
+                      '/' +
+                      length +
+                      ", following things couldn't be uploaded: ";
+                    for (var err_file of errors) {
+                      message += err_file + ', ';
+                    }
+                    notif({
+                      type: 'negative',
+                      icon: 'error', // we add an icon
+                      spinner: false, // we reset the spinner setting so the icon can be displayed
+                      message: message,
+                      timeout: 4000, // we will timeout it in 2.5s
+                      caption: '',
+                    });
+                  }
+                });
             } else {
-              files_state += 1;
-              if (files_state == length) {
+              handledObjects += 1;
+              if (handledObjects == length) {
                 var message =
                   'Uploaded ' +
-                  succ_files +
+                  successfulObjects +
                   '/' +
                   length +
-                  " Files, following files couldn't be uploaded: ";
+                  ", following things couldn't be uploaded: ";
                 for (var err_file of errors) {
                   message += err_file + ', ';
                 }
@@ -1532,24 +1570,25 @@ export default defineComponent({
               }
             }
           }
-        });
+        }
       }
     },
 
     // drag & drop upload when dropping on a folder
-    onFolderDrop(ev, folderid) {
+    async onFolderDrop(ev, parentid) {
+      this.fileDraggedMain = false;
       if (ev.dataTransfer.items[0].kind != 'string') {
         var errors = [];
-        var files_state = 0;
-        var succ_files = 0;
+        var handledObjects = 0;
+        var successfulObjects = 0;
         const length = ev.dataTransfer.items.length;
         const notif = this.q.notify({
           type: 'positive',
           group: false,
           timeout: 0,
           spinner: true,
-          message: 'Uploading file...',
-          caption: files_state + ' / ' + length,
+          message: 'Uploading...',
+          caption: handledObjects + ' / ' + length,
         });
 
         let config = {
@@ -1560,42 +1599,49 @@ export default defineComponent({
           },
         };
 
-        [...ev.dataTransfer.items].forEach((item, i) => {
+        for (item of ev.dataTransfer.items) {
           if (item.kind === 'file') {
             // check if its a file
             if (item.webkitGetAsEntry().isFile) {
               const validFile = item.getAsFile();
+              notif({
+                message:
+                  'Uploading File ' + item.webkitGetAsEntry().name + '...',
+              });
               let form_data = new FormData();
               form_data.append('filename', validFile.name);
-              form_data.append('new_parent_id', folderid);
+              form_data.append('new_parent_id', parentid);
               form_data.append('file', validFile);
               form_data.append('size', validFile.size);
-              api
+              await api
                 .post('/files/create/file', form_data, config)
                 .then((response) => {
                   if (response.status == 200) {
-                    succ_files += 1;
-                    files_state += 1;
+                    successfulObjects += 1;
+                    handledObjects += 1;
                     notif({
-                      caption: files_state + ' / ' + length,
+                      caption: handledObjects + ' / ' + length,
                     });
-                    if (files_state == length) {
+                    if (handledObjects == length) {
                       if (errors.length == 0) {
                         notif({
                           type: 'positive',
                           icon: 'done', // we add an icon
                           spinner: false, // we reset the spinner setting so the icon can be displayed
                           message:
-                            'Uploaded ' + succ_files + '/' + length + ' files!',
+                            'Uploaded everything! ' +
+                            successfulObjects +
+                            '/' +
+                            length,
                           timeout: 2500, // we will timeout it in 2.5s
                         });
                       } else {
                         var message =
                           'Uploaded ' +
-                          succ_files +
+                          successfulObjects +
                           '/' +
                           length +
-                          " Files, following files couldn't be uploaded: ";
+                          ", following things couldn't be uploaded: ";
                         for (var err_file of errors) {
                           message += err_file + ', ';
                         }
@@ -1610,19 +1656,18 @@ export default defineComponent({
                       }
                     }
                   } else {
-                    files_state += 1;
+                    handledObjects += 1;
                     notif({
-                      type: 'negative',
-                      caption: files_state + ' / ' + length,
+                      caption: handledObjects + ' / ' + length,
                     });
                     errors.push(validFile.name);
-                    if (files_state == length) {
+                    if (handledObjects == length) {
                       var message =
                         'Uploaded ' +
-                        succ_files +
+                        successfulObjects +
                         '/' +
                         length +
-                        " Files, following files couldn't be uploaded: ";
+                        ", following things couldn't be uploaded: ";
                       for (var err_file of errors) {
                         message += err_file + ', ';
                       }
@@ -1638,19 +1683,18 @@ export default defineComponent({
                   }
                 })
                 .catch((error) => {
-                  files_state += 1;
+                  handledObjects += 1;
                   errors.push(validFile.name);
                   notif({
-                    type: 'negative',
-                    caption: files_state + ' / ' + length,
+                    caption: handledObjects + ' / ' + length,
                   });
-                  if (files_state == length) {
+                  if (handledObjects == length) {
                     var message =
                       'Uploaded ' +
-                      succ_files +
+                      successfulObjects +
                       '/' +
                       length +
-                      " Files, following files couldn't be uploaded: ";
+                      ", following things couldn't be uploaded: ";
                     for (var err_file of errors) {
                       message += err_file + ', ';
                     }
@@ -1667,51 +1711,85 @@ export default defineComponent({
             } else if (item.webkitGetAsEntry().isDirectory) {
               // HANDLE DIRECTORY DRAG&DROP
               var item = item.webkitGetAsEntry();
-              this.handleObj(item, folderid);
-              succ_files += 1;
-              files_state += 1;
               notif({
-                caption: files_state + ' / ' + length,
+                message: 'Uploading Folder ' + item.name + '...',
               });
-              if (files_state == length) {
-                if (errors.length == 0) {
+              await this.handleObj(item, parentid)
+                .then((reva) => {
+                  successfulObjects += 1;
+                  handledObjects += 1;
                   notif({
-                    type: 'positive',
-                    icon: 'done', // we add an icon
-                    spinner: false, // we reset the spinner setting so the icon can be displayed
-                    message:
-                      'Uploaded ' + succ_files + '/' + length + ' files!',
-                    timeout: 2500, // we will timeout it in 2.5s
+                    caption: handledObjects + ' / ' + length,
                   });
-                } else {
-                  var message =
-                    'Uploaded ' +
-                    succ_files +
-                    '/' +
-                    length +
-                    " Files, following files couldn't be uploaded: ";
-                  for (var err_file of errors) {
-                    message += err_file + ', ';
+                  if (handledObjects == length) {
+                    if (errors.length == 0) {
+                      notif({
+                        type: 'positive',
+                        icon: 'done', // we add an icon
+                        spinner: false, // we reset the spinner setting so the icon can be displayed
+                        message:
+                          'Uploaded everything! ' +
+                          successfulObjects +
+                          '/' +
+                          length,
+                        timeout: 2500, // we will timeout it in 2.5s
+                      });
+                    } else {
+                      var message =
+                        'Uploaded ' +
+                        successfulObjects +
+                        '/' +
+                        length +
+                        ", following things couldn't be uploaded: ";
+                      for (var err_file of errors) {
+                        message += err_file + ', ';
+                      }
+                      notif({
+                        type: 'negative',
+                        icon: 'error', // we add an icon
+                        spinner: false, // we reset the spinner setting so the icon can be displayed
+                        message: message,
+                        timeout: 4000, // we will timeout it in 2.5s
+                        caption: '',
+                      });
+                    }
                   }
+                })
+                .catch(() => {
+                  handledObjects += 1;
                   notif({
-                    type: 'negative',
-                    icon: 'error', // we add an icon
-                    spinner: false, // we reset the spinner setting so the icon can be displayed
-                    message: message,
-                    timeout: 4000, // we will timeout it in 2.5s
-                    caption: '',
+                    caption: handledObjects + ' / ' + length,
                   });
-                }
-              }
+                  if (handledObjects == length) {
+                    errors.push(item.name);
+                    var message =
+                      'Uploaded ' +
+                      successfulObjects +
+                      '/' +
+                      length +
+                      ", following things couldn't be uploaded: ";
+                    for (var err_file of errors) {
+                      message += err_file + ', ';
+                    }
+                    notif({
+                      type: 'negative',
+                      icon: 'error', // we add an icon
+                      spinner: false, // we reset the spinner setting so the icon can be displayed
+                      message: message,
+                      timeout: 4000, // we will timeout it in 2.5s
+                      caption: '',
+                    });
+                  }
+                });
             } else {
-              files_state += 1;
-              if (files_state == length) {
+              handledObjects += 1;
+              if (handledObjects == length) {
                 var message =
                   'Uploaded ' +
-                  succ_files +
+                  successfulObjects +
                   '/' +
                   length +
-                  " Files, following files couldn't be uploaded: ";
+                  ", following things couldn't be uploaded: ";
                 for (var err_file of errors) {
                   message += err_file + ', ';
                 }
@@ -1726,33 +1804,38 @@ export default defineComponent({
               }
             }
           }
-        });
+        }
       }
     },
 
     // used with drag&drop uploads of folders
     async handleObj(obj, parentid) {
-      if (obj.isDirectory) {
-        // obj is a directory
-        // create the directory
-        await this.createFolder(obj.name, parentid).then((response) => {
-          if (response.status == 200) {
-            var ID = response.data.ID;
-            var directoryReader = obj.createReader();
-            directoryReader.readEntries((entries) => {
-              entries.forEach((entry) => {
-                this.handleObj(entry, ID);
+      return new Promise(async (resolve, reject) => {
+        var total = 0;
+        if (obj.isDirectory) {
+          // obj is a directory
+          // create the directory
+          this.createFolder(obj.name, parentid).then((response) => {
+            if (response.status == 200) {
+              var ID = response.data.ID;
+              var directoryReader = obj.createReader();
+              directoryReader.readEntries(async (entries) => {
+                for (var entry of entries) {
+                  await this.handleObj(entry, ID);
+                }
+                resolve(total);
               });
-            });
-          }
-        });
-      } else {
-        this.handleFile(obj, parentid);
-      }
+            }
+          });
+        } else {
+          await this.handleFile(obj, parentid);
+          resolve(total);
+        }
+      });
     },
 
     // used with drag&drop uploads of folders
-    uploadFile(file) {
+    async uploadFile(file) {
       let config = {
         withCredentials: true,
         headers: {
@@ -1763,18 +1846,34 @@ export default defineComponent({
       let form_data = new FormData();
       form_data.append('filename', file.name);
       form_data.append('new_parent_id', this.dirUploadParentId);
-      form_data.append('file', file);
       form_data.append('size', file.size);
-      api.post('/files/create/file', form_data, config).then((response) => {
-        if (response.status == 200) {
-        }
-      });
+      form_data.append('file', file);
+      await api.post('/files/create/file', form_data, config);
+      return;
     },
 
     // used with drag&drop uploads of folders
     handleFile(file, parentid) {
-      this.dirUploadParentId = parentid;
-      file.file(this.uploadFile);
+      return new Promise((resolve, reject) => {
+        this.dirUploadParentId = parentid;
+        file.file(async (file) => {
+          let config = {
+            withCredentials: true,
+            headers: {
+              'X-CSRFToken': this.q.cookies.get('csrftoken'),
+              'Content-Type': 'multipart/form-data',
+            },
+          };
+          let form_data = new FormData();
+          form_data.append('filename', file.name);
+          form_data.append('new_parent_id', this.dirUploadParentId);
+          form_data.append('file', file);
+          form_data.append('size', file.size);
+          await api.post('/files/create/file', form_data, config).then(() => {
+            resolve();
+          });
+        });
+      });
     },
 
     // create folder and return the response, used when drag&drop uploading nested folders
@@ -1790,7 +1889,6 @@ export default defineComponent({
         .then((response) => {
           if (response.status == 200) {
             this.loading = false;
-            this.refreshFolder();
             reval = response;
           } else {
             this.notify('negative', '' + response.data.error);
@@ -2282,8 +2380,8 @@ export default defineComponent({
     // upload file(s) from add button
     uploadFiles() {
       var errors = [];
-      var files_state = 0;
-      var succ_files = 0;
+      var handledObjects = 0;
+      var successfulObjects = 0;
       const length = this.upload_file_files.length;
       const notif = this.q.notify({
         type: 'positive',
@@ -2291,7 +2389,7 @@ export default defineComponent({
         timeout: 0,
         spinner: true,
         message: 'Uploading file...',
-        caption: files_state + ' / ' + length,
+        caption: handledObjects + ' / ' + length,
       });
 
       let config = {
@@ -2330,25 +2428,29 @@ export default defineComponent({
           .then((response) => {
             if (response.status == 200) {
               this.refreshFolder();
-              succ_files += 1;
-              files_state += 1;
+              successfulObjects += 1;
+              handledObjects += 1;
               notif({
-                caption: files_state + ' / ' + length,
+                caption: handledObjects + ' / ' + length,
               });
-              if (files_state == length) {
+              if (handledObjects == length) {
                 if (errors.length == 0) {
                   notif({
                     type: 'positive',
                     icon: 'done', // we add an icon
                     spinner: false, // we reset the spinner setting so the icon can be displayed
                     message:
-                      'Uploaded ' + succ_files + '/' + length + ' files!',
+                      'Uploaded ' +
+                      successfulObjects +
+                      '/' +
+                      length +
+                      ' files!',
                     timeout: 2500, // we will timeout it in 2.5s
                   });
                 } else {
                   var message =
                     'Uploaded ' +
-                    succ_files +
+                    successfulObjects +
                     '/' +
                     length +
                     " Files, following files couldn't be uploaded: ";
@@ -2366,16 +2468,16 @@ export default defineComponent({
                 }
               }
             } else {
-              files_state += 1;
+              handledObjects += 1;
               notif({
                 type: 'negative',
-                caption: files_state + ' / ' + length,
+                caption: handledObjects + ' / ' + length,
               });
               errors.push(filename);
-              if (files_state == length) {
+              if (handledObjects == length) {
                 var message =
                   'Uploaded ' +
-                  succ_files +
+                  successfulObjects +
                   '/' +
                   length +
                   " Files, following files couldn't be uploaded: ";
@@ -2394,16 +2496,16 @@ export default defineComponent({
             }
           })
           .catch((error) => {
-            files_state += 1;
+            handledObjects += 1;
             errors.push(filename);
             notif({
               type: 'negative',
-              caption: files_state + ' / ' + length,
+              caption: handledObjects + ' / ' + length,
             });
-            if (files_state == length) {
+            if (handledObjects == length) {
               var message =
                 'Uploaded ' +
-                succ_files +
+                successfulObjects +
                 '/' +
                 length +
                 " Files, following files couldn't be uploaded: ";
