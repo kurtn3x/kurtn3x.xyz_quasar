@@ -191,7 +191,7 @@
           />
           <div
             class="q-mb-sm text-body1 text-center"
-            v-if="drawerSharingRecursive"
+            v-if="drawerSharingRecursive && drawerSharing"
           >
             This will apply the following settings for all subcontent contained
             in this folder.
@@ -338,6 +338,73 @@
       />
     </q-card>
   </q-dialog>
+
+  <q-dialog v-model="uploadFolderDialog">
+    <q-card style="min-width: 300px" bordered>
+      <q-toolbar class="justify-center">
+        <div class="text-h5 q-mt-md text-primary text-center text-weight-bold">
+          UPLOAD Folders
+        </div>
+        <q-separator />
+      </q-toolbar>
+
+      <q-file
+        style="min-height: 300px; min-width: 300px"
+        v-model="uploadFolderFolders"
+        label="&nbsp;&nbsp;&nbsp;&nbsp; Click me / Drag & Drop Folders here"
+        multiple
+        append
+        webkitdirectory
+        :loading="loading"
+        counter
+        use-chips
+        hide-bottom-space
+        square
+        class="q-ma-md fileupload"
+        label-color="white"
+        borderless
+        @dragover.prevent="
+          (ev) => {
+            if (ev.dataTransfer.items[0].kind == 'file') {
+              this.uploadFolderDragged = true;
+            }
+          }
+        "
+        @dragenter.self="
+          (ev) => {
+            if (ev.dataTransfer.items[0].kind == 'file') {
+              this.uploadFolderDragged = true;
+            }
+          }
+        "
+        @dragleave.prevent="
+          (ev) => {
+            if (ev.dataTransfer.items[0].kind == 'file') {
+              this.uploadFolderDragged = false;
+            }
+          }
+        "
+        @drop="
+          (ev) => {
+            if (ev.dataTransfer.items[0].kind == 'file') {
+              this.uploadFolderDragged = false;
+            }
+          }
+        "
+        :class="uploadFolderDragged ? 'bg-blue' : ''"
+      >
+      </q-file>
+
+      <q-btn
+        label="Upload"
+        class="cursor-pointer full-width bg-green text-white"
+        flat
+        @click="uploadFolders"
+        v-close-popup
+        size="lg"
+      />
+    </q-card>
+  </q-dialog>
   <q-page
     class="column"
     :class="mobile ? 'q-ml-xs q-mr-xs' : 'q-mr-md q-ml-md'"
@@ -458,16 +525,6 @@
           color="primary"
           text-color="white"
           @click="
-            upload_file_dialog = !upload_file_dialog;
-            fetchAllAvailableFolders();
-          "
-          icon="file_upload"
-          label="Upload Files"
-        />
-        <q-fab-action
-          color="primary"
-          text-color="white"
-          @click="
             newObjShow = true;
             newObjType = 'document';
           "
@@ -483,6 +540,20 @@
             newObjShow = true;
             newObjType = 'folder';
           "
+        />
+        <q-fab-action
+          color="primary"
+          text-color="white"
+          @click="upload_file_dialog = !upload_file_dialog"
+          icon="file_upload"
+          label="Upload Files"
+        />
+        <q-fab-action
+          color="primary"
+          text-color="white"
+          @click="uploadFolderDialog = !uploadFolderDialog"
+          icon="drive_folder_upload"
+          label="Upload Folders"
         />
       </q-fab>
 
@@ -1038,6 +1109,49 @@
         </template>
       </div>
     </q-scroll-area>
+    <q-separator color="primary" />
+    <div
+      style="height: 125px"
+      v-if="dropField"
+      @drop.self.prevent="onBackgroundDrop"
+      @dragover.prevent="
+        (ev) => {
+          if (ev.dataTransfer.items[0].kind == 'file') {
+            this.dropFieldDragover = true;
+          }
+        }
+      "
+      @dragenter.self="
+        (ev) => {
+          if (ev.dataTransfer.items[0].kind == 'file') {
+            this.dropFieldDragover = true;
+          }
+        }
+      "
+      @dragleave.prevent="
+        (ev) => {
+          if (ev.dataTransfer.items[0].kind == 'file') {
+            this.dropFieldDragover = false;
+          }
+        }
+      "
+      :class="dropFieldDragover ? 'bg-blue' : ''"
+    >
+      <div class="text-h6 text-center">
+        Drag/Drop files or folders here to upload to current folder
+      </div>
+    </div>
+    <q-page-sticky position="bottom" :offset="[18, 0]" v-if="!mobile">
+      <q-fab
+        color="primary"
+        icon="keyboard_arrow_up"
+        active-icon="keyboard_arrow_down"
+        direction="up"
+        style="width: 250px; top: 0.5em"
+        @click="dropField = !dropField"
+      >
+      </q-fab>
+    </q-page-sticky>
   </q-page>
 </template>
 
@@ -1076,6 +1190,8 @@ export default defineComponent({
       q,
       upload: ref(null),
       loading: ref(false),
+      dropField: ref(false),
+      dropFieldDragover: ref(false),
 
       // raw content including children of current folder
       rawFolderContent: ref({
@@ -1083,32 +1199,178 @@ export default defineComponent({
         path: 'Home',
         id: '45e46e48-c79e-4577-98b9-88e14ba27a31',
         children: {
-          private_files: [],
-          folder_links: [],
-          folders: [
+          private_files: [
             {
-              name: 'Ordner',
-              id: '6c0556b1-a12c-41be-8db2-7f5c15ff2fb5',
-              path: 'Home/Ordner',
-              modified: '2022-10-25, 14:03:41',
-              created: '2022-10-25, 13:44:16',
-              size: 0,
-              shared: false,
-              allow_all_read: false,
-              allow_all_write: false,
+              name: '.dmrc',
+              id: '032f2834-8d91-4b39-b545-5a8475a07c9c',
+              modified: '2022-10-28, 08:40:29',
+              created: '2022-10-28, 08:40:29',
+              size: 27,
             },
             {
-              name: 'dudyd',
-              id: '8b994c36-5583-430f-aaa2-07233571ca08',
-              path: 'Home/dudyd',
-              modified: '2022-10-26, 07:19:25',
-              created: '2022-10-26, 07:19:25',
+              name: '.face',
+              id: '0c51c4f8-6059-4c2f-890a-db3f265e2ca6',
+              modified: '2022-10-28, 08:40:29',
+              created: '2022-10-28, 08:40:29',
+              size: 3743,
+            },
+            {
+              name: '.gitconfig',
+              id: '17b1a7dc-31c3-428d-864b-76b70240e2c9',
+              modified: '2022-10-28, 08:40:29',
+              created: '2022-10-28, 08:40:29',
+              size: 52,
+            },
+            {
+              name: '.gtkrc-2.0',
+              id: '5ebd9500-3bcb-4ff9-8d6f-da2b379e0e15',
+              modified: '2022-10-28, 08:40:30',
+              created: '2022-10-28, 08:40:30',
+              size: 245,
+            },
+            {
+              name: '.gtkrc-xfce',
+              id: '44cbee23-ecff-4de6-933d-adff641d9682',
+              modified: '2022-10-28, 08:40:30',
+              created: '2022-10-28, 08:40:30',
+              size: 516,
+            },
+            {
+              name: '.lesshst',
+              id: 'de57e233-e47b-487c-a616-ac9b1705a4ba',
+              modified: '2022-10-28, 08:40:30',
+              created: '2022-10-28, 08:40:30',
+              size: 20,
+            },
+            {
+              name: '.p10k.zsh',
+              id: '06cf68d0-681b-4ee1-b402-d4a23923d45f',
+              modified: '2022-10-28, 08:40:30',
+              created: '2022-10-28, 08:40:30',
+              size: 85393,
+            },
+            {
+              name: '.profile',
+              id: '6218b297-047e-4001-ba0b-0acc563ef24e',
+              modified: '2022-10-28, 08:40:30',
+              created: '2022-10-28, 08:40:30',
+              size: 828,
+            },
+            {
+              name: '.python_history',
+              id: '3ee98ab9-d2b0-48ab-bdcc-23ca3c16bd8b',
+              modified: '2022-10-28, 08:40:30',
+              created: '2022-10-28, 08:40:30',
+              size: 295,
+            },
+            {
+              name: '.recently-used',
+              id: '5289038d-af29-4843-b80a-82c00f782212',
+              modified: '2022-10-28, 08:40:30',
+              created: '2022-10-28, 08:40:30',
+              size: 248,
+            },
+            {
+              name: '.shell.pre-oh-my-zsh',
+              id: '0b982462-7ef0-413c-b422-e5243517aa83',
+              modified: '2022-10-28, 08:40:30',
+              created: '2022-10-28, 08:40:30',
+              size: 10,
+            },
+            {
+              name: '.sudo_as_admin_successful',
+              id: 'b45ef99b-3db9-42aa-85ca-0148c6372817',
+              modified: '2022-10-28, 08:40:31',
+              created: '2022-10-28, 08:40:31',
               size: 0,
-              shared: false,
-              allow_all_read: false,
-              allow_all_write: false,
+            },
+            {
+              name: '.vcauth-ec-lzr',
+              id: '52dfe6a6-51da-432b-813a-b51e3952c9e5',
+              modified: '2022-10-28, 08:40:31',
+              created: '2022-10-28, 08:40:31',
+              size: 63,
+            },
+            {
+              name: '.viminfo',
+              id: '67596e5b-e0bf-427d-bacd-b0ec6acaf865',
+              modified: '2022-10-28, 08:40:31',
+              created: '2022-10-28, 08:40:31',
+              size: 11825,
+            },
+            {
+              name: '.vimrc',
+              id: 'b0d49af4-4c40-48af-a333-1852230c9949',
+              modified: '2022-10-28, 08:40:31',
+              created: '2022-10-28, 08:40:31',
+              size: 1654,
+            },
+            {
+              name: '.wget-hsts',
+              id: 'd6054786-1f09-4763-b4f1-c6dee3e3271f',
+              modified: '2022-10-28, 08:40:31',
+              created: '2022-10-28, 08:40:31',
+              size: 165,
+            },
+            {
+              name: '.Xauthority',
+              id: '95d61c8d-adb1-40b7-acf6-ebec0527ddc6',
+              modified: '2022-10-28, 08:40:32',
+              created: '2022-10-28, 08:40:32',
+              size: 122,
+            },
+            {
+              name: '.xsession-errors',
+              id: '7a79dd39-e941-4e44-ac06-78f4be904433',
+              modified: '2022-10-28, 08:40:32',
+              created: '2022-10-28, 08:40:32',
+              size: 17656,
+            },
+            {
+              name: '.xsession-errors.old',
+              id: 'a87978fe-e78c-4078-b14e-7aa5f0f69543',
+              modified: '2022-10-28, 08:40:32',
+              created: '2022-10-28, 08:40:32',
+              size: 188844,
+            },
+            {
+              name: '.zcompdump-kurtmint-5.8.1',
+              id: 'e3ccce4d-1779-4f10-9fb8-09df24a59e64',
+              modified: '2022-10-28, 08:40:32',
+              created: '2022-10-28, 08:40:32',
+              size: 51037,
+            },
+            {
+              name: '.zcompdump-kurtmint-5.8.1.zwc',
+              id: '96ed97b2-7708-4fc4-9427-dbef0540e4da',
+              modified: '2022-10-28, 08:40:32',
+              created: '2022-10-28, 08:40:32',
+              size: 118032,
+            },
+            {
+              name: '.zshenv',
+              id: '3e9e160a-73be-4e96-a3a0-4d7def8a7af5',
+              modified: '2022-10-28, 08:40:33',
+              created: '2022-10-28, 08:40:33',
+              size: 21,
+            },
+            {
+              name: '.zsh_history',
+              id: 'bc993a12-a546-4ba1-be7a-fea780fa8e3c',
+              modified: '2022-10-28, 08:40:33',
+              created: '2022-10-28, 08:40:33',
+              size: 129335,
+            },
+            {
+              name: '.zshrc',
+              id: '55ad0941-898d-4067-944f-b4b6707bb5c1',
+              modified: '2022-10-28, 08:40:57',
+              created: '2022-10-28, 08:40:33',
+              size: 4493,
             },
           ],
+          folder_links: [],
+          folders: [],
           documents: [],
         },
       }),
@@ -1127,6 +1389,11 @@ export default defineComponent({
       upload_file_types: ref([]),
       upload_file_freeEdit: ref(false),
       upload_file_dragged: ref(false),
+
+      // folder upload dialog handlers
+      uploadFolderDialog: ref(false),
+      uploadFolderFolders: ref(null),
+      uploadFolderDragged: ref(false),
 
       allAvailableFolders: ref({}),
 
@@ -2375,6 +2642,104 @@ export default defineComponent({
           this.loading = false;
           console.log(error);
         });
+    },
+
+    async uploadFolders() {
+      var errors = [];
+      var handledObjects = 0;
+      var successfulObjects = 0;
+      const length = this.uploadFolderFolders.length;
+      if (length > 0) {
+        const notif = this.q.notify({
+          type: 'positive',
+          group: false,
+          timeout: 0,
+          spinner: true,
+          message: 'Uploading...',
+          caption: handledObjects + ' / ' + length,
+        });
+      }
+      console.log(this.uploadFolderFolders);
+
+      for (var item of this.uploadFolderFolders) {
+        console.log(item);
+        if (item.webkitGetAsEntry().isDirectory) {
+          var item = item.webkitGetAsEntry();
+          notif({
+            message: 'Uploading Folder ' + item.name + '...',
+          });
+          await this.handleObj(item, this.rawFolderContent.id)
+            .then((reva) => {
+              this.refreshFolder();
+              successfulObjects += 1;
+              handledObjects += 1;
+              notif({
+                caption: handledObjects + ' / ' + length,
+              });
+              if (handledObjects == length) {
+                if (errors.length == 0) {
+                  notif({
+                    type: 'positive',
+                    icon: 'done', // we add an icon
+                    spinner: false, // we reset the spinner setting so the icon can be displayed
+                    message:
+                      'Uploaded everything! ' +
+                      successfulObjects +
+                      '/' +
+                      length,
+                    timeout: 2500, // we will timeout it in 2.5s
+                  });
+                } else {
+                  var message =
+                    'Uploaded ' +
+                    successfulObjects +
+                    '/' +
+                    length +
+                    ", following things couldn't be uploaded: ";
+                  for (var err_file of errors) {
+                    message += err_file + ', ';
+                  }
+                  notif({
+                    type: 'negative',
+                    icon: 'error', // we add an icon
+                    spinner: false, // we reset the spinner setting so the icon can be displayed
+                    message: message,
+                    timeout: 4000, // we will timeout it in 2.5s
+                    caption: '',
+                  });
+                }
+              }
+            })
+            .catch(() => {
+              handledObjects += 1;
+              notif({
+                caption: handledObjects + ' / ' + length,
+              });
+              if (handledObjects == length) {
+                errors.push(item.name);
+                var message =
+                  'Uploaded ' +
+                  successfulObjects +
+                  '/' +
+                  length +
+                  ", following things couldn't be uploaded: ";
+                for (var err_file of errors) {
+                  message += err_file + ', ';
+                }
+                notif({
+                  type: 'negative',
+                  icon: 'error', // we add an icon
+                  spinner: false, // we reset the spinner setting so the icon can be displayed
+                  message: message,
+                  timeout: 4000, // we will timeout it in 2.5s
+                  caption: '',
+                });
+              }
+            });
+        }
+      }
+
+      this.upload_file_files = null;
     },
 
     // upload file(s) from add button
