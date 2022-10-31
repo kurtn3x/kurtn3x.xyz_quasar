@@ -48,7 +48,7 @@ export default defineComponent({
     };
   },
 
-  created() {
+  async created() {
     if (this.settingsStore.theme_state == null) {
       document.body.setAttribute('data-theme', 'default');
       this.settingsStore.theme = 'default';
@@ -63,6 +63,7 @@ export default defineComponent({
         'X-CSRFToken': this.q.cookies.get('csrftoken'),
       },
     };
+
     api
       .get('/auth/authenticated', config)
       .then((response) => {

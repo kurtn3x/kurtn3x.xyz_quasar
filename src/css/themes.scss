@@ -28,6 +28,7 @@ $themes: (
     active-light: #00d5ff,
 
     layout-text: #f5f5f5,
+    layout-bg: #0eb1d2,
   ),
   'classic': (
     // keep as is
@@ -56,6 +57,7 @@ $themes: (
     active-light: #909090,
 
     layout-text: #fff,
+    layout-bg: #cdcdcd,
   ),
   'orange': (
     // keep as is
@@ -84,6 +86,7 @@ $themes: (
     active-light: #ff8945,
 
     layout-text: #fff,
+    layout-bg: #ee4d2e,
   ),
   'nice-green': (
     // keep as is
@@ -112,6 +115,7 @@ $themes: (
     active-light: #16c6cf,
 
     layout-text: #fff,
+    layout-bg: #1db992,
   ),
   'olive-green': (
     // keep as is
@@ -140,6 +144,7 @@ $themes: (
     active-light: #90a028,
 
     layout-text: #fff,
+    layout-bg: #bfbc06,
   ),
   'epic-blue': (
     // keep as is
@@ -168,6 +173,65 @@ $themes: (
     active-light: #68bdff,
 
     layout-text: #fff,
+    layout-bg: #008fff,
+  ),
+  'dark': (
+    // keep as is
+    accent: #9c27b0,
+    positive: #21ba45,
+    negative: #c10015,
+    info: #31ccec,
+    warning: #f2c037,
+
+    // text color used in darkmode
+    light: #f5f5f5,
+
+    // text color used in light mode
+    dark: #1d1d1d,
+
+    // theme colors
+    primary: #8f8f8f,
+
+    // background used in dark mode
+    background-dark: #1d1d1d,
+
+    // background used in light mode
+    background-light: #fff,
+
+    active-dark: #e4e4e4,
+    active-light: #3f3f3f,
+
+    layout-text: #f5f5f5,
+    layout-bg: #1d1d1d,
+  ),
+  'light': (
+    // keep as is
+    accent: #9c27b0,
+    positive: #21ba45,
+    negative: #c10015,
+    info: #31ccec,
+    warning: #f2c037,
+
+    // text color used in darkmode
+    light: #f5f5f5,
+
+    // text color used in light mode
+    dark: #1d1d1d,
+
+    // theme colors
+    primary: #8f8f8f,
+
+    // background used in dark mode
+    background-dark: #1d1d1d,
+
+    // background used in light mode
+    background-light: #fff,
+
+    active-dark: #e4e4e4,
+    active-light: #3f3f3f,
+
+    layout-text: #1d1d1d,
+    layout-bg: #ffffff,
   ),
 );
 
@@ -182,13 +246,6 @@ $themes: (
       }
     }
 
-    /*     .q-field__control,
-    .q-item.q-router-link--active {
-      color: map.get($colors, active-light) !important;
-    }
-    .q-item--dark.q-router-link--active {
-      color: map.get($colors, active-dark) !important;
-    } */
     .q-field__control,
     .q-item.q-router-link--active {
       color: map.get($colors, active-light) !important;

@@ -33,6 +33,7 @@
       drawerItemNewParent = '';
       allAvailableFolders = {};
       drawerItemType = '';
+      drawerTab = 'info';
     "
   >
     <q-card bordered flat class="full-height">
@@ -253,10 +254,8 @@
       <q-file
         style="min-height: 300px; min-width: 300px"
         v-model="upload_file_files"
-        label="&nbsp;&nbsp;&nbsp;&nbsp; Click me / Drag & Drop Files here"
         multiple
         append
-        @update:model-value="uploaderHandleFilenames"
         :loading="loading"
         counter
         use-chips
@@ -295,38 +294,24 @@
         "
         :class="upload_file_dragged ? 'bg-blue' : ''"
       >
+        <div
+          class="absolute-left text-white text-body1 text-center"
+          style="top: 300%; pointer-events: none"
+        >
+          Click me / Drag & Drop Files here. Folders can only be uploaded via
+          drag&drop in the expanded area below the file browser.
+        </div>
       </q-file>
       <template v-for="(file, index) in upload_file_files" :key="file">
-        <q-input
-          dense
-          outlined
-          v-model="upload_file_names[index]"
-          :label="'File ' + index + ' Name'"
-          input-class="text-center"
-          :suffix="
-            upload_file_types[index] == '' ? '' : '.' + upload_file_types[index]
-          "
-          v-if="!upload_file_freeEdit"
-          class="text-body1"
-        />
         <q-input
           dense
           outlined
           v-model="upload_file_files[index].name"
           :label="'File ' + index + ' Name'"
           input-class="text-center"
-          v-if="upload_file_freeEdit"
           class="text-body1"
         />
       </template>
-      <q-btn
-        v-if="filesInUploadField"
-        flat
-        label="Edit Filename with extension"
-        icon="edit"
-        @click="upload_file_freeEdit = !upload_file_freeEdit"
-        class="full-width q-mt-md q-mb-md"
-      />
 
       <q-btn
         label="Upload"
@@ -339,72 +324,6 @@
     </q-card>
   </q-dialog>
 
-  <q-dialog v-model="uploadFolderDialog">
-    <q-card style="min-width: 300px" bordered>
-      <q-toolbar class="justify-center">
-        <div class="text-h5 q-mt-md text-primary text-center text-weight-bold">
-          UPLOAD Folders
-        </div>
-        <q-separator />
-      </q-toolbar>
-
-      <q-file
-        style="min-height: 300px; min-width: 300px"
-        v-model="uploadFolderFolders"
-        label="&nbsp;&nbsp;&nbsp;&nbsp; Click me / Drag & Drop Folders here"
-        multiple
-        append
-        webkitdirectory
-        :loading="loading"
-        counter
-        use-chips
-        hide-bottom-space
-        square
-        class="q-ma-md fileupload"
-        label-color="white"
-        borderless
-        @dragover.prevent="
-          (ev) => {
-            if (ev.dataTransfer.items[0].kind == 'file') {
-              this.uploadFolderDragged = true;
-            }
-          }
-        "
-        @dragenter.self="
-          (ev) => {
-            if (ev.dataTransfer.items[0].kind == 'file') {
-              this.uploadFolderDragged = true;
-            }
-          }
-        "
-        @dragleave.prevent="
-          (ev) => {
-            if (ev.dataTransfer.items[0].kind == 'file') {
-              this.uploadFolderDragged = false;
-            }
-          }
-        "
-        @drop="
-          (ev) => {
-            if (ev.dataTransfer.items[0].kind == 'file') {
-              this.uploadFolderDragged = false;
-            }
-          }
-        "
-        :class="uploadFolderDragged ? 'bg-blue' : ''"
-      >
-      </q-file>
-
-      <q-btn
-        label="Upload"
-        class="cursor-pointer full-width bg-green text-white"
-        flat
-        @click="uploadFolders"
-        v-close-popup
-        size="lg"
-      />
-    </q-card>
-  </q-dialog>
   <q-page
     class="column"
     :class="mobile ? 'q-ml-xs q-mr-xs' : 'q-mr-md q-ml-md'"
@@ -548,13 +467,6 @@
           icon="file_upload"
           label="Upload Files"
         />
-        <q-fab-action
-          color="primary"
-          text-color="white"
-          @click="uploadFolderDialog = !uploadFolderDialog"
-          icon="drive_folder_upload"
-          label="Upload Folders"
-        />
       </q-fab>
 
       <q-space />
@@ -654,24 +566,30 @@
         :style="item_parent_container_height"
         id="drop_zone"
         @drop.self.prevent="onBackgroundDrop"
-        @dragover.self.prevent="
+        @dragover.prevent="
           (ev) => {
-            if (ev.dataTransfer.items[0].kind == 'file') {
-              this.fileDraggedMain = true;
+            if (ev.dataTransfer.items.length > 0) {
+              if (ev.dataTransfer.items[0].kind == 'file') {
+                this.fileDraggedMain = true;
+              }
             }
           }
         "
         @dragenter.self="
           (ev) => {
-            if (ev.dataTransfer.items[0].kind == 'file') {
-              this.fileDraggedMain = true;
+            if (ev.dataTransfer.items.length > 0) {
+              if (ev.dataTransfer.items[0].kind == 'file') {
+                this.fileDraggedMain = true;
+              }
             }
           }
         "
-        @dragleave.self.prevent="
+        @dragleave.prevent="
           (ev) => {
-            if (ev.dataTransfer.items[0].kind == 'file') {
-              this.fileDraggedMain = false;
+            if (ev.dataTransfer.items.length > 0) {
+              if (ev.dataTransfer.items[0].kind == 'file') {
+                this.fileDraggedMain = false;
+              }
             }
           }
         "
@@ -772,24 +690,30 @@
                 onFolderDrop($event, folder.id);
                 folder.drag_over = false;
               "
-              @dragover.self.prevent="
+              @dragover.prevent="
                 (ev) => {
-                  if (ev.dataTransfer.items[0].kind == 'file') {
-                    folder.drag_over = true;
+                  if (ev.dataTransfer.items.length > 0) {
+                    if (ev.dataTransfer.items[0].kind == 'file') {
+                      folder.drag_over = true;
+                    }
                   }
                 }
               "
               @dragenter.self="
                 (ev) => {
-                  if (ev.dataTransfer.items[0].kind == 'file') {
-                    folder.drag_over = true;
+                  if (ev.dataTransfer.items.length > 0) {
+                    if (ev.dataTransfer.items[0].kind == 'file') {
+                      folder.drag_over = true;
+                    }
                   }
                 }
               "
-              @dragleave.self.prevent="
+              @dragleave.prevent="
                 (ev) => {
-                  if (ev.dataTransfer.items[0].kind == 'file') {
-                    folder.drag_over = false;
+                  if (ev.dataTransfer.items.length > 0) {
+                    if (ev.dataTransfer.items[0].kind == 'file') {
+                      folder.drag_over = false;
+                    }
                   }
                 }
               "
@@ -1116,22 +1040,28 @@
       @drop.self.prevent="onBackgroundDrop"
       @dragover.prevent="
         (ev) => {
-          if (ev.dataTransfer.items[0].kind == 'file') {
-            this.dropFieldDragover = true;
+          if (ev.dataTransfer.items.length > 0) {
+            if (ev.dataTransfer.items[0].kind == 'file') {
+              this.dropFieldDragover = true;
+            }
           }
         }
       "
       @dragenter.self="
         (ev) => {
-          if (ev.dataTransfer.items[0].kind == 'file') {
-            this.dropFieldDragover = true;
+          if (ev.dataTransfer.items.length > 0) {
+            if (ev.dataTransfer.items[0].kind == 'file') {
+              this.dropFieldDragover = true;
+            }
           }
         }
       "
       @dragleave.prevent="
         (ev) => {
-          if (ev.dataTransfer.items[0].kind == 'file') {
-            this.dropFieldDragover = false;
+          if (ev.dataTransfer.items.length > 0) {
+            if (ev.dataTransfer.items[0].kind == 'file') {
+              this.dropFieldDragover = false;
+            }
           }
         }
       "
@@ -1149,6 +1079,7 @@
         direction="up"
         style="width: 250px; top: 0.5em"
         @click="dropField = !dropField"
+        class="text-layout-text"
       >
       </q-fab>
     </q-page-sticky>
@@ -1156,6 +1087,7 @@
 </template>
 
 <script>
+const WINDOW = window;
 import { defineComponent, ref } from 'vue';
 import { useUserStore } from 'stores/user';
 import { useQuasar } from 'quasar';
@@ -1197,7 +1129,7 @@ export default defineComponent({
       rawFolderContent: ref({
         name: 'Home',
         path: 'Home',
-        id: '45e46e48-c79e-4577-98b9-88e14ba27a31',
+        id: '0000',
         children: {
           private_files: [
             {
@@ -1206,167 +1138,6 @@ export default defineComponent({
               modified: '2022-10-28, 08:40:29',
               created: '2022-10-28, 08:40:29',
               size: 27,
-            },
-            {
-              name: '.face',
-              id: '0c51c4f8-6059-4c2f-890a-db3f265e2ca6',
-              modified: '2022-10-28, 08:40:29',
-              created: '2022-10-28, 08:40:29',
-              size: 3743,
-            },
-            {
-              name: '.gitconfig',
-              id: '17b1a7dc-31c3-428d-864b-76b70240e2c9',
-              modified: '2022-10-28, 08:40:29',
-              created: '2022-10-28, 08:40:29',
-              size: 52,
-            },
-            {
-              name: '.gtkrc-2.0',
-              id: '5ebd9500-3bcb-4ff9-8d6f-da2b379e0e15',
-              modified: '2022-10-28, 08:40:30',
-              created: '2022-10-28, 08:40:30',
-              size: 245,
-            },
-            {
-              name: '.gtkrc-xfce',
-              id: '44cbee23-ecff-4de6-933d-adff641d9682',
-              modified: '2022-10-28, 08:40:30',
-              created: '2022-10-28, 08:40:30',
-              size: 516,
-            },
-            {
-              name: '.lesshst',
-              id: 'de57e233-e47b-487c-a616-ac9b1705a4ba',
-              modified: '2022-10-28, 08:40:30',
-              created: '2022-10-28, 08:40:30',
-              size: 20,
-            },
-            {
-              name: '.p10k.zsh',
-              id: '06cf68d0-681b-4ee1-b402-d4a23923d45f',
-              modified: '2022-10-28, 08:40:30',
-              created: '2022-10-28, 08:40:30',
-              size: 85393,
-            },
-            {
-              name: '.profile',
-              id: '6218b297-047e-4001-ba0b-0acc563ef24e',
-              modified: '2022-10-28, 08:40:30',
-              created: '2022-10-28, 08:40:30',
-              size: 828,
-            },
-            {
-              name: '.python_history',
-              id: '3ee98ab9-d2b0-48ab-bdcc-23ca3c16bd8b',
-              modified: '2022-10-28, 08:40:30',
-              created: '2022-10-28, 08:40:30',
-              size: 295,
-            },
-            {
-              name: '.recently-used',
-              id: '5289038d-af29-4843-b80a-82c00f782212',
-              modified: '2022-10-28, 08:40:30',
-              created: '2022-10-28, 08:40:30',
-              size: 248,
-            },
-            {
-              name: '.shell.pre-oh-my-zsh',
-              id: '0b982462-7ef0-413c-b422-e5243517aa83',
-              modified: '2022-10-28, 08:40:30',
-              created: '2022-10-28, 08:40:30',
-              size: 10,
-            },
-            {
-              name: '.sudo_as_admin_successful',
-              id: 'b45ef99b-3db9-42aa-85ca-0148c6372817',
-              modified: '2022-10-28, 08:40:31',
-              created: '2022-10-28, 08:40:31',
-              size: 0,
-            },
-            {
-              name: '.vcauth-ec-lzr',
-              id: '52dfe6a6-51da-432b-813a-b51e3952c9e5',
-              modified: '2022-10-28, 08:40:31',
-              created: '2022-10-28, 08:40:31',
-              size: 63,
-            },
-            {
-              name: '.viminfo',
-              id: '67596e5b-e0bf-427d-bacd-b0ec6acaf865',
-              modified: '2022-10-28, 08:40:31',
-              created: '2022-10-28, 08:40:31',
-              size: 11825,
-            },
-            {
-              name: '.vimrc',
-              id: 'b0d49af4-4c40-48af-a333-1852230c9949',
-              modified: '2022-10-28, 08:40:31',
-              created: '2022-10-28, 08:40:31',
-              size: 1654,
-            },
-            {
-              name: '.wget-hsts',
-              id: 'd6054786-1f09-4763-b4f1-c6dee3e3271f',
-              modified: '2022-10-28, 08:40:31',
-              created: '2022-10-28, 08:40:31',
-              size: 165,
-            },
-            {
-              name: '.Xauthority',
-              id: '95d61c8d-adb1-40b7-acf6-ebec0527ddc6',
-              modified: '2022-10-28, 08:40:32',
-              created: '2022-10-28, 08:40:32',
-              size: 122,
-            },
-            {
-              name: '.xsession-errors',
-              id: '7a79dd39-e941-4e44-ac06-78f4be904433',
-              modified: '2022-10-28, 08:40:32',
-              created: '2022-10-28, 08:40:32',
-              size: 17656,
-            },
-            {
-              name: '.xsession-errors.old',
-              id: 'a87978fe-e78c-4078-b14e-7aa5f0f69543',
-              modified: '2022-10-28, 08:40:32',
-              created: '2022-10-28, 08:40:32',
-              size: 188844,
-            },
-            {
-              name: '.zcompdump-kurtmint-5.8.1',
-              id: 'e3ccce4d-1779-4f10-9fb8-09df24a59e64',
-              modified: '2022-10-28, 08:40:32',
-              created: '2022-10-28, 08:40:32',
-              size: 51037,
-            },
-            {
-              name: '.zcompdump-kurtmint-5.8.1.zwc',
-              id: '96ed97b2-7708-4fc4-9427-dbef0540e4da',
-              modified: '2022-10-28, 08:40:32',
-              created: '2022-10-28, 08:40:32',
-              size: 118032,
-            },
-            {
-              name: '.zshenv',
-              id: '3e9e160a-73be-4e96-a3a0-4d7def8a7af5',
-              modified: '2022-10-28, 08:40:33',
-              created: '2022-10-28, 08:40:33',
-              size: 21,
-            },
-            {
-              name: '.zsh_history',
-              id: 'bc993a12-a546-4ba1-be7a-fea780fa8e3c',
-              modified: '2022-10-28, 08:40:33',
-              created: '2022-10-28, 08:40:33',
-              size: 129335,
-            },
-            {
-              name: '.zshrc',
-              id: '55ad0941-898d-4067-944f-b4b6707bb5c1',
-              modified: '2022-10-28, 08:40:57',
-              created: '2022-10-28, 08:40:33',
-              size: 4493,
             },
           ],
           folder_links: [],
@@ -1385,15 +1156,7 @@ export default defineComponent({
       // file upload dialog handlers
       upload_file_dialog: ref(false),
       upload_file_files: ref(null),
-      upload_file_names: ref([]),
-      upload_file_types: ref([]),
-      upload_file_freeEdit: ref(false),
       upload_file_dragged: ref(false),
-
-      // folder upload dialog handlers
-      uploadFolderDialog: ref(false),
-      uploadFolderFolders: ref(null),
-      uploadFolderDragged: ref(false),
 
       allAvailableFolders: ref({}),
 
@@ -1501,6 +1264,17 @@ export default defineComponent({
     },
   },
   methods: {
+    write_console(el) {
+      console.log(el);
+    },
+
+    async handleDirUpload() {
+      console.log(WINDOW);
+      var window = document.defaultView;
+      console.log(window);
+      const dirHandle = await window.showDirectoryPicker();
+      console.log(dirHandle);
+    },
     copyToClipboard(link) {
       navigator.clipboard.writeText(link);
     },
@@ -2445,32 +2219,6 @@ export default defineComponent({
         .focus();
     },
 
-    // handle filenames and their extension on file upload dialog
-    uploaderHandleFilenames() {
-      for (const file in this.upload_file_files) {
-        // get the filename without extension
-        if (this.upload_file_files[file].name.includes('.')) {
-          this.upload_file_names[file] = this.upload_file_files[
-            file
-          ].name.replace(/\.[^/.]+$/, '');
-
-          if (this.upload_file_names[file] == '') {
-            this.upload_file_names[file] = this.upload_file_files[file].name;
-
-            this.upload_file_types[file] = '';
-          } else {
-            // get file extension as suffix
-            this.upload_file_types[file] = this.upload_file_files[file].name
-              .split('.')
-              .pop();
-          }
-        } else {
-          this.upload_file_names[file] = this.upload_file_files[file].name;
-          this.upload_file_types[file] = '';
-        }
-      }
-    },
-
     // universal function to refetch the current folder when any change is made
     refreshFolder() {
       this.loading = true;
@@ -2644,104 +2392,6 @@ export default defineComponent({
         });
     },
 
-    async uploadFolders() {
-      var errors = [];
-      var handledObjects = 0;
-      var successfulObjects = 0;
-      const length = this.uploadFolderFolders.length;
-      if (length > 0) {
-        const notif = this.q.notify({
-          type: 'positive',
-          group: false,
-          timeout: 0,
-          spinner: true,
-          message: 'Uploading...',
-          caption: handledObjects + ' / ' + length,
-        });
-      }
-      console.log(this.uploadFolderFolders);
-
-      for (var item of this.uploadFolderFolders) {
-        console.log(item);
-        if (item.webkitGetAsEntry().isDirectory) {
-          var item = item.webkitGetAsEntry();
-          notif({
-            message: 'Uploading Folder ' + item.name + '...',
-          });
-          await this.handleObj(item, this.rawFolderContent.id)
-            .then((reva) => {
-              this.refreshFolder();
-              successfulObjects += 1;
-              handledObjects += 1;
-              notif({
-                caption: handledObjects + ' / ' + length,
-              });
-              if (handledObjects == length) {
-                if (errors.length == 0) {
-                  notif({
-                    type: 'positive',
-                    icon: 'done', // we add an icon
-                    spinner: false, // we reset the spinner setting so the icon can be displayed
-                    message:
-                      'Uploaded everything! ' +
-                      successfulObjects +
-                      '/' +
-                      length,
-                    timeout: 2500, // we will timeout it in 2.5s
-                  });
-                } else {
-                  var message =
-                    'Uploaded ' +
-                    successfulObjects +
-                    '/' +
-                    length +
-                    ", following things couldn't be uploaded: ";
-                  for (var err_file of errors) {
-                    message += err_file + ', ';
-                  }
-                  notif({
-                    type: 'negative',
-                    icon: 'error', // we add an icon
-                    spinner: false, // we reset the spinner setting so the icon can be displayed
-                    message: message,
-                    timeout: 4000, // we will timeout it in 2.5s
-                    caption: '',
-                  });
-                }
-              }
-            })
-            .catch(() => {
-              handledObjects += 1;
-              notif({
-                caption: handledObjects + ' / ' + length,
-              });
-              if (handledObjects == length) {
-                errors.push(item.name);
-                var message =
-                  'Uploaded ' +
-                  successfulObjects +
-                  '/' +
-                  length +
-                  ", following things couldn't be uploaded: ";
-                for (var err_file of errors) {
-                  message += err_file + ', ';
-                }
-                notif({
-                  type: 'negative',
-                  icon: 'error', // we add an icon
-                  spinner: false, // we reset the spinner setting so the icon can be displayed
-                  message: message,
-                  timeout: 4000, // we will timeout it in 2.5s
-                  caption: '',
-                });
-              }
-            });
-        }
-      }
-
-      this.upload_file_files = null;
-    },
-
     // upload file(s) from add button
     uploadFiles() {
       var errors = [];
@@ -2769,18 +2419,8 @@ export default defineComponent({
         // check if its a file
         let form_data = new FormData();
         var filename = '';
-        if (this.upload_file_freeEdit) {
-          filename = this.upload_file_files[index].name;
-        } else {
-          if (this.upload_file_types[index] == '') {
-            filename = this.upload_file_names[index];
-          } else {
-            filename =
-              this.upload_file_names[index] +
-              '.' +
-              this.upload_file_types[index];
-          }
-        }
+        filename = this.upload_file_files[index].name;
+
         form_data.append('filename', filename);
 
         form_data.append('new_parent_id', this.rawFolderContent.id);
@@ -2890,8 +2530,6 @@ export default defineComponent({
       }
 
       this.upload_file_files = null;
-      this.upload_file_names = [];
-      this.upload_file_types = [];
     },
   },
 });
@@ -2917,10 +2555,10 @@ export default defineComponent({
 }
 
 .fileupload {
-  background-color: $grey;
+  background-color: $grey-8;
 }
 .fileupload:hover {
-  background-color: $grey-4;
+  background-color: $grey-7;
 }
 
 .fileuploadhover {

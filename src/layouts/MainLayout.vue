@@ -4,7 +4,7 @@
       reveal
       height-hint="98"
       elevated
-      class="bg-primary text-layout-text"
+      class="bg-layout-bg text-layout-text"
     >
       <q-toolbar class="q-pl-none q-pr-none">
         <q-btn
@@ -543,7 +543,7 @@
       <router-view />
     </q-page-container>
 
-    <q-footer reveal elevated class="bg-primary text-layout-text">
+    <q-footer reveal elevated class="bg-layout-bg text-layout-text">
       <q-toolbar>
         <q-toolbar-title>
           <div>Under developement.</div>
@@ -558,13 +558,7 @@
             <q-item-section>
               <q-item-label>Themes</q-item-label>
             </q-item-section>
-            <q-menu
-              menu-anchor="bottom middle"
-              menu-self="bottom middle"
-              :menu-offset="[0, -40]"
-              fit
-              v-model="theme_menu"
-            >
+            <q-menu :menu-offset="[0, -40]" fit v-model="theme_menu">
               <q-list bordered>
                 <q-item
                   clickable
@@ -595,6 +589,16 @@
                   clickable
                   @click="setTheme('epic-blue')"
                   style="background: #008fff"
+                />
+                <q-item
+                  clickable
+                  @click="setTheme('dark')"
+                  style="background: #1d1d1d"
+                />
+                <q-item
+                  clickable
+                  @click="setTheme('light')"
+                  style="background: #f5f5f5"
                 />
               </q-list>
             </q-menu>
@@ -701,7 +705,7 @@ export default {
       isPwd: ref(true),
       isPwd2: ref(true),
       saved_username: ref(''),
-      status: ref(userStore.headerinfo.status),
+      status: '',
       done: ref(false),
     };
   },
@@ -709,6 +713,9 @@ export default {
   created() {
     if (this.userStore.authenticated) {
       this.getHeaderInfo();
+    } else {
+      this.headerinfo = '';
+      this.userStore.setHeaderInfo(defaultHeaderInformation());
     }
   },
 
@@ -772,7 +779,6 @@ export default {
         .put('profile/update_status', data, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
-            this.userStore.setStatus(this.status);
             this.done = true;
           } else {
             var msg = 'Error: ' + response.data.error;
