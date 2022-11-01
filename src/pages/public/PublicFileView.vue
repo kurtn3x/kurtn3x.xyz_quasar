@@ -4,46 +4,58 @@
     <div class="text-primary text-h4 text-center q-mt-lg">
       File: {{ fileData.name }}
     </div>
+    <q-separator class="q-ma-md" size="3px" />
     <div class="row justify-center">
       <div style="max-width: 450px">
-        <q-expansion-item
-          icon="info"
-          label="File Info"
-          class="q-mt-lg text-h5 text-center"
-          style="min-width: 450px"
-        >
-          <q-card
-            bordered
-            style="
-              white-space: nowrap;
-              overflow: scroll;
-              text-overflow: ellipsis;
-            "
+        <q-list bordered class="rounded-borders">
+          <q-expansion-item
+            icon="info"
+            label="File Info"
+            class="q-mt-sm text-h5 text-center"
+            style="min-width: 450px"
           >
-            <q-card-section>
-              <div class="text-h6 text-left" style="text-decoration: underline">
-                Name: {{ fileData.name }}
-                <q-tooltip class="text-body1">
-                  File ID: {{ fileData.id }}</q-tooltip
+            <q-card
+              bordered
+              style="
+                white-space: nowrap;
+                overflow: scroll;
+                text-overflow: ellipsis;
+              "
+            >
+              <q-card-section>
+                <div
+                  class="text-h6 text-left"
+                  style="text-decoration: underline"
                 >
-              </div>
-              <div class="text-h6 text-left" style="text-decoration: underline">
-                Owner: {{ fileData.owner }}
-                <q-tooltip class="text-body1">
-                  Owner ID: {{ fileData.ownerid }}</q-tooltip
+                  Name: {{ fileData.name }}
+                  <q-tooltip class="text-body1">
+                    File ID: {{ fileData.id }}</q-tooltip
+                  >
+                </div>
+                <div
+                  class="text-h6 text-left"
+                  style="text-decoration: underline"
                 >
-              </div>
-              <div class="text-h6 text-left">
-                Modified: {{ fileData.modified }}
-              </div>
-              <div class="text-h6 text-left">
-                Created: {{ fileData.created }}
-              </div>
-              <div class="text-h6 text-left">Path: {{ fileData.path }}</div>
-              <div class="text-h6 text-left">Size: {{ fileData.size }}</div>
-            </q-card-section>
-          </q-card>
-        </q-expansion-item>
+                  Owner: {{ fileData.owner }}
+                  <q-tooltip class="text-body1">
+                    Owner ID: {{ fileData.ownerid }}</q-tooltip
+                  >
+                </div>
+                <div class="text-h6 text-left">
+                  Modified: {{ fileData.modified }}
+                </div>
+                <div class="text-h6 text-left">
+                  Created: {{ fileData.created }}
+                </div>
+                <div class="text-h6 text-left">Path: {{ fileData.path }}</div>
+                <div class="text-h6 text-left">Size: {{ readableSize }}</div>
+                <div class="text-h6 text-left">
+                  permissions: {{ fileData.permissions }}
+                </div>
+              </q-card-section>
+            </q-card>
+          </q-expansion-item>
+        </q-list>
       </div>
     </div>
     <div class="row justify-center">
@@ -82,14 +94,15 @@ export default defineComponent({
       loading: ref(true),
       allowed: ref(false),
       fileData: ref({
-        name: 'file.name',
-        owner: 'file.user.name',
-        ownerid: 'file.user.id',
-        modified: "file.modified.strftime('%Y-%m-%d, %H:%M:%S')",
-        created: "file.created.strftime('%Y-%m-%d, %H:%M:%S')",
-        path: 'file.path',
-        size: 'file.size',
-        id: 'id',
+        name: '',
+        owner: '',
+        ownerid: '',
+        modified: '',
+        created: '',
+        path: '',
+        size: '0',
+        id: '',
+        permissions: '',
       }),
     };
   },
@@ -101,11 +114,38 @@ export default defineComponent({
         return false;
       }
     },
+    readableSize() {
+      return this.humanFileSize(this.fileData.size);
+    },
   },
   created() {
     this.getInitialFile();
   },
   methods: {
+    humanFileSize(bytes, dp = 1) {
+      const thresh = 1024;
+
+      if (Math.abs(bytes) < thresh) {
+        return bytes + ' B';
+      }
+
+      const units = si
+        ? ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+        : ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+      let u = -1;
+      const r = 10 ** dp;
+
+      do {
+        bytes /= thresh;
+        ++u;
+      } while (
+        Math.round(Math.abs(bytes) * r) / r >= thresh &&
+        u < units.length - 1
+      );
+
+      return bytes.toFixed(dp) + ' ' + units[u];
+    },
+
     openInNewTab(id) {
       window
         .open('https://api.kurtn3x.xyz/files/download/' + id, '_blank')
@@ -157,5 +197,9 @@ export default defineComponent({
   -khtml-user-select: none; /* Konqueror HTML */
   -moz-user-select: none; /* Firefox */
   -ms-user-select: none; /* Internet Explorer/Edge */
+}
+
+.my-custom-class {
+  outline: 5px dotted green;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <q-dialog v-model="folder_delete_dialog" @hide="availParents = []">
+  <q-dialog v-model="folderDeleteDialog" @hide="availParents = []">
     <q-card bordered>
       <div class="text-body1 text-center q-ma-md">
         This will delete the folder and all its subfolders and files.
@@ -10,18 +10,13 @@
           v-close-popup
           flat
           class="bg-green text-light"
-          @click="deleteItem(folder_to_delete, 'folder')"
+          @click="deleteItem(folderToDeleteUUID, 'folder')"
           >Continue</q-btn
         >
       </q-card-actions>
     </q-card>
   </q-dialog>
 
-  <!-- <PdfViewer
-    v-if="show_file_editor"
-    :initialDoc="this.initial_doc"
-    :show="this.show_file_editor"
-  /> -->
   <q-drawer
     side="right"
     v-model="updateItemDrawer"
@@ -87,7 +82,7 @@
               drawerItemType != 'document' && drawerItemType != 'folder_link'
             "
           >
-            Size: {{ drawerSize }} Bytes
+            Size: {{ drawerReadableSize }}
           </div>
           <div
             class="text-body1 q-mt-md q-ml-sm"
@@ -165,8 +160,8 @@
             label="Delete"
             icon="delete"
             @click.capture.stop="
-              this.folder_to_delete = drawerItemId.id;
-              folder_delete_dialog = !folder_delete_dialog;
+              this.folderToDeleteUUID = drawerItemId;
+              folderDeleteDialog = !folderDeleteDialog;
             "
             :loading="loading"
           />
@@ -192,7 +187,11 @@
           />
           <div
             class="q-mb-sm text-body1 text-center"
-            v-if="drawerSharingRecursive && drawerSharing"
+            v-if="
+              drawerSharingRecursive &&
+              drawerSharing &&
+              drawerItemType == 'folder'
+            "
           >
             This will apply the following settings for all subcontent contained
             in this folder.
@@ -766,7 +765,7 @@
                     drawerItemName = folder.name;
                     drawerCreated = folder.created;
                     drawerModified = folder.modified;
-                    drawerSize = folder.size;
+                    drawerItemSize = folder.size;
                     drawerSharing = folder.shared;
                     drawerSharingAllowAllRead = folder.allow_all_read;
                     drawerSharingAllowedWrite = folder.allow_all_write;
@@ -869,7 +868,7 @@
                     drawerItemName = folder_link.name;
                     drawerCreated = folder_link.created;
                     drawerModified = folder_link.modified;
-                    drawerSize = folder_link.size;
+                    drawerItemSize = folder_link.size;
                     drawerSharing = folder_link.shared;
                     drawerSharingAllowAllRead = folder_link.allow_all_read;
                     drawerSharingAllowedWrite = folder_link.allow_all_write;
@@ -947,7 +946,10 @@
                     drawerItemName = file.name;
                     drawerCreated = file.created;
                     drawerModified = file.modified;
-                    drawerSize = file.size;
+                    drawerItemSize = file.size;
+                    drawerSharing = file.shared;
+                    drawerSharingAllowAllRead = file.allow_all_read;
+                    drawerSharingAllowedWrite = file.allow_all_write;
                   "
                   :loading="loading"
                   stretch
@@ -1022,6 +1024,9 @@
                     drawerItemName = document.name;
                     drawerCreated = document.created;
                     drawerModified = document.modified;
+                    drawerSharing = document.shared;
+                    drawerSharingAllowAllRead = document.allow_all_read;
+                    drawerSharingAllowedWrite = document.allow_all_write;
                   "
                   :loading="loading"
                   stretch
@@ -1170,7 +1175,7 @@ export default defineComponent({
       drawerItemName: ref(''),
       drawerCreated: ref(''),
       drawerModified: ref(''),
-      drawerSize: ref(''),
+      drawerItemSize: ref(''),
 
       // drawer edit tab
       drawerItemNewName: ref(''),
@@ -1187,8 +1192,8 @@ export default defineComponent({
       availParents: ref([]),
 
       // delete folder
-      folder_to_delete: ref(''),
-      folder_delete_dialog: ref(false),
+      folderToDeleteUUID: ref(''),
+      folderDeleteDialog: ref(false),
 
       fileDraggedMain: ref(false),
       itemClickable: ref(true),
@@ -1212,6 +1217,9 @@ export default defineComponent({
     this.getHomeFolder();
   },
   computed: {
+    drawerReadableSize() {
+      return this.humanFileSize(this.drawerItemSize);
+    },
     itemShareLink() {
       return (
         'https://kurtn3x.xyz/public/' +
@@ -1248,8 +1256,13 @@ export default defineComponent({
     },
 
     item_parent_container_height() {
-      var height = this.q.screen.height - 300;
-      return { '--min-height': height + 'px' };
+      if (this.dropField) {
+        var height = this.q.screen.height - 425;
+        return { '--min-height': height + 'px' };
+      } else {
+        var height = this.q.screen.height - 300;
+        return { '--min-height': height + 'px' };
+      }
     },
 
     item_text_width() {
@@ -1266,6 +1279,30 @@ export default defineComponent({
   methods: {
     write_console(el) {
       console.log(el);
+    },
+
+    humanFileSize(bytes, dp = 1) {
+      const thresh = 1024;
+
+      if (Math.abs(bytes) < thresh) {
+        return bytes + ' B';
+      }
+
+      const units = si
+        ? ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+        : ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+      let u = -1;
+      const r = 10 ** dp;
+
+      do {
+        bytes /= thresh;
+        ++u;
+      } while (
+        Math.round(Math.abs(bytes) * r) / r >= thresh &&
+        u < units.length - 1
+      );
+
+      return bytes.toFixed(dp) + ' ' + units[u];
     },
 
     async handleDirUpload() {
@@ -1381,6 +1418,7 @@ export default defineComponent({
 
     // drag & drop upload when dropping on free space ( current folder)
     async onBackgroundDrop(ev) {
+      this.dropFieldDragover = false;
       this.fileDraggedMain = false;
       if (ev.dataTransfer.items[0].kind != 'string') {
         var errors = [];
