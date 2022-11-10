@@ -60,6 +60,7 @@ import { langmap } from './langmap';
 import { thememap } from './thememap';
 import { useSettingsStore } from 'stores/settings';
 import { useQuasar } from 'quasar';
+import { api } from 'boot/axios';
 
 export default defineComponent({
   components: {
@@ -115,7 +116,11 @@ export default defineComponent({
       lang: ref('python'),
       langmap,
       thememap,
+      codeId: ref(''),
     };
+  },
+  created() {
+    this.getCodeFile();
   },
 
   computed: {
@@ -143,6 +148,42 @@ export default defineComponent({
       var height = this.q.screen.height - 300;
       console.log(height);
       return height;
+    },
+  },
+
+  methods: {
+    notify(type: string, message: string) {
+      this.q.notify({
+        type: type,
+        message: message,
+        progress: true,
+        multiLine: true,
+      });
+    },
+
+    getCodeFile() {
+      var id = this.$route.params.id;
+      const axios_config = {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': this.q.cookies.get('csrftoken'),
+        },
+      };
+      api
+        .get('/files/code/' + id, axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.code = response.data.code.code;
+            this.lang = response.data.code.language;
+          } else {
+            // this.loading = false;
+            // this.allowed = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'API ERROR :/');
+          console.log(error);
+        });
     },
   },
 });

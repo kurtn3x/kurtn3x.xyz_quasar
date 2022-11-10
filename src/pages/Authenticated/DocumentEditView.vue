@@ -196,7 +196,7 @@ export default defineComponent({
     };
   },
   async created() {
-    this.docId = this.$route.params.docid;
+    this.docId = this.$route.params.id;
   },
   methods: {
     printDocument() {

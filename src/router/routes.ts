@@ -62,8 +62,13 @@ const routes: RouteRecordRaw[] = [
         component: () => import('pages/Authenticated/Files.vue'),
       },
       {
-        path: 'doc/edit/:docid',
+        path: 'doc/edit/:id',
         component: () => import('src/pages/Authenticated/DocumentEditView.vue'),
+      },
+      {
+        path: 'code/edit/:id',
+        component: () =>
+          import('src/pages/Authenticated/CodeEditor/CodeView.vue'),
       },
     ],
   },

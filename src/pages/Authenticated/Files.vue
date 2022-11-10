@@ -75,12 +75,13 @@
           <q-separator size="3px" />
           <div class="text-body1 q-mt-md q-ml-sm">
             Type: {{ drawerItemType }}
+            <a v-if="this.drawerItemType == 'code'"
+              >, {{ this.drawerItemLanguage }}</a
+            >
           </div>
           <div
             class="text-body1 q-mt-md q-ml-sm"
-            v-if="
-              drawerItemType != 'document' && drawerItemType != 'folder_link'
-            "
+            v-if="drawerItemType == 'folder' || drawerItemType == 'file'"
           >
             Size: {{ drawerReadableSize }}
           </div>
@@ -448,6 +449,16 @@
         <q-fab-action
           color="primary"
           text-color="white"
+          @click="
+            newObjShow = true;
+            newObjType = 'code';
+          "
+          icon="code"
+          label="New Code File"
+        />
+        <q-fab-action
+          color="primary"
+          text-color="white"
           icon="create_new_folder"
           label="New Folder"
           @click="
@@ -551,6 +562,12 @@
             label="Show Documents"
             class="full-width"
           />
+          <q-toggle
+            v-model="optnShowCode"
+            color="green"
+            label="Show Code FIles"
+            class="full-width"
+          />
         </q-card>
       </q-btn-dropdown>
     </q-toolbar>
@@ -605,6 +622,12 @@
               text-color="white"
               v-if="newObjType == 'document'"
             />
+            <q-avatar
+              :icon="condIcon"
+              color="primary"
+              text-color="white"
+              v-if="newObjType == 'code'"
+            />
           </q-item-section>
 
           <q-item-section>
@@ -619,11 +642,114 @@
               label-color="dark"
               autofocus
               clearable
+              :suffix="newObjType == 'code' ? condSuff : ''"
               @keyup.enter="createObj"
+              ref="newItemInput"
             />
           </q-item-section>
           <q-item-section side class="row">
             <div>
+              <q-btn
+                v-if="newObjType == 'code'"
+                :icon="condIcon"
+                class="q-ml-md bg-blue text-white"
+                rounded
+                flat
+                @blur="focusInput()"
+              >
+                <q-menu @hide="focusInput()">
+                  <q-list>
+                    <div>
+                      <q-btn
+                        v-close-popup
+                        @click="this.newObjLanguage = 'javascript'"
+                        flat
+                        style="width: 150px; align-items: flex-start"
+                      >
+                        <div class="align-left">
+                          <q-icon :name="mdiLanguageJavascript" />
+                          <a class="q-ml-sm">Javascript</a>
+                        </div>
+                      </q-btn>
+                    </div>
+                    <q-separator />
+
+                    <div>
+                      <q-btn
+                        v-close-popup
+                        @click="this.newObjLanguage = 'python'"
+                        flat
+                        style="width: 150px; align-items: flex-start"
+                      >
+                        <div>
+                          <q-icon :name="mdiLanguagePython" />
+                          <a class="q-ml-sm">Python</a>
+                        </div>
+                      </q-btn>
+                    </div>
+                    <q-separator />
+
+                    <div>
+                      <q-btn
+                        v-close-popup
+                        @click="this.newObjLanguage = 'cpp'"
+                        flat
+                        style="width: 150px; align-items: flex-start"
+                      >
+                        <div>
+                          <q-icon :name="mdiLanguageCpp" />
+                          <a class="q-ml-sm">C++</a>
+                        </div>
+                      </q-btn>
+                    </div>
+                    <q-separator />
+
+                    <div>
+                      <q-btn
+                        v-close-popup
+                        @click="this.newObjLanguage = 'html'"
+                        flat
+                        style="width: 150px; align-items: flex-start"
+                      >
+                        <div>
+                          <q-icon :name="mdiLanguageHtml5" />
+                          <a class="q-ml-sm">HTML</a>
+                        </div>
+                      </q-btn>
+                    </div>
+                    <q-separator />
+
+                    <div>
+                      <q-btn
+                        v-close-popup
+                        @click="this.newObjLanguage = 'json'"
+                        flat
+                        style="width: 150px; align-items: flex-start"
+                      >
+                        <div>
+                          <q-icon :name="mdiCodeJson" />
+                          <a class="q-ml-sm">JSON</a>
+                        </div>
+                      </q-btn>
+                    </div>
+                    <q-separator />
+
+                    <div>
+                      <q-btn
+                        v-close-popup
+                        @click="this.newObjLanguage = 'markdown'"
+                        flat
+                        style="width: 150px; align-items: flex-start"
+                      >
+                        <div>
+                          <q-icon :name="mdiLanguageMarkdown" />
+                          <a class="q-ml-sm">Markdown</a>
+                        </div>
+                      </q-btn>
+                    </div>
+                  </q-list>
+                </q-menu>
+              </q-btn>
               <q-btn
                 icon="done"
                 class="q-ml-md bg-green text-white"
@@ -681,11 +807,11 @@
                 }
               "
               @v-drag-drop="changeFolder($event, folder.id)"
-              @drop.self.prevent="
+              @drop.prevent.self.stop="
                 onFolderDrop($event, folder.id);
                 folder.drag_over = false;
               "
-              @dragover.prevent="
+              @dragover.prevent.self.stop="
                 (ev) => {
                   if (ev.dataTransfer.items.length > 0) {
                     if (ev.dataTransfer.items[0].kind == 'file') {
@@ -694,7 +820,7 @@
                   }
                 }
               "
-              @dragenter.self="
+              @dragenter.prevent="
                 (ev) => {
                   if (ev.dataTransfer.items.length > 0) {
                     if (ev.dataTransfer.items[0].kind == 'file') {
@@ -773,7 +899,11 @@
             </q-item>
           </div>
 
-          <q-separator />
+          <q-separator
+            @dragover.capture.stop=""
+            @dragenter.capture.stop=""
+            @drop.self.prevent=""
+          />
         </template>
         <template
           v-for="folder_link in rawFolderContent.children.folder_links"
@@ -1032,11 +1162,88 @@
             <q-separator />
           </div>
         </template>
+        <template
+          v-for="code_item in rawFolderContent.children.code"
+          :key="code_item"
+        >
+          <div
+            v-if="
+              (optnShowCode && search == '') ||
+              (optnShowCode && code_item.name.includes(search))
+            "
+          >
+            <q-item
+              clickable
+              @click="openCodeEditor(code_item.id)"
+              class="full-width"
+              v-draggable="['code', code_item.id]"
+              :class="code_item.selected ? 'bg-light-blue-4' : ''"
+            >
+              <q-item-section avatar>
+                <q-checkbox
+                  v-model="selectedCode"
+                  :val="code_item.id"
+                  color="green"
+                  @click="code_item.selected = !code_item.selected"
+                />
+              </q-item-section>
+              <q-item-section avatar top>
+                <q-avatar
+                  :icon="codeIcon(code_item.language)"
+                  color="light-blue"
+                  text-color="white"
+                />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label
+                  class="item_text"
+                  lines="1"
+                  style="
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  "
+                  :style="item_text_width"
+                >
+                  <q-icon name="share" v-if="code_item.shared" />
+                  {{ code_item.name }}</q-item-label
+                >
+                <q-item-label caption lines="1">{{
+                  code_item.modified
+                }}</q-item-label>
+              </q-item-section>
+              <q-item-section side>
+                <q-btn
+                  icon="more_vert"
+                  class="cursor-pointer full-width"
+                  flat
+                  @click.capture.stop="
+                    updateItemDrawer = true;
+                    drawerItemId = code_item.id;
+                    drawerItemNewName = code_item.name;
+                    drawerItemType = 'code';
+                    drawerItemNewParent = rawFolderContent.path;
+                    drawerItemName = code_item.name;
+                    drawerCreated = code_item.created;
+                    drawerModified = code_item.modified;
+                    drawerSharing = code_item.shared;
+                    drawerSharingAllowAllRead = code_item.allow_all_read;
+                    drawerSharingAllowedWrite = code_item.allow_all_write;
+                    drawerItemLanguage = code_item.language;
+                  "
+                  :loading="loading"
+                  stretch
+                />
+              </q-item-section>
+            </q-item>
+            <q-separator />
+          </div>
+        </template>
       </div>
     </q-scroll-area>
     <q-separator color="primary" />
     <div
-      style="height: 125px"
+      style="height: 150px"
       v-if="dropField"
       @drop.self.prevent="onBackgroundDrop"
       @dragover.prevent="
@@ -1078,7 +1285,7 @@
         icon="keyboard_arrow_up"
         active-icon="keyboard_arrow_down"
         direction="up"
-        style="width: 250px; top: 0.5em"
+        style="width: 100px; top: 0.5em"
         @click="dropField = !dropField"
         class="text-layout-text"
       >
@@ -1096,6 +1303,12 @@ import { useSettingsStore } from 'stores/settings';
 import { api } from 'boot/axios';
 import { draggable, selected } from '../../components/draggable.js';
 import { droppable } from '../../components/droppable.js';
+import { mdiLanguagePython } from '@quasar/extras/mdi-v6';
+import { mdiLanguageJavascript } from '@quasar/extras/mdi-v6';
+import { mdiLanguageHtml5 } from '@quasar/extras/mdi-v6';
+import { mdiLanguageCpp } from '@quasar/extras/mdi-v6';
+import { mdiCodeJson } from '@quasar/extras/mdi-v6';
+import { mdiLanguageMarkdown } from '@quasar/extras/mdi-v6';
 
 export default defineComponent({
   name: 'FilesView',
@@ -1115,6 +1328,14 @@ export default defineComponent({
     };
 
     return {
+      // icons
+      mdiCodeJson,
+      mdiLanguageCpp,
+      mdiLanguageHtml5,
+      mdiLanguageJavascript,
+      mdiLanguageMarkdown,
+      mdiLanguagePython,
+
       selected,
       show: ref(false),
       axios_config,
@@ -1130,20 +1351,13 @@ export default defineComponent({
       rawFolderContent: ref({
         name: 'Home',
         path: 'Home',
-        id: '0000',
+        id: '0',
         children: {
-          private_files: [
-            {
-              name: '.dmrc',
-              id: '032f2834-8d91-4b39-b545-5a8475a07c9c',
-              modified: '2022-10-28, 08:40:29',
-              created: '2022-10-28, 08:40:29',
-              size: 27,
-            },
-          ],
+          private_files: [],
           folder_links: [],
           folders: [],
           documents: [],
+          code: [],
         },
       }),
       // toolbar handlers
@@ -1152,6 +1366,7 @@ export default defineComponent({
       optnShowFolders: ref(true),
       optnShowFiles: ref(true),
       optnShowDocuments: ref(true),
+      optnShowCode: ref(true),
       search: ref(''),
 
       // file upload dialog handlers
@@ -1166,6 +1381,7 @@ export default defineComponent({
       drawerTab: ref('info'),
       drawerItemType: ref(''),
       drawerItemId: ref(''),
+      drawerItemLanguage: ref(''),
 
       // drawer info tab
       drawerItemName: ref(''),
@@ -1197,6 +1413,7 @@ export default defineComponent({
       selectedFolders: ref([]),
       selectedFiles: ref([]),
       selectedDocuments: ref([]),
+      selectedCode: ref([]),
       allSelected: ref(false),
       selectionNewParent: ref(''),
 
@@ -1204,6 +1421,7 @@ export default defineComponent({
       newObjShow: ref(false),
       newObjName: ref(''),
       newObjType: ref(''),
+      newObjLanguage: ref('javascript'),
 
       // for folder drag & drop
       dirUploadParentId: ref(''),
@@ -1271,10 +1489,63 @@ export default defineComponent({
 
       return { '--max-width': width + 'px' };
     },
+    condIcon() {
+      if (this.newObjLanguage == 'javascript') {
+        return mdiLanguageJavascript;
+      } else if (this.newObjLanguage == 'html') {
+        return mdiLanguageHtml5;
+      } else if (this.newObjLanguage == 'cpp') {
+        return mdiLanguageCpp;
+      } else if (this.newObjLanguage == 'python') {
+        return mdiLanguagePython;
+      } else if (this.newObjLanguage == 'json') {
+        return mdiCodeJson;
+      } else if (this.newObjLanguage == 'markdown') {
+        return mdiLanguageMarkdown;
+      } else {
+        return mdiLanguageJavascript;
+      }
+    },
+
+    condSuff() {
+      if (this.newObjLanguage == 'javascript') {
+        return '.js';
+      } else if (this.newObjLanguage == 'html') {
+        return '.html';
+      } else if (this.newObjLanguage == 'cpp') {
+        return '.cpp';
+      } else if (this.newObjLanguage == 'python') {
+        return '.py';
+      } else if (this.newObjLanguage == 'json') {
+        return '.json';
+      } else if (this.newObjLanguage == 'markdown') {
+        return '.md';
+      } else {
+        return '.js';
+      }
+    },
   },
   methods: {
-    write_console(el) {
-      console.log(el);
+    codeIcon(lang) {
+      if (lang == 'javascript') {
+        return mdiLanguageJavascript;
+      } else if (lang == 'html') {
+        return mdiLanguageHtml5;
+      } else if (lang == 'cpp') {
+        return mdiLanguageCpp;
+      } else if (lang == 'python') {
+        return mdiLanguagePython;
+      } else if (lang == 'json') {
+        return mdiCodeJson;
+      } else if (lang == 'markdown') {
+        return mdiLanguageMarkdown;
+      } else {
+        return mdiLanguageJavascript;
+      }
+    },
+
+    focusInput() {
+      this.$refs.newItemInput.focus();
     },
 
     humanFileSize(bytes, dp = 1) {
@@ -1312,6 +1583,9 @@ export default defineComponent({
     openDocEditor(docId) {
       this.$router.push('doc/edit/' + docId);
     },
+    openCodeEditor(codeId) {
+      this.$router.push('code/edit/' + codeId);
+    },
     addFileCheckbox(el) {
       this.selected.push(el.target.parentElement.parentNode.offsetParent);
     },
@@ -1328,6 +1602,10 @@ export default defineComponent({
       for (var folder_link_id of this.selectedFolderLinks) {
         this.deleteItem(folder_link_id, 'folder_link');
       }
+      for (var code_id of this.selectedCode) {
+        this.deleteItem(code_id, 'code');
+      }
+      this.selectedCode = [];
       this.selectedFolderLinks = [];
       this.selectedFolders = [];
       this.selectedFiles = [];
@@ -1344,6 +1622,9 @@ export default defineComponent({
       for (var document_id of this.selectedDocuments) {
         this.updateItemParent(document_id, this.selectionNewParent, 'document');
       }
+      for (var code_id of this.selectedCode) {
+        this.updateItemParent(code_id, this.selectionNewParent, 'code');
+      }
       for (var folder_link_id of this.selectedFolderLinks) {
         this.updateItemParent(
           folder_link_id,
@@ -1351,6 +1632,7 @@ export default defineComponent({
           'folder_link'
         );
       }
+      this.selectedCode = [];
       this.selectedFolderLinks = [];
       this.selectedFolders = [];
       this.selectedFiles = [];
@@ -1380,6 +1662,20 @@ export default defineComponent({
             document.selected = true;
           }
         }
+        for (var code of this.rawFolderContent.children.code) {
+          if (!this.selectedCode.includes(code.id)) {
+            this.selectedCode.push(code.id);
+            this.selected.push(code.id);
+            code.selected = true;
+          }
+        }
+        for (var folderlink of this.rawFolderContent.children.folder_links) {
+          if (!this.selectedFolderLinks.includes(folderlink.id)) {
+            this.selectedFolderLinks.push(folderlink.id);
+            this.selected.push(folderlink.id);
+            folderlink.selected = true;
+          }
+        }
       } else {
         for (var folder of this.rawFolderContent.children.folders) {
           folder.selected = false;
@@ -1390,6 +1686,15 @@ export default defineComponent({
         for (var document of this.rawFolderContent.children.documents) {
           document.selected = false;
         }
+        for (var code of this.rawFolderContent.children.code) {
+          code.selected = false;
+        }
+        for (var folder_link of this.rawFolderContent.children.folder_links) {
+          folder_link.selected = false;
+        }
+
+        this.selectedCode = [];
+        this.selectedFolderLinks = [];
         this.selectedFolders = [];
         this.selectedFiles = [];
         this.selectedDocuments = [];
@@ -2403,6 +2708,11 @@ export default defineComponent({
         folderid: this.rawFolderContent.id,
         name: this.newObjName,
       };
+      if (this.newObjType == 'code') {
+        data.language = this.newObjLanguage;
+        data.name += this.condSuff;
+      }
+      console.log(data);
       api
         .post('/files/create/' + this.newObjType, data, this.axios_config)
         .then((response) => {
