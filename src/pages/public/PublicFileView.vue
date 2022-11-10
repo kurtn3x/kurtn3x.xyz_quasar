@@ -50,7 +50,7 @@
                 <div class="text-h6 text-left">Path: {{ fileData.path }}</div>
                 <div class="text-h6 text-left">Size: {{ readableSize }}</div>
                 <div class="text-h6 text-left">
-                  permissions: {{ fileData.permissions }}
+                  Your Permissions: {{ fileData.permissions }}
                 </div>
               </q-card-section>
             </q-card>

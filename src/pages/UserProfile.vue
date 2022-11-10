@@ -1,7 +1,7 @@
 <template>
   <div v-if="this.user.fetched && this.page_load">
-    <div class="q-ma-md">
-      <q-card class="gt-sm" bordered style="background-color: transparent">
+    <div class="q-ma-sm">
+      <q-card class="gt-sm" style="background-color: transparent">
         <div class="row">
           <div style="width: 90%">
             <q-img :src="this.user.background" style="height: 200px" />
@@ -37,7 +37,11 @@
                   class="q-mt-lg q-ml-md"
                   style="height: 30px"
                 >
-                  <q-tooltip anchor="bottom middle" self="center middle">
+                  <q-tooltip
+                    anchor="bottom middle"
+                    self="center middle"
+                    class="text-body1"
+                  >
                     Role: {{ this.user.role }}
                   </q-tooltip>
                 </q-btn>
@@ -92,7 +96,6 @@
                           <q-card-section horizontal>
                             <q-card-section>
                               <div class="text-body1">Name</div>
-                              <div class="q-mt-sm text-body1">UserID</div>
                               <div class="q-mt-sm text-body1">Location</div>
                               <div class="q-mt-sm text-body1">Joined</div>
                               <div class="q-mt-sm text-body1">Last Seen</div>
@@ -105,9 +108,6 @@
                             <q-card-section>
                               <div class="text-body1">
                                 {{ this.user.name }}
-                              </div>
-                              <div class="q-mt-sm text-body1">
-                                {{ this.user.id }}
                               </div>
                               <div class="q-mt-sm text-body1">
                                 {{ this.user.location }}
@@ -142,66 +142,67 @@
                   </q-tab-panel>
 
                   <q-tab-panel name="comments">
-                    <div class="text-h6">Alarms</div>
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                    <div class="text-h6">Comments</div>
+                    <a>Placeholder</a>
                   </q-tab-panel>
 
                   <q-tab-panel name="postings">
-                    <div class="text-h6">Movies</div>
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                    <div class="text-h6">Placeholder</div>
+                    <a>Placeholder</a>
                   </q-tab-panel>
                 </q-tab-panels>
               </div>
             </q-card-section>
           </div>
-          <q-card-actions vertical style="width: 10%" v-if="authenticated">
-            <q-btn size="xl" flat stretch color="primary" icon="chat">
-              <q-tooltip
-                class="text-body2"
-                anchor="bottom middle"
-                self="center middle"
-              >
-                Start a Conversation
-              </q-tooltip>
-            </q-btn>
-            <q-btn
-              size="xl"
-              flat
-              stretch
-              color="primary"
-              icon="person_add"
-              class="q-mt-md"
-            >
-              <q-tooltip
-                class="text-body2"
-                anchor="bottom middle"
-                self="center middle"
-              >
-                Add as Friend
-              </q-tooltip>
-            </q-btn>
-            <q-btn size="xl" flat stretch color="primary" icon="share">
-              <q-tooltip
-                anchor="bottom middle"
-                self="center middle"
-                class="text-body2"
-              >
-                Copy the profile link
-              </q-tooltip>
-              <q-menu>
-                <q-list style="min-width: 390px">
-                  <q-input filled square v-model="this.userlink" readonly />
-                  <q-item
-                    clickable
-                    @click="copyuserlink"
-                    class="justify-center text-body1"
-                  >
-                    Copy the link</q-item
-                  >
-                </q-list>
-              </q-menu>
-            </q-btn>
-          </q-card-actions>
+          <q-card
+            style="width: 10%; height: 200px"
+            v-if="authenticated"
+            bordered
+          >
+            <q-card-actions vertical class="q-pa-none q-mt-xs">
+              <q-btn size="xl" flat stretch color="primary" icon="chat">
+                <q-tooltip
+                  class="text-body2"
+                  anchor="bottom middle"
+                  self="center middle"
+                >
+                  Start a Conversation
+                </q-tooltip>
+              </q-btn>
+              <q-separator />
+              <q-btn size="xl" flat stretch color="primary" icon="person_add">
+                <q-tooltip
+                  class="text-body2"
+                  anchor="bottom middle"
+                  self="center middle"
+                >
+                  Add as Friend
+                </q-tooltip>
+              </q-btn>
+              <q-separator />
+              <q-btn size="xl" flat stretch color="primary" icon="share">
+                <q-tooltip
+                  anchor="bottom middle"
+                  self="center middle"
+                  class="text-body2"
+                >
+                  Copy the profile link
+                </q-tooltip>
+                <q-menu>
+                  <q-list style="min-width: 390px">
+                    <q-input filled square v-model="this.userlink" readonly />
+                    <q-item
+                      clickable
+                      @click="copyuserlink"
+                      class="justify-center text-body1"
+                    >
+                      Copy the link</q-item
+                    >
+                  </q-list>
+                </q-menu>
+              </q-btn>
+            </q-card-actions>
+          </q-card>
         </div>
       </q-card>
 
@@ -255,17 +256,6 @@
                           <div class="text-body1">
                             {{ this.user.name }}
                           </div>
-                        </div>
-                        <q-separator />
-
-                        <div class="row justify-between">
-                          <div class="q-mt-sm text-body1">UserID  </div>
-                          <p
-                            class="q-mt-sm text-body1"
-                            style="word-break: break-all"
-                          >
-                            {{ this.user.id }}
-                          </p>
                         </div>
                         <q-separator />
 
@@ -325,13 +315,13 @@
             </q-tab-panel>
 
             <q-tab-panel name="comments">
-              <div class="text-h6">Alarms</div>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit.
+              <div class="text-h6">Comments</div>
+              <a>Placeholder</a>
             </q-tab-panel>
 
             <q-tab-panel name="postings">
-              <div class="text-h6">Movies</div>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit.
+              <div class="text-h6">Placeholder</div>
+              <a>Placeholder</a>
             </q-tab-panel>
           </q-tab-panels>
         </q-card-section>
@@ -464,10 +454,10 @@ export default {
         })
         .catch((error) => {
           this.page_load = true;
-          if (this.test) {
-            this.user = defaultUser();
-            this.user.fetched = true;
-          }
+          // if (this.test) {
+          this.user = defaultUser();
+          this.user.fetched = true;
+          // }
           this.notify('negative', 'API ERROR :/');
           console.log(error);
         });

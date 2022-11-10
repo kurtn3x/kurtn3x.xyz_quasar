@@ -170,7 +170,6 @@ export default defineComponent({
           'redo',
           '|',
           'horizontalLine',
-          'sourceEditing',
           'findAndReplace',
           'pageBreak',
         ],

@@ -37,6 +37,11 @@ const routes: RouteRecordRaw[] = [
         path: 'folder/:id',
         component: () => import('pages/public/PublicFolderView.vue'),
       },
+      {
+        path: 'code/:id',
+        component: () =>
+          import('src/pages/public/CodeEditor/PublicCodeView.vue'),
+      },
     ],
   },
 
@@ -85,10 +90,10 @@ const routes: RouteRecordRaw[] = [
 
   // Always leave this as last one,
   // but you can also remove it
-  // {
-  //   path: '/:catchAll(.*)*',
-  //   component: () => import('pages/ErrorNotFound.vue'),
-  // },
+  {
+    path: '/:catchAll(.*)*',
+    component: () => import('pages/ErrorNotFound.vue'),
+  },
 ];
 
 export default routes;

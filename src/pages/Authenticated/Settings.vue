@@ -83,77 +83,53 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-    <q-splitter
-      v-model="splitterModel"
-      class="q-ma-sm"
-      :class="darkmode ? 'text-light' : 'text-dark'"
-      style="min-height: 500px"
+    <q-tabs
+      v-model="tab"
+      :class="darkmode ? 'text-light ' : 'text-dark '"
+      style="background: transparent"
     >
-      <template v-slot:before>
-        <q-tabs
-          v-model="tab"
-          vertical
-          :class="darkmode ? 'text-light ' : 'text-dark '"
-          style="background: transparent"
-        >
-          <q-expansion-item
-            icon="perm_identity"
-            label="Account settings"
-            v-if="!small"
-            header-style="fontSize: 1.3em"
-          >
-            <q-tab name="profile" icon="person" label="Profile" />
-            <q-tab name="account" icon="admin_panel_settings" label="Account" />
-          </q-expansion-item>
-          <q-expansion-item
-            icon="public"
-            label="Website settings"
-            v-if="!small"
-            header-style="fontSize: 1.3em"
-          >
-            <q-tab name="other" icon="settings" label="Other" />
-          </q-expansion-item>
-          <div v-if="small">
-            <q-tab name="profile" icon="person" label="Profile" />
-            <q-tab name="account" icon="admin_panel_settings" label="Account" />
-            <q-tab name="other" icon="settings" label="Other" />
-          </div>
-        </q-tabs>
-      </template>
+      <q-tab name="profile" icon="person" label="Profile" />
+      <q-tab name="account" icon="admin_panel_settings" label="Account" />
+      <q-tab name="other" icon="settings" label="Other" />
+    </q-tabs>
+    <q-separator />
 
-      <template v-slot:after>
-        <q-tab-panels
-          v-model="tab"
-          animated
-          swipeable="false"
-          vertical
-          :class="darkmode ? 'text-light' : 'text-dark'"
-          style="background: transparent"
-        >
-          <q-tab-panel
-            style="background: transparent"
-            name="start"
-            :class="darkmode ? 'text-light' : 'text-dark'"
-            ><div class="text-h4 q-mb-md">The Settings Menu</div></q-tab-panel
-          >
-          <!-- PROFILE SETTINGS  -->
-          <q-tab-panel
-            name="profile"
-            :class="darkmode ? 'text-light' : 'text-dark'"
-            style="background: transparent"
-          >
-            <div class="text-h4 q-mb-xs">Profile Settings</div>
+    <q-tab-panels
+      v-model="tab"
+      swipeable="false"
+      vertical
+      :class="darkmode ? 'text-light' : 'text-dark'"
+      style="background: transparent"
+    >
+      <q-tab-panel
+        style="background: transparent"
+        name="start"
+        :class="darkmode ? 'text-light' : 'text-dark'"
+        ><div class="text-h4 q-mt-lg text-center">
+          The Settings Menu
+        </div></q-tab-panel
+      >
+      <!-- PROFILE SETTINGS  -->
+      <q-tab-panel
+        name="profile"
+        :class="darkmode ? 'text-light' : 'text-dark'"
+        style="background: transparent"
+      >
+        <div class="text-h4 q-mb-xs text-center">Profile Settings</div>
 
-            <q-card
-              class="no-shadow q-ma-md q-pa-md"
-              style="background: transparent"
-              flat
+        <q-card
+          class="no-shadow q-ma-md q-pa-md"
+          style="background: transparent"
+          flat
+          v-if="!small"
+        >
+          <q-card-section>
+            <q-form
+              class="q-gutter-sm text-grey"
+              @submit.prevent="updateUserProfile"
             >
-              <q-card-section>
-                <q-form
-                  class="q-gutter-md text-grey"
-                  @submit.prevent="updateUserProfile"
-                >
+              <q-splitter model-value="50" disable>
+                <template v-slot:before>
                   <q-input
                     :readonly="!name_edit"
                     dense
@@ -185,9 +161,17 @@
                     </template>
                     <template v-slot:after>
                       <q-btn
-                        label="edit"
-                        class="cursor-pointer bg-green"
-                        @click="this.name_edit = !this.name_edit"
+                        :label="name_edit ? 'save' : 'edit'"
+                        class="cursor-pointer bg-green q-ml-md"
+                        @click="
+                          if (this.name_edit) {
+                            this.name_edit = false;
+                            updateUserProfile();
+                          } else {
+                            this.name_edit = true;
+                          }
+                        "
+                        :loading="loading"
                       />
                     </template>
                   </q-input>
@@ -221,9 +205,17 @@
                     </template>
                     <template v-slot:after>
                       <q-btn
-                        label="edit"
-                        class="cursor-pointer bg-green"
-                        @click="this.location_edit = !this.location_edit"
+                        :label="location_edit ? 'save' : 'edit'"
+                        class="cursor-pointer bg-green q-ml-md"
+                        @click="
+                          if (this.location_edit) {
+                            this.location_edit = false;
+                            updateUserProfile();
+                          } else {
+                            this.location_edit = true;
+                          }
+                        "
+                        :loading="loading"
                       />
                     </template>
                   </q-input>
@@ -258,9 +250,17 @@
                     </template>
                     <template v-slot:after>
                       <q-btn
-                        label="edit"
-                        class="cursor-pointer bg-green"
-                        @click="this.status_edit = !this.status_edit"
+                        :label="status_edit ? 'save' : 'edit'"
+                        class="cursor-pointer bg-green q-ml-md"
+                        @click="
+                          if (this.status_edit) {
+                            updateUserProfile();
+                            this.status_edit = false;
+                          } else {
+                            this.status_edit = true;
+                          }
+                        "
+                        :loading="loading"
                       />
                     </template>
                   </q-input>
@@ -297,368 +297,614 @@
                     </template>
                     <template v-slot:after>
                       <q-btn
-                        label="edit"
-                        class="cursor-pointer bg-green"
-                        @click="this.description_edit = !this.description_edit"
+                        :label="description_edit ? 'save' : 'edit'"
+                        class="cursor-pointer bg-green q-ml-md"
+                        @click="
+                          if (this.description_edit) {
+                            this.description_edit = false;
+                            updateUserProfile();
+                          } else {
+                            this.description_edit = true;
+                          }
+                        "
+                        :loading="loading"
                       />
                     </template>
                   </q-input>
-                  <div class="row">
-                    <q-file
-                      v-model="avatar"
-                      outlined
-                      label="Profile Picture"
-                      max-file-size="2048000"
-                      accept=".jpg, .png, .gif, .jpeg"
-                      @rejected="onRejected"
-                      style="max-width: 400px"
-                      counter
-                    >
-                      <template v-slot:before>
-                        <q-avatar>
-                          <img :src="this.account.profile.avatar" />
-                        </q-avatar>
-                      </template>
-                      <template v-slot:prepend>
-                        <q-icon name="attach_file" />
-                      </template>
-                    </q-file>
-                    <a class="text-body2 q-mt-md q-ml-sm"
-                      >.jpg, .png, .gif, .jpeg, less than 2mb</a
-                    >
+                </template>
+                <template v-slot:after>
+                  <div style="overflow: hidden">
+                    <div class="row q-ml-md">
+                      <q-file
+                        v-model="avatar"
+                        outlined
+                        label="Profile Picture"
+                        max-file-size="2048000"
+                        accept=".jpg, .png, .gif, .jpeg"
+                        @rejected="onRejected"
+                        style="max-width: 400px"
+                        counter
+                      >
+                        <template v-slot:before>
+                          <q-avatar>
+                            <img :src="this.account.profile.avatar" />
+                          </q-avatar>
+                        </template>
+                        <template v-slot:prepend>
+                          <q-icon name="attach_file" />
+                        </template>
+                      </q-file>
+                      <a class="text-body2 q-mt-md q-ml-sm"
+                        >.jpg, .png, .gif, .jpeg, less than 2mb</a
+                      >
+                    </div>
+                    <div class="row q-ml-md q-mt-md">
+                      <q-file
+                        v-model="background"
+                        outlined
+                        label="Background Picture"
+                        max-file-size="2048000"
+                        accept=".jpg, .png, .gif, .jpeg"
+                        @rejected="onRejected"
+                        style="max-width: 400px"
+                        counter
+                      >
+                        <template v-slot:before>
+                          <q-avatar>
+                            <img :src="this.account.profile.background" />
+                          </q-avatar>
+                        </template>
+                        <template v-slot:prepend>
+                          <q-icon name="attach_file" />
+                        </template>
+                      </q-file>
+                      <a class="text-body2 q-mt-md q-ml-sm"
+                        >.jpg, .png, .gif, .jpeg, less than 2mb</a
+                      >
+                    </div>
                   </div>
-                  <div class="row">
-                    <q-file
-                      v-model="background"
-                      outlined
-                      label="Background Picture"
-                      max-file-size="2048000"
-                      accept=".jpg, .png, .gif, .jpeg"
-                      @rejected="onRejected"
-                      style="max-width: 400px"
-                      counter
-                    >
-                      <template v-slot:before>
-                        <q-avatar>
-                          <img :src="this.account.profile.background" />
-                        </q-avatar>
-                      </template>
-                      <template v-slot:prepend>
-                        <q-icon name="attach_file" />
-                      </template>
-                    </q-file>
-                    <a class="text-body2 q-mt-md q-ml-sm"
-                      >.jpg, .png, .gif, .jpeg, less than 2mb</a
-                    >
-                  </div>
+                </template>
+              </q-splitter>
+              <div class="row justify-center q-mt-xl">
+                <q-btn
+                  size="xl"
+                  color="green"
+                  label="Save All"
+                  type="submit"
+                  :loading="loading"
+                />
+              </div>
+            </q-form>
+          </q-card-section>
+        </q-card>
+        <q-card
+          class="no-shadow q-ma-md q-pa-md"
+          style="background: transparent"
+          flat
+          v-if="small"
+        >
+          <q-card-section>
+            <q-form
+              class="q-gutter-sm text-grey"
+              @submit.prevent="updateUserProfile"
+            >
+              <q-input
+                :readonly="!name_edit"
+                dense
+                square
+                filled
+                v-model="name"
+                type="name"
+                label="Name"
+                lazy-rules
+                :rules="[
+                  (val) => val.length < 50 || 'Max Length = 50 characters',
+                ]"
+                style="max-width: 600px"
+              >
+                <template v-slot:append>
+                  <q-icon
+                    name="add_reaction"
+                    class="button_hover"
+                    v-if="name_edit"
+                  >
+                    <q-menu>
+                      <EmojiPicker :native="true" @select="onSelectEmojiName" />
+                    </q-menu>
+                    <q-tooltip> Add emoji</q-tooltip>
+                  </q-icon>
+                </template>
+                <template v-slot:after>
+                  <q-btn
+                    :label="name_edit ? 'save' : 'edit'"
+                    class="cursor-pointer bg-green q-ml-md"
+                    @click="
+                      if (this.name_edit) {
+                        this.name_edit = false;
+                        updateUserProfile();
+                      } else {
+                        this.name_edit = true;
+                      }
+                    "
+                    :loading="loading"
+                  />
+                </template>
+              </q-input>
+              <q-input
+                :readonly="!location_edit"
+                dense
+                square
+                filled
+                v-model="location"
+                label="Location"
+                lazy-rules
+                :rules="[
+                  (val) => val.length < 50 || 'Max Length = 50 characters',
+                ]"
+                style="max-width: 600px"
+              >
+                <template v-slot:append>
+                  <q-icon
+                    name="add_reaction"
+                    class="button_hover"
+                    v-if="location_edit"
+                  >
+                    <q-menu>
+                      <EmojiPicker
+                        :native="true"
+                        @select="onSelectEmojiLocation"
+                      />
+                    </q-menu>
+                    <q-tooltip> Add emoji</q-tooltip>
+                  </q-icon>
+                </template>
+                <template v-slot:after>
+                  <q-btn
+                    :label="location_edit ? 'save' : 'edit'"
+                    class="cursor-pointer bg-green q-ml-md"
+                    @click="
+                      if (this.location_edit) {
+                        this.location_edit = false;
+                        updateUserProfile();
+                      } else {
+                        this.location_edit = true;
+                      }
+                    "
+                    :loading="loading"
+                  />
+                </template>
+              </q-input>
 
-                  <div class="row justify-center">
-                    <q-btn
-                      rounded
-                      size="md"
-                      color="green"
-                      label="Update"
-                      type="submit"
-                      :loading="loading"
+              <q-input
+                :readonly="!status_edit"
+                dense
+                square
+                filled
+                v-model="status"
+                label="Status"
+                lazy-rules
+                :rules="[
+                  (val) => val.length < 15 || 'Max Length = 15 characters',
+                ]"
+                style="max-width: 600px"
+              >
+                <template v-slot:append>
+                  <q-icon
+                    name="add_reaction"
+                    class="button_hover"
+                    v-if="status_edit"
+                  >
+                    <q-menu>
+                      <EmojiPicker
+                        :native="true"
+                        @select="onSelectEmojiStatus"
+                      />
+                    </q-menu>
+                    <q-tooltip> Add emoji</q-tooltip>
+                  </q-icon>
+                </template>
+                <template v-slot:after>
+                  <q-btn
+                    :label="status_edit ? 'save' : 'edit'"
+                    class="cursor-pointer bg-green q-ml-md"
+                    @click="
+                      if (this.status_edit) {
+                        this.status_edit = false;
+                        updateUserProfile();
+                      } else {
+                        this.status_edit = true;
+                      }
+                    "
+                    :loading="loading"
+                  />
+                </template>
+              </q-input>
+
+              <q-input
+                :readonly="!description_edit"
+                type="textarea"
+                dense
+                square
+                filled
+                v-model="description"
+                label="Description"
+                lazy-rules
+                :rules="[
+                  (val) => val.length < 255 || 'Max Length = 255 characters',
+                ]"
+                style="max-width: 600px"
+              >
+                <template v-slot:append>
+                  <q-icon
+                    name="add_reaction"
+                    class="button_hover"
+                    v-if="description_edit"
+                  >
+                    <q-menu>
+                      <EmojiPicker
+                        :native="true"
+                        @select="onSelectEmojiDescription"
+                      />
+                    </q-menu>
+                    <q-tooltip> Add emoji</q-tooltip>
+                  </q-icon>
+                </template>
+                <template v-slot:after>
+                  <q-btn
+                    :label="description_edit ? 'save' : 'edit'"
+                    class="cursor-pointer bg-green q-ml-md"
+                    @click="
+                      if (this.description_edit) {
+                        this.description_edit = false;
+                        updateUserProfile();
+                      } else {
+                        this.description_edit = true;
+                      }
+                    "
+                    :loading="loading"
+                  />
+                </template>
+              </q-input>
+
+              <div class="row">
+                <q-file
+                  v-model="avatar"
+                  outlined
+                  label="Profile Picture"
+                  max-file-size="2048000"
+                  accept=".jpg, .png, .gif, .jpeg"
+                  @rejected="onRejected"
+                  style="max-width: 400px"
+                  counter
+                >
+                  <template v-slot:before>
+                    <q-avatar>
+                      <img :src="this.account.profile.avatar" />
+                    </q-avatar>
+                  </template>
+                  <template v-slot:prepend>
+                    <q-icon name="attach_file" />
+                  </template>
+                </q-file>
+                <a class="text-body2 q-mt-md q-ml-sm"
+                  >.jpg, .png, .gif, .jpeg, less than 2mb</a
+                >
+              </div>
+              <div class="row">
+                <q-file
+                  v-model="background"
+                  outlined
+                  label="Background Picture"
+                  max-file-size="2048000"
+                  accept=".jpg, .png, .gif, .jpeg"
+                  @rejected="onRejected"
+                  style="max-width: 400px"
+                  counter
+                >
+                  <template v-slot:before>
+                    <q-avatar>
+                      <img :src="this.account.profile.background" />
+                    </q-avatar>
+                  </template>
+                  <template v-slot:prepend>
+                    <q-icon name="attach_file" />
+                  </template>
+                </q-file>
+                <a class="text-body2 q-mt-md q-ml-sm"
+                  >.jpg, .png, .gif, .jpeg, less than 2mb</a
+                >
+              </div>
+              <div class="row justify-center q-mt-lg">
+                <q-btn
+                  size="xl"
+                  color="green"
+                  label="Save All"
+                  type="submit"
+                  :loading="loading"
+                />
+              </div>
+            </q-form>
+          </q-card-section>
+        </q-card>
+      </q-tab-panel>
+
+      <q-tab-panel
+        name="account"
+        :class="darkmode ? 'text-light' : 'text-dark'"
+        style="background: transparent"
+      >
+        <div class="text-h4 q-mb-xs text-center">Account Settings</div>
+        <q-card style="background: transparent" flat>
+          <q-card-section>
+            <div class="text-body1">Id: {{ this.account.account.id }}</div>
+            <q-separator />
+            <div class="text-body1 q-mt-md">
+              Username: {{ this.account.account.username }}
+            </div>
+            <q-separator />
+            <div class="text-body1 q-mt-md">
+              Email: {{ this.account.account.email }}
+            </div>
+            <q-separator />
+            <div class="text-body1 q-mt-md">
+              Role: {{ this.account.profile.role }}
+            </div>
+            <q-separator />
+            <div class="text-body1 q-mt-md">
+              Joined: {{ this.account.account.date_joined }}
+            </div>
+            <q-separator />
+            <div class="text-body1 q-mt-md">
+              Name: {{ this.account.profile.name }}
+            </div>
+            <q-separator />
+            <div class="text-body1 q-mt-md">
+              Last Seen: {{ this.account.profile.last_seen }}
+            </div>
+            <q-separator />
+            <div class="text-body1 q-mt-md">
+              Location: {{ this.account.profile.location }}
+            </div>
+            <q-separator />
+            <div class="text-body1 q-mt-md">
+              Status: {{ this.account.profile.status }}
+            </div>
+            <q-separator />
+          </q-card-section>
+
+          <q-card-actions vertical align="center">
+            <q-expansion-item
+              label="Change Username"
+              header-style="fontSize: 1.3em"
+              group="expansions"
+            >
+              <q-form
+                class="q-gutter-md text-grey q-mt-lg"
+                @submit.prevent="confirm = true"
+              >
+                <q-input
+                  dense
+                  square
+                  filled
+                  v-model="new_username"
+                  label="New username"
+                  lazy-rules
+                  :rules="[
+                    (val) => (val && val.length > 0) || 'Please type something',
+                    (val) => (val && val.length > 3) || 'At least 4 characters',
+                  ]"
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="person" />
+                  </template>
+                </q-input>
+                <q-input
+                  dense
+                  square
+                  filled
+                  v-model="current_password"
+                  label="Current Password"
+                  :type="isPwd ? 'password' : 'text'"
+                  lazy-rules
+                  :rules="[
+                    (val) => (val && val.length > 0) || 'Please type something',
+                  ]"
+                >
+                  <template v-slot:prepend>
+                    <q-icon
+                      class="pw_icon"
+                      :name="isPwd ? 'lock' : 'lock_open'"
+                      @click="isPwd = !isPwd"
                     />
-                  </div>
-                </q-form>
-              </q-card-section>
-            </q-card>
-          </q-tab-panel>
-
-          <q-tab-panel
-            name="account"
-            :class="darkmode ? 'text-light' : 'text-dark'"
-            style="background: transparent"
-          >
-            <div class="text-h4 q-mb-xs">Account Settings</div>
-            <q-card style="background: transparent" flat>
-              <q-card-section>
-                <div class="text-body1">Id: {{ this.account.account.id }}</div>
-                <q-separator />
-                <div class="text-body1 q-mt-md">
-                  Username: {{ this.account.account.username }}
-                </div>
-                <q-separator />
-                <div class="text-body1 q-mt-md">
-                  Email: {{ this.account.account.email }}
-                </div>
-                <q-separator />
-                <div class="text-body1 q-mt-md">
-                  Role: {{ this.account.profile.role }}
-                </div>
-                <q-separator />
-                <div class="text-body1 q-mt-md">
-                  Joined: {{ this.account.account.date_joined }}
-                </div>
-                <q-separator />
-                <div class="text-body1 q-mt-md">
-                  Name: {{ this.account.profile.name }}
-                </div>
-                <q-separator />
-                <div class="text-body1 q-mt-md">
-                  Last Seen: {{ this.account.profile.last_seen }}
-                </div>
-                <q-separator />
-                <div class="text-body1 q-mt-md">
-                  Location: {{ this.account.profile.location }}
-                </div>
-                <q-separator />
-                <div class="text-body1 q-mt-md">
-                  Status: {{ this.account.profile.status }}
-                </div>
-                <q-separator />
-              </q-card-section>
-
-              <q-card-actions vertical align="center">
-                <q-expansion-item
+                  </template>
+                </q-input>
+                <q-btn
+                  rounded
+                  size="md"
+                  color="green"
+                  class="full-width q-mb-md"
                   label="Change Username"
-                  header-style="fontSize: 1.3em"
-                  group="expansions"
+                  type="submit"
+                  :loading="loading"
+                />
+              </q-form>
+            </q-expansion-item>
+            <q-expansion-item
+              label="Change E-Mail"
+              header-style="fontSize: 1.3em"
+              group="expansions"
+            >
+              <q-form
+                class="q-gutter-md text-grey q-mt-lg"
+                @submit.prevent="updateEmail"
+              >
+                <q-input
+                  dense
+                  square
+                  filled
+                  v-model="new_email"
+                  type="email"
+                  label="New Email"
+                  lazy-rules
+                  :rules="[
+                    (val) => (val && val.length > 0) || 'Please type something',
+                    (val) => (val && val.length > 3) || 'At least 4 characters',
+                    (val) =>
+                      /^(?=[a-zA-Z0-9@._%+-]{6,254}$)[a-zA-Z0-9._%+-]{1,64}@(?:[a-zA-Z0-9-]{1,63}\.){1,8}[a-zA-Z]{2,63}$/.test(
+                        val
+                      ) || 'Not a valid E-Mail',
+                  ]"
                 >
-                  <q-form
-                    class="q-gutter-md text-grey q-mt-lg"
-                    @submit.prevent="confirm = true"
-                  >
-                    <q-input
-                      dense
-                      square
-                      filled
-                      v-model="new_username"
-                      label="New username"
-                      lazy-rules
-                      :rules="[
-                        (val) =>
-                          (val && val.length > 0) || 'Please type something',
-                        (val) =>
-                          (val && val.length > 3) || 'At least 4 characters',
-                      ]"
-                    >
-                      <template v-slot:prepend>
-                        <q-icon name="person" />
-                      </template>
-                    </q-input>
-                    <q-input
-                      dense
-                      square
-                      filled
-                      v-model="current_password"
-                      label="Current Password"
-                      :type="isPwd ? 'password' : 'text'"
-                      lazy-rules
-                      :rules="[
-                        (val) =>
-                          (val && val.length > 0) || 'Please type something',
-                      ]"
-                    >
-                      <template v-slot:prepend>
-                        <q-icon
-                          class="pw_icon"
-                          :name="isPwd ? 'lock' : 'lock_open'"
-                          @click="isPwd = !isPwd"
-                        />
-                      </template>
-                    </q-input>
-                    <q-btn
-                      rounded
-                      size="md"
-                      color="green"
-                      class="full-width q-mb-md"
-                      label="Change Username"
-                      type="submit"
-                      :loading="loading"
+                  <template v-slot:prepend>
+                    <q-icon name="email" />
+                  </template>
+                </q-input>
+                <q-input
+                  dense
+                  square
+                  filled
+                  v-model="current_password"
+                  label="Current Password"
+                  :type="isPwd ? 'password' : 'text'"
+                  lazy-rules
+                  :rules="[
+                    (val) => (val && val.length > 0) || 'Please type something',
+                  ]"
+                >
+                  <template v-slot:prepend>
+                    <q-icon
+                      class="pw_icon"
+                      :name="isPwd ? 'lock' : 'lock_open'"
+                      @click="isPwd = !isPwd"
                     />
-                  </q-form>
-                </q-expansion-item>
-                <q-expansion-item
+                  </template>
+                </q-input>
+                <q-btn
+                  rounded
+                  size="md"
+                  color="green"
+                  class="full-width q-mb-md"
                   label="Change E-Mail"
-                  header-style="fontSize: 1.3em"
-                  group="expansions"
+                  type="submit"
+                  :loading="loading"
+                />
+              </q-form>
+            </q-expansion-item>
+            <q-expansion-item
+              label="Change Password"
+              header-style="fontSize: 1.3em"
+              group="expansions"
+            >
+              <q-form
+                class="q-gutter-md text-grey q-mt-lg"
+                @submit.prevent="updatePassword"
+              >
+                <q-input
+                  dense
+                  square
+                  filled
+                  v-model="new_password"
+                  label="New Password"
+                  :type="isPwd ? 'password' : 'text'"
+                  lazy-rules
+                  :rules="[
+                    (val) => (val && val.length > 0) || 'Please type something',
+                    (val) => (val && val.length > 7) || 'At least 8 characters',
+                    (val) =>
+                      (val && val.length < 100) ||
+                      'Not more than 100 characters',
+                    (val) =>
+                      /(?=.*[a-z])/.test(val) || 'At least 1 lowercase letter',
+                    (val) =>
+                      /(?=.*[A-Z])/.test(val) || 'At least 1 uppercase letter',
+                    (val) => /(?=.*[0-9])/.test(val) || 'At least 1 number',
+                  ]"
                 >
-                  <q-form
-                    class="q-gutter-md text-grey q-mt-lg"
-                    @submit.prevent="updateEmail"
-                  >
-                    <q-input
-                      dense
-                      square
-                      filled
-                      v-model="new_email"
-                      type="email"
-                      label="New Email"
-                      lazy-rules
-                      :rules="[
-                        (val) =>
-                          (val && val.length > 0) || 'Please type something',
-                        (val) =>
-                          (val && val.length > 3) || 'At least 4 characters',
-                        (val) =>
-                          /^(?=[a-zA-Z0-9@._%+-]{6,254}$)[a-zA-Z0-9._%+-]{1,64}@(?:[a-zA-Z0-9-]{1,63}\.){1,8}[a-zA-Z]{2,63}$/.test(
-                            val
-                          ) || 'Not a valid E-Mail',
-                      ]"
-                    >
-                      <template v-slot:prepend>
-                        <q-icon name="email" />
-                      </template>
-                    </q-input>
-                    <q-input
-                      dense
-                      square
-                      filled
-                      v-model="current_password"
-                      label="Current Password"
-                      :type="isPwd ? 'password' : 'text'"
-                      lazy-rules
-                      :rules="[
-                        (val) =>
-                          (val && val.length > 0) || 'Please type something',
-                      ]"
-                    >
-                      <template v-slot:prepend>
-                        <q-icon
-                          class="pw_icon"
-                          :name="isPwd ? 'lock' : 'lock_open'"
-                          @click="isPwd = !isPwd"
-                        />
-                      </template>
-                    </q-input>
-                    <q-btn
-                      rounded
-                      size="md"
-                      color="green"
-                      class="full-width q-mb-md"
-                      label="Change E-Mail"
-                      type="submit"
-                      :loading="loading"
+                  <template v-slot:prepend>
+                    <q-icon
+                      class="pw_icon"
+                      :name="isPwd3 ? 'lock' : 'lock_open'"
+                      @click="isPwd3 = !isPwd3"
                     />
-                  </q-form>
-                </q-expansion-item>
-                <q-expansion-item
+                  </template>
+                </q-input>
+
+                <q-input
+                  dense
+                  square
+                  filled
+                  v-model="confirm_new_password"
+                  label="Confirm New Password"
+                  :type="isPwd1 ? 'password' : 'text'"
+                  lazy-rules
+                  :rules="[
+                    (val) => (val && val.length > 0) || 'Please type something',
+                    (val) => val == new_password || 'Passwords do not match',
+                  ]"
+                >
+                  <template v-slot:prepend>
+                    <q-icon
+                      class="pw_icon"
+                      :name="isPwd1 ? 'lock' : 'lock_open'"
+                      @click="isPwd1 = !isPwd1"
+                    />
+                  </template>
+                </q-input>
+
+                <q-input
+                  dense
+                  square
+                  filled
+                  v-model="current_password"
+                  label="Current Password"
+                  :type="isPwd2 ? 'password' : 'text'"
+                  lazy-rules
+                  :rules="[
+                    (val) => (val && val.length > 0) || 'Please type something',
+                  ]"
+                >
+                  <template v-slot:prepend>
+                    <q-icon
+                      class="pw_icon"
+                      :name="isPwd2 ? 'lock' : 'lock_open'"
+                      @click="isPwd2 = !isPwd2"
+                    />
+                  </template>
+                </q-input>
+
+                <q-btn
+                  rounded
+                  size="md"
+                  color="green"
+                  class="full-width q-mb-md"
                   label="Change Password"
-                  header-style="fontSize: 1.3em"
-                  group="expansions"
-                >
-                  <q-form
-                    class="q-gutter-md text-grey q-mt-lg"
-                    @submit.prevent="updatePassword"
-                  >
-                    <q-input
-                      dense
-                      square
-                      filled
-                      v-model="new_password"
-                      label="New Password"
-                      :type="isPwd ? 'password' : 'text'"
-                      lazy-rules
-                      :rules="[
-                        (val) =>
-                          (val && val.length > 0) || 'Please type something',
-                        (val) =>
-                          (val && val.length > 7) || 'At least 8 characters',
-                        (val) =>
-                          (val && val.length < 100) ||
-                          'Not more than 100 characters',
-                        (val) =>
-                          /(?=.*[a-z])/.test(val) ||
-                          'At least 1 lowercase letter',
-                        (val) =>
-                          /(?=.*[A-Z])/.test(val) ||
-                          'At least 1 uppercase letter',
-                        (val) => /(?=.*[0-9])/.test(val) || 'At least 1 number',
-                      ]"
-                    >
-                      <template v-slot:prepend>
-                        <q-icon
-                          class="pw_icon"
-                          :name="isPwd3 ? 'lock' : 'lock_open'"
-                          @click="isPwd3 = !isPwd3"
-                        />
-                      </template>
-                    </q-input>
-
-                    <q-input
-                      dense
-                      square
-                      filled
-                      v-model="confirm_new_password"
-                      label="Confirm New Password"
-                      :type="isPwd1 ? 'password' : 'text'"
-                      lazy-rules
-                      :rules="[
-                        (val) =>
-                          (val && val.length > 0) || 'Please type something',
-                        (val) =>
-                          val == new_password || 'Passwords do not match',
-                      ]"
-                    >
-                      <template v-slot:prepend>
-                        <q-icon
-                          class="pw_icon"
-                          :name="isPwd1 ? 'lock' : 'lock_open'"
-                          @click="isPwd1 = !isPwd1"
-                        />
-                      </template>
-                    </q-input>
-
-                    <q-input
-                      dense
-                      square
-                      filled
-                      v-model="current_password"
-                      label="Current Password"
-                      :type="isPwd2 ? 'password' : 'text'"
-                      lazy-rules
-                      :rules="[
-                        (val) =>
-                          (val && val.length > 0) || 'Please type something',
-                      ]"
-                    >
-                      <template v-slot:prepend>
-                        <q-icon
-                          class="pw_icon"
-                          :name="isPwd2 ? 'lock' : 'lock_open'"
-                          @click="isPwd2 = !isPwd2"
-                        />
-                      </template>
-                    </q-input>
-
-                    <q-btn
-                      rounded
-                      size="md"
-                      color="green"
-                      class="full-width q-mb-md"
-                      label="Change Password"
-                      type="submit"
-                      :loading="loading"
-                    />
-                  </q-form>
-                </q-expansion-item>
-                <q-btn flat class="q-mt-md" @click="confirm_delete = true"
-                  >Delete Account</q-btn
-                >
-              </q-card-actions>
-            </q-card>
-          </q-tab-panel>
-          <q-tab-panel
-            name="other"
-            :class="darkmode ? 'text-light' : 'text-dark'"
-            style="background: transparent"
-          >
-            <q-btn
-              rounded
-              size="md"
-              color="green"
-              class="full-width"
-              label="Clear Local Storage and Logout"
-              :loading="loading"
-              @click="clear_all"
-            />
-          </q-tab-panel>
-        </q-tab-panels>
-      </template>
-    </q-splitter>
+                  type="submit"
+                  :loading="loading"
+                />
+              </q-form>
+            </q-expansion-item>
+            <q-btn flat class="q-mt-md" @click="confirm_delete = true"
+              >Delete Account</q-btn
+            >
+          </q-card-actions>
+        </q-card>
+      </q-tab-panel>
+      <q-tab-panel
+        name="other"
+        :class="darkmode ? 'text-light' : 'text-dark'"
+        style="background: transparent"
+      >
+        <q-btn
+          rounded
+          size="md"
+          color="green"
+          class="full-width"
+          label="Clear Local Storage and Logout"
+          :loading="loading"
+          @click="clear_all"
+        />
+      </q-tab-panel>
+    </q-tab-panels>
   </div>
 </template>
 
@@ -955,10 +1201,16 @@ export default {
             var header = serializeHeaderInformation(response.data);
             this.userStore.setHeaderInfo(header);
             this.loading = false;
-            this.notify(
-              'positive',
-              'Updated your profile! You may need to reload the page to see some changes.'
-            );
+            if (this.avatar != null && this.background != null) {
+              this.notify(
+                'positive',
+                'Updated your profile! You may need to reload the page to see some changes.'
+              );
+            }
+            this.name_edit = false;
+            this.location_edit = false;
+            this.status_edit = false;
+            this.description_edit = false;
           } else {
             this.loading = false;
             this.notify('negative', '' + response.data.error);

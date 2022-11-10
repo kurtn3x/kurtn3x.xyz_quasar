@@ -150,6 +150,7 @@
       :mini="leftDrawerMini"
       @mouseover="leftDrawerMini = false"
       @mouseout="leftDrawerMini = true"
+      @hide="leftDrawerMini = false"
       mini-to-overlay
       bordered
       :breakpoint="600"
@@ -230,9 +231,9 @@
 
     <q-page-container>
       <q-dialog v-model="forgot_popup">
-        <q-card bordered>
+        <q-card bordered style="width: 17%; min-width: 250px">
           <p
-            class="text-weight-bolder text-center text-primary text-body1 q-mt-md"
+            class="text-weight-bolder text-center text-primary text-h6 q-mt-lg"
           >
             Request your Account Data
           </p>
@@ -244,6 +245,7 @@
                 filled
                 v-model="email_forgot"
                 type="email"
+                input-class="text-body1"
                 label="Your Email"
                 lazy-rules
                 :rules="[
@@ -278,22 +280,16 @@
               />
               <p
                 v-if="request_username && request_password"
-                class="text-center text-red"
+                class="text-center text-red q-mt-md"
               >
                 Will be sent in seperate E-Mails
-                <q-tooltip class="bg-red">
-                  <strong
-                    >For security reasons we will send the password reset link
-                    and your username in 2 seperate E-Mails.
-                  </strong>
-                </q-tooltip>
               </p>
-              <q-card-actions>
+              <q-card-actions class="q-mt-md">
                 <q-btn
                   rounded
                   size="md"
                   color="green"
-                  class="full-width q-mt-md"
+                  class="full-width"
                   label="Request"
                   type="submit"
                   :loading="loading"
@@ -305,29 +301,29 @@
       </q-dialog>
 
       <q-dialog v-model="login_popup">
-        <q-card>
+        <q-card style="width: 20%; min-width: 325px">
           <q-tabs
             v-model="login_tab"
-            dense
             align="justify"
             active-color="primary"
             indicator-color="primary"
+            inline-label
           >
-            <q-tab name="login" label="Login" />
-            <q-tab name="register" label="Register" />
+            <q-tab name="login" class="text-body1 text-weight-bold">
+              Login
+            </q-tab>
+            <q-tab name="register" class="text-body1 text-weight-bold"
+              >Register
+            </q-tab>
           </q-tabs>
 
           <q-separator />
 
           <q-tab-panels v-model="login_tab" animated>
             <q-tab-panel name="login">
-              <q-card
-                square
-                class="no-shadow"
-                style="width: 100%; min-width: 275px"
-              >
+              <q-card square class="no-shadow" style="width: 100%">
                 <p
-                  class="text-weight-bolder text-primary text-body1 text-center"
+                  class="text-weight-bolder text-primary text-h6 text-center q-mt-md"
                 >
                   Login to your account
                 </p>
@@ -338,9 +334,9 @@
                     @submit.prevent="submitLogin"
                   >
                     <q-input
-                      dense
                       square
                       filled
+                      input-class="text-body1"
                       v-model="username"
                       type="username"
                       label="Username"
@@ -355,9 +351,9 @@
                       </template>
                     </q-input>
                     <q-input
-                      dense
                       square
                       filled
+                      input-class="text-body1"
                       v-model="login_password"
                       label="Password"
                       :type="isPwd ? 'password' : 'text'"
@@ -378,7 +374,7 @@
                     <q-card-actions>
                       <q-btn
                         rounded
-                        size="md"
+                        size="lg"
                         color="green"
                         class="full-width"
                         label="Sign In"
@@ -386,7 +382,7 @@
                         :loading="loading"
                       />
                     </q-card-actions>
-                    <q-card-section class="q-pa-none">
+                    <q-card-section class="q-pa-none q-mt-md">
                       <q-btn
                         class="full-width"
                         flat
@@ -408,7 +404,7 @@
                 style="width: 100%; min-width: 275px"
               >
                 <p
-                  class="text-weight-bolder text-primary text-body1 text-center"
+                  class="text-weight-bolder text-primary text-h6 text-center q-mt-md"
                 >
                   Register a new Account
                 </p>
@@ -416,12 +412,12 @@
                 <q-card-section>
                   <q-form class="q-gutter-sm" @submit.prevent="submitRegister">
                     <q-input
-                      dense
                       square
                       filled
                       v-model="username"
                       label="Username"
                       lazy-rules
+                      input-class="text-body1"
                       :rules="[
                         (val) =>
                           (val && val.length > 0) || 'Please type something',
@@ -442,12 +438,12 @@
                     </q-input>
 
                     <q-input
-                      dense
                       square
                       filled
                       v-model="email"
                       type="email"
                       label="Email"
+                      input-class="text-body1"
                       lazy-rules
                       :rules="[
                         (val) =>
@@ -465,11 +461,11 @@
                       </template>
                     </q-input>
                     <q-input
-                      dense
                       square
                       filled
                       v-model="password"
                       label="Password"
+                      input-class="text-body1"
                       lazy-rules
                       :rules="[
                         (val) =>
@@ -499,11 +495,11 @@
                     </q-input>
 
                     <q-input
-                      dense
                       square
                       filled
                       v-model="password2"
                       label="Confirm Password"
+                      input-class="text-body1"
                       lazy-rules
                       :rules="[
                         (val) =>
@@ -524,7 +520,7 @@
                     <q-card-actions>
                       <q-btn
                         rounded
-                        size="md"
+                        size="lg"
                         color="green"
                         class="full-width text-white"
                         label="Register"
@@ -662,7 +658,7 @@ export default {
     } else {
       var leftDrawer = ref(true);
     }
-    const axios_config = {
+    var axios_config = {
       withCredentials: true,
       headers: {
         'X-CSRFToken': q.cookies.get('csrftoken'),
@@ -731,6 +727,7 @@ export default {
       }
     },
     myprofileroute() {
+      console.log(this.headerinfo);
       return '/user/' + this.headerinfo.username;
     },
     authenticated() {
@@ -796,13 +793,21 @@ export default {
         email: this.email_forgot,
       };
 
+      if (!this.request_password && !this.request_username) {
+        this.loading = false;
+        this.forgot_popup = false;
+        this.email_forgot = '';
+      }
+
       if (this.request_password) {
         api
-          .post('auth/password_reset', formData, this.axios_config)
+          .post('auth/password_reset/', formData, this.axios_config)
           .then((response) => {
             if (response.status == 200) {
               this.loading = false;
               this.forgot_popup = false;
+              this.request_password = false;
+              this.email_forgot = '';
               this.notify('positive', 'Password-Request-Email has been sent.');
             } else {
               this.loading = false;
@@ -819,11 +824,13 @@ export default {
 
       if (this.request_username) {
         api
-          .post('auth/username_request', formData, this.axios_config)
+          .post('auth/username_request/', formData, this.axios_config)
           .then((response) => {
             if (response.status == 200) {
               this.loading = false;
               this.forgot_popup = false;
+              this.email_forgot = '';
+              this.request_username = false;
               this.notify('positive', 'Username-Request-Email has been sent.');
             } else {
               this.loading = false;
@@ -845,9 +852,10 @@ export default {
           if (response.status == 200) {
             this.userStore.setAuthState(false);
             this.userStore.setHeaderInfo(defaultHeaderInformation());
-            this.$router.push('/');
             this.notify('positive', 'Logged out!!');
             LocalStorage.remove('header');
+            LocalStorage.remove('user');
+            window.location.replace('https://kurtn3x.xyz');
           }
         })
         .catch();
@@ -900,6 +908,17 @@ export default {
             this.$router.push('/dashboard/home');
             this.loading = false;
             this.notify('positive', 'Logged in');
+            api
+              .get('/auth/csrf_cookie', { withCredentials: true })
+              .then(() => {
+                this.axios_config = {
+                  withCredentials: true,
+                  headers: {
+                    'X-CSRFToken': this.q.cookies.get('csrftoken'),
+                  },
+                };
+              })
+              .catch();
           } else {
             // means that email hasnt been verified yet
             if (response.status == 244) {

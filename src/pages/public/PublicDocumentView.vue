@@ -89,6 +89,7 @@
         @ready="onReady"
       ></ckeditor>
     </div>
+    <q-btn label="WWWW" @click="printtxt" />
     <q-separator />
     <div class="row">
       <q-space />
@@ -136,6 +137,7 @@ export default defineComponent({
       // permanent editor data
       editorData: '',
       editorConfig: {
+        width: 300,
         toolbar: [
           'heading',
           'Alignment',
@@ -170,7 +172,6 @@ export default defineComponent({
           'redo',
           '|',
           'horizontalLine',
-          'sourceEditing',
           'findAndReplace',
           'pageBreak',
         ],
@@ -200,6 +201,9 @@ export default defineComponent({
     this.docId = this.$route.params.id;
   },
   methods: {
+    printtxt() {
+      console.log(this.editorData);
+    },
     printDocument() {
       var wnd = window.open('about:blank', '', '_blank');
       console.log(this.editorData);
@@ -325,8 +329,6 @@ export default defineComponent({
       const wordCountWrapper = document.getElementById('word-counter');
       wordCountWrapper.appendChild(wordCountPlugin.wordCountContainer);
 
-      // handling the get request with await, cancerous but doesn't work otherwise
-
       await this.getDoc();
       editor.setData(this.editorData);
 
@@ -365,5 +367,11 @@ export default defineComponent({
   -khtml-user-select: none; /* Konqueror HTML */
   -moz-user-select: none; /* Firefox */
   -ms-user-select: none; /* Internet Explorer/Edge */
+}
+
+.ck-editor__editable {
+  width: 20cm;
+  overflow-wrap: break-word;
+  font-size: 21px;
 }
 </style>
