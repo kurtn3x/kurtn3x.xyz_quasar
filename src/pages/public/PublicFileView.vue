@@ -129,9 +129,7 @@ export default defineComponent({
         return bytes + ' B';
       }
 
-      const units = si
-        ? ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-        : ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+      const units = ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
       let u = -1;
       const r = 10 ** dp;
 
@@ -168,7 +166,7 @@ export default defineComponent({
         },
       };
       api
-        .get('/files/public/file/' + id, axios_config)
+        .get('/files/file/' + id, axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.allowed = true;

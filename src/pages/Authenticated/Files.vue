@@ -132,6 +132,33 @@
             label="Parent Folder"
             class="q-ma-md text-body1"
           />
+          <q-select
+            outlined
+            v-model="drawerItemNewLanguage"
+            :options="codeLanguageOptions"
+            label="Code Language"
+            class="q-ma-md text-body1"
+            v-if="drawerItemType == 'code'"
+            @update:model-value="
+              () => {
+                drawerItemNewLanguage = drawerItemNewLanguage.name;
+                drawerItemNewName =
+                  drawerItemNewName.replace(/\.[^/.]+$/, '') +
+                  codeSuff(drawerItemNewLanguage);
+              }
+            "
+          >
+            <template v-slot:option="scope">
+              <q-item v-bind="scope.itemProps">
+                <q-item-section avatar>
+                  <q-icon :name="scope.opt.icon" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>{{ scope.opt.name }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
 
           <q-btn
             label="Edit Document"
@@ -481,7 +508,8 @@
           selectedFolderLinks.length +
             selectedFolders.length +
             selectedFiles.length +
-            selectedDocuments.length >
+            selectedDocuments.length +
+            selectedCode.length >
           0
         "
         class="text-h6"
@@ -493,7 +521,8 @@
                 selectedFolderLinks.length +
                 selectedFolders.length +
                 selectedFiles.length +
-                selectedDocuments.length
+                selectedDocuments.length +
+                selectedCode.length
               }}
               Item(s) selected
             </a>
@@ -535,7 +564,8 @@
             selectedFolderLinks.length +
             selectedFolders.length +
             selectedFiles.length +
-            selectedDocuments.length
+            selectedDocuments.length +
+            selectedCode.length
           }}
           Item(s) selected
         </a>
@@ -562,11 +592,21 @@
             label="Show Documents"
             class="full-width"
           />
+          <q-separator />
           <q-toggle
             v-model="optnShowCode"
             color="green"
             label="Show Code FIles"
             class="full-width"
+          />
+          <q-separator />
+
+          <q-btn
+            label="Force Refresh"
+            icon="refresh"
+            class="full-width"
+            flat
+            @click="refreshFolder"
           />
         </q-card>
       </q-btn-dropdown>
@@ -900,9 +940,9 @@
           </div>
 
           <q-separator
-            @dragover.capture.stop=""
-            @dragenter.capture.stop=""
-            @drop.self.prevent=""
+            @drop.stop.prevent=""
+            @dragover.stop.prevent=""
+            @dragenter.stop.prevent=""
           />
         </template>
         <template
@@ -1006,7 +1046,11 @@
             </q-item>
           </div>
 
-          <q-separator />
+          <q-separator
+            @drop.stop.prevent=""
+            @dragover.stop.prevent=""
+            @dragenter.stop.prevent=""
+          />
         </template>
         <template
           v-for="file in rawFolderContent.children.private_files"
@@ -1024,6 +1068,9 @@
               v-draggable="['file', file.id]"
               @click="openInNewTab(file.id)"
               :class="file.selected ? 'bg-light-blue-4' : ''"
+              @drop.stop.prevent=""
+              @dragover.stop.prevent=""
+              @dragenter.stop.prevent=""
             >
               <q-item-section avatar>
                 <q-checkbox
@@ -1082,7 +1129,11 @@
                 />
               </q-item-section>
             </q-item>
-            <q-separator />
+            <q-separator
+              @drop.stop.prevent=""
+              @dragover.capture.stop=""
+              @dragenter.capture.stop=""
+            />
           </div>
         </template>
         <!-- DOCUMENTS -->
@@ -1102,6 +1153,9 @@
               class="full-width"
               v-draggable="['document', document.id]"
               :class="document.selected ? 'bg-light-blue-4' : ''"
+              @drop.stop.prevent=""
+              @dragover.stop.prevent=""
+              @dragenter.stop.prevent=""
             >
               <q-item-section avatar>
                 <q-checkbox
@@ -1159,7 +1213,11 @@
                 />
               </q-item-section>
             </q-item>
-            <q-separator />
+            <q-separator
+              @drop.stop.prevent=""
+              @dragover.stop.prevent=""
+              @dragenter.stop.prevent=""
+            />
           </div>
         </template>
         <template
@@ -1178,6 +1236,9 @@
               class="full-width"
               v-draggable="['code', code_item.id]"
               :class="code_item.selected ? 'bg-light-blue-4' : ''"
+              @drop.stop.prevent=""
+              @dragover.stop.prevent=""
+              @dragenter.stop.prevent=""
             >
               <q-item-section avatar>
                 <q-checkbox
@@ -1227,6 +1288,7 @@
                     drawerCreated = code_item.created;
                     drawerModified = code_item.modified;
                     drawerSharing = code_item.shared;
+                    drawerItemNewLanguage = code_item.language;
                     drawerSharingAllowAllRead = code_item.allow_all_read;
                     drawerSharingAllowedWrite = code_item.allow_all_write;
                     drawerItemLanguage = code_item.language;
@@ -1236,7 +1298,11 @@
                 />
               </q-item-section>
             </q-item>
-            <q-separator />
+            <q-separator
+              @drop.stop.prevent=""
+              @dragover.stop.prevent=""
+              @dragenter.stop.prevent=""
+            />
           </div>
         </template>
       </div>
@@ -1348,16 +1414,104 @@ export default defineComponent({
       dropFieldDragover: ref(false),
 
       // raw content including children of current folder
+      // rawFolderContent: ref({
+      //   name: 'Home',
+      //   path: 'Home',
+      //   id: '0',
+      //   children: {
+      //     private_files: [],
+      //     folder_links: [],
+      //     folders: [],
+      //     documents: [],
+      //     code: [],
+      //   },
+      // }),
+
       rawFolderContent: ref({
         name: 'Home',
         path: 'Home',
-        id: '0',
+        id: '5e065b84-b32e-4cc2-95f5-9e6812ffdab0',
         children: {
-          private_files: [],
+          private_files: [
+            {
+              name: 'Untitled 1.odp',
+              id: 'ec4a694f-4c20-45cc-bdd7-579fcfda26cc',
+              modified: '2022-11-12, 18:47:22',
+              created: '2022-11-12, 15:12:39',
+              size: 32023429,
+              shared: true,
+              allow_all_read: false,
+              allow_all_write: false,
+            },
+            {
+              name: 'Untitled 1.odt',
+              id: 'c445703f-2cf1-43d1-a1bb-528882ec00dd',
+              modified: '2022-11-12, 15:13:20',
+              created: '2022-11-12, 15:13:20',
+              size: 42741,
+              shared: false,
+              allow_all_read: false,
+              allow_all_write: false,
+            },
+          ],
           folder_links: [],
-          folders: [],
+          folders: [
+            {
+              name: 'dawdwada',
+              id: 'ea19930a-468d-46d1-a006-9b408ba2d99f',
+              path: 'Home/dawdwada',
+              modified: '2022-11-12, 17:13:47',
+              created: '2022-11-10, 17:52:03',
+              size: 0,
+              shared: false,
+              allow_all_read: false,
+              allow_all_write: false,
+            },
+            {
+              name: 'Downloads',
+              id: '00620566-6dbe-4daf-b38e-bc4a2ab172a4',
+              path: 'Home/Downloads',
+              modified: '2022-11-12, 19:31:54',
+              created: '2022-11-10, 08:03:23',
+              size: 0,
+              shared: false,
+              allow_all_read: false,
+              allow_all_write: false,
+            },
+          ],
           documents: [],
-          code: [],
+          code: [
+            {
+              name: 'py.js',
+              id: '5164bb3a-616a-4e77-b808-d6f7e11fad6d',
+              modified: '2022-11-12, 19:31:59',
+              created: '2022-11-12, 17:00:07',
+              language: 'javascript',
+              shared: false,
+              allow_all_read: false,
+              allow_all_write: false,
+            },
+            {
+              name: 'helloworld.cpp',
+              id: '00e91bf5-5964-4b47-983c-be3cdeb66ebb',
+              modified: '2022-11-12, 16:58:09',
+              created: '2022-11-10, 23:16:02',
+              language: 'cpp',
+              shared: true,
+              allow_all_read: false,
+              allow_all_write: false,
+            },
+            {
+              name: 'Hello',
+              id: '979e3571-9226-4e58-bc7e-05bd4cb962b1',
+              modified: '2022-11-10, 21:33:15',
+              created: '2022-11-10, 20:57:06',
+              language: 'python',
+              shared: false,
+              allow_all_read: false,
+              allow_all_write: false,
+            },
+          ],
         },
       }),
       // toolbar handlers
@@ -1368,6 +1522,15 @@ export default defineComponent({
       optnShowDocuments: ref(true),
       optnShowCode: ref(true),
       search: ref(''),
+
+      codeLanguageOptions: [
+        { name: 'javascript', icon: mdiLanguageJavascript },
+        { name: 'python', icon: mdiLanguagePython },
+        { name: 'cpp', icon: mdiLanguageCpp },
+        { name: 'html', icon: mdiLanguageHtml5 },
+        { name: 'json', icon: mdiCodeJson },
+        { name: 'markdown', icon: mdiLanguageMarkdown },
+      ],
 
       // file upload dialog handlers
       upload_file_dialog: ref(false),
@@ -1392,6 +1555,7 @@ export default defineComponent({
       // drawer edit tab
       drawerItemNewName: ref(''),
       drawerItemNewParent: ref(''),
+      drawerItemNewLanguage: ref(''),
 
       // drawer sharing tab
       drawerSharing: ref(false),
@@ -1526,6 +1690,23 @@ export default defineComponent({
     },
   },
   methods: {
+    codeSuff(lang) {
+      if (lang == 'javascript') {
+        return '.js';
+      } else if (lang == 'html') {
+        return '.html';
+      } else if (lang == 'cpp') {
+        return '.cpp';
+      } else if (lang == 'python') {
+        return '.py';
+      } else if (lang == 'json') {
+        return '.json';
+      } else if (lang == 'markdown') {
+        return '.md';
+      } else {
+        return '.js';
+      }
+    },
     codeIcon(lang) {
       if (lang == 'javascript') {
         return mdiLanguageJavascript;
@@ -2478,6 +2659,9 @@ export default defineComponent({
         name: this.drawerItemNewName,
         new_parent_id: update_id,
       };
+      if (this.drawerItemType == 'code') {
+        data.lang = this.drawerItemNewLanguage;
+      }
       api
         .put('/files/update/' + this.drawerItemType, data, this.axios_config)
         .then((response) => {
@@ -2623,13 +2807,9 @@ export default defineComponent({
     getFolderId(folderid, publicfolder) {
       this.previousFolder = this.rawFolderContent.id;
       this.loading = true;
-      if (publicfolder) {
-        var getstr = '/files/public/folder/' + folderid;
-      } else {
-        var getstr = '/files/folder/' + folderid;
-      }
+
       api
-        .get(getstr, this.axios_config)
+        .get('/files/folder/' + folderid, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
             this.rawFolderContent = response.data;

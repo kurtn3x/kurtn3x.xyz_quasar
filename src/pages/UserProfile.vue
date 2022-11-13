@@ -30,9 +30,11 @@
                 >
                   {{ this.user.username }}
                 </div>
+                <!-- more roles -> colors -->
+
                 <q-btn
                   :label="this.user.role"
-                  color="primary"
+                  :color="this.user.role == 'Admin' ? 'red' : 'light-blue'"
                   size="sm"
                   class="q-mt-lg q-ml-md"
                   style="height: 30px"
@@ -41,13 +43,19 @@
                     anchor="bottom middle"
                     self="center middle"
                     class="text-body1"
+                    :class="
+                      this.user.role == 'Admin' ? 'bg-red' : 'bg-light-blue'
+                    "
                   >
                     Role: {{ this.user.role }}
                   </q-tooltip>
                 </q-btn>
               </div>
               <div class="text-body1 q-mt-md q-ml-md q-mr-md q-mt-xs">
-                from {{ this.user.location }}, last seen
+                <a v-if="this.user.location != ''"
+                  >from {{ this.user.location }},</a
+                >
+                last seen
                 {{ this.user.last_seen }}
               </div>
             </div>
@@ -223,9 +231,18 @@
             <a>{{ this.user.username }}</a>
           </div>
           <div class="text-center text-caption q-mt-sm">
-            <a> Role: {{ this.user.role }} </a>
+            <!-- more roles -> colors -->
+            <a
+              :class="
+                this.user.role == 'Admin' ? 'text-red' : 'text-light-blue'
+              "
+            >
+              Role: {{ this.user.role }}
+            </a>
             <a class="q-ml-lg">Last Seen: {{ this.user.last_seen }} </a>
-            <a class="q-ml-lg">Status: {{ this.user.status }} </a>
+          </div>
+          <div class="text-center text-caption q-mt-sm">
+            <a v-if="this.user.status != ''">Status: {{ this.user.status }} </a>
           </div>
         </q-card-section>
         <q-separator></q-separator>
@@ -244,58 +261,58 @@
             <q-tab-panel name="about">
               <q-card flat>
                 <q-card-section class="row justify-center">
-                  <q-card flat class="q-ml-lg">
+                  <q-card flat class="q-ml-lg full-width">
                     <div class="text-h5 text-center text-weight-bold">
                       About
                     </div>
                     <q-separator></q-separator>
-                    <q-card-section horizontal style="min-width: 320px">
-                      <q-card-section>
-                        <div class="row justify-between">
-                          <div class="text-body1">Name</div>
-                          <div class="text-body1">
+                    <q-card-section horizontal class="full-width">
+                      <q-card-section class="full-width">
+                        <div class="text-body1 q-mt-md">
+                          <a class="text-weight-bolder">Name</a>
+                          <a style="left: 125px" class="absolute">
                             {{ this.user.name }}
-                          </div>
+                          </a>
                         </div>
                         <q-separator />
 
-                        <div class="row justify-between">
-                          <div class="q-mt-sm text-body1">Location</div>
-                          <div class="q-mt-sm text-body1">
+                        <div class="text-body1 q-mt-md">
+                          <a class="text-weight-bolder">Location</a>
+                          <a style="left: 125px" class="absolute">
                             {{ this.user.location }}
-                          </div>
+                          </a>
                         </div>
                         <q-separator />
 
-                        <div class="row justify-between">
-                          <div class="q-mt-sm text-body1">Joined</div>
-                          <div class="q-mt-sm text-body1">
+                        <div class="text-body1 q-mt-md">
+                          <a class="text-weight-bolder">Joined</a>
+                          <a style="left: 125px" class="absolute">
                             {{ this.user.date_joined }}
-                          </div>
+                          </a>
                         </div>
                         <q-separator />
 
-                        <div class="row justify-between">
-                          <div class="q-mt-sm text-body1">Last Seen</div>
-                          <div class="q-mt-sm text-body1">
+                        <div class="text-body1 q-mt-md">
+                          <a class="text-weight-bolder">Last Seen</a>
+                          <a style="left: 125px" class="absolute">
                             {{ this.user.last_seen }}
-                          </div>
+                          </a>
                         </div>
                         <q-separator />
 
-                        <div class="row justify-between">
-                          <div class="q-mt-sm text-body1">Status</div>
-                          <div class="q-mt-sm text-body1">
+                        <div class="text-body1 q-mt-md">
+                          <a class="text-weight-bolder">Status</a>
+                          <a style="left: 125px" class="absolute">
                             {{ this.user.status }}
-                          </div>
+                          </a>
                         </div>
                         <q-separator />
 
-                        <div class="row justify-between">
-                          <div class="q-mt-sm text-body1">Role</div>
-                          <div class="q-mt-sm text-body1">
+                        <div class="text-body1 q-mt-md">
+                          <a class="text-weight-bolder">Role</a>
+                          <a style="left: 125px" class="absolute">
                             {{ this.user.role }}
-                          </div>
+                          </a>
                         </div>
                         <q-separator />
                       </q-card-section>

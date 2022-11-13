@@ -1,54 +1,97 @@
 <template>
-  <q-toolbar class="text-primary q-mt-sm">
-    <q-btn flat round dense icon="menu" />
-    <q-space />
-    <q-select
-      v-model="tabsize"
-      :options="[1, 2, 3, 4, 5, 6]"
-      label="Tab "
-      outlined
-      style="width: 100px"
-      dense
-    />
-    <q-select
-      class="q-ml-lg"
-      v-model="theme"
-      :options="Array.from(thememap.keys())"
-      label="Theme"
-      outlined
-      style="width: 150px"
-      dense
-    />
-    <q-select
-      class="q-ml-lg"
-      v-model="lang"
-      :options="Array.from(langmap.keys())"
-      label="Language"
-      outlined
-      style="width: 150px"
-      dense
-    />
-  </q-toolbar>
-  <q-separator color="primary" size="3px" class="q-mt-sm" />
-  <div class="q-ma-sm">
-    <codemirror
-      v-model="code"
-      placeholder="Code goes here..."
-      :style="{ height: editorHeight + 'px' }"
-      :autofocus="true"
-      :indent-with-tab="true"
-      :tab-size="tabsize"
-      :extensions="extensions"
-      @update="handleStateUpdate"
-      @ready="handleReady"
-    />
+  <div v-if="!fetched">Something went wrong.</div>
+  <div v-if="fetched">
+    <q-toolbar class="q-mt-sm">
+      <q-btn to="/dashboard/files" icon="arrow_back" flat>
+        <q-tooltip>Go back</q-tooltip>
+      </q-btn>
+      <q-space />
+      <a class="text-h6"> {{ respData.code.name }}</a>
+      <q-btn icon="info" flat round class="q-ml-md">
+        <q-menu>
+          <q-card bordered>
+            <div class="q-ma-sm text-body 1">
+              <a class="text-weight-bolder"> Filename: </a>
+              {{ respData.code.name }}
+            </div>
+            <div class="q-ma-sm text-body 1">
+              <a class="text-weight-bolder"> Modified: </a>
+              {{ respData.code.modified }}
+            </div>
+            <div class="q-ma-sm text-body 1">
+              <a class="text-weight-bolder"> Created: </a>
+              {{ respData.code.created }}
+            </div>
+            <div class="q-ma-sm text-body 1">
+              <a class="text-weight-bolder"> Path: </a> {{ respData.code.path }}
+            </div>
+          </q-card>
+        </q-menu>
+      </q-btn>
+      <q-space />
+      <q-btn-dropdown icon="settings" flat>
+        <q-card bordered style="min-width: 190px; max-width: 190px">
+          <q-select
+            class="full-width"
+            v-model="tabsize"
+            :options="[1, 2, 3, 4, 5, 6]"
+            label="Tab Spaces"
+            outlined
+            style="width: 100px"
+            dense
+          />
+          <q-separator />
+          <q-select
+            class="full-width"
+            v-model="theme"
+            :options="Array.from(thememap.keys())"
+            label="Theme"
+            outlined
+            style="width: 150px"
+            dense
+          />
+          <q-separator />
+          <q-select
+            class="full-width"
+            v-model="lang"
+            :options="Array.from(langmap.keys())"
+            label="Language"
+            outlined
+            dense
+          />
+        </q-card>
+      </q-btn-dropdown>
+    </q-toolbar>
+    <q-separator size="3px" class="q-mt-sm" />
+    <div class="q-ma-sm">
+      <codemirror
+        v-model="code"
+        placeholder="Code goes here..."
+        :style="{ height: editorHeight + 'px' }"
+        :autofocus="true"
+        :indent-with-tab="true"
+        :tab-size="tabsize"
+        :extensions="extensions"
+        @update="handleStateUpdate"
+        @ready="handleReady"
+      />
+    </div>
+    <q-toolbar class="q-mt-md">
+      <q-space />
+      <q-btn
+        size="lg"
+        class="bg-green text-white"
+        icon="save"
+        label="Save"
+        @click="saveCodeFile()"
+      ></q-btn>
+      <q-space />
+      <a>Lines: {{ state.lines }}</a>
+      <a class="q-ml-md">Characters: {{ state.length }} </a>
+      <a class="q-ml-md"> Cursor: {{ state.cursor }} </a>
+      <a class="q-ml-md">Selected Characters: {{ state.selected }} </a>
+    </q-toolbar>
   </div>
-  <q-toolbar>
-    <a>Lines: {{ state.lines }}</a>
-    <a class="q-ml-md">Characters: {{ state.length }} </a>
-    <a class="q-ml-md"> Cursor: {{ state.cursor }} </a>
-    <a class="q-ml-md">Selected Characters: {{ state.selected }} </a>
-  </q-toolbar>
 </template>
 
 <script lang="ts">
@@ -103,20 +146,26 @@ export default defineComponent({
     const q = useQuasar();
 
     return {
+      fetched: ref(false),
       settingsStore,
       q,
       disabled: ref(false),
-      tabsize: ref(2),
+      tabsize: ref(4),
       handleStateUpdate,
       state,
       code,
       handleReady,
       log: console.log,
       theme,
+      fetchedLang: ref('python'),
       lang: ref('python'),
       langmap,
       thememap,
-      codeId: ref(''),
+      respData: ref({
+        code: { name: '', modified: '', created: '', path: '' },
+        path: '',
+        parentid: '',
+      }),
     };
   },
   created() {
@@ -145,13 +194,30 @@ export default defineComponent({
     },
 
     editorHeight() {
-      var height = this.q.screen.height - 300;
+      var height = this.q.screen.height - 260;
       console.log(height);
       return height;
     },
   },
 
   methods: {
+    codeSuff(lang: string) {
+      if (lang == 'javascript') {
+        return '.js';
+      } else if (lang == 'html') {
+        return '.html';
+      } else if (lang == 'cpp') {
+        return '.cpp';
+      } else if (lang == 'python') {
+        return '.py';
+      } else if (lang == 'json') {
+        return '.json';
+      } else if (lang == 'markdown') {
+        return '.md';
+      } else {
+        return '.js';
+      }
+    },
     notify(type: string, message: string) {
       this.q.notify({
         type: type,
@@ -159,6 +225,44 @@ export default defineComponent({
         progress: true,
         multiLine: true,
       });
+    },
+
+    saveCodeFile() {
+      var id = this.$route.params.id;
+      const axios_config = {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': this.q.cookies.get('csrftoken'),
+        },
+      };
+      var data: any = {
+        item_id: id,
+        lang: this.lang,
+        code: this.code,
+      };
+
+      var name: any = this.respData.code.name;
+      if (this.lang != this.fetchedLang) {
+        name = name.replace(/\.[^/.]+$/, '');
+        name += this.codeSuff(this.lang);
+        data.name = name;
+      }
+
+      api
+        .put('/files/update/code', data, axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.notify('positive', 'Saved.');
+            this.fetchedLang = this.lang;
+            this.respData.code.name = name;
+          } else {
+            this.notify('negative', 'ERROR :/');
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'API ERROR :/');
+          console.log(error);
+        });
     },
 
     getCodeFile() {
@@ -173,8 +277,11 @@ export default defineComponent({
         .get('/files/code/' + id, axios_config)
         .then((response) => {
           if (response.status == 200) {
+            this.respData = response.data;
             this.code = response.data.code.code;
             this.lang = response.data.code.language;
+            this.fetchedLang = response.data.code.language;
+            this.fetched = true;
           } else {
             // this.loading = false;
             // this.allowed = false;
