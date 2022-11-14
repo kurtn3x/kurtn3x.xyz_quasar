@@ -197,6 +197,13 @@ export default defineComponent({
   },
   async created() {
     this.docId = this.$route.params.id;
+    if (!this.userStore.authenticated) {
+      this.$router.push('/');
+      this.notify(
+        'negative',
+        'You are not allowed to access this page without being logged in.'
+      );
+    }
   },
   methods: {
     printDocument() {

@@ -40,7 +40,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'code/:id',
         component: () =>
-          import('src/pages/public/CodeEditor/PublicCodeView.vue'),
+          import('src/pages/public/PublicCodeEditor/CodeView.vue'),
       },
     ],
   },

@@ -1,6 +1,7 @@
 <template>
   <div v-if="!fetched">Something went wrong.</div>
-  <div v-if="fetched">
+  <div v-if="fetched && !allowed">Not allowed.</div>
+  <div v-if="fetched && allowed">
     <q-toolbar class="q-mt-sm">
       <q-btn to="/dashboard/files" icon="arrow_back" flat>
         <q-tooltip>Go back</q-tooltip>
@@ -25,6 +26,13 @@
             <div class="q-ma-sm text-body 1">
               <a class="text-weight-bolder"> Path: </a> {{ respData.code.path }}
             </div>
+            <div class="q-ma-sm text-body 1">
+              <a class="text-weight-bolder"> Owner: </a> {{ respData.owner }}
+            </div>
+            <div class="q-ma-sm text-body 1">
+              <a class="text-weight-bolder"> Permissions: </a>
+              {{ respData.permissions }}
+            </div>
           </q-card>
         </q-menu>
       </q-btn>
@@ -39,6 +47,7 @@
             outlined
             style="width: 100px"
             dense
+            v-if="write_allowed"
           />
           <q-separator />
           <q-select
@@ -58,6 +67,7 @@
             label="Language"
             outlined
             dense
+            v-if="write_allowed"
           />
         </q-card>
       </q-btn-dropdown>
@@ -66,6 +76,7 @@
     <div class="q-ma-sm">
       <codemirror
         v-model="code"
+        :disabled="!this.write_allowed"
         placeholder="Code goes here..."
         :style="{ height: editorHeight + 'px' }"
         :autofocus="true"
@@ -79,6 +90,7 @@
     <q-toolbar class="q-mt-md">
       <q-space />
       <q-btn
+        v-if="write_allowed"
         size="lg"
         class="bg-green text-white"
         icon="save"
@@ -126,8 +138,6 @@ export default defineComponent({
       length: null as null | number,
     });
 
-    const userStore = useUserStore();
-
     const handleStateUpdate = (viewUpdate: ViewUpdate) => {
       const ranges = viewUpdate.state.selection.ranges;
       state.selected = ranges.reduce(
@@ -148,8 +158,12 @@ export default defineComponent({
 
     const q = useQuasar();
 
+    const userStore = useUserStore();
+
     return {
       userStore,
+      write_allowed: ref(false),
+      allowed: ref(false),
       fetched: ref(false),
       settingsStore,
       q,
@@ -173,15 +187,7 @@ export default defineComponent({
     };
   },
   created() {
-    if (!this.userStore.authenticated) {
-      this.$router.push('/');
-      this.notify(
-        'negative',
-        'You are not allowed to access this page without being logged in.'
-      );
-    } else {
-      this.getCodeFile();
-    }
+    this.getCodeFile();
   },
 
   computed: {
@@ -207,7 +213,6 @@ export default defineComponent({
 
     editorHeight() {
       var height = this.q.screen.height - 260;
-      console.log(height);
       return height;
     },
   },
@@ -294,14 +299,25 @@ export default defineComponent({
             this.lang = response.data.code.language;
             this.fetchedLang = response.data.code.language;
             this.fetched = true;
+            this.allowed = true;
+            if (
+              response.data.permissions == 'owner' ||
+              (response.data.permissions.includes('write') &&
+                this.userStore.authenticated)
+            ) {
+              this.write_allowed = true;
+            }
+            console.log(this.write_allowed);
           } else {
-            // this.loading = false;
-            // this.allowed = false;
+            this.fetched = false;
+            this.allowed = false;
           }
         })
         .catch((error) => {
           this.notify('negative', 'API ERROR :/');
           console.log(error);
+          this.fetched = false;
+          this.allowed = false;
         });
     },
   },

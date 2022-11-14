@@ -1382,6 +1382,7 @@ export default defineComponent({
     draggable,
     droppable,
   },
+
   setup() {
     const userStore = useUserStore();
     const settings_store = useSettingsStore();
@@ -1592,7 +1593,15 @@ export default defineComponent({
     };
   },
   created() {
-    this.getHomeFolder();
+    if (!this.userStore.authenticated) {
+      this.$router.push('/');
+      this.notify(
+        'negative',
+        'You are not allowed to access this page without being logged in.'
+      );
+    } else {
+      this.getHomeFolder();
+    }
   },
   computed: {
     drawerReadableSize() {

@@ -971,7 +971,15 @@ export default {
   },
 
   created() {
-    this.getAccountInformation();
+    if (!this.userStore.authenticated) {
+      this.$router.push('/');
+      this.notify(
+        'negative',
+        'You are not allowed to access this page without being logged in.'
+      );
+    } else {
+      this.getAccountInformation();
+    }
   },
 
   computed: {
@@ -1062,8 +1070,7 @@ export default {
                   LocalStorage.clear();
                   this.userStore.setHeaderInfo();
                   LocalStorage.remove('header');
-                  this.$router.push('/');
-                  this.notify('positive', 'Please log in again.');
+                  window.location.replace('https://kurtn3x.xyz');
                 }
               })
               .catch();
