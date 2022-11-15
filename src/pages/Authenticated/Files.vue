@@ -213,20 +213,11 @@
             label="Apply recursively"
             class="q-mt-sm q-mb-xs"
           />
-          <div
-            class="q-mb-sm text-body1 text-center"
-            v-if="drawerSharingRecursive && drawerItemType == 'folder'"
-          >
-            This will apply the following settings for all subcontent contained
-            in this folder.
-          </div>
-          <q-separator size="3px" v-if="drawerItemType == 'folder'" />
 
           <q-checkbox
             v-model="drawerSharing"
             color="green"
             label="Enable Sharing"
-            class="q-mt-md"
             @click="updateSharing"
           />
           <q-checkbox
@@ -241,6 +232,52 @@
             label="Allow everyone to write"
             @click="updateSharing"
           />
+          <div class="text-h6 q-mt-md q-mb-sm">Allowed Users</div>
+          <div class="row">
+            <q-input
+              dense
+              outlined
+              label="Add User"
+              class="text-primary text-body1"
+              style="width: 70%"
+            >
+            </q-input>
+            <q-btn
+              class="bg-green text-white"
+              size="16px"
+              flat
+              dense
+              label="ADD"
+              style="width: 30%"
+            />
+          </div>
+          <q-list bordered separator class="q-mt-sm">
+            <!-- LOOP HERE -->
+            <div class="row q-ma-xs">
+              <div class="col-7">
+                <q-btn label="USER" class="full-width" />
+              </div>
+              <div class="col-5">
+                <q-btn
+                  square
+                  flat
+                  dense
+                  icon="info"
+                  style="width: 50%"
+                  class="full-height bg-blue text-white"
+                />
+                <q-btn
+                  square
+                  flat
+                  dense
+                  icon="close"
+                  style="width: 50%"
+                  class="full-height bg-red text-white"
+                />
+              </div>
+            </div>
+            <q-separator />
+          </q-list>
           <div class="text-body1 q-mt-md q-ml-sm" v-if="drawerSharing">
             Share Link:
           </div>
@@ -1593,15 +1630,15 @@ export default defineComponent({
     };
   },
   created() {
-    if (!this.userStore.authenticated) {
-      this.$router.push('/');
-      this.notify(
-        'negative',
-        'You are not allowed to access this page without being logged in.'
-      );
-    } else {
-      this.getHomeFolder();
-    }
+    // if (!this.userStore.authenticated) {
+    //   this.$router.push('/');
+    //   this.notify(
+    //     'negative',
+    //     'You are not allowed to access this page without being logged in.'
+    //   );
+    // } else {
+    //   this.getHomeFolder();
+    // }
   },
   computed: {
     drawerReadableSize() {
