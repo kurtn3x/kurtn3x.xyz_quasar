@@ -713,6 +713,7 @@ export default {
     } else {
       this.headerinfo = '';
       this.userStore.setHeaderInfo(defaultHeaderInformation());
+      this.fetched = true;
     }
   },
 
