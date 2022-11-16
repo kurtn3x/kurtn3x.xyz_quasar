@@ -116,7 +116,7 @@
             </div>
           </q-menu>
         </q-btn>
-        <q-space v-if="!authenticated" />
+        <q-space v-if="!authenticated && fetched" />
         <q-btn
           stretch
           flat
@@ -126,7 +126,7 @@
             login_popup = true;
             login_tab = 'login';
           "
-          v-if="!authenticated"
+          v-if="!authenticated && fetched"
         />
         <q-btn
           stretch
@@ -137,7 +137,7 @@
             login_popup = true;
             login_tab = 'register';
           "
-          v-if="!authenticated"
+          v-if="!authenticated && fetched"
         />
       </q-toolbar>
     </q-header>
@@ -666,6 +666,7 @@ export default {
     };
 
     return {
+      fetched: ref(false),
       toggleLeftDrawer() {
         leftDrawer.value = !leftDrawer.value;
       },
@@ -870,18 +871,21 @@ export default {
             this.userStore.setHeaderInfo(this.headerinfo);
             this.userStore.setAuthState(true);
             this.status = this.headerinfo.status;
+            this.fetched = true;
           } else {
             this.notify(
               'negative',
               'Something went wrong when fetching the user.'
             );
             this.userStore.setAuthState(false);
+            this.fetched = true;
           }
         })
         .catch((error) => {
           console.log(error);
           this.notify('negative', 'API ERROR.');
           this.userStore.setAuthState(false);
+          this.fetched = true;
         });
     },
 

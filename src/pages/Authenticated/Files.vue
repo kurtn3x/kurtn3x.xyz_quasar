@@ -1,665 +1,1421 @@
 <template>
-  <q-dialog v-model="folderDeleteDialog" @hide="availParents = []">
-    <q-card bordered>
-      <div class="text-body1 text-center q-ma-md">
-        This will delete the folder and all its subfolders and files.
-      </div>
-      <q-card-actions align="right">
-        <q-btn v-close-popup flat class="bg-red text-light">Cancel</q-btn>
-        <q-btn
-          v-close-popup
-          flat
-          class="bg-green text-light"
-          @click="deleteItem(folderToDeleteUUID, 'folder')"
-          >Continue</q-btn
-        >
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
-
-  <q-drawer
-    side="right"
-    v-model="updateItemDrawer"
-    bordered
-    @hide="
-      drawerItemId = '';
-      drawerItemNewName = '';
-      availParents = [];
-      drawerItemNewParent = '';
-      allAvailableFolders = {};
-      drawerItemType = '';
-      drawerTab = 'info';
-    "
-  >
-    <q-card bordered flat class="full-height">
-      <q-toolbar class="q-mt-sm q-mb-sm">
-        <q-icon size="lg" name="article" v-if="drawerItemType == 'document'" />
-        <q-icon size="lg" name="file_present" v-if="drawerItemType == 'file'" />
-        <q-icon size="lg" name="folder" v-if="drawerItemType == 'folder'" />
-        <a class="text-h5 text-weight-bold q-ml-md">Settings</a>
-        <q-space />
-        <q-btn
-          push
-          icon="close"
-          class="bg-red text-white"
-          @click="updateItemDrawer = !updateItemDrawer"
-        />
-      </q-toolbar>
-      <q-separator />
-      <div
-        class="text-h5 q-mt-md text-center text-weight-bold q-ml-sm"
-        style="
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          text-decoration: underline;
-          text-decoration-thickness: 3px;
-        "
-        :style="item_text_width"
-      >
-        {{ drawerItemName }}
-        <q-tooltip class="text-body1"> {{ drawerItemName }}</q-tooltip>
-      </div>
-      <q-tabs v-model="drawerTab" class="q-mt-md">
-        <q-tab name="info" icon="info" />
-        <q-tab name="edit" icon="edit" @click="fetchAllAvailableFolders()" />
-        <q-tab
-          name="share"
-          icon="share"
-          v-if="drawerItemType != 'folder_link'"
-        />
-      </q-tabs>
-      <q-tab-panels v-model="drawerTab" animated style="height: 70%">
-        <q-tab-panel name="info">
-          <div class="text-h6 q-mt-sm">Info</div>
-          <q-separator size="3px" />
-          <div class="text-body1 q-mt-md q-ml-sm">
-            Type: {{ drawerItemType }}
-            <a v-if="this.drawerItemType == 'code'"
-              >, {{ this.drawerItemLanguage }}</a
-            >
-          </div>
-          <div
-            class="text-body1 q-mt-md q-ml-sm"
-            v-if="drawerItemType == 'folder' || drawerItemType == 'file'"
-          >
-            Size: {{ drawerReadableSize }}
-          </div>
-          <div
-            class="text-body1 q-mt-md q-ml-sm"
-            v-if="drawerItemType != 'folder_link'"
-          >
-            Created: {{ drawerCreated }}
-          </div>
-          <div
-            class="text-body1 q-mt-md q-ml-sm"
-            v-if="drawerItemType != 'folder_link'"
-          >
-            Modified: {{ drawerModified }}
-          </div>
-          <div class="text-body1 q-mt-md q-ml-sm">
-            Folder: {{ rawFolderContent.path }}
-          </div>
-
+  <div v-if="!initialFetch" class="absolute-center">
+    <q-spinner color="primary" size="10em" />
+  </div>
+  <div v-if="initialFetch && !initialFetchSuccessful">
+    Something went wrong.
+  </div>
+  <div v-if="initialFetch && initialFetchSuccessful">
+    <q-dialog v-model="folderDeleteDialog" @hide="availParents = []">
+      <q-card bordered>
+        <div class="text-body1 text-center q-ma-md">
+          This will delete the folder and all its subfolders and files.
+        </div>
+        <q-card-actions align="right">
+          <q-btn v-close-popup flat class="bg-red text-light">Cancel</q-btn>
           <q-btn
-            label="Download"
-            icon="file_download"
-            class="cursor-pointer bg-green text-white full-width q-mt-md"
+            v-close-popup
             flat
-            @click="openInNewTab(drawerItemId)"
-            :loading="loading"
-            v-if="drawerItemType == 'file'"
-            size="xl"
-          />
-        </q-tab-panel>
-        <q-tab-panel name="edit">
-          <div class="text-h6 q-mt-sm">Update Item</div>
-
-          <q-separator size="3px" />
-
-          <q-input
-            dense
-            outlined
-            v-model="drawerItemNewName"
-            label="Name"
-            input-class="text-center"
-            class="text-primary q-ma-md text-body1 q-mt-lg"
-          />
-          <q-select
-            outlined
-            v-model="drawerItemNewParent"
-            :options="availParents"
-            label="Parent Folder"
-            class="q-ma-md text-body1"
-          />
-          <q-select
-            outlined
-            v-model="drawerItemNewLanguage"
-            :options="codeLanguageOptions"
-            label="Code Language"
-            class="q-ma-md text-body1"
-            v-if="drawerItemType == 'code'"
-            @update:model-value="
-              () => {
-                drawerItemNewLanguage = drawerItemNewLanguage.name;
-                drawerItemNewName =
-                  drawerItemNewName.replace(/\.[^/.]+$/, '') +
-                  codeSuff(drawerItemNewLanguage);
-              }
-            "
+            class="bg-green text-light"
+            @click="deleteItem(folderToDeleteUUID, 'folder')"
+            >Continue</q-btn
           >
-            <template v-slot:option="scope">
-              <q-item v-bind="scope.itemProps">
-                <q-item-section avatar>
-                  <q-icon :name="scope.opt.icon" />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label>{{ scope.opt.name }}</q-item-label>
-                </q-item-section>
-              </q-item>
-            </template>
-          </q-select>
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
 
-          <q-btn
-            label="Edit Document"
-            class="cursor-pointer full-width q-mt-lg"
-            outline
+    <q-drawer
+      side="right"
+      v-model="updateItemDrawer"
+      bordered
+      @hide="
+        drawerItemId = '';
+        drawerItemNewName = '';
+        availParents = [];
+        drawerItemNewParent = '';
+        allAvailableFolders = {};
+        drawerItemType = '';
+        drawerTab = 'info';
+      "
+    >
+      <q-card bordered flat class="full-height">
+        <q-toolbar class="q-mt-sm q-mb-sm">
+          <q-icon
             size="lg"
-            :loading="loading"
-            stretch
-            :to="'doc/edit/' + drawerItemId"
+            name="article"
             v-if="drawerItemType == 'document'"
           />
-
-          <q-btn
-            label="Save"
-            class="cursor-pointer bg-green text-white q-mt-sm full-width"
-            flat
-            icon="save"
-            @click="updateItem"
-            :loading="loading"
-            style="width: 240px"
+          <q-icon
             size="lg"
+            name="file_present"
+            v-if="drawerItemType == 'file'"
           />
+          <q-icon size="lg" name="folder" v-if="drawerItemType == 'folder'" />
+          <a class="text-h5 text-weight-bold q-ml-md">Settings</a>
+          <q-space />
           <q-btn
-            v-if="drawerItemType == 'folder'"
-            class="cursor-pointer bg-red text-white q-mt-md full-width"
-            flat
-            label="Delete"
-            icon="delete"
-            @click.capture.stop="
-              this.folderToDeleteUUID = drawerItemId;
-              folderDeleteDialog = !folderDeleteDialog;
-            "
-            :loading="loading"
+            push
+            icon="close"
+            class="bg-red text-white"
+            @click="updateItemDrawer = !updateItemDrawer"
           />
-          <q-btn
-            v-if="drawerItemType != 'folder'"
-            class="cursor-pointer bg-red text-white full-width q-mt-md"
-            label="Delete"
-            flat
-            icon="delete"
-            @click.capture.stop="deleteItem(drawerItemId, drawerItemType)"
-            :loading="loading"
+        </q-toolbar>
+        <q-separator />
+        <div
+          class="text-h5 q-mt-md text-center text-weight-bold q-ml-sm"
+          style="
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-decoration: underline;
+            text-decoration-thickness: 3px;
+          "
+          :style="item_text_width"
+        >
+          {{ drawerItemName }}
+          <q-tooltip class="text-body1"> {{ drawerItemName }}</q-tooltip>
+        </div>
+        <q-tabs v-model="drawerTab" class="q-mt-md">
+          <q-tab name="info" icon="info" />
+          <q-tab name="edit" icon="edit" @click="fetchAllAvailableFolders()" />
+          <q-tab
+            name="share"
+            icon="share"
+            v-if="drawerItemType != 'folder_link'"
           />
-        </q-tab-panel>
-        <q-tab-panel name="share" v-if="drawerItemType != 'folder_link'">
-          <div class="text-h6 q-mt-sm">Sharing</div>
-          <q-separator size="3px" />
-          <q-checkbox
-            v-if="drawerItemType == 'folder'"
-            v-model="drawerSharingRecursive"
-            color="green"
-            label="Apply recursively"
-            class="q-mt-sm q-mb-xs"
-          />
+        </q-tabs>
+        <q-tab-panels v-model="drawerTab" animated style="height: 70%">
+          <q-tab-panel name="info">
+            <div class="text-h6 q-mt-sm">Info</div>
+            <q-separator size="3px" />
+            <div class="text-body1 q-mt-md q-ml-sm">
+              Type: {{ drawerItemType }}
+              <a v-if="this.drawerItemType == 'code'"
+                >, {{ this.drawerItemLanguage }}</a
+              >
+            </div>
+            <div
+              class="text-body1 q-mt-md q-ml-sm"
+              v-if="drawerItemType == 'folder' || drawerItemType == 'file'"
+            >
+              Size: {{ drawerReadableSize }}
+            </div>
+            <div
+              class="text-body1 q-mt-md q-ml-sm"
+              v-if="drawerItemType != 'folder_link'"
+            >
+              Created: {{ drawerCreated }}
+            </div>
+            <div
+              class="text-body1 q-mt-md q-ml-sm"
+              v-if="drawerItemType != 'folder_link'"
+            >
+              Modified: {{ drawerModified }}
+            </div>
+            <div class="text-body1 q-mt-md q-ml-sm">
+              Folder: {{ rawFolderContent.path }}
+            </div>
 
-          <q-checkbox
-            v-model="drawerSharing"
-            color="green"
-            label="Enable Sharing"
-            @click="updateSharing"
-          />
-          <q-checkbox
-            v-model="drawerSharingAllowAllRead"
-            color="green"
-            label="Allow everyone to read"
-            @click="updateSharing"
-          />
-          <q-checkbox
-            v-model="drawerSharingAllowAllWrite"
-            color="green"
-            label="Allow everyone to write"
-            @click="updateSharing"
-          />
-          <div class="text-h6 q-mt-md q-mb-sm">Allowed Users</div>
-          <div class="row">
+            <q-btn
+              label="Download"
+              icon="file_download"
+              class="cursor-pointer bg-green text-white full-width q-mt-md"
+              flat
+              @click="openInNewTab(drawerItemId)"
+              :loading="loading"
+              v-if="drawerItemType == 'file'"
+              size="xl"
+            />
+          </q-tab-panel>
+          <q-tab-panel name="edit">
+            <div class="text-h6 q-mt-sm">Update Item</div>
+
+            <q-separator size="3px" />
+
             <q-input
               dense
               outlined
-              label="Add User"
-              class="text-primary text-body1"
-              style="width: 70%"
-            >
-            </q-input>
-            <q-btn
-              class="bg-green text-white"
-              size="16px"
-              flat
-              dense
-              label="ADD"
-              style="width: 30%"
+              v-model="drawerItemNewName"
+              label="Name"
+              input-class="text-center"
+              class="text-primary q-ma-md text-body1 q-mt-lg"
             />
-          </div>
-          <q-list bordered separator class="q-mt-sm">
-            <!-- LOOP HERE -->
-            <div class="row q-ma-xs">
-              <div class="col-7">
-                <q-btn label="USER" class="full-width" />
-              </div>
-              <div class="col-5">
-                <q-btn
-                  square
-                  flat
-                  dense
-                  icon="info"
-                  style="width: 50%"
-                  class="full-height bg-blue text-white"
-                />
-                <q-btn
-                  square
-                  flat
-                  dense
-                  icon="close"
-                  style="width: 50%"
-                  class="full-height bg-red text-white"
-                />
-              </div>
+            <q-select
+              outlined
+              v-model="drawerItemNewParent"
+              :options="availParents"
+              label="Parent Folder"
+              class="q-ma-md text-body1"
+            />
+            <q-select
+              outlined
+              v-model="drawerItemNewLanguage"
+              :options="codeLanguageOptions"
+              label="Code Language"
+              class="q-ma-md text-body1"
+              v-if="drawerItemType == 'code'"
+              @update:model-value="
+                () => {
+                  drawerItemNewLanguage = drawerItemNewLanguage.name;
+                  drawerItemNewName =
+                    drawerItemNewName.replace(/\.[^/.]+$/, '') +
+                    codeSuff(drawerItemNewLanguage);
+                }
+              "
+            >
+              <template v-slot:option="scope">
+                <q-item v-bind="scope.itemProps">
+                  <q-item-section avatar>
+                    <q-icon :name="scope.opt.icon" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>{{ scope.opt.name }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
+
+            <q-btn
+              label="Edit Document"
+              class="cursor-pointer full-width q-mt-lg"
+              outline
+              size="lg"
+              :loading="loading"
+              stretch
+              :to="'doc/edit/' + drawerItemId"
+              v-if="drawerItemType == 'document'"
+            />
+
+            <q-btn
+              label="Save"
+              class="cursor-pointer bg-green text-white q-mt-sm full-width"
+              flat
+              icon="save"
+              @click="updateItem"
+              :loading="loading"
+              style="width: 240px"
+              size="lg"
+            />
+            <q-btn
+              v-if="drawerItemType == 'folder'"
+              class="cursor-pointer bg-red text-white q-mt-md full-width"
+              flat
+              label="Delete"
+              icon="delete"
+              @click.capture.stop="
+                this.folderToDeleteUUID = drawerItemId;
+                folderDeleteDialog = !folderDeleteDialog;
+              "
+              :loading="loading"
+            />
+            <q-btn
+              v-if="drawerItemType != 'folder'"
+              class="cursor-pointer bg-red text-white full-width q-mt-md"
+              label="Delete"
+              flat
+              icon="delete"
+              @click.capture.stop="deleteItem(drawerItemId, drawerItemType)"
+              :loading="loading"
+            />
+          </q-tab-panel>
+          <q-tab-panel name="share" v-if="drawerItemType != 'folder_link'">
+            <div class="text-h6 q-mt-sm">Sharing</div>
+            <q-separator size="3px" />
+
+            <div class="text-body1 q-mt-md q-ml-sm" v-if="drawerSharing">
+              Share Link:
             </div>
-            <q-separator />
-          </q-list>
-          <div class="text-body1 q-mt-md q-ml-sm" v-if="drawerSharing">
-            Share Link:
+            <q-input
+              filled
+              square
+              v-model="itemShareLink"
+              readonly
+              class="q-mt-sm"
+              v-if="drawerSharing"
+            >
+              <template v-slot:append>
+                <q-btn
+                  v-if="drawerSharing"
+                  @click="copyToClipboard(itemShareLink)"
+                  icon="content_copy"
+                  flat
+                >
+                </q-btn>
+              </template>
+            </q-input>
+
+            <q-checkbox
+              v-if="drawerItemType == 'folder'"
+              v-model="drawerSharingRecursive"
+              color="green"
+              label="Apply recursively"
+              class="q-mt-sm q-mb-xs"
+            />
+
+            <q-checkbox
+              v-model="drawerSharing"
+              color="green"
+              label="Enable Sharing"
+              @click="updateSharing(1)"
+            />
+
+            <q-checkbox
+              v-model="drawerSharingAllowAllRead"
+              color="green"
+              label="Allow everyone to read"
+              @click="updateSharing(2)"
+            />
+            <q-checkbox
+              v-model="drawerSharingAllowAllWrite"
+              color="green"
+              label="Allow everyone to write"
+              @click="updateSharing(3)"
+            />
+            <div class="text-h6 q-mt-md q-mb-sm">Allowed Users</div>
+            <q-expansion-item label="Add User" dense icon="add">
+              <q-input
+                dense
+                outlined
+                label="UserID"
+                class="text-primary text-body1 q-mt-sm"
+                v-if="drawerSharingAddUserType"
+                v-model="drawerSharingAddUserID"
+              >
+                <template v-slot:append>
+                  <q-btn
+                    icon="person"
+                    @click="
+                      drawerSharingAddUserType = !drawerSharingAddUserType
+                    "
+                  />
+                </template>
+              </q-input>
+              <q-input
+                dense
+                outlined
+                label="Username"
+                class="text-primary text-body1 q-mt-sm"
+                v-if="!drawerSharingAddUserType"
+                v-model="drawerSharingAddUserName"
+              >
+                <template v-slot:append>
+                  <q-btn
+                    icon="person"
+                    @click="
+                      drawerSharingAddUserType = !drawerSharingAddUserType
+                    "
+                  />
+                </template>
+              </q-input>
+              <div class="row q-mt-sm">
+                <q-toggle
+                  v-model="drawerSharingAddUserRead"
+                  color="green"
+                  label="Read"
+                />
+                <q-toggle
+                  v-model="drawerSharingAddUserWrite"
+                  color="green"
+                  label="Write"
+                />
+                <q-btn
+                  class="bg-green text-white q-ml-md"
+                  size="14px"
+                  flat
+                  dense
+                  label="ADD"
+                  style="width: 25%"
+                  @click="updateSharing(4)"
+                />
+              </div>
+            </q-expansion-item>
+
+            <q-list bordered separator class="q-mt-lg">
+              <!-- LOOP HERE -->
+              <div class="row">
+                <div class="col-7">
+                  <q-btn label="USER" class="full-width" />
+                </div>
+                <div class="col-5">
+                  <q-btn
+                    flat
+                    dense
+                    icon="info"
+                    style="width: 50%"
+                    class="full-height bg-blue text-white"
+                  />
+                  <q-btn
+                    flat
+                    dense
+                    icon="close"
+                    style="width: 50%"
+                    class="full-height bg-red text-white"
+                  />
+                </div>
+              </div>
+              <q-separator />
+            </q-list>
+          </q-tab-panel>
+        </q-tab-panels>
+      </q-card>
+    </q-drawer>
+
+    <q-dialog v-model="upload_file_dialog">
+      <q-card style="min-width: 300px" bordered>
+        <q-toolbar class="justify-center">
+          <div
+            class="text-h5 q-mt-md text-primary text-center text-weight-bold"
+          >
+            UPLOAD FILES
           </div>
+          <q-separator />
+        </q-toolbar>
+
+        <q-file
+          style="min-height: 300px; min-width: 300px"
+          v-model="upload_file_files"
+          multiple
+          append
+          :loading="loading"
+          counter
+          use-chips
+          hide-bottom-space
+          square
+          class="q-ma-md fileupload"
+          label-color="white"
+          borderless
+          @dragover.prevent="
+            (ev) => {
+              if (ev.dataTransfer.items[0].kind == 'file') {
+                this.upload_file_dragged = true;
+              }
+            }
+          "
+          @dragenter.self="
+            (ev) => {
+              if (ev.dataTransfer.items[0].kind == 'file') {
+                this.upload_file_dragged = true;
+              }
+            }
+          "
+          @dragleave.prevent="
+            (ev) => {
+              if (ev.dataTransfer.items[0].kind == 'file') {
+                this.upload_file_dragged = false;
+              }
+            }
+          "
+          @drop="
+            (ev) => {
+              if (ev.dataTransfer.items[0].kind == 'file') {
+                this.upload_file_dragged = false;
+              }
+            }
+          "
+          :class="upload_file_dragged ? 'bg-blue' : ''"
+        >
+          <div
+            class="absolute-left text-white text-body1 text-center"
+            style="top: 300%; pointer-events: none"
+          >
+            Click me / Drag & Drop Files here. Folders can only be uploaded via
+            drag&drop in the expanded area below the file browser.
+          </div>
+        </q-file>
+        <template v-for="(file, index) in upload_file_files" :key="file">
           <q-input
-            filled
-            square
-            v-model="itemShareLink"
-            readonly
-            class="q-mt-sm"
-            v-if="drawerSharing"
-          />
-          <q-item
-            clickable
-            @click="copyToClipboard(itemShareLink)"
-            class="justify-center text-body2"
-            v-if="drawerSharing"
-          >
-            Copy the link</q-item
-          >
-        </q-tab-panel>
-      </q-tab-panels>
-    </q-card>
-  </q-drawer>
-
-  <q-dialog v-model="upload_file_dialog">
-    <q-card style="min-width: 300px" bordered>
-      <q-toolbar class="justify-center">
-        <div class="text-h5 q-mt-md text-primary text-center text-weight-bold">
-          UPLOAD FILES
-        </div>
-        <q-separator />
-      </q-toolbar>
-
-      <q-file
-        style="min-height: 300px; min-width: 300px"
-        v-model="upload_file_files"
-        multiple
-        append
-        :loading="loading"
-        counter
-        use-chips
-        hide-bottom-space
-        square
-        class="q-ma-md fileupload"
-        label-color="white"
-        borderless
-        @dragover.prevent="
-          (ev) => {
-            if (ev.dataTransfer.items[0].kind == 'file') {
-              this.upload_file_dragged = true;
-            }
-          }
-        "
-        @dragenter.self="
-          (ev) => {
-            if (ev.dataTransfer.items[0].kind == 'file') {
-              this.upload_file_dragged = true;
-            }
-          }
-        "
-        @dragleave.prevent="
-          (ev) => {
-            if (ev.dataTransfer.items[0].kind == 'file') {
-              this.upload_file_dragged = false;
-            }
-          }
-        "
-        @drop="
-          (ev) => {
-            if (ev.dataTransfer.items[0].kind == 'file') {
-              this.upload_file_dragged = false;
-            }
-          }
-        "
-        :class="upload_file_dragged ? 'bg-blue' : ''"
-      >
-        <div
-          class="absolute-left text-white text-body1 text-center"
-          style="top: 300%; pointer-events: none"
-        >
-          Click me / Drag & Drop Files here. Folders can only be uploaded via
-          drag&drop in the expanded area below the file browser.
-        </div>
-      </q-file>
-      <template v-for="(file, index) in upload_file_files" :key="file">
-        <q-input
-          dense
-          outlined
-          v-model="upload_file_files[index].name"
-          :label="'File ' + index + ' Name'"
-          input-class="text-center"
-          class="text-body1"
-        />
-      </template>
-
-      <q-btn
-        label="Upload"
-        class="cursor-pointer full-width bg-green text-white"
-        flat
-        @click="uploadFiles"
-        v-close-popup
-        size="lg"
-      />
-    </q-card>
-  </q-dialog>
-
-  <q-page
-    class="column"
-    :class="mobile ? 'q-ml-xs q-mr-xs' : 'q-mr-md q-ml-md'"
-    :style-fn="styleFn"
-  >
-    <q-toolbar class="transparent q-mt-md q-mb-sm">
-      <div class="row">
-        <q-btn
-          v-if="this.rawFolderContent.name != 'Home'"
-          icon="arrow_back"
-          flat
-          class="text-primary"
-          @click="navGoBack"
-        >
-          <q-tooltip>Go back</q-tooltip>
-        </q-btn>
-        <q-breadcrumbs style="font-size: 20px" separator=">">
-          <template v-for="itemname in path_names" :key="itemname">
-            <q-breadcrumbs-el
-              clickable
-              flat
-              class="text-primary text-weight-bold pathitem"
-              :class="mobile ? 'text-h6 ' : 'text-h4'"
-              @click="getFolderPath(itemname)"
-              @v-drag-enter="
-                (e, x, y) =>
-                  y.target.classList.add(dark ? 'active-dark' : 'active')
-              "
-              @v-drag-over="
-                (e, x, y) =>
-                  y.target.classList.add(dark ? 'active-dark' : 'active')
-              "
-              @v-drag-leave="
-                (e, x, y) => y.target.classList.remove('active', 'active-dark')
-              "
-              @v-drag-drop="changeFolderToolbar($event, itemname)"
-              v-droppable
-              v-if="itemname != 'Home'"
-            >
-              <a>
-                {{ itemname }}
-              </a>
-            </q-breadcrumbs-el>
-            <q-breadcrumbs-el
-              clickable
-              flat
-              class="text-primary text-weight-bold pathitem"
-              :class="mobile ? 'text-h6 ' : 'text-h4'"
-              @click="getFolderPath(itemname)"
-              @v-drag-enter="
-                (e, x, y) =>
-                  y.target.classList.add(dark ? 'active-dark' : 'active')
-              "
-              @v-drag-over="
-                (e, x, y) =>
-                  y.target.classList.add(dark ? 'active-dark' : 'active')
-              "
-              @v-drag-leave="
-                (e, x, y) => y.target.classList.remove('active', 'active-dark')
-              "
-              @v-drag-drop="changeFolderToolbar($event, itemname)"
-              v-droppable
-              v-if="itemname == 'Home'"
-            >
-              <q-icon
-                color="primary"
-                name="home"
-                class="full-width full-height"
-                @dragover="
-                  (ev) => {
-                    ev.srcElement.parentNode.classList.add('active');
-                  }
-                "
-                @drop="
-                  (ev) => {
-                    ev.srcElement.parentNode.classList.remove('active');
-                  }
-                "
-                @dragleave="
-                  (ev) => {
-                    ev.srcElement.parentNode.classList.remove('active');
-                  }
-                "
-              />
-            </q-breadcrumbs-el>
-          </template>
-        </q-breadcrumbs>
-      </div>
-    </q-toolbar>
-    <q-toolbar class="transparent q-mt-xs">
-      <q-checkbox
-        v-model="allSelected"
-        color="green"
-        class="q-ml-xs"
-        @click="selectAllItems"
-      />
-      <q-input
-        dense
-        v-model="search"
-        input-class="text-left"
-        style="width: 30%"
-        label="Search"
-        class="text-body1 q-ml-lg"
-      >
-        <template v-slot:append>
-          <q-icon v-if="search === ''" name="search" />
-          <q-icon
-            v-else
-            name="clear"
-            class="cursor-pointer"
-            @click="search = ''"
+            dense
+            outlined
+            v-model="upload_file_files[index].name"
+            :label="'File ' + index + ' Name'"
+            input-class="text-center"
+            class="text-body1"
           />
         </template>
-      </q-input>
 
-      <q-fab icon="add" direction="down" class="q-ml-lg" flat color="green">
-        <q-fab-action
-          color="primary"
-          text-color="white"
-          @click="
-            newObjShow = true;
-            newObjType = 'document';
-          "
-          icon="note_add"
-          label="New Document"
+        <q-btn
+          label="Upload"
+          class="cursor-pointer full-width bg-green text-white"
+          flat
+          @click="uploadFiles"
+          v-close-popup
+          size="lg"
         />
-        <q-fab-action
-          color="primary"
-          text-color="white"
-          @click="
-            newObjShow = true;
-            newObjType = 'code';
-          "
-          icon="code"
-          label="New Code File"
-        />
-        <q-fab-action
-          color="primary"
-          text-color="white"
-          icon="create_new_folder"
-          label="New Folder"
-          @click="
-            newObjShow = true;
-            newObjType = 'folder';
-          "
-        />
-        <q-fab-action
-          color="primary"
-          text-color="white"
-          @click="upload_file_dialog = !upload_file_dialog"
-          icon="file_upload"
-          label="Upload Files"
-        />
-      </q-fab>
+      </q-card>
+    </q-dialog>
 
-      <q-space />
-      <div
-        v-if="
-          selectedFolderLinks.length +
-            selectedFolders.length +
-            selectedFiles.length +
-            selectedDocuments.length +
-            selectedCode.length >
-          0
-        "
-        class="text-h6"
-      >
-        <q-btn-dropdown flat icon="more_horiz">
-          <div class="row justify-center">
-            <a class="q-ma-sm text-body1 text-center" v-if="mobile">
-              {{
-                selectedFolderLinks.length +
-                selectedFolders.length +
-                selectedFiles.length +
-                selectedDocuments.length +
-                selectedCode.length
-              }}
-              Item(s) selected
-            </a>
-          </div>
+    <q-page
+      class="column"
+      :class="mobile ? 'q-ml-xs q-mr-xs' : 'q-mr-md q-ml-md'"
+      :style-fn="styleFn"
+    >
+      <q-toolbar class="transparent q-mt-md q-mb-sm">
+        <div class="row">
           <q-btn
-            label="Move"
-            class="full-width bg-blue text-light"
-            @click="
-              fetchAllAvailableFolders();
-              selectionNewParent = this.rawFolderContent.path;
-            "
-            size="lg"
-          >
-            <q-menu @hide="availParents = []" style="min-width: 200px">
-              <q-select
-                outlined
-                v-model="selectionNewParent"
-                :options="availParents"
-                label="Parent Folder"
-                input-class="text-center text-body1"
-              />
-              <q-btn
-                @click="moveSelection"
-                label="Move"
-                class="full-width bg-blue"
-              />
-            </q-menu>
-          </q-btn>
-          <q-btn
-            label="Delete"
-            class="full-width bg-red text-light"
-            @click="deleteSelection"
-            size="lg"
-          />
-        </q-btn-dropdown>
-
-        <a class="q-mr-lg" v-if="!mobile">
-          {{
-            selectedFolderLinks.length +
-            selectedFolders.length +
-            selectedFiles.length +
-            selectedDocuments.length +
-            selectedCode.length
-          }}
-          Item(s) selected
-        </a>
-      </div>
-      <q-btn-dropdown icon="settings" flat>
-        <q-card bordered style="min-width: 190px; max-width: 190px">
-          <q-toggle
-            v-model="optnShowFolders"
-            color="green"
-            label="Show Folders"
-            class="full-width"
-          />
-          <q-separator />
-          <q-toggle
-            v-model="optnShowFiles"
-            color="green"
-            label="Show Files"
-            class="full-width"
-          />
-          <q-separator />
-          <q-toggle
-            v-model="optnShowDocuments"
-            color="green"
-            label="Show Documents"
-            class="full-width"
-          />
-          <q-separator />
-          <q-toggle
-            v-model="optnShowCode"
-            color="green"
-            label="Show Code FIles"
-            class="full-width"
-          />
-          <q-separator />
-
-          <q-btn
-            label="Force Refresh"
-            icon="refresh"
-            class="full-width"
+            v-if="this.rawFolderContent.name != 'Home'"
+            icon="arrow_back"
             flat
-            @click="refreshFolder"
+            class="text-primary"
+            @click="navGoBack"
+          >
+            <q-tooltip>Go back</q-tooltip>
+          </q-btn>
+          <q-breadcrumbs style="font-size: 20px" separator=">">
+            <template v-for="itemname in path_names" :key="itemname">
+              <q-breadcrumbs-el
+                clickable
+                flat
+                class="text-primary text-weight-bold pathitem"
+                :class="mobile ? 'text-h6 ' : 'text-h4'"
+                @click="getFolderPath(itemname)"
+                @v-drag-enter="
+                  (e, x, y) =>
+                    y.target.classList.add(dark ? 'active-dark' : 'active')
+                "
+                @v-drag-over="
+                  (e, x, y) =>
+                    y.target.classList.add(dark ? 'active-dark' : 'active')
+                "
+                @v-drag-leave="
+                  (e, x, y) =>
+                    y.target.classList.remove('active', 'active-dark')
+                "
+                @v-drag-drop="changeFolderToolbar($event, itemname)"
+                v-droppable
+                v-if="itemname != 'Home'"
+              >
+                <a>
+                  {{ itemname }}
+                </a>
+              </q-breadcrumbs-el>
+              <q-breadcrumbs-el
+                clickable
+                flat
+                class="text-primary text-weight-bold pathitem"
+                :class="mobile ? 'text-h6 ' : 'text-h4'"
+                @click="getFolderPath(itemname)"
+                @v-drag-enter="
+                  (e, x, y) =>
+                    y.target.classList.add(dark ? 'active-dark' : 'active')
+                "
+                @v-drag-over="
+                  (e, x, y) =>
+                    y.target.classList.add(dark ? 'active-dark' : 'active')
+                "
+                @v-drag-leave="
+                  (e, x, y) =>
+                    y.target.classList.remove('active', 'active-dark')
+                "
+                @v-drag-drop="changeFolderToolbar($event, itemname)"
+                v-droppable
+                v-if="itemname == 'Home'"
+              >
+                <q-icon
+                  color="primary"
+                  name="home"
+                  class="full-width full-height"
+                  @dragover="
+                    (ev) => {
+                      ev.srcElement.parentNode.classList.add('active');
+                    }
+                  "
+                  @drop="
+                    (ev) => {
+                      ev.srcElement.parentNode.classList.remove('active');
+                    }
+                  "
+                  @dragleave="
+                    (ev) => {
+                      ev.srcElement.parentNode.classList.remove('active');
+                    }
+                  "
+                />
+              </q-breadcrumbs-el>
+            </template>
+          </q-breadcrumbs>
+        </div>
+      </q-toolbar>
+      <q-toolbar class="transparent q-mt-xs">
+        <q-checkbox
+          v-model="allSelected"
+          color="green"
+          class="q-ml-xs"
+          @click="selectAllItems"
+        />
+        <q-input
+          dense
+          v-model="search"
+          input-class="text-left"
+          style="width: 30%"
+          label="Search"
+          class="text-body1 q-ml-lg"
+        >
+          <template v-slot:append>
+            <q-icon v-if="search === ''" name="search" />
+            <q-icon
+              v-else
+              name="clear"
+              class="cursor-pointer"
+              @click="search = ''"
+            />
+          </template>
+        </q-input>
+
+        <q-fab icon="add" direction="down" class="q-ml-lg" flat color="green">
+          <q-fab-action
+            color="primary"
+            text-color="white"
+            @click="
+              newObjShow = true;
+              newObjType = 'document';
+            "
+            icon="note_add"
+            label="New Document"
           />
-        </q-card>
-      </q-btn-dropdown>
-    </q-toolbar>
-    <q-separator size="2px" color="primary" class="q-mt-sm" />
-    <q-scroll-area class="col">
+          <q-fab-action
+            color="primary"
+            text-color="white"
+            @click="
+              newObjShow = true;
+              newObjType = 'code';
+            "
+            icon="code"
+            label="New Code File"
+          />
+          <q-fab-action
+            color="primary"
+            text-color="white"
+            icon="create_new_folder"
+            label="New Folder"
+            @click="
+              newObjShow = true;
+              newObjType = 'folder';
+            "
+          />
+          <q-fab-action
+            color="primary"
+            text-color="white"
+            @click="upload_file_dialog = !upload_file_dialog"
+            icon="file_upload"
+            label="Upload Files"
+          />
+        </q-fab>
+
+        <q-space />
+        <div
+          v-if="
+            selectedFolderLinks.length +
+              selectedFolders.length +
+              selectedFiles.length +
+              selectedDocuments.length +
+              selectedCode.length >
+            0
+          "
+          class="text-h6"
+        >
+          <q-btn-dropdown flat icon="more_horiz">
+            <div class="row justify-center">
+              <a class="q-ma-sm text-body1 text-center" v-if="mobile">
+                {{
+                  selectedFolderLinks.length +
+                  selectedFolders.length +
+                  selectedFiles.length +
+                  selectedDocuments.length +
+                  selectedCode.length
+                }}
+                Item(s) selected
+              </a>
+            </div>
+            <q-btn
+              label="Move"
+              class="full-width bg-blue text-light"
+              @click="
+                fetchAllAvailableFolders();
+                selectionNewParent = this.rawFolderContent.path;
+              "
+              size="lg"
+            >
+              <q-menu @hide="availParents = []" style="min-width: 200px">
+                <q-select
+                  outlined
+                  v-model="selectionNewParent"
+                  :options="availParents"
+                  label="Parent Folder"
+                  input-class="text-center text-body1"
+                />
+                <q-btn
+                  @click="moveSelection"
+                  label="Move"
+                  class="full-width bg-blue"
+                />
+              </q-menu>
+            </q-btn>
+            <q-btn
+              label="Delete"
+              class="full-width bg-red text-light"
+              @click="deleteSelection"
+              size="lg"
+            />
+          </q-btn-dropdown>
+
+          <a class="q-mr-lg" v-if="!mobile">
+            {{
+              selectedFolderLinks.length +
+              selectedFolders.length +
+              selectedFiles.length +
+              selectedDocuments.length +
+              selectedCode.length
+            }}
+            Item(s) selected
+          </a>
+        </div>
+        <q-btn-dropdown icon="settings" flat>
+          <q-card bordered style="min-width: 190px; max-width: 190px">
+            <q-toggle
+              v-model="optnShowFolders"
+              color="green"
+              label="Show Folders"
+              class="full-width"
+            />
+            <q-separator />
+            <q-toggle
+              v-model="optnShowFiles"
+              color="green"
+              label="Show Files"
+              class="full-width"
+            />
+            <q-separator />
+            <q-toggle
+              v-model="optnShowDocuments"
+              color="green"
+              label="Show Documents"
+              class="full-width"
+            />
+            <q-separator />
+            <q-toggle
+              v-model="optnShowCode"
+              color="green"
+              label="Show Code FIles"
+              class="full-width"
+            />
+            <q-separator />
+
+            <q-btn
+              label="Force Refresh"
+              icon="refresh"
+              class="full-width"
+              flat
+              @click="refreshFolder"
+            />
+          </q-card>
+        </q-btn-dropdown>
+      </q-toolbar>
+      <q-separator size="2px" color="primary" class="q-mt-sm" />
+      <q-scroll-area class="col">
+        <div
+          class="item_parent_container"
+          :style="item_parent_container_height"
+          id="drop_zone"
+          @drop.self.prevent="onBackgroundDrop"
+          @dragover.prevent="
+            (ev) => {
+              if (ev.dataTransfer.items.length > 0) {
+                if (ev.dataTransfer.items[0].kind == 'file') {
+                  this.fileDraggedMain = true;
+                }
+              }
+            }
+          "
+          @dragenter.self="
+            (ev) => {
+              if (ev.dataTransfer.items.length > 0) {
+                if (ev.dataTransfer.items[0].kind == 'file') {
+                  this.fileDraggedMain = true;
+                }
+              }
+            }
+          "
+          @dragleave.prevent="
+            (ev) => {
+              if (ev.dataTransfer.items.length > 0) {
+                if (ev.dataTransfer.items[0].kind == 'file') {
+                  this.fileDraggedMain = false;
+                }
+              }
+            }
+          "
+          :class="fileDraggedMain ? 'bg-blue' : ''"
+        >
+          <q-item class="full-width bg-light-green-2" v-if="newObjShow">
+            <q-item-section avatar v-if="!mobile"> </q-item-section>
+            <q-item-section avatar top style="pointer-events: none">
+              <q-avatar
+                icon="folder"
+                color="primary"
+                text-color="white"
+                v-if="newObjType == 'folder'"
+              />
+              <q-avatar
+                icon="article"
+                color="primary"
+                text-color="white"
+                v-if="newObjType == 'document'"
+              />
+              <q-avatar
+                :icon="condIcon"
+                color="primary"
+                text-color="white"
+                v-if="newObjType == 'code'"
+              />
+            </q-item-section>
+
+            <q-item-section>
+              <q-input
+                standout
+                dense
+                dark
+                v-model="newObjName"
+                :label="'New ' + newObjType + ' Name'"
+                class="text-body1 q-ml-md"
+                input-class="text-dark"
+                label-color="dark"
+                autofocus
+                clearable
+                :suffix="newObjType == 'code' ? condSuff : ''"
+                @keyup.enter="createObj"
+                ref="newItemInput"
+              />
+            </q-item-section>
+            <q-item-section side class="row">
+              <div>
+                <q-btn
+                  v-if="newObjType == 'code'"
+                  :icon="condIcon"
+                  class="q-ml-md bg-blue text-white"
+                  rounded
+                  flat
+                  @blur="focusInput()"
+                >
+                  <q-menu @hide="focusInput()">
+                    <q-list>
+                      <div>
+                        <q-btn
+                          v-close-popup
+                          @click="this.newObjLanguage = 'javascript'"
+                          flat
+                          style="width: 150px; align-items: flex-start"
+                        >
+                          <div class="align-left">
+                            <q-icon :name="mdiLanguageJavascript" />
+                            <a class="q-ml-sm">Javascript</a>
+                          </div>
+                        </q-btn>
+                      </div>
+                      <q-separator />
+
+                      <div>
+                        <q-btn
+                          v-close-popup
+                          @click="this.newObjLanguage = 'python'"
+                          flat
+                          style="width: 150px; align-items: flex-start"
+                        >
+                          <div>
+                            <q-icon :name="mdiLanguagePython" />
+                            <a class="q-ml-sm">Python</a>
+                          </div>
+                        </q-btn>
+                      </div>
+                      <q-separator />
+
+                      <div>
+                        <q-btn
+                          v-close-popup
+                          @click="this.newObjLanguage = 'cpp'"
+                          flat
+                          style="width: 150px; align-items: flex-start"
+                        >
+                          <div>
+                            <q-icon :name="mdiLanguageCpp" />
+                            <a class="q-ml-sm">C++</a>
+                          </div>
+                        </q-btn>
+                      </div>
+                      <q-separator />
+
+                      <div>
+                        <q-btn
+                          v-close-popup
+                          @click="this.newObjLanguage = 'html'"
+                          flat
+                          style="width: 150px; align-items: flex-start"
+                        >
+                          <div>
+                            <q-icon :name="mdiLanguageHtml5" />
+                            <a class="q-ml-sm">HTML</a>
+                          </div>
+                        </q-btn>
+                      </div>
+                      <q-separator />
+
+                      <div>
+                        <q-btn
+                          v-close-popup
+                          @click="this.newObjLanguage = 'json'"
+                          flat
+                          style="width: 150px; align-items: flex-start"
+                        >
+                          <div>
+                            <q-icon :name="mdiCodeJson" />
+                            <a class="q-ml-sm">JSON</a>
+                          </div>
+                        </q-btn>
+                      </div>
+                      <q-separator />
+
+                      <div>
+                        <q-btn
+                          v-close-popup
+                          @click="this.newObjLanguage = 'markdown'"
+                          flat
+                          style="width: 150px; align-items: flex-start"
+                        >
+                          <div>
+                            <q-icon :name="mdiLanguageMarkdown" />
+                            <a class="q-ml-sm">Markdown</a>
+                          </div>
+                        </q-btn>
+                      </div>
+                    </q-list>
+                  </q-menu>
+                </q-btn>
+                <q-btn
+                  icon="done"
+                  class="q-ml-md bg-green text-white"
+                  round
+                  flat
+                  @click="createObj"
+                />
+                <q-btn
+                  icon="close"
+                  class="q-ml-md bg-red text-white"
+                  round
+                  flat
+                  @click="
+                    newObjShow = false;
+                    newObjName = '';
+                    newObjType = '';
+                  "
+                />
+              </div>
+            </q-item-section>
+          </q-item>
+          <template
+            v-for="folder in rawFolderContent.children.folders"
+            :key="folder"
+          >
+            <div
+              v-if="
+                (optnShowFolders && search == '') ||
+                (optnShowFolders && folder.name.includes(search))
+              "
+            >
+              <q-item
+                clickable
+                @click="getFolderId(folder.id, false)"
+                class="full-width"
+                v-droppable
+                v-draggable="['folder', folder.id]"
+                :class="[
+                  folder.drag_over ? 'bg-blue' : '',
+                  folder.selected ? 'bg-light-blue-4' : '',
+                ]"
+                @v-drag-enter="
+                  (ev) => {
+                    if (ev[1] != folder.id) {
+                      folder.drag_over = true;
+                    }
+                  }
+                "
+                @v-drag-leave="folder.drag_over = false"
+                @v-drag-over="
+                  (ev) => {
+                    if (ev[1] != folder.id) {
+                      folder.drag_over = true;
+                    }
+                  }
+                "
+                @v-drag-drop="changeFolder($event, folder.id)"
+                @drop.prevent.self.stop="
+                  onFolderDrop($event, folder.id);
+                  folder.drag_over = false;
+                "
+                @dragover.prevent.self.stop="
+                  (ev) => {
+                    if (ev.dataTransfer.items.length > 0) {
+                      if (ev.dataTransfer.items[0].kind == 'file') {
+                        folder.drag_over = true;
+                      }
+                    }
+                  }
+                "
+                @dragenter.prevent="
+                  (ev) => {
+                    if (ev.dataTransfer.items.length > 0) {
+                      if (ev.dataTransfer.items[0].kind == 'file') {
+                        folder.drag_over = true;
+                      }
+                    }
+                  }
+                "
+                @dragleave.prevent="
+                  (ev) => {
+                    if (ev.dataTransfer.items.length > 0) {
+                      if (ev.dataTransfer.items[0].kind == 'file') {
+                        folder.drag_over = false;
+                      }
+                    }
+                  }
+                "
+              >
+                <q-menu
+                  style="pointer-events: none"
+                  anchor="center middle"
+                  self="center middle"
+                  v-model="folder.drag_over"
+                  >Add to folder: {{ folder.name }}</q-menu
+                >
+                <q-item-section avatar>
+                  <q-checkbox
+                    v-model="selectedFolders"
+                    :val="folder.id"
+                    color="green"
+                    @click="folder.selected = !folder.selected"
+                  />
+                </q-item-section>
+                <q-item-section avatar top style="pointer-events: none">
+                  <q-avatar icon="folder" color="primary" text-color="white" />
+                </q-item-section>
+
+                <q-item-section style="pointer-events: none">
+                  <q-item-label
+                    class="item_text"
+                    lines="1"
+                    style="
+                      white-space: nowrap;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                    "
+                    :style="item_text_width"
+                  >
+                    <q-icon name="share" v-if="folder.shared" />
+                    {{ folder.name }}</q-item-label
+                  >
+                </q-item-section>
+                <q-item-section side>
+                  <q-btn
+                    icon="more_vert"
+                    class="cursor-pointer full-width"
+                    flat
+                    @click.capture.stop="
+                      updateItemDrawer = true;
+                      drawerItemId = folder.id;
+                      drawerItemNewName = folder.name;
+                      drawerItemType = 'folder';
+                      drawerItemNewParent = rawFolderContent.path;
+                      drawerItemName = folder.name;
+                      drawerCreated = folder.created;
+                      drawerModified = folder.modified;
+                      drawerItemSize = folder.size;
+                      drawerSharing = folder.shared;
+                      drawerSharingAllowAllRead = folder.allow_all_read;
+                      drawerSharingAllowedWrite = folder.allow_all_write;
+                    "
+                    :loading="loading"
+                    stretch
+                  />
+                </q-item-section>
+              </q-item>
+            </div>
+
+            <q-separator
+              @drop.stop.prevent=""
+              @dragover.stop.prevent=""
+              @dragenter.stop.prevent=""
+            />
+          </template>
+          <template
+            v-for="folder_link in rawFolderContent.children.folder_links"
+            :key="folder_link"
+          >
+            <div
+              v-if="
+                (optnShowFolders && search == '') ||
+                (optnShowFolders && folder_link.name.includes(search))
+              "
+            >
+              <q-item
+                clickable
+                @click="getFolderLinkId(folder_link.id)"
+                class="full-width"
+                v-droppable
+                v-draggable="['folder_link', folder_link.id]"
+                :class="[
+                  folder_link.drag_over ? 'bg-blue' : '',
+                  folder_link.selected ? 'bg-light-blue-4' : '',
+                ]"
+                @v-drag-enter="
+                  (ev) => {
+                    if (ev[1] != folder_link.id) {
+                      folder_link.drag_over = true;
+                    }
+                  }
+                "
+                @v-drag-leave="folder_link.drag_over = false"
+                @v-drag-over="
+                  (ev) => {
+                    if (ev[1] != folder_link.id) {
+                      folder_link.drag_over = true;
+                    }
+                  }
+                "
+                @v-drag-drop="changeFolder($event, folder_link.id)"
+              >
+                <q-menu
+                  style="pointer-events: none"
+                  anchor="center middle"
+                  self="center middle"
+                  v-model="folder_link.drag_over"
+                  >Add to folder: {{ folder_link.name }}</q-menu
+                >
+                <q-item-section avatar>
+                  <q-checkbox
+                    v-model="selectedFolderLinks"
+                    :val="folder_link.id"
+                    color="green"
+                    @click="folder_link.selected = !folder_link.selected"
+                  />
+                </q-item-section>
+                <q-item-section avatar top style="pointer-events: none">
+                  <q-avatar
+                    icon="folder_shared"
+                    color="primary"
+                    text-color="white"
+                  />
+                </q-item-section>
+
+                <q-item-section style="pointer-events: none">
+                  <q-item-label
+                    class="item_text"
+                    lines="1"
+                    style="
+                      white-space: nowrap;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                    "
+                    :style="item_text_width"
+                  >
+                    <q-icon name="share" />
+                    {{ folder_link.name }}</q-item-label
+                  >
+                </q-item-section>
+                <q-item-section side>
+                  <q-btn
+                    icon="more_vert"
+                    class="cursor-pointer full-width"
+                    flat
+                    @click.capture.stop="
+                      updateItemDrawer = true;
+                      drawerItemId = folder_link.id;
+                      drawerItemNewName = folder_link.name;
+                      drawerItemType = 'folder_link';
+                      drawerItemNewParent = rawFolderContent.path;
+                      drawerItemName = folder_link.name;
+                      drawerCreated = folder_link.created;
+                      drawerModified = folder_link.modified;
+                      drawerItemSize = folder_link.size;
+                      drawerSharing = folder_link.shared;
+                      drawerSharingAllowAllRead = folder_link.allow_all_read;
+                      drawerSharingAllowedWrite = folder_link.allow_all_write;
+                    "
+                    :loading="loading"
+                    stretch
+                  />
+                </q-item-section>
+              </q-item>
+            </div>
+
+            <q-separator
+              @drop.stop.prevent=""
+              @dragover.stop.prevent=""
+              @dragenter.stop.prevent=""
+            />
+          </template>
+          <template
+            v-for="file in rawFolderContent.children.private_files"
+            :key="file"
+          >
+            <div
+              v-if="
+                (optnShowFiles && search == '') ||
+                (optnShowFiles && file.name.includes(search))
+              "
+            >
+              <q-item
+                clickable
+                class="full-width"
+                v-draggable="['file', file.id]"
+                @click="openInNewTab(file.id)"
+                :class="file.selected ? 'bg-light-blue-4' : ''"
+                @drop.stop.prevent=""
+                @dragover.stop.prevent=""
+                @dragenter.stop.prevent=""
+              >
+                <q-item-section avatar>
+                  <q-checkbox
+                    v-model="selectedFiles"
+                    :val="file.id"
+                    color="green"
+                    @click="file.selected = !file.selected"
+                  />
+                </q-item-section>
+                <q-item-section avatar top>
+                  <q-avatar
+                    icon="file_present"
+                    color="primary"
+                    text-color="white"
+                  />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label
+                    class="item_text"
+                    lines="1"
+                    style="
+                      white-space: nowrap;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                    "
+                    :style="item_text_width"
+                  >
+                    <q-icon name="share" v-if="file.shared" />
+                    {{ file.name }}</q-item-label
+                  >
+                  <q-item-label caption lines="1">{{
+                    file.modified
+                  }}</q-item-label>
+                </q-item-section>
+                <q-item-section side>
+                  <q-btn
+                    icon="more_vert"
+                    class="cursor-pointer full-width"
+                    flat
+                    @click.capture.stop="
+                      updateItemDrawer = true;
+                      drawerItemId = file.id;
+                      drawerItemNewName = file.name;
+                      drawerItemType = 'file';
+                      drawerItemNewParent = rawFolderContent.path;
+                      drawerItemName = file.name;
+                      drawerCreated = file.created;
+                      drawerModified = file.modified;
+                      drawerItemSize = file.size;
+                      drawerSharing = file.shared;
+                      drawerSharingAllowAllRead = file.allow_all_read;
+                      drawerSharingAllowedWrite = file.allow_all_write;
+                    "
+                    :loading="loading"
+                    stretch
+                  />
+                </q-item-section>
+              </q-item>
+              <q-separator
+                @drop.stop.prevent=""
+                @dragover.capture.stop=""
+                @dragenter.capture.stop=""
+              />
+            </div>
+          </template>
+          <!-- DOCUMENTS -->
+          <template
+            v-for="document in rawFolderContent.children.documents"
+            :key="document"
+          >
+            <div
+              v-if="
+                (optnShowDocuments && search == '') ||
+                (optnShowDocuments && document.name.includes(search))
+              "
+            >
+              <q-item
+                clickable
+                @click="openDocEditor(document.id)"
+                class="full-width"
+                v-draggable="['document', document.id]"
+                :class="document.selected ? 'bg-light-blue-4' : ''"
+                @drop.stop.prevent=""
+                @dragover.stop.prevent=""
+                @dragenter.stop.prevent=""
+              >
+                <q-item-section avatar>
+                  <q-checkbox
+                    v-model="selectedDocuments"
+                    :val="document.id"
+                    color="green"
+                    @click="document.selected = !document.selected"
+                  />
+                </q-item-section>
+                <q-item-section avatar top>
+                  <q-avatar
+                    icon="article"
+                    color="light-blue"
+                    text-color="white"
+                  />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label
+                    class="item_text"
+                    lines="1"
+                    style="
+                      white-space: nowrap;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                    "
+                    :style="item_text_width"
+                  >
+                    <q-icon name="share" v-if="document.shared" />
+                    {{ document.name }}</q-item-label
+                  >
+                  <q-item-label caption lines="1">{{
+                    document.modified
+                  }}</q-item-label>
+                </q-item-section>
+                <q-item-section side>
+                  <q-btn
+                    icon="more_vert"
+                    class="cursor-pointer full-width"
+                    flat
+                    @click.capture.stop="
+                      updateItemDrawer = true;
+                      drawerItemId = document.id;
+                      drawerItemNewName = document.name;
+                      drawerItemType = 'document';
+                      drawerItemNewParent = rawFolderContent.path;
+                      drawerItemName = document.name;
+                      drawerCreated = document.created;
+                      drawerModified = document.modified;
+                      drawerSharing = document.shared;
+                      drawerSharingAllowAllRead = document.allow_all_read;
+                      drawerSharingAllowedWrite = document.allow_all_write;
+                    "
+                    :loading="loading"
+                    stretch
+                  />
+                </q-item-section>
+              </q-item>
+              <q-separator
+                @drop.stop.prevent=""
+                @dragover.stop.prevent=""
+                @dragenter.stop.prevent=""
+              />
+            </div>
+          </template>
+          <template
+            v-for="code_item in rawFolderContent.children.code"
+            :key="code_item"
+          >
+            <div
+              v-if="
+                (optnShowCode && search == '') ||
+                (optnShowCode && code_item.name.includes(search))
+              "
+            >
+              <q-item
+                clickable
+                @click="openCodeEditor(code_item.id)"
+                class="full-width"
+                v-draggable="['code', code_item.id]"
+                :class="code_item.selected ? 'bg-light-blue-4' : ''"
+                @drop.stop.prevent=""
+                @dragover.stop.prevent=""
+                @dragenter.stop.prevent=""
+              >
+                <q-item-section avatar>
+                  <q-checkbox
+                    v-model="selectedCode"
+                    :val="code_item.id"
+                    color="green"
+                    @click="code_item.selected = !code_item.selected"
+                  />
+                </q-item-section>
+                <q-item-section avatar top>
+                  <q-avatar
+                    :icon="codeIcon(code_item.language)"
+                    color="light-blue"
+                    text-color="white"
+                  />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label
+                    class="item_text"
+                    lines="1"
+                    style="
+                      white-space: nowrap;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                    "
+                    :style="item_text_width"
+                  >
+                    <q-icon name="share" v-if="code_item.shared" />
+                    {{ code_item.name }}</q-item-label
+                  >
+                  <q-item-label caption lines="1">{{
+                    code_item.modified
+                  }}</q-item-label>
+                </q-item-section>
+                <q-item-section side>
+                  <q-btn
+                    icon="more_vert"
+                    class="cursor-pointer full-width"
+                    flat
+                    @click.capture.stop="
+                      updateItemDrawer = true;
+                      drawerItemId = code_item.id;
+                      drawerItemNewName = code_item.name;
+                      drawerItemType = 'code';
+                      drawerItemNewParent = rawFolderContent.path;
+                      drawerItemName = code_item.name;
+                      drawerCreated = code_item.created;
+                      drawerModified = code_item.modified;
+                      drawerSharing = code_item.shared;
+                      drawerItemNewLanguage = code_item.language;
+                      drawerSharingAllowAllRead = code_item.allow_all_read;
+                      drawerSharingAllowedWrite = code_item.allow_all_write;
+                      drawerItemLanguage = code_item.language;
+                    "
+                    :loading="loading"
+                    stretch
+                  />
+                </q-item-section>
+              </q-item>
+              <q-separator
+                @drop.stop.prevent=""
+                @dragover.stop.prevent=""
+                @dragenter.stop.prevent=""
+              />
+            </div>
+          </template>
+        </div>
+      </q-scroll-area>
+      <q-separator color="primary" />
       <div
-        class="item_parent_container"
-        :style="item_parent_container_height"
-        id="drop_zone"
+        style="height: 150px"
+        v-if="dropField"
         @drop.self.prevent="onBackgroundDrop"
         @dragover.prevent="
           (ev) => {
             if (ev.dataTransfer.items.length > 0) {
               if (ev.dataTransfer.items[0].kind == 'file') {
-                this.fileDraggedMain = true;
+                this.dropFieldDragover = true;
               }
             }
           }
@@ -668,7 +1424,7 @@
           (ev) => {
             if (ev.dataTransfer.items.length > 0) {
               if (ev.dataTransfer.items[0].kind == 'file') {
-                this.fileDraggedMain = true;
+                this.dropFieldDragover = true;
               }
             }
           }
@@ -677,724 +1433,31 @@
           (ev) => {
             if (ev.dataTransfer.items.length > 0) {
               if (ev.dataTransfer.items[0].kind == 'file') {
-                this.fileDraggedMain = false;
+                this.dropFieldDragover = false;
               }
             }
           }
         "
-        :class="fileDraggedMain ? 'bg-blue' : ''"
+        :class="dropFieldDragover ? 'bg-blue' : ''"
       >
-        <q-item class="full-width bg-light-green-2" v-if="newObjShow">
-          <q-item-section avatar v-if="!mobile"> </q-item-section>
-          <q-item-section avatar top style="pointer-events: none">
-            <q-avatar
-              icon="folder"
-              color="primary"
-              text-color="white"
-              v-if="newObjType == 'folder'"
-            />
-            <q-avatar
-              icon="article"
-              color="primary"
-              text-color="white"
-              v-if="newObjType == 'document'"
-            />
-            <q-avatar
-              :icon="condIcon"
-              color="primary"
-              text-color="white"
-              v-if="newObjType == 'code'"
-            />
-          </q-item-section>
-
-          <q-item-section>
-            <q-input
-              standout
-              dense
-              dark
-              v-model="newObjName"
-              :label="'New ' + newObjType + ' Name'"
-              class="text-body1 q-ml-md"
-              input-class="text-dark"
-              label-color="dark"
-              autofocus
-              clearable
-              :suffix="newObjType == 'code' ? condSuff : ''"
-              @keyup.enter="createObj"
-              ref="newItemInput"
-            />
-          </q-item-section>
-          <q-item-section side class="row">
-            <div>
-              <q-btn
-                v-if="newObjType == 'code'"
-                :icon="condIcon"
-                class="q-ml-md bg-blue text-white"
-                rounded
-                flat
-                @blur="focusInput()"
-              >
-                <q-menu @hide="focusInput()">
-                  <q-list>
-                    <div>
-                      <q-btn
-                        v-close-popup
-                        @click="this.newObjLanguage = 'javascript'"
-                        flat
-                        style="width: 150px; align-items: flex-start"
-                      >
-                        <div class="align-left">
-                          <q-icon :name="mdiLanguageJavascript" />
-                          <a class="q-ml-sm">Javascript</a>
-                        </div>
-                      </q-btn>
-                    </div>
-                    <q-separator />
-
-                    <div>
-                      <q-btn
-                        v-close-popup
-                        @click="this.newObjLanguage = 'python'"
-                        flat
-                        style="width: 150px; align-items: flex-start"
-                      >
-                        <div>
-                          <q-icon :name="mdiLanguagePython" />
-                          <a class="q-ml-sm">Python</a>
-                        </div>
-                      </q-btn>
-                    </div>
-                    <q-separator />
-
-                    <div>
-                      <q-btn
-                        v-close-popup
-                        @click="this.newObjLanguage = 'cpp'"
-                        flat
-                        style="width: 150px; align-items: flex-start"
-                      >
-                        <div>
-                          <q-icon :name="mdiLanguageCpp" />
-                          <a class="q-ml-sm">C++</a>
-                        </div>
-                      </q-btn>
-                    </div>
-                    <q-separator />
-
-                    <div>
-                      <q-btn
-                        v-close-popup
-                        @click="this.newObjLanguage = 'html'"
-                        flat
-                        style="width: 150px; align-items: flex-start"
-                      >
-                        <div>
-                          <q-icon :name="mdiLanguageHtml5" />
-                          <a class="q-ml-sm">HTML</a>
-                        </div>
-                      </q-btn>
-                    </div>
-                    <q-separator />
-
-                    <div>
-                      <q-btn
-                        v-close-popup
-                        @click="this.newObjLanguage = 'json'"
-                        flat
-                        style="width: 150px; align-items: flex-start"
-                      >
-                        <div>
-                          <q-icon :name="mdiCodeJson" />
-                          <a class="q-ml-sm">JSON</a>
-                        </div>
-                      </q-btn>
-                    </div>
-                    <q-separator />
-
-                    <div>
-                      <q-btn
-                        v-close-popup
-                        @click="this.newObjLanguage = 'markdown'"
-                        flat
-                        style="width: 150px; align-items: flex-start"
-                      >
-                        <div>
-                          <q-icon :name="mdiLanguageMarkdown" />
-                          <a class="q-ml-sm">Markdown</a>
-                        </div>
-                      </q-btn>
-                    </div>
-                  </q-list>
-                </q-menu>
-              </q-btn>
-              <q-btn
-                icon="done"
-                class="q-ml-md bg-green text-white"
-                round
-                flat
-                @click="createObj"
-              />
-              <q-btn
-                icon="close"
-                class="q-ml-md bg-red text-white"
-                round
-                flat
-                @click="
-                  newObjShow = false;
-                  newObjName = '';
-                  newObjType = '';
-                "
-              />
-            </div>
-          </q-item-section>
-        </q-item>
-        <template
-          v-for="folder in rawFolderContent.children.folders"
-          :key="folder"
-        >
-          <div
-            v-if="
-              (optnShowFolders && search == '') ||
-              (optnShowFolders && folder.name.includes(search))
-            "
-          >
-            <q-item
-              clickable
-              @click="getFolderId(folder.id, false)"
-              class="full-width"
-              v-droppable
-              v-draggable="['folder', folder.id]"
-              :class="[
-                folder.drag_over ? 'bg-blue' : '',
-                folder.selected ? 'bg-light-blue-4' : '',
-              ]"
-              @v-drag-enter="
-                (ev) => {
-                  if (ev[1] != folder.id) {
-                    folder.drag_over = true;
-                  }
-                }
-              "
-              @v-drag-leave="folder.drag_over = false"
-              @v-drag-over="
-                (ev) => {
-                  if (ev[1] != folder.id) {
-                    folder.drag_over = true;
-                  }
-                }
-              "
-              @v-drag-drop="changeFolder($event, folder.id)"
-              @drop.prevent.self.stop="
-                onFolderDrop($event, folder.id);
-                folder.drag_over = false;
-              "
-              @dragover.prevent.self.stop="
-                (ev) => {
-                  if (ev.dataTransfer.items.length > 0) {
-                    if (ev.dataTransfer.items[0].kind == 'file') {
-                      folder.drag_over = true;
-                    }
-                  }
-                }
-              "
-              @dragenter.prevent="
-                (ev) => {
-                  if (ev.dataTransfer.items.length > 0) {
-                    if (ev.dataTransfer.items[0].kind == 'file') {
-                      folder.drag_over = true;
-                    }
-                  }
-                }
-              "
-              @dragleave.prevent="
-                (ev) => {
-                  if (ev.dataTransfer.items.length > 0) {
-                    if (ev.dataTransfer.items[0].kind == 'file') {
-                      folder.drag_over = false;
-                    }
-                  }
-                }
-              "
-            >
-              <q-menu
-                style="pointer-events: none"
-                anchor="center middle"
-                self="center middle"
-                v-model="folder.drag_over"
-                >Add to folder: {{ folder.name }}</q-menu
-              >
-              <q-item-section avatar>
-                <q-checkbox
-                  v-model="selectedFolders"
-                  :val="folder.id"
-                  color="green"
-                  @click="folder.selected = !folder.selected"
-                />
-              </q-item-section>
-              <q-item-section avatar top style="pointer-events: none">
-                <q-avatar icon="folder" color="primary" text-color="white" />
-              </q-item-section>
-
-              <q-item-section style="pointer-events: none">
-                <q-item-label
-                  class="item_text"
-                  lines="1"
-                  style="
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                  "
-                  :style="item_text_width"
-                >
-                  <q-icon name="share" v-if="folder.shared" />
-                  {{ folder.name }}</q-item-label
-                >
-              </q-item-section>
-              <q-item-section side>
-                <q-btn
-                  icon="more_vert"
-                  class="cursor-pointer full-width"
-                  flat
-                  @click.capture.stop="
-                    updateItemDrawer = true;
-                    drawerItemId = folder.id;
-                    drawerItemNewName = folder.name;
-                    drawerItemType = 'folder';
-                    drawerItemNewParent = rawFolderContent.path;
-                    drawerItemName = folder.name;
-                    drawerCreated = folder.created;
-                    drawerModified = folder.modified;
-                    drawerItemSize = folder.size;
-                    drawerSharing = folder.shared;
-                    drawerSharingAllowAllRead = folder.allow_all_read;
-                    drawerSharingAllowedWrite = folder.allow_all_write;
-                  "
-                  :loading="loading"
-                  stretch
-                />
-              </q-item-section>
-            </q-item>
-          </div>
-
-          <q-separator
-            @drop.stop.prevent=""
-            @dragover.stop.prevent=""
-            @dragenter.stop.prevent=""
-          />
-        </template>
-        <template
-          v-for="folder_link in rawFolderContent.children.folder_links"
-          :key="folder_link"
-        >
-          <div
-            v-if="
-              (optnShowFolders && search == '') ||
-              (optnShowFolders && folder_link.name.includes(search))
-            "
-          >
-            <q-item
-              clickable
-              @click="getFolderLinkId(folder_link.id)"
-              class="full-width"
-              v-droppable
-              v-draggable="['folder_link', folder_link.id]"
-              :class="[
-                folder_link.drag_over ? 'bg-blue' : '',
-                folder_link.selected ? 'bg-light-blue-4' : '',
-              ]"
-              @v-drag-enter="
-                (ev) => {
-                  if (ev[1] != folder_link.id) {
-                    folder_link.drag_over = true;
-                  }
-                }
-              "
-              @v-drag-leave="folder_link.drag_over = false"
-              @v-drag-over="
-                (ev) => {
-                  if (ev[1] != folder_link.id) {
-                    folder_link.drag_over = true;
-                  }
-                }
-              "
-              @v-drag-drop="changeFolder($event, folder_link.id)"
-            >
-              <q-menu
-                style="pointer-events: none"
-                anchor="center middle"
-                self="center middle"
-                v-model="folder_link.drag_over"
-                >Add to folder: {{ folder_link.name }}</q-menu
-              >
-              <q-item-section avatar>
-                <q-checkbox
-                  v-model="selectedFolderLinks"
-                  :val="folder_link.id"
-                  color="green"
-                  @click="folder_link.selected = !folder_link.selected"
-                />
-              </q-item-section>
-              <q-item-section avatar top style="pointer-events: none">
-                <q-avatar
-                  icon="folder_shared"
-                  color="primary"
-                  text-color="white"
-                />
-              </q-item-section>
-
-              <q-item-section style="pointer-events: none">
-                <q-item-label
-                  class="item_text"
-                  lines="1"
-                  style="
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                  "
-                  :style="item_text_width"
-                >
-                  <q-icon name="share" />
-                  {{ folder_link.name }}</q-item-label
-                >
-              </q-item-section>
-              <q-item-section side>
-                <q-btn
-                  icon="more_vert"
-                  class="cursor-pointer full-width"
-                  flat
-                  @click.capture.stop="
-                    updateItemDrawer = true;
-                    drawerItemId = folder_link.id;
-                    drawerItemNewName = folder_link.name;
-                    drawerItemType = 'folder_link';
-                    drawerItemNewParent = rawFolderContent.path;
-                    drawerItemName = folder_link.name;
-                    drawerCreated = folder_link.created;
-                    drawerModified = folder_link.modified;
-                    drawerItemSize = folder_link.size;
-                    drawerSharing = folder_link.shared;
-                    drawerSharingAllowAllRead = folder_link.allow_all_read;
-                    drawerSharingAllowedWrite = folder_link.allow_all_write;
-                  "
-                  :loading="loading"
-                  stretch
-                />
-              </q-item-section>
-            </q-item>
-          </div>
-
-          <q-separator
-            @drop.stop.prevent=""
-            @dragover.stop.prevent=""
-            @dragenter.stop.prevent=""
-          />
-        </template>
-        <template
-          v-for="file in rawFolderContent.children.private_files"
-          :key="file"
-        >
-          <div
-            v-if="
-              (optnShowFiles && search == '') ||
-              (optnShowFiles && file.name.includes(search))
-            "
-          >
-            <q-item
-              clickable
-              class="full-width"
-              v-draggable="['file', file.id]"
-              @click="openInNewTab(file.id)"
-              :class="file.selected ? 'bg-light-blue-4' : ''"
-              @drop.stop.prevent=""
-              @dragover.stop.prevent=""
-              @dragenter.stop.prevent=""
-            >
-              <q-item-section avatar>
-                <q-checkbox
-                  v-model="selectedFiles"
-                  :val="file.id"
-                  color="green"
-                  @click="file.selected = !file.selected"
-                />
-              </q-item-section>
-              <q-item-section avatar top>
-                <q-avatar
-                  icon="file_present"
-                  color="primary"
-                  text-color="white"
-                />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label
-                  class="item_text"
-                  lines="1"
-                  style="
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                  "
-                  :style="item_text_width"
-                >
-                  <q-icon name="share" v-if="file.shared" />
-                  {{ file.name }}</q-item-label
-                >
-                <q-item-label caption lines="1">{{
-                  file.modified
-                }}</q-item-label>
-              </q-item-section>
-              <q-item-section side>
-                <q-btn
-                  icon="more_vert"
-                  class="cursor-pointer full-width"
-                  flat
-                  @click.capture.stop="
-                    updateItemDrawer = true;
-                    drawerItemId = file.id;
-                    drawerItemNewName = file.name;
-                    drawerItemType = 'file';
-                    drawerItemNewParent = rawFolderContent.path;
-                    drawerItemName = file.name;
-                    drawerCreated = file.created;
-                    drawerModified = file.modified;
-                    drawerItemSize = file.size;
-                    drawerSharing = file.shared;
-                    drawerSharingAllowAllRead = file.allow_all_read;
-                    drawerSharingAllowedWrite = file.allow_all_write;
-                  "
-                  :loading="loading"
-                  stretch
-                />
-              </q-item-section>
-            </q-item>
-            <q-separator
-              @drop.stop.prevent=""
-              @dragover.capture.stop=""
-              @dragenter.capture.stop=""
-            />
-          </div>
-        </template>
-        <!-- DOCUMENTS -->
-        <template
-          v-for="document in rawFolderContent.children.documents"
-          :key="document"
-        >
-          <div
-            v-if="
-              (optnShowDocuments && search == '') ||
-              (optnShowDocuments && document.name.includes(search))
-            "
-          >
-            <q-item
-              clickable
-              @click="openDocEditor(document.id)"
-              class="full-width"
-              v-draggable="['document', document.id]"
-              :class="document.selected ? 'bg-light-blue-4' : ''"
-              @drop.stop.prevent=""
-              @dragover.stop.prevent=""
-              @dragenter.stop.prevent=""
-            >
-              <q-item-section avatar>
-                <q-checkbox
-                  v-model="selectedDocuments"
-                  :val="document.id"
-                  color="green"
-                  @click="document.selected = !document.selected"
-                />
-              </q-item-section>
-              <q-item-section avatar top>
-                <q-avatar
-                  icon="article"
-                  color="light-blue"
-                  text-color="white"
-                />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label
-                  class="item_text"
-                  lines="1"
-                  style="
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                  "
-                  :style="item_text_width"
-                >
-                  <q-icon name="share" v-if="document.shared" />
-                  {{ document.name }}</q-item-label
-                >
-                <q-item-label caption lines="1">{{
-                  document.modified
-                }}</q-item-label>
-              </q-item-section>
-              <q-item-section side>
-                <q-btn
-                  icon="more_vert"
-                  class="cursor-pointer full-width"
-                  flat
-                  @click.capture.stop="
-                    updateItemDrawer = true;
-                    drawerItemId = document.id;
-                    drawerItemNewName = document.name;
-                    drawerItemType = 'document';
-                    drawerItemNewParent = rawFolderContent.path;
-                    drawerItemName = document.name;
-                    drawerCreated = document.created;
-                    drawerModified = document.modified;
-                    drawerSharing = document.shared;
-                    drawerSharingAllowAllRead = document.allow_all_read;
-                    drawerSharingAllowedWrite = document.allow_all_write;
-                  "
-                  :loading="loading"
-                  stretch
-                />
-              </q-item-section>
-            </q-item>
-            <q-separator
-              @drop.stop.prevent=""
-              @dragover.stop.prevent=""
-              @dragenter.stop.prevent=""
-            />
-          </div>
-        </template>
-        <template
-          v-for="code_item in rawFolderContent.children.code"
-          :key="code_item"
-        >
-          <div
-            v-if="
-              (optnShowCode && search == '') ||
-              (optnShowCode && code_item.name.includes(search))
-            "
-          >
-            <q-item
-              clickable
-              @click="openCodeEditor(code_item.id)"
-              class="full-width"
-              v-draggable="['code', code_item.id]"
-              :class="code_item.selected ? 'bg-light-blue-4' : ''"
-              @drop.stop.prevent=""
-              @dragover.stop.prevent=""
-              @dragenter.stop.prevent=""
-            >
-              <q-item-section avatar>
-                <q-checkbox
-                  v-model="selectedCode"
-                  :val="code_item.id"
-                  color="green"
-                  @click="code_item.selected = !code_item.selected"
-                />
-              </q-item-section>
-              <q-item-section avatar top>
-                <q-avatar
-                  :icon="codeIcon(code_item.language)"
-                  color="light-blue"
-                  text-color="white"
-                />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label
-                  class="item_text"
-                  lines="1"
-                  style="
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                  "
-                  :style="item_text_width"
-                >
-                  <q-icon name="share" v-if="code_item.shared" />
-                  {{ code_item.name }}</q-item-label
-                >
-                <q-item-label caption lines="1">{{
-                  code_item.modified
-                }}</q-item-label>
-              </q-item-section>
-              <q-item-section side>
-                <q-btn
-                  icon="more_vert"
-                  class="cursor-pointer full-width"
-                  flat
-                  @click.capture.stop="
-                    updateItemDrawer = true;
-                    drawerItemId = code_item.id;
-                    drawerItemNewName = code_item.name;
-                    drawerItemType = 'code';
-                    drawerItemNewParent = rawFolderContent.path;
-                    drawerItemName = code_item.name;
-                    drawerCreated = code_item.created;
-                    drawerModified = code_item.modified;
-                    drawerSharing = code_item.shared;
-                    drawerItemNewLanguage = code_item.language;
-                    drawerSharingAllowAllRead = code_item.allow_all_read;
-                    drawerSharingAllowedWrite = code_item.allow_all_write;
-                    drawerItemLanguage = code_item.language;
-                  "
-                  :loading="loading"
-                  stretch
-                />
-              </q-item-section>
-            </q-item>
-            <q-separator
-              @drop.stop.prevent=""
-              @dragover.stop.prevent=""
-              @dragenter.stop.prevent=""
-            />
-          </div>
-        </template>
+        <div class="text-h6 text-center">
+          Drag/Drop files or folders here to upload to current folder
+        </div>
       </div>
-    </q-scroll-area>
-    <q-separator color="primary" />
-    <div
-      style="height: 150px"
-      v-if="dropField"
-      @drop.self.prevent="onBackgroundDrop"
-      @dragover.prevent="
-        (ev) => {
-          if (ev.dataTransfer.items.length > 0) {
-            if (ev.dataTransfer.items[0].kind == 'file') {
-              this.dropFieldDragover = true;
-            }
-          }
-        }
-      "
-      @dragenter.self="
-        (ev) => {
-          if (ev.dataTransfer.items.length > 0) {
-            if (ev.dataTransfer.items[0].kind == 'file') {
-              this.dropFieldDragover = true;
-            }
-          }
-        }
-      "
-      @dragleave.prevent="
-        (ev) => {
-          if (ev.dataTransfer.items.length > 0) {
-            if (ev.dataTransfer.items[0].kind == 'file') {
-              this.dropFieldDragover = false;
-            }
-          }
-        }
-      "
-      :class="dropFieldDragover ? 'bg-blue' : ''"
-    >
-      <div class="text-h6 text-center">
-        Drag/Drop files or folders here to upload to current folder
-      </div>
-    </div>
-    <q-page-sticky position="bottom" :offset="[18, 0]" v-if="!mobile">
-      <q-fab
-        color="primary"
-        icon="keyboard_arrow_up"
-        active-icon="keyboard_arrow_down"
-        direction="up"
-        style="width: 100px; top: 0.5em"
-        @click="dropField = !dropField"
-        class="text-layout-text"
-      >
-      </q-fab>
-    </q-page-sticky>
-  </q-page>
+      <q-page-sticky position="bottom" :offset="[18, 0]" v-if="!mobile">
+        <q-fab
+          color="primary"
+          icon="keyboard_arrow_up"
+          active-icon="keyboard_arrow_down"
+          direction="up"
+          style="width: 100px; top: 0.5em"
+          @click="dropField = !dropField"
+          class="text-layout-text"
+        >
+        </q-fab>
+      </q-page-sticky>
+    </q-page>
+  </div>
 </template>
 
 <script>
@@ -1450,6 +1513,8 @@ export default defineComponent({
       loading: ref(false),
       dropField: ref(false),
       dropFieldDragover: ref(false),
+      initialFetch: ref(false),
+      initialFetchSuccessful: ref(false),
 
       // raw content including children of current folder
       // rawFolderContent: ref({
@@ -1599,9 +1664,13 @@ export default defineComponent({
       drawerSharing: ref(false),
       drawerSharingAllowAllRead: ref(false),
       drawerSharingAllowAllWrite: ref(false),
-      drawerSharingAllowedWrite: ref(''),
-      drawerSharingAllowedRead: ref(''),
       drawerSharingRecursive: ref(true),
+      drawerSharingAddUserRead: ref(true),
+      drawerSharingAddUserWrite: ref(true),
+      drawerSharingAddUserName: ref(''),
+      drawerSharingAddUserID: ref(''),
+      drawerSharingAddUserType: ref(true),
+
       // lists all available parents (all folders of user) for q-select
       availParents: ref([]),
 
@@ -1637,7 +1706,7 @@ export default defineComponent({
     //     'You are not allowed to access this page without being logged in.'
     //   );
     // } else {
-    //   this.getHomeFolder();
+    this.getHomeFolder();
     // }
   },
   computed: {
@@ -1806,6 +1875,7 @@ export default defineComponent({
     },
     copyToClipboard(link) {
       navigator.clipboard.writeText(link);
+      this.notify('positive', 'Copied to clipboard.');
     },
     openDocEditor(docId) {
       this.$router.push('doc/edit/' + docId);
@@ -2659,15 +2729,28 @@ export default defineComponent({
     },
 
     // update sharing information of an object
-    updateSharing() {
+    updateSharing(type) {
       this.loading = true;
       var data = {
         item_id: this.drawerItemId,
-        shared: this.drawerSharing,
-        shared_allow_all_read: this.drawerSharingAllowAllRead,
-        shared_allow_all_write: this.drawerSharingAllowAllWrite,
         shared_recursive: this.drawerSharingRecursive,
       };
+      if (type == 1) {
+        data.shared = this.drawerSharing;
+      } else if (type == 2) {
+        data.shared_allow_all_read = this.drawerSharingAllowAllRead;
+      } else if (type == 3) {
+        data.shared_allow_all_write = this.drawerSharingAllowAllWrite;
+      } else if (type == 4) {
+        data.add_user = true;
+        if (this.drawerSharingAddUserType) {
+          data.USERID = this.drawerSharingAddUserID;
+        } else {
+          data.USERNAME = this.drawerSharingAddUserName;
+        }
+        data.write = this.drawerSharingAddUserWrite;
+        data.read = this.drawerSharingAddUserRead;
+      }
       api
         .put(
           '/files/update-sharing/' + this.drawerItemType,
@@ -2892,13 +2975,17 @@ export default defineComponent({
             this.rawFolderContent = response.data;
             this.path_names.push(response.data.name);
             this.path_ids.push(response.data.id);
+            this.initialFetch = true;
+            this.initialFetchSuccessful = true;
             this.loading = false;
           } else {
+            this.initialFetch = true;
             this.notify('negative', '' + response.data.error);
             this.loading = false;
           }
         })
         .catch((error) => {
+          this.initialFetch = true;
           this.notify('negative', 'API ERROR :/');
           this.loading = false;
           console.log(error);

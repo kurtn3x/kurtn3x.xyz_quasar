@@ -1,5 +1,5 @@
 <template>
-  <div class="disable-select text-primary">
+  <div class="disable-select text-primary" v-if="show">
     <h1 class="text-center">login / register to continue.</h1>
   </div>
 </template>
@@ -20,6 +20,7 @@ export default defineComponent({
     const q = useQuasar();
 
     return {
+      show: ref(false),
       userStore,
       settings_store,
       q,
@@ -38,6 +39,8 @@ export default defineComponent({
   created() {
     if (this.userStore.authenticated) {
       this.$router.push('/dashboard/home');
+    } else {
+      this.show = true;
     }
   },
   methods: {
