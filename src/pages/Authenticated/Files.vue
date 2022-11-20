@@ -1524,7 +1524,6 @@
 </template>
 
 <script>
-const WINDOW = window;
 import { defineComponent, ref } from 'vue';
 import { useUserStore } from 'stores/user';
 import { useQuasar } from 'quasar';
@@ -1872,22 +1871,15 @@ export default defineComponent({
       return bytes.toFixed(dp) + ' ' + units[u];
     },
 
-    async handleDirUpload() {
-      console.log(WINDOW);
-      var window = document.defaultView;
-      console.log(window);
-      const dirHandle = await window.showDirectoryPicker();
-      console.log(dirHandle);
-    },
     copyToClipboard(link) {
       navigator.clipboard.writeText(link);
       this.notify('positive', 'Copied to clipboard.');
     },
     openDocEditor(docId) {
-      this.$router.push('doc/edit/' + docId);
+      this.$router.push('doc/' + docId);
     },
     openCodeEditor(codeId) {
-      this.$router.push('code/edit/' + codeId);
+      this.$router.push('code/' + codeId);
     },
     addFileCheckbox(el) {
       this.selected.push(el.target.parentElement.parentNode.offsetParent);

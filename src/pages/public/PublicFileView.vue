@@ -1,4 +1,7 @@
 <template>
+  <div v-if="loading" class="absolute-center">
+    <q-spinner color="primary" size="10em" />
+  </div>
   <div v-if="!allowed && !loading">Not allowed.</div>
   <div v-if="allowed && !loading">
     <div class="text-primary text-h4 text-center q-mt-lg">

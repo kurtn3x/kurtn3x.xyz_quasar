@@ -1,5 +1,5 @@
 <template>
-  <div>Redirecting to userprofile...</div>
+  <div></div>
 </template>
 
 <script>

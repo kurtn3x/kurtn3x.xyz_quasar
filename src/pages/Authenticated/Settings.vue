@@ -1,5 +1,11 @@
 <template>
-  <div>
+  <div v-if="!initialFetch" class="absolute-center">
+    <q-spinner color="primary" size="10em" />
+  </div>
+  <div v-if="initialFetch && !initialFetchSuccessful">
+    Something went wrong.
+  </div>
+  <div v-if="initialFetch && initialFetchSuccessful">
     <q-dialog v-model="confirm">
       <q-card>
         <q-card-section class="row items-center">
@@ -967,6 +973,8 @@ export default {
       new_email: ref(''),
       confirm: ref(false),
       confirm_delete: ref(false),
+      initialFetch: ref(false),
+      initialFetchSuccessful: ref(false),
     };
   },
 
@@ -1247,11 +1255,16 @@ export default {
             this.location = response.data.profile.location;
             this.description = response.data.profile.description;
             this.status = response.data.profile.status;
+            this.initialFetch = true;
+            this.initialFetchSuccessful = true;
           } else {
             this.notify('negative', '' + response.data.error);
+            this.initialFetch = true;
           }
         })
         .catch((error) => {
+          this.initialFetch = true;
+
           this.notify('negative', 'API ERROR :/');
           console.log(error);
         });

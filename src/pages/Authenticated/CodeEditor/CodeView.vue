@@ -104,10 +104,25 @@
       />
     </div>
     <q-toolbar class="q-mt-md">
+      <q-btn
+        size="lg"
+        class="bg-green text-white q-ml-md"
+        icon="download"
+        label="Download as File"
+        @click="saveCodeFile()"
+      ></q-btn>
+      <q-btn
+        class="q-ml-md"
+        outline
+        size="lg"
+        icon="content_copy"
+        label="Copy to clipboard"
+        @click="copyToClipboard()"
+      ></q-btn>
       <q-space />
       <q-btn
         size="lg"
-        class="bg-green text-white"
+        class="bg-green text-white q-mr-lg"
         icon="save"
         label="Save"
         @click="saveCodeFile()"
@@ -241,6 +256,10 @@ export default defineComponent({
   },
 
   methods: {
+    copyToClipboard() {
+      navigator.clipboard.writeText(this.code);
+      this.notify('positive', 'Copied to clipboard.');
+    },
     codeSuff(lang) {
       if (lang == 'javascript') {
         return '.js';

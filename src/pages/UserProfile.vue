@@ -1,5 +1,11 @@
 <template>
-  <div v-if="this.user.fetched && this.page_load">
+  <div v-if="!initialFetch" class="absolute-center">
+    <q-spinner color="primary" size="10em" />
+  </div>
+  <div v-if="initialFetch && !initialFetchSuccessful">
+    Something went wrong.
+  </div>
+  <div v-if="initialFetch && initialFetchSuccessful">
     <div class="q-ma-sm">
       <q-card class="gt-sm" style="background-color: transparent">
         <div class="row">
@@ -360,7 +366,7 @@
     </div>
   </div>
   <div
-    v-if="!this.user.fetched && this.page_load"
+    v-if="!this.user.fetched && this.initialFetch"
     class="text-center q-pa-md flex flex-center"
   >
     <div>
@@ -403,13 +409,14 @@ export default {
     };
 
     return {
+      initialFetch: ref(false),
+      initialFetchSuccessful: ref(false),
       axios_config,
       user: ref(defaultUser()),
       settingsStore,
       q,
       userStore,
       loading: ref(false),
-      page_load: ref(false),
       profile_tab: ref('about'),
       user_found: ref(false),
       test: ref(false),
@@ -462,21 +469,18 @@ export default {
         .then((response) => {
           if (response.status == 200) {
             this.user = serializeUser(response.data);
-            this.page_load = true;
             this.userlink = 'kurtn3x.xyz/id/' + this.user.id;
+            this.initialFetch = true;
+            this.initialFetchSuccessful = true;
           } else {
-            this.page_load = true;
             this.notify('negative', '' + response.data.error);
+            this.initialFetch = true;
           }
         })
         .catch((error) => {
-          this.page_load = true;
-          // if (this.test) {
-          this.user = defaultUser();
-          this.user.fetched = true;
-          // }
           this.notify('negative', 'API ERROR :/');
           console.log(error);
+          this.initialFetch = true;
         });
     },
   },
