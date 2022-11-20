@@ -647,7 +647,7 @@
             </div>
             <q-separator />
             <div class="text-body1 q-mt-md">
-              Role: {{ this.account.profile.role }}
+              Admin: {{ this.account.account.is_admin }}
             </div>
             <q-separator />
             <div class="text-body1 q-mt-md">
@@ -659,7 +659,7 @@
             </div>
             <q-separator />
             <div class="text-body1 q-mt-md">
-              Last Seen: {{ this.account.profile.last_seen }}
+              Last Seen: {{ this.account.account.last_seen }}
             </div>
             <q-separator />
             <div class="text-body1 q-mt-md">

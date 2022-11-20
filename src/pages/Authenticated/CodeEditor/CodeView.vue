@@ -64,6 +64,31 @@
     </q-toolbar>
     <q-separator size="3px" class="q-mt-sm" />
     <div class="q-ma-sm">
+      <q-splitter
+        v-model="splitterModel"
+        :style="{ height: editorHeight + 'px' }"
+        v-if="lang == 'markdown'"
+      >
+        <template v-slot:before>
+          <codemirror
+            v-model="code"
+            placeholder="Code goes here..."
+            :style="{ height: editorHeight + 'px' }"
+            :autofocus="true"
+            :indent-with-tab="true"
+            :tab-size="tabsize"
+            :extensions="extensions"
+            @update="handleStateUpdate"
+            @ready="handleReady"
+            @keydown.ctrl.s.prevent.stop="saveCodeFile"
+          />
+        </template>
+
+        <template v-slot:after>
+          <Markdown :source="code" />
+        </template>
+      </q-splitter>
+
       <codemirror
         v-model="code"
         placeholder="Code goes here..."
@@ -74,6 +99,8 @@
         :extensions="extensions"
         @update="handleStateUpdate"
         @ready="handleReady"
+        v-if="lang != 'markdown'"
+        @keydown.ctrl.s.prevent.stop="saveCodeFile"
       />
     </div>
     <q-toolbar class="q-mt-md">
@@ -92,12 +119,12 @@
       <a class="q-ml-md">Selected Characters: {{ state.selected }} </a>
     </q-toolbar>
   </div>
+  <q-separator class="q-mt-md" />
 </template>
 
-<script lang="ts">
+<script lang="js">
 import { defineComponent, ref, shallowRef, reactive } from 'vue';
 import { Codemirror } from 'vue-codemirror';
-import { ViewUpdate } from '@codemirror/view';
 import { basicSetup } from 'codemirror';
 import { langmap } from './langmap';
 import { thememap } from './thememap';
@@ -105,30 +132,32 @@ import { useSettingsStore } from 'stores/settings';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { useUserStore } from 'stores/user';
+import  Markdown from 'vue3-markdown-it';
 
 export default defineComponent({
   components: {
     Codemirror,
+    Markdown,
   },
   setup() {
     const code = ref('');
 
     // Codemirror EditorView instance ref
     const view = shallowRef();
-    const handleReady = (payload: any) => {
+    const handleReady = (payload) => {
       view.value = payload.view;
     };
 
     const state = reactive({
-      lines: null as null | number,
-      cursor: null as null | number,
-      selected: null as null | number,
-      length: null as null | number,
+      lines: null ,
+      cursor: null ,
+      selected: null ,
+      length: null ,
     });
 
     const userStore = useUserStore();
 
-    const handleStateUpdate = (viewUpdate: ViewUpdate) => {
+    const handleStateUpdate = (viewUpdate) => {
       const ranges = viewUpdate.state.selection.ranges;
       state.selected = ranges.reduce(
         (plus, range) => plus + range.to - range.from,
@@ -149,6 +178,7 @@ export default defineComponent({
     const q = useQuasar();
 
     return {
+      splitterModel: ref(50),
       userStore,
       fetched: ref(false),
       settingsStore,
@@ -159,7 +189,6 @@ export default defineComponent({
       state,
       code,
       handleReady,
-      log: console.log,
       theme,
       fetchedLang: ref('python'),
       lang: ref('python'),
@@ -206,14 +235,13 @@ export default defineComponent({
     },
 
     editorHeight() {
-      var height = this.q.screen.height - 260;
-      console.log(height);
+      var height = this.q.screen.height - 275;
       return height;
     },
   },
 
   methods: {
-    codeSuff(lang: string) {
+    codeSuff(lang) {
       if (lang == 'javascript') {
         return '.js';
       } else if (lang == 'html') {
@@ -230,7 +258,7 @@ export default defineComponent({
         return '.js';
       }
     },
-    notify(type: string, message: string) {
+    notify(type, message) {
       this.q.notify({
         type: type,
         message: message,
@@ -247,13 +275,13 @@ export default defineComponent({
           'X-CSRFToken': this.q.cookies.get('csrftoken'),
         },
       };
-      var data: any = {
+      var data = {
         item_id: id,
         lang: this.lang,
         code: this.code,
       };
 
-      var name: any = this.respData.code.name;
+      var name = this.respData.code.name;
       if (this.lang != this.fetchedLang) {
         name = name.replace(/\.[^/.]+$/, '');
         name += this.codeSuff(this.lang);

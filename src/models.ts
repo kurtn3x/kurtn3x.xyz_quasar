@@ -100,17 +100,23 @@ export function serializeUserPreview(fetchedData: any) {
 }
 
 export function serializeUser(fetchedData: any) {
+  let role = '';
+  if (fetchedData.account.is_admin) {
+    role = 'Admin';
+  } else {
+    role = 'User';
+  }
   const user: User = {
     fetched: true,
     id: fetchedData.account.id,
     username: fetchedData.account.username,
-    last_seen: fetchedData.profile.last_seen,
+    last_seen: fetchedData.account.last_seen,
     date_joined: fetchedData.account.date_joined,
     name: fetchedData.profile.name,
     status: fetchedData.profile.status,
     description: fetchedData.profile.description,
     location: fetchedData.profile.location,
-    role: fetchedData.profile.role,
+    role: role,
     avatar: path_to_link_av(fetchedData.profile.avatar),
     background: path_to_link_bg(fetchedData.profile.background),
   };

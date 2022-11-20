@@ -1408,7 +1408,7 @@
       </q-scroll-area>
       <q-separator color="primary" />
       <div
-        style="height: 150px"
+        style="height: 100px"
         v-if="dropField"
         @drop.self.prevent="onBackgroundDrop"
         @dragover.prevent="
@@ -1449,12 +1449,75 @@
           color="primary"
           icon="keyboard_arrow_up"
           active-icon="keyboard_arrow_down"
-          direction="up"
           style="width: 100px; top: 0.5em"
           @click="dropField = !dropField"
-          class="text-layout-text"
         >
         </q-fab>
+      </q-page-sticky>
+      <q-page-sticky
+        position="bottom-left"
+        v-if="rawFolderContent.README.exist"
+      >
+        <q-btn
+          color="primary"
+          label="Show Readme"
+          style="width: 150px; height: 50px"
+          @click="readMeShow = !readMeShow"
+          square
+          outline
+        >
+        </q-btn>
+      </q-page-sticky>
+      <q-page-sticky
+        :offset="fabPos"
+        style="z-index: 99999999999999"
+        v-if="readMeShow"
+      >
+        <q-card
+          bordered
+          :style="
+            'width:' +
+            readMeSize[0] +
+            'px' +
+            ';' +
+            'min-height:' +
+            readMeSize[1] +
+            'px'
+          "
+        >
+          <q-card-section class="q-ma-none q-pa-none">
+            <div
+              class="row"
+              style="cursor: grab"
+              v-touch-pan.prevent.mouse="moveFab"
+            >
+              <a class="text-h6 q-ma-sm">Readme.md</a>
+              <q-space />
+              <q-btn
+                icon="close"
+                color="red"
+                flat
+                outline
+                @click="readMeShow = false"
+              ></q-btn>
+            </div>
+            <q-separator />
+          </q-card-section>
+          <Markdown :source="rawFolderContent.README.content" />
+          <q-card-actions
+            class="absolute-bottom q-ma-sm"
+            v-touch-pan.prevent.mouse="moveFab"
+            style="cursor: grab"
+          >
+            <a> Window Size</a>
+            <q-slider
+              v-model="slider"
+              :min="300"
+              :max="800"
+              @change="changeReadMeSize"
+            />
+          </q-card-actions>
+        </q-card>
       </q-page-sticky>
     </q-page>
   </div>
@@ -1475,12 +1538,17 @@ import { mdiLanguageHtml5 } from '@quasar/extras/mdi-v6';
 import { mdiLanguageCpp } from '@quasar/extras/mdi-v6';
 import { mdiCodeJson } from '@quasar/extras/mdi-v6';
 import { mdiLanguageMarkdown } from '@quasar/extras/mdi-v6';
+import Markdown from 'vue3-markdown-it';
 
 export default defineComponent({
   name: 'FilesView',
   directives: {
     draggable,
     droppable,
+  },
+
+  components: {
+    Markdown,
   },
 
   setup() {
@@ -1494,7 +1562,24 @@ export default defineComponent({
       },
     };
 
+    const fabPos = ref([18, 18]);
+    const draggingFab = ref(false);
+
     return {
+      readMeShow: ref(false),
+      readMeSize: ref([300, 300]),
+      slider: ref(200),
+      fabPos,
+      draggingFab,
+      moveFab(ev) {
+        draggingFab.value = ev.isFirst !== true && ev.isFinal !== true;
+
+        fabPos.value = [
+          fabPos.value[0] - ev.delta.x,
+          fabPos.value[1] - ev.delta.y,
+        ];
+      },
+
       // icons
       mdiCodeJson,
       mdiLanguageCpp,
@@ -1517,106 +1602,23 @@ export default defineComponent({
       initialFetchSuccessful: ref(false),
 
       // raw content including children of current folder
-      // rawFolderContent: ref({
-      //   name: 'Home',
-      //   path: 'Home',
-      //   id: '0',
-      //   children: {
-      //     private_files: [],
-      //     folder_links: [],
-      //     folders: [],
-      //     documents: [],
-      //     code: [],
-      //   },
-      // }),
-
       rawFolderContent: ref({
         name: 'Home',
         path: 'Home',
-        id: '5e065b84-b32e-4cc2-95f5-9e6812ffdab0',
+        id: '0',
+        README: {
+          exist: false,
+          content: '',
+        },
         children: {
-          private_files: [
-            {
-              name: 'Untitled 1.odp',
-              id: 'ec4a694f-4c20-45cc-bdd7-579fcfda26cc',
-              modified: '2022-11-12, 18:47:22',
-              created: '2022-11-12, 15:12:39',
-              size: 32023429,
-              shared: true,
-              allow_all_read: false,
-              allow_all_write: false,
-            },
-            {
-              name: 'Untitled 1.odt',
-              id: 'c445703f-2cf1-43d1-a1bb-528882ec00dd',
-              modified: '2022-11-12, 15:13:20',
-              created: '2022-11-12, 15:13:20',
-              size: 42741,
-              shared: false,
-              allow_all_read: false,
-              allow_all_write: false,
-            },
-          ],
+          private_files: [],
           folder_links: [],
-          folders: [
-            {
-              name: 'dawdwada',
-              id: 'ea19930a-468d-46d1-a006-9b408ba2d99f',
-              path: 'Home/dawdwada',
-              modified: '2022-11-12, 17:13:47',
-              created: '2022-11-10, 17:52:03',
-              size: 0,
-              shared: false,
-              allow_all_read: false,
-              allow_all_write: false,
-            },
-            {
-              name: 'Downloads',
-              id: '00620566-6dbe-4daf-b38e-bc4a2ab172a4',
-              path: 'Home/Downloads',
-              modified: '2022-11-12, 19:31:54',
-              created: '2022-11-10, 08:03:23',
-              size: 0,
-              shared: false,
-              allow_all_read: false,
-              allow_all_write: false,
-            },
-          ],
+          folders: [],
           documents: [],
-          code: [
-            {
-              name: 'py.js',
-              id: '5164bb3a-616a-4e77-b808-d6f7e11fad6d',
-              modified: '2022-11-12, 19:31:59',
-              created: '2022-11-12, 17:00:07',
-              language: 'javascript',
-              shared: false,
-              allow_all_read: false,
-              allow_all_write: false,
-            },
-            {
-              name: 'helloworld.cpp',
-              id: '00e91bf5-5964-4b47-983c-be3cdeb66ebb',
-              modified: '2022-11-12, 16:58:09',
-              created: '2022-11-10, 23:16:02',
-              language: 'cpp',
-              shared: true,
-              allow_all_read: false,
-              allow_all_write: false,
-            },
-            {
-              name: 'Hello',
-              id: '979e3571-9226-4e58-bc7e-05bd4cb962b1',
-              modified: '2022-11-10, 21:33:15',
-              created: '2022-11-10, 20:57:06',
-              language: 'python',
-              shared: false,
-              allow_all_read: false,
-              allow_all_write: false,
-            },
-          ],
+          code: [],
         },
       }),
+
       // toolbar handlers
       path_names: ref([]),
       path_ids: ref([]),
@@ -1805,6 +1807,10 @@ export default defineComponent({
     },
   },
   methods: {
+    changeReadMeSize() {
+      this.readMeSize = [this.slider, this.slider];
+    },
+
     codeSuff(lang) {
       if (lang == 'javascript') {
         return '.js';
@@ -2849,7 +2855,7 @@ export default defineComponent({
 
     // universal
     styleFn(offset, height) {
-      let pageheight = height - offset;
+      let pageheight = height - offset - 50;
       return 'height: ' + pageheight + 'px';
     },
 
