@@ -136,237 +136,237 @@
             >
               <q-splitter model-value="50" disable>
                 <template v-slot:before>
-                  <q-input
-                    :readonly="!name_edit"
-                    dense
-                    square
-                    filled
-                    v-model="name"
-                    type="name"
-                    label="Name"
-                    lazy-rules
-                    :rules="[
-                      (val) => val.length < 50 || 'Max Length = 50 characters',
-                    ]"
-                    style="max-width: 600px"
-                  >
-                    <template v-slot:append>
-                      <q-icon
-                        name="add_reaction"
-                        class="button_hover"
-                        v-if="name_edit"
-                      >
-                        <q-menu>
-                          <EmojiPicker
-                            :native="true"
-                            @select="onSelectEmojiName"
-                          />
-                        </q-menu>
-                        <q-tooltip> Add emoji</q-tooltip>
-                      </q-icon>
-                    </template>
-                    <template v-slot:after>
-                      <q-btn
-                        :label="name_edit ? 'save' : 'edit'"
-                        class="cursor-pointer bg-green q-ml-md"
-                        @click="
-                          if (this.name_edit) {
-                            this.name_edit = false;
-                            updateUserProfile();
-                          } else {
-                            this.name_edit = true;
-                          }
-                        "
-                        :loading="loading"
-                      />
-                    </template>
-                  </q-input>
-                  <q-input
-                    :readonly="!location_edit"
-                    dense
-                    square
-                    filled
-                    v-model="location"
-                    label="Location"
-                    lazy-rules
-                    :rules="[
-                      (val) => val.length < 50 || 'Max Length = 50 characters',
-                    ]"
-                    style="max-width: 600px"
-                  >
-                    <template v-slot:append>
-                      <q-icon
-                        name="add_reaction"
-                        class="button_hover"
-                        v-if="location_edit"
-                      >
-                        <q-menu>
-                          <EmojiPicker
-                            :native="true"
-                            @select="onSelectEmojiLocation"
-                          />
-                        </q-menu>
-                        <q-tooltip> Add emoji</q-tooltip>
-                      </q-icon>
-                    </template>
-                    <template v-slot:after>
-                      <q-btn
-                        :label="location_edit ? 'save' : 'edit'"
-                        class="cursor-pointer bg-green q-ml-md"
-                        @click="
-                          if (this.location_edit) {
-                            this.location_edit = false;
-                            updateUserProfile();
-                          } else {
-                            this.location_edit = true;
-                          }
-                        "
-                        :loading="loading"
-                      />
-                    </template>
-                  </q-input>
+                  <div class="q-mr-sm">
+                    <q-input
+                      :readonly="!name_edit"
+                      dense
+                      square
+                      filled
+                      v-model="name"
+                      type="name"
+                      label="Name"
+                      lazy-rules
+                      :rules="[
+                        (val) =>
+                          val.length < 50 || 'Max Length = 50 characters',
+                      ]"
+                      style="max-width: 600px"
+                    >
+                      <template v-slot:append>
+                        <q-icon
+                          name="add_reaction"
+                          class="button_hover"
+                          v-if="name_edit"
+                        >
+                          <q-menu>
+                            <EmojiPicker
+                              :native="true"
+                              @select="onSelectEmojiName"
+                            />
+                          </q-menu>
+                          <q-tooltip> Add emoji</q-tooltip>
+                        </q-icon>
+                      </template>
+                      <template v-slot:after>
+                        <q-btn
+                          :label="name_edit ? 'save' : 'edit'"
+                          class="cursor-pointer bg-green q-ml-xl"
+                          @click="
+                            if (this.name_edit) {
+                              this.name_edit = false;
+                              updateUserProfile();
+                            } else {
+                              this.name_edit = true;
+                            }
+                          "
+                          :loading="loading"
+                        />
+                      </template>
+                    </q-input>
+                    <q-input
+                      :readonly="!location_edit"
+                      dense
+                      square
+                      filled
+                      v-model="location"
+                      label="Location"
+                      lazy-rules
+                      :rules="[
+                        (val) =>
+                          val.length < 50 || 'Max Length = 50 characters',
+                      ]"
+                      style="max-width: 600px"
+                    >
+                      <template v-slot:append>
+                        <q-icon
+                          name="add_reaction"
+                          class="button_hover"
+                          v-if="location_edit"
+                        >
+                          <q-menu>
+                            <EmojiPicker
+                              :native="true"
+                              @select="onSelectEmojiLocation"
+                            />
+                          </q-menu>
+                          <q-tooltip> Add emoji</q-tooltip>
+                        </q-icon>
+                      </template>
+                      <template v-slot:after>
+                        <q-btn
+                          :label="location_edit ? 'save' : 'edit'"
+                          class="cursor-pointer bg-green q-ml-md"
+                          @click="
+                            if (this.location_edit) {
+                              this.location_edit = false;
+                              updateUserProfile();
+                            } else {
+                              this.location_edit = true;
+                            }
+                          "
+                          :loading="loading"
+                        />
+                      </template>
+                    </q-input>
 
-                  <q-input
-                    :readonly="!status_edit"
-                    dense
-                    square
-                    filled
-                    v-model="status"
-                    label="Status"
-                    lazy-rules
-                    :rules="[
-                      (val) => val.length < 15 || 'Max Length = 15 characters',
-                    ]"
-                    style="max-width: 600px"
-                  >
-                    <template v-slot:append>
-                      <q-icon
-                        name="add_reaction"
-                        class="button_hover"
-                        v-if="status_edit"
-                      >
-                        <q-menu>
-                          <EmojiPicker
-                            :native="true"
-                            @select="onSelectEmojiStatus"
-                          />
-                        </q-menu>
-                        <q-tooltip> Add emoji</q-tooltip>
-                      </q-icon>
-                    </template>
-                    <template v-slot:after>
-                      <q-btn
-                        :label="status_edit ? 'save' : 'edit'"
-                        class="cursor-pointer bg-green q-ml-md"
-                        @click="
-                          if (this.status_edit) {
-                            updateUserProfile();
-                            this.status_edit = false;
-                          } else {
-                            this.status_edit = true;
-                          }
-                        "
-                        :loading="loading"
-                      />
-                    </template>
-                  </q-input>
+                    <q-input
+                      :readonly="!status_edit"
+                      dense
+                      square
+                      filled
+                      v-model="status"
+                      label="Status"
+                      lazy-rules
+                      :rules="[
+                        (val) =>
+                          val.length < 15 || 'Max Length = 15 characters',
+                      ]"
+                      style="max-width: 600px"
+                    >
+                      <template v-slot:append>
+                        <q-icon
+                          name="add_reaction"
+                          class="button_hover"
+                          v-if="status_edit"
+                        >
+                          <q-menu>
+                            <EmojiPicker
+                              :native="true"
+                              @select="onSelectEmojiStatus"
+                            />
+                          </q-menu>
+                          <q-tooltip> Add emoji</q-tooltip>
+                        </q-icon>
+                      </template>
+                      <template v-slot:after>
+                        <q-btn
+                          :label="status_edit ? 'save' : 'edit'"
+                          class="cursor-pointer bg-green q-ml-md"
+                          @click="
+                            if (this.status_edit) {
+                              updateUserProfile();
+                              this.status_edit = false;
+                            } else {
+                              this.status_edit = true;
+                            }
+                          "
+                          :loading="loading"
+                        />
+                      </template>
+                    </q-input>
 
-                  <q-input
-                    :readonly="!description_edit"
-                    type="textarea"
-                    dense
-                    square
-                    filled
-                    v-model="description"
-                    label="Description"
-                    lazy-rules
-                    :rules="[
-                      (val) =>
-                        val.length < 255 || 'Max Length = 255 characters',
-                    ]"
-                    style="max-width: 600px"
-                  >
-                    <template v-slot:append>
-                      <q-icon
-                        name="add_reaction"
-                        class="button_hover"
-                        v-if="description_edit"
-                      >
-                        <q-menu>
-                          <EmojiPicker
-                            :native="true"
-                            @select="onSelectEmojiDescription"
-                          />
-                        </q-menu>
-                        <q-tooltip> Add emoji</q-tooltip>
-                      </q-icon>
-                    </template>
-                    <template v-slot:after>
-                      <q-btn
-                        :label="description_edit ? 'save' : 'edit'"
-                        class="cursor-pointer bg-green q-ml-md"
-                        @click="
-                          if (this.description_edit) {
-                            this.description_edit = false;
-                            updateUserProfile();
-                          } else {
-                            this.description_edit = true;
-                          }
-                        "
-                        :loading="loading"
-                      />
-                    </template>
-                  </q-input>
+                    <q-input
+                      :readonly="!description_edit"
+                      type="textarea"
+                      dense
+                      square
+                      filled
+                      v-model="description"
+                      label="Description"
+                      lazy-rules
+                      :rules="[
+                        (val) =>
+                          val.length < 255 || 'Max Length = 255 characters',
+                      ]"
+                      style="max-width: 600px"
+                    >
+                      <template v-slot:append>
+                        <q-icon
+                          name="add_reaction"
+                          class="button_hover"
+                          v-if="description_edit"
+                        >
+                          <q-menu>
+                            <EmojiPicker
+                              :native="true"
+                              @select="onSelectEmojiDescription"
+                            />
+                          </q-menu>
+                          <q-tooltip> Add emoji</q-tooltip>
+                        </q-icon>
+                      </template>
+                      <template v-slot:after>
+                        <q-btn
+                          :label="description_edit ? 'save' : 'edit'"
+                          class="cursor-pointer bg-green q-ml-md"
+                          @click="
+                            if (this.description_edit) {
+                              this.description_edit = false;
+                              updateUserProfile();
+                            } else {
+                              this.description_edit = true;
+                            }
+                          "
+                          :loading="loading"
+                        />
+                      </template>
+                    </q-input>
+                  </div>
                 </template>
                 <template v-slot:after>
-                  <div style="overflow: hidden">
-                    <div class="row q-ml-md">
-                      <q-file
-                        v-model="avatar"
-                        outlined
-                        label="Profile Picture"
-                        max-file-size="2048000"
-                        accept=".jpg, .png, .gif, .jpeg"
-                        @rejected="onRejected"
-                        style="max-width: 400px"
-                        counter
-                      >
-                        <template v-slot:before>
-                          <q-avatar>
-                            <img :src="this.account.profile.avatar" />
-                          </q-avatar>
-                        </template>
-                        <template v-slot:prepend>
-                          <q-icon name="attach_file" />
-                        </template>
-                      </q-file>
-                      <a class="text-body2 q-mt-md q-ml-sm"
-                        >.jpg, .png, .gif, .jpeg, less than 2mb</a
-                      >
-                    </div>
-                    <div class="row q-ml-md q-mt-md">
-                      <q-file
-                        v-model="background"
-                        outlined
-                        label="Background Picture"
-                        max-file-size="2048000"
-                        accept=".jpg, .png, .gif, .jpeg"
-                        @rejected="onRejected"
-                        style="max-width: 400px"
-                        counter
-                      >
-                        <template v-slot:before>
-                          <q-avatar>
-                            <img :src="this.account.profile.background" />
-                          </q-avatar>
-                        </template>
-                        <template v-slot:prepend>
-                          <q-icon name="attach_file" />
-                        </template>
-                      </q-file>
-                      <a class="text-body2 q-mt-md q-ml-sm"
-                        >.jpg, .png, .gif, .jpeg, less than 2mb</a
-                      >
+                  <div style="overflow: hidden" class="q-ml-md">
+                    <q-file
+                      v-model="avatar"
+                      outlined
+                      label="Profile Picture"
+                      max-file-size="2048000"
+                      accept=".jpg, .png, .gif, .jpeg"
+                      @rejected="onRejected"
+                      style="max-width: 400px"
+                      counter
+                    >
+                      <template v-slot:before>
+                        <q-avatar>
+                          <img :src="this.account.profile.avatar" />
+                        </q-avatar>
+                      </template>
+                      <template v-slot:prepend>
+                        <q-icon name="attach_file" />
+                      </template>
+                    </q-file>
+
+                    <q-file
+                      v-model="background"
+                      outlined
+                      label="Background Picture"
+                      max-file-size="2048000"
+                      accept=".jpg, .png, .gif, .jpeg"
+                      @rejected="onRejected"
+                      style="max-width: 400px"
+                      counter
+                      class="q-mt-lg"
+                    >
+                      <template v-slot:before>
+                        <q-avatar>
+                          <img :src="this.account.profile.background" />
+                        </q-avatar>
+                      </template>
+                      <template v-slot:prepend>
+                        <q-icon name="attach_file" />
+                      </template>
+                    </q-file>
+                    <div class="text-body1 q-mt-xl q-ml-md">
+                      Allowed Images: .jpg, .png, .gif, .jpeg, less than 2mb
                     </div>
                   </div>
                 </template>
@@ -375,7 +375,7 @@
                 <q-btn
                   size="xl"
                   color="green"
-                  label="Save All"
+                  label="Save"
                   type="submit"
                   :loading="loading"
                 />
@@ -572,59 +572,54 @@
                 </template>
               </q-input>
 
-              <div class="row">
-                <q-file
-                  v-model="avatar"
-                  outlined
-                  label="Profile Picture"
-                  max-file-size="2048000"
-                  accept=".jpg, .png, .gif, .jpeg"
-                  @rejected="onRejected"
-                  style="max-width: 400px"
-                  counter
-                >
-                  <template v-slot:before>
-                    <q-avatar>
-                      <img :src="this.account.profile.avatar" />
-                    </q-avatar>
-                  </template>
-                  <template v-slot:prepend>
-                    <q-icon name="attach_file" />
-                  </template>
-                </q-file>
-                <a class="text-body2 q-mt-md q-ml-sm"
-                  >.jpg, .png, .gif, .jpeg, less than 2mb</a
-                >
+              <q-file
+                v-model="avatar"
+                outlined
+                label="Profile Picture"
+                max-file-size="2048000"
+                accept=".jpg, .png, .gif, .jpeg"
+                @rejected="onRejected"
+                style="max-width: 400px"
+                counter
+              >
+                <template v-slot:before>
+                  <q-avatar>
+                    <img :src="this.account.profile.avatar" />
+                  </q-avatar>
+                </template>
+                <template v-slot:prepend>
+                  <q-icon name="attach_file" />
+                </template>
+              </q-file>
+              <q-file
+                v-model="background"
+                outlined
+                label="Background Picture"
+                max-file-size="2048000"
+                accept=".jpg, .png, .gif, .jpeg"
+                @rejected="onRejected"
+                style="max-width: 400px"
+                counter
+              >
+                <template v-slot:before>
+                  <q-avatar>
+                    <img :src="this.account.profile.background" />
+                  </q-avatar>
+                </template>
+                <template v-slot:prepend>
+                  <q-icon name="attach_file" />
+                </template>
+              </q-file>
+
+              <div class="text-body1 text-center q-mt-md">
+                Allowed Images: .jpg, .png, .gif, .jpeg, less than 2mb
               </div>
-              <div class="row">
-                <q-file
-                  v-model="background"
-                  outlined
-                  label="Background Picture"
-                  max-file-size="2048000"
-                  accept=".jpg, .png, .gif, .jpeg"
-                  @rejected="onRejected"
-                  style="max-width: 400px"
-                  counter
-                >
-                  <template v-slot:before>
-                    <q-avatar>
-                      <img :src="this.account.profile.background" />
-                    </q-avatar>
-                  </template>
-                  <template v-slot:prepend>
-                    <q-icon name="attach_file" />
-                  </template>
-                </q-file>
-                <a class="text-body2 q-mt-md q-ml-sm"
-                  >.jpg, .png, .gif, .jpeg, less than 2mb</a
-                >
-              </div>
+
               <div class="row justify-center q-mt-lg">
                 <q-btn
                   size="xl"
                   color="green"
-                  label="Save All"
+                  label="Save"
                   type="submit"
                   :loading="loading"
                 />
@@ -1213,19 +1208,21 @@ export default {
         .put('/profile/update', form_data, config)
         .then((response) => {
           if (response.status == 200) {
+            this.account = response.data;
             var header = serializeHeaderInformation(response.data);
             this.userStore.setHeaderInfo(header);
             this.loading = false;
-            if (this.avatar != null && this.background != null) {
-              this.notify(
-                'positive',
-                'Updated your profile! You may need to reload the page to see some changes.'
-              );
-            }
+            this.notify('positive', 'Saved!');
             this.name_edit = false;
             this.location_edit = false;
             this.status_edit = false;
             this.description_edit = false;
+            this.account.profile.avatar = path_to_link_av(
+              response.data.profile.avatar
+            );
+            this.account.profile.background = path_to_link_bg(
+              response.data.profile.background
+            );
           } else {
             this.loading = false;
             this.notify('negative', '' + response.data.error);
