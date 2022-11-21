@@ -1,6 +1,6 @@
 <template>
   <div v-if="!fetched">Something went wrong.</div>
-  <div v-if="!fetched">
+  <div v-if="fetched">
     <q-toolbar class="q-mt-sm">
       <q-btn to="/dashboard/files" icon="arrow_back" flat>
         <q-tooltip>Go back</q-tooltip>
