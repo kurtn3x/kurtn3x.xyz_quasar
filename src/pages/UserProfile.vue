@@ -357,8 +357,8 @@
                 <q-input filled square v-model="this.userlink" readonly />
                 <q-item clickable @click="copyuserlink" class="justify-center">
                   Copy the link</q-item
-                >
-              </q-list>
+                > </q-list
+              >page_load
             </q-menu>
           </q-btn>
         </q-card-actions>

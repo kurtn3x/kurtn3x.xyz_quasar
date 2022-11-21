@@ -1,6 +1,6 @@
 <template>
   <div v-if="!fetched">Something went wrong.</div>
-  <div v-if="fetched">
+  <div v-if="!fetched">
     <q-toolbar class="q-mt-sm">
       <q-btn to="/dashboard/files" icon="arrow_back" flat>
         <q-tooltip>Go back</q-tooltip>
@@ -148,6 +148,7 @@ import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { useUserStore } from 'stores/user';
 import  Markdown from 'vue3-markdown-it';
+import 'highlight.js/styles/monokai.css';
 
 export default defineComponent({
   components: {

@@ -1468,7 +1468,7 @@
         >
         </q-btn>
       </q-page-sticky>
-      <q-page-sticky
+      <!-- <q-page-sticky
         :offset="fabPos"
         style="z-index: 99999999999999"
         v-if="readMeShow"
@@ -1480,17 +1480,15 @@
             readMeSize[0] +
             'px' +
             ';' +
-            'min-height:' +
+            'height:' +
             readMeSize[1] +
             'px'
           "
+          style="overflow: scroll; cursor: grab"
+          v-touch-pan.prevent.mouse="moveFab"
         >
           <q-card-section class="q-ma-none q-pa-none">
-            <div
-              class="row"
-              style="cursor: grab"
-              v-touch-pan.prevent.mouse="moveFab"
-            >
+            <div class="row">
               <a class="text-h6 q-ma-sm">Readme.md</a>
               <q-space />
               <q-btn
@@ -1502,8 +1500,11 @@
               ></q-btn>
             </div>
             <q-separator />
+            <Markdown
+              :source="rawFolderContent.README.content"
+              style="overflow: scroll"
+            />
           </q-card-section>
-          <Markdown :source="rawFolderContent.README.content" />
           <q-card-actions
             class="absolute-bottom q-ma-sm"
             v-touch-pan.prevent.mouse="moveFab"
@@ -1518,7 +1519,51 @@
             />
           </q-card-actions>
         </q-card>
-      </q-page-sticky>
+      </q-page-sticky> -->
+      <div>
+        <vue-final-modal
+          v-model="readMeShow"
+          style="z-index: 9999999999999999999999999999999999"
+          :resize="true"
+          :hide-overlay="true"
+          :prevent-click="true"
+          classes="modal-container"
+          :keep-changed-style="true"
+          content-class="modal-content"
+          :drag="true"
+        >
+          <div class="row bg-primary bordered grab" style="cursor: grab">
+            <a class="text-h6 q-ma-sm">Readme.md</a>
+            <q-space />
+            <q-btn icon="person" color="red" flat outline @click="test"></q-btn>
+            <q-btn
+              icon="close"
+              color="red"
+              flat
+              outline
+              @click="readMeShow = false"
+            ></q-btn>
+          </div>
+          <q-separator />
+          <q-card
+            class="fit"
+            style="overflow: scroll; width: 200px"
+            bordered
+            @drag.capture.stop=""
+            @dragstart.capture.stop=""
+          >
+            <q-card-section
+              style="overflow: scroll; display: inline-block"
+              class="modal__content"
+            >
+              <Markdown
+                :source="rawFolderContent.README.content"
+                style="overflow: scroll"
+              />
+            </q-card-section>
+          </q-card>
+        </vue-final-modal>
+      </div>
     </q-page>
   </div>
 </template>
@@ -1538,6 +1583,7 @@ import { mdiLanguageCpp } from '@quasar/extras/mdi-v6';
 import { mdiCodeJson } from '@quasar/extras/mdi-v6';
 import { mdiLanguageMarkdown } from '@quasar/extras/mdi-v6';
 import Markdown from 'vue3-markdown-it';
+import { $vfm, VueFinalModal, ModalsContainer } from 'vue-final-modal';
 
 export default defineComponent({
   name: 'FilesView',
@@ -1547,6 +1593,7 @@ export default defineComponent({
   },
 
   components: {
+    VueFinalModal,
     Markdown,
   },
 
@@ -1606,7 +1653,7 @@ export default defineComponent({
         path: 'Home',
         id: '0',
         README: {
-          exist: false,
+          exist: true,
           content: '',
         },
         children: {
@@ -1806,8 +1853,9 @@ export default defineComponent({
     },
   },
   methods: {
-    changeReadMeSize() {
-      this.readMeSize = [this.slider, this.slider];
+    test() {
+      const special = document.querySelectorAll('.grab');
+      console.log(special);
     },
 
     codeSuff(lang) {
@@ -3230,5 +3278,24 @@ export default defineComponent({
   -khtml-user-select: none; /* Konqueror HTML */
   -moz-user-select: none; /* Firefox */
   -ms-user-select: none; /* Internet Explorer/Edge */
+}
+
+::v-deep .modal-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+::v-deep .modal-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-height: 80%;
+  max-width: 80%;
+}
+
+.modal__content {
+  flex-grow: 1;
+  overflow-y: auto;
 }
 </style>
