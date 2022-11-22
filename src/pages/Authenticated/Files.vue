@@ -271,7 +271,27 @@
               label="Allow everyone to write"
               @click="updateSharing(3)"
             />
-            <div class="text-h6 q-mt-md q-mb-sm">Allowed Users</div>
+
+            <div v-if="userStore.headerinfo.admin">
+              <q-input
+                dense
+                outlined
+                v-model="drawerPermalinkName"
+                label="Name"
+                input-class="text-center"
+                class="text-primary q-ma-md text-body1 q-mt-lg"
+              />
+              <q-btn
+                class="cursor-pointer bg-green text-white full-width q-mt-md"
+                label="Save"
+                flat
+                icon="save"
+                @click="handlePermalink"
+                :loading="loading"
+              />
+            </div>
+
+            <!-- <div class="text-h6 q-mt-md q-mb-sm">Allowed Users</div>
             <q-expansion-item label="Add User" dense icon="add">
               <q-input
                 dense
@@ -328,10 +348,9 @@
                   @click="updateSharing(4)"
                 />
               </div>
-            </q-expansion-item>
+            </q-expansion-item> -->
 
-            <q-list bordered separator class="q-mt-lg">
-              <!-- LOOP HERE -->
+            <!-- <q-list bordered separator class="q-mt-lg">
               <div class="row">
                 <div class="col-7">
                   <q-btn label="USER" class="full-width" />
@@ -354,7 +373,7 @@
                 </div>
               </div>
               <q-separator />
-            </q-list>
+            </q-list> -->
           </q-tab-panel>
         </q-tab-panels>
       </q-card>
@@ -1535,10 +1554,10 @@
           <div class="row bg-primary bordered grab" style="cursor: grab">
             <a class="text-h6 q-ma-sm">Readme.md</a>
             <q-space />
-            <q-btn icon="person" color="red" flat outline @click="test"></q-btn>
             <q-btn
               icon="close"
-              color="red"
+              color="white"
+              class="bg-red"
               flat
               outline
               @click="readMeShow = false"
@@ -1547,19 +1566,16 @@
           <q-separator />
           <q-card
             class="fit"
-            style="overflow: scroll; width: 200px"
+            style="width: 200px; overflow: scroll"
             bordered
             @drag.capture.stop=""
             @dragstart.capture.stop=""
           >
             <q-card-section
-              style="overflow: scroll; display: inline-block"
+              style="display: inline-block"
               class="modal__content"
             >
-              <Markdown
-                :source="rawFolderContent.README.content"
-                style="overflow: scroll"
-              />
+              <Markdown :source="rawFolderContent.README.content" />
             </q-card-section>
           </q-card>
         </vue-final-modal>
@@ -1583,7 +1599,8 @@ import { mdiLanguageCpp } from '@quasar/extras/mdi-v6';
 import { mdiCodeJson } from '@quasar/extras/mdi-v6';
 import { mdiLanguageMarkdown } from '@quasar/extras/mdi-v6';
 import Markdown from 'vue3-markdown-it';
-import { $vfm, VueFinalModal, ModalsContainer } from 'vue-final-modal';
+import { VueFinalModal } from 'vue-final-modal';
+import 'highlight.js/styles/github-dark.css';
 
 export default defineComponent({
   name: 'FilesView',
@@ -1718,6 +1735,7 @@ export default defineComponent({
       drawerSharingAddUserName: ref(''),
       drawerSharingAddUserID: ref(''),
       drawerSharingAddUserType: ref(true),
+      drawerPermalinkName: ref(''),
 
       // lists all available parents (all folders of user) for q-select
       availParents: ref([]),
@@ -1853,9 +1871,29 @@ export default defineComponent({
     },
   },
   methods: {
-    test() {
-      const special = document.querySelectorAll('.grab');
-      console.log(special);
+    handlePermalink() {
+      this.loading = true;
+      var data = {
+        perm_link_name: this.drawerPermalinkName,
+        perm_link_type: this.drawerItemType,
+        id: this.drawerItemId,
+      };
+      api
+        .post('/files/create/permalink', data, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+            this.notify('positive', 'OK.');
+            this.loading = false;
+          } else {
+            this.notify('negative', '' + response.data.error);
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'API ERROR :/');
+          this.loading = false;
+          console.log(error);
+        });
     },
 
     codeSuff(lang) {

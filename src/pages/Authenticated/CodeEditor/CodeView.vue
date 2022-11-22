@@ -1,6 +1,6 @@
 <template>
-  <div v-if="!fetched">Something went wrong.</div>
-  <div v-if="fetched">
+  <div v-if="!fetched && loaded">Something went wrong.</div>
+  <div v-if="fetched && loaded">
     <q-toolbar class="q-mt-sm">
       <q-btn to="/dashboard/files" icon="arrow_back" flat>
         <q-tooltip>Go back</q-tooltip>
@@ -148,7 +148,7 @@ import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { useUserStore } from 'stores/user';
 import  Markdown from 'vue3-markdown-it';
-import 'highlight.js/styles/monokai.css';
+import 'highlight.js/styles/github-dark.css';
 
 export default defineComponent({
   components: {
@@ -194,6 +194,7 @@ export default defineComponent({
     const q = useQuasar();
 
     return {
+      loaded: ref(false),
       splitterModel: ref(50),
       userStore,
       fetched: ref(false),
@@ -342,6 +343,7 @@ export default defineComponent({
             this.lang = response.data.code.language;
             this.fetchedLang = response.data.code.language;
             this.fetched = true;
+            this.loaded = true;
           } else {
             // this.loading = false;
             // this.allowed = false;

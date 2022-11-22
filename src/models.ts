@@ -1,7 +1,7 @@
 // preview, unused
 export interface UserPreview {
   fetched: boolean;
-  role: string;
+  admin: string;
   username: string;
   status: string;
   avatar: string;
@@ -27,19 +27,17 @@ export interface User {
 export interface HeaderInformation {
   fetched: boolean;
   username: string;
-  role: string;
+  admin: boolean;
   status: string;
-  last_seen: string;
   avatar: string;
 }
 
 export function defaultHeaderInformation() {
   const info: HeaderInformation = {
     fetched: false,
-    username: '​',
-    role: '​',
-    status: '​',
-    last_seen: '​',
+    username: '',
+    admin: false,
+    status: '',
     avatar: 'https://media.kurtn3x.xyz/default.png',
   };
   return info;
@@ -48,10 +46,9 @@ export function defaultHeaderInformation() {
 export function serializeHeaderInformation(fetchedData: any) {
   const info: HeaderInformation = {
     fetched: true,
-    role: fetchedData.profile.role,
+    admin: fetchedData.is_admin,
     status: fetchedData.profile.status,
     username: fetchedData.username,
-    last_seen: fetchedData.profile.last_seen,
     avatar: path_to_link_av(fetchedData.profile.avatar),
   };
   return info;
@@ -74,29 +71,6 @@ export function defaultUser() {
   };
 
   return user;
-}
-
-export function defaultUserPreview() {
-  const user: UserPreview = {
-    fetched: false,
-    role: '​',
-    username: '',
-    status: '​',
-    avatar: 'https://media.kurtn3x.xyz/default.png',
-  };
-
-  return user;
-}
-
-export function serializeUserPreview(fetchedData: any) {
-  const user_preview: UserPreview = {
-    fetched: true,
-    role: fetchedData.role,
-    status: fetchedData.status,
-    username: fetchedData.username,
-    avatar: path_to_link_av(fetchedData.profile.avatar),
-  };
-  return user_preview;
 }
 
 export function serializeUser(fetchedData: any) {

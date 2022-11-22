@@ -1,11 +1,7 @@
 <template>
-  <div v-if="!fetched">Something went wrong.</div>
-  <div v-if="fetched && !allowed">Not allowed.</div>
-  <div v-if="fetched && allowed">
+  <div v-if="!fetched && loaded">No permissions.</div>
+  <div v-if="fetched && loaded">
     <q-toolbar class="q-mt-sm">
-      <q-btn to="/dashboard/files" icon="arrow_back" flat>
-        <q-tooltip>Go back</q-tooltip>
-      </q-btn>
       <q-space />
       <a class="text-h6"> {{ respData.code.name }}</a>
       <q-btn icon="info" flat round class="q-ml-md">
@@ -37,6 +33,11 @@
         </q-menu>
       </q-btn>
       <q-space />
+      <q-checkbox
+        v-model="readOnlyEnableMdEdit"
+        label="Enable Markdown Edit"
+        v-if="lang == 'markdown' && respData.permissions == 'read'"
+      />
       <q-btn-dropdown icon="settings" flat>
         <q-card bordered style="min-width: 190px; max-width: 190px">
           <q-select
@@ -47,7 +48,6 @@
             outlined
             style="width: 100px"
             dense
-            v-if="write_allowed"
           />
           <q-separator />
           <q-select
@@ -67,49 +67,92 @@
             label="Language"
             outlined
             dense
-            v-if="write_allowed"
           />
         </q-card>
       </q-btn-dropdown>
     </q-toolbar>
     <q-separator size="3px" class="q-mt-sm" />
     <div class="q-ma-sm">
+      <q-splitter
+        v-model="splitterModel"
+        :style="{ height: editorHeight + 'px' }"
+        v-if="
+          (lang == 'markdown' && respData.permissions.includes('write')) ||
+          (respData.permissions.includes('read') && readOnlyEnableMdEdit)
+        "
+      >
+        <template v-slot:before>
+          <codemirror
+            v-model="code"
+            placeholder="Code goes here..."
+            :style="{ height: editorHeight + 'px' }"
+            :autofocus="true"
+            :indent-with-tab="true"
+            :tab-size="tabsize"
+            :extensions="extensions"
+            @ready="handleReady"
+          />
+        </template>
+
+        <template v-slot:after>
+          <Markdown :source="code" />
+        </template>
+      </q-splitter>
+      <Markdown
+        :source="code"
+        v-if="
+          lang == 'markdown' &&
+          readOnlyEnableMdEdit == false &&
+          respData.permissions == 'read'
+        "
+        class="q-ma-md"
+      />
+
       <codemirror
         v-model="code"
-        :disabled="!this.write_allowed"
         placeholder="Code goes here..."
         :style="{ height: editorHeight + 'px' }"
         :autofocus="true"
         :indent-with-tab="true"
         :tab-size="tabsize"
         :extensions="extensions"
-        @update="handleStateUpdate"
         @ready="handleReady"
+        v-if="lang != 'markdown'"
       />
     </div>
     <q-toolbar class="q-mt-md">
+      <q-btn
+        size="lg"
+        class="bg-green text-white q-ml-md"
+        icon="download"
+        label="Download as File"
+        @click="saveCodeFile()"
+      ></q-btn>
+      <q-btn
+        class="q-ml-md"
+        outline
+        size="lg"
+        icon="content_copy"
+        label="Copy to clipboard"
+        @click="copyToClipboard()"
+      ></q-btn>
       <q-space />
       <q-btn
-        v-if="write_allowed"
         size="lg"
-        class="bg-green text-white"
+        class="bg-green text-white q-mr-lg"
         icon="save"
         label="Save"
         @click="saveCodeFile()"
+        v-if="respData.permissions.includes('write')"
       ></q-btn>
-      <q-space />
-      <a>Lines: {{ state.lines }}</a>
-      <a class="q-ml-md">Characters: {{ state.length }} </a>
-      <a class="q-ml-md"> Cursor: {{ state.cursor }} </a>
-      <a class="q-ml-md">Selected Characters: {{ state.selected }} </a>
     </q-toolbar>
   </div>
+  <q-separator class="q-mt-md" />
 </template>
 
-<script lang="ts">
+<script lang="js">
 import { defineComponent, ref, shallowRef, reactive } from 'vue';
 import { Codemirror } from 'vue-codemirror';
-import { ViewUpdate } from '@codemirror/view';
 import { basicSetup } from 'codemirror';
 import { langmap } from './langmap';
 import { thememap } from './thememap';
@@ -117,37 +160,24 @@ import { useSettingsStore } from 'stores/settings';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { useUserStore } from 'stores/user';
+import  Markdown from 'vue3-markdown-it';
+import 'highlight.js/styles/github-dark.css';
 
 export default defineComponent({
   components: {
     Codemirror,
+    Markdown,
   },
   setup() {
-    const code = ref('');
 
     // Codemirror EditorView instance ref
     const view = shallowRef();
-    const handleReady = (payload: any) => {
+    const handleReady = (payload) => {
       view.value = payload.view;
     };
 
-    const state = reactive({
-      lines: null as null | number,
-      cursor: null as null | number,
-      selected: null as null | number,
-      length: null as null | number,
-    });
+    const userStore = useUserStore();
 
-    const handleStateUpdate = (viewUpdate: ViewUpdate) => {
-      const ranges = viewUpdate.state.selection.ranges;
-      state.selected = ranges.reduce(
-        (plus, range) => plus + range.to - range.from,
-        0
-      );
-      state.cursor = ranges[0].anchor;
-      state.length = viewUpdate.state.doc.length;
-      state.lines = viewUpdate.state.doc.lines;
-    };
 
     const settingsStore = useSettingsStore();
     if (settingsStore.darkmode) {
@@ -158,31 +188,30 @@ export default defineComponent({
 
     const q = useQuasar();
 
-    const userStore = useUserStore();
-
     return {
+      readOnlyEnableMdEdit: ref(false),
+      loaded: ref(false),
+      splitterModel: ref(50),
       userStore,
-      write_allowed: ref(false),
-      allowed: ref(false),
       fetched: ref(false),
       settingsStore,
       q,
       disabled: ref(false),
       tabsize: ref(4),
-      handleStateUpdate,
-      state,
-      code,
+      code: ref(''),
       handleReady,
-      log: console.log,
       theme,
       fetchedLang: ref('python'),
       lang: ref('python'),
       langmap,
       thememap,
       respData: ref({
-        code: { name: '', modified: '', created: '', path: '' },
+        code: { name: '', modified: '', created: '', path: ''},
         path: '',
         parentid: '',
+        owner: '',
+        ownerid: '',
+        permissions:'read',
       }),
     };
   },
@@ -212,13 +241,17 @@ export default defineComponent({
     },
 
     editorHeight() {
-      var height = this.q.screen.height - 260;
+      var height = this.q.screen.height - 275;
       return height;
     },
   },
 
   methods: {
-    codeSuff(lang: string) {
+    copyToClipboard() {
+      navigator.clipboard.writeText(this.code);
+      this.notify('positive', 'Copied to clipboard.');
+    },
+    codeSuff(lang) {
       if (lang == 'javascript') {
         return '.js';
       } else if (lang == 'html') {
@@ -235,7 +268,7 @@ export default defineComponent({
         return '.js';
       }
     },
-    notify(type: string, message: string) {
+    notify(type, message) {
       this.q.notify({
         type: type,
         message: message,
@@ -252,13 +285,13 @@ export default defineComponent({
           'X-CSRFToken': this.q.cookies.get('csrftoken'),
         },
       };
-      var data: any = {
+      var data = {
         item_id: id,
         lang: this.lang,
         code: this.code,
       };
 
-      var name: any = this.respData.code.name;
+      var name = this.respData.code.name;
       if (this.lang != this.fetchedLang) {
         name = name.replace(/\.[^/.]+$/, '');
         name += this.codeSuff(this.lang);
@@ -299,25 +332,19 @@ export default defineComponent({
             this.lang = response.data.code.language;
             this.fetchedLang = response.data.code.language;
             this.fetched = true;
-            this.allowed = true;
-            if (
-              response.data.permissions == 'owner' ||
-              (response.data.permissions.includes('write') &&
-                this.userStore.authenticated)
-            ) {
-              this.write_allowed = true;
-            }
-            console.log(this.write_allowed);
+            this.loaded = true;
           } else {
-            this.fetched = false;
-            this.allowed = false;
+            // this.loading = false;
+            // this.allowed = false;
+            this.loaded = true;
+
           }
         })
         .catch((error) => {
           this.notify('negative', 'API ERROR :/');
           console.log(error);
-          this.fetched = false;
-          this.allowed = false;
+          this.loaded = true;
+
         });
     },
   },
