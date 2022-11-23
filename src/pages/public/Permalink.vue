@@ -1,6 +1,8 @@
 <template>
-  <div v-if="ok">Redirecting...</div>
-  <div v-if="!ok">Something went wrong :/</div>
+  <div v-if="ok" class="absolute-center">
+    <q-spinner color="primary" size="10em" />
+  </div>
+  <div v-if="!ok">Something went wrong :/. The link is probably invalid.</div>
 </template>
 
 <script>

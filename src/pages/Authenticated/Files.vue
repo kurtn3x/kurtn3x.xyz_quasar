@@ -119,12 +119,21 @@
             <q-btn
               label="Download"
               icon="file_download"
-              class="cursor-pointer bg-green text-white full-width q-mt-md"
+              class="cursor-pointer bg-green text-white full-width q-mt-lg"
               flat
               @click="openInNewTab(drawerItemId)"
               :loading="loading"
               v-if="drawerItemType == 'file'"
               size="xl"
+            />
+            <q-btn
+              label="Download Folder (only files)"
+              class="cursor-pointer bg-green text-white full-width q-mt-lg text-body1"
+              flat
+              @click="downloadFolderZip(drawerItemId)"
+              :loading="loading"
+              v-if="drawerItemType == 'folder'"
+              size="lg"
             />
           </q-tab-panel>
           <q-tab-panel name="edit">
@@ -272,7 +281,8 @@
               @click="updateSharing(3)"
             />
 
-            <div v-if="userStore.headerinfo.admin">
+            <div v-if="userStore.headerinfo.admin" class="q-mt-md">
+              <div class="text-body1 text-red">Admin: Add Permalink</div>
               <q-input
                 dense
                 outlined
@@ -282,7 +292,7 @@
                 class="text-primary q-ma-md text-body1 q-mt-lg"
               />
               <q-btn
-                class="cursor-pointer bg-green text-white full-width q-mt-md"
+                class="cursor-pointer bg-green text-white full-width q-mt-sm"
                 label="Save"
                 flat
                 icon="save"
@@ -1871,6 +1881,22 @@ export default defineComponent({
     },
   },
   methods: {
+    downloadFolderZip(id) {
+      api
+        .get('/files/folder/zip/' + id, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+          } else {
+            this.notify('negative', '' + response.data.error);
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          this.notify('negative', 'API ERROR :/');
+          this.loading = false;
+          console.log(error);
+        });
+    },
     handlePermalink() {
       this.loading = true;
       var data = {

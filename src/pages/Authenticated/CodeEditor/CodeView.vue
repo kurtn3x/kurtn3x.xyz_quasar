@@ -1,33 +1,64 @@
 <template>
+  <div class="absolute-center" v-if="!loaded">
+    <q-spinner color="primary" size="10em" />
+  </div>
   <div v-if="!fetched && loaded">Something went wrong.</div>
   <div v-if="fetched && loaded">
     <q-toolbar class="q-mt-sm">
       <q-btn to="/dashboard/files" icon="arrow_back" flat>
         <q-tooltip>Go back</q-tooltip>
       </q-btn>
-      <q-space />
-      <a class="text-h6"> {{ respData.code.name }}</a>
-      <q-btn icon="info" flat round class="q-ml-md">
-        <q-menu>
-          <q-card bordered>
-            <div class="q-ma-sm text-body 1">
-              <a class="text-weight-bolder"> Filename: </a>
-              {{ respData.code.name }}
-            </div>
-            <div class="q-ma-sm text-body 1">
-              <a class="text-weight-bolder"> Modified: </a>
-              {{ respData.code.modified }}
-            </div>
-            <div class="q-ma-sm text-body 1">
-              <a class="text-weight-bolder"> Created: </a>
-              {{ respData.code.created }}
-            </div>
-            <div class="q-ma-sm text-body 1">
-              <a class="text-weight-bolder"> Path: </a> {{ respData.code.path }}
-            </div>
-          </q-card>
-        </q-menu>
-      </q-btn>
+      <q-btn-dropdown icon="download" flat class="q-ml-md">
+        <div>
+          <q-btn
+            flat
+            class="bg-green text-white"
+            icon="download"
+            label="Download as File"
+            @click="downloadCode()"
+            style="width: 210px"
+          ></q-btn>
+        </div>
+        <q-btn
+          flat
+          icon="content_copy"
+          label="Copy to clipboard"
+          @click="copyToClipboard()"
+          style="width: 210px"
+          class="bg-blue text-white"
+        ></q-btn>
+      </q-btn-dropdown>
+      <q-btn
+        class="bg-green text-white q-ml-md"
+        icon="save"
+        label="Save"
+        @click="saveCodeFile()"
+      ></q-btn>
+      <q-toolbar-title class="absolute-center">
+        {{ respData.code.name }}
+        <q-btn icon="info" flat round class="q-ml-md">
+          <q-menu>
+            <q-card bordered>
+              <div class="q-ma-sm text-body 1">
+                <a class="text-weight-bolder"> Filename: </a>
+                {{ respData.code.name }}
+              </div>
+              <div class="q-ma-sm text-body 1">
+                <a class="text-weight-bolder"> Modified: </a>
+                {{ respData.code.modified }}
+              </div>
+              <div class="q-ma-sm text-body 1">
+                <a class="text-weight-bolder"> Created: </a>
+                {{ respData.code.created }}
+              </div>
+              <div class="q-ma-sm text-body 1">
+                <a class="text-weight-bolder"> Path: </a>
+                {{ respData.code.path }}
+              </div>
+            </q-card>
+          </q-menu>
+        </q-btn>
+      </q-toolbar-title>
       <q-space />
       <q-btn-dropdown icon="settings" flat>
         <q-card bordered style="min-width: 190px; max-width: 190px">
@@ -104,29 +135,6 @@
       />
     </div>
     <q-toolbar class="q-mt-md">
-      <q-btn
-        size="lg"
-        class="bg-green text-white q-ml-md"
-        icon="download"
-        label="Download as File"
-        @click="saveCodeFile()"
-      ></q-btn>
-      <q-btn
-        class="q-ml-md"
-        outline
-        size="lg"
-        icon="content_copy"
-        label="Copy to clipboard"
-        @click="copyToClipboard()"
-      ></q-btn>
-      <q-space />
-      <q-btn
-        size="lg"
-        class="bg-green text-white q-mr-lg"
-        icon="save"
-        label="Save"
-        @click="saveCodeFile()"
-      ></q-btn>
       <q-space />
       <a>Lines: {{ state.lines }}</a>
       <a class="q-ml-md">Characters: {{ state.length }} </a>
@@ -231,6 +239,7 @@ export default defineComponent({
   },
 
   computed: {
+
     extensions() {
       var temp = [basicSetup];
 
@@ -258,6 +267,18 @@ export default defineComponent({
   },
 
   methods: {
+    downloadCode(){
+      var element = document.createElement('a');
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(this.code));
+      element.setAttribute('download', this.respData.code.name);
+
+      element.style.display = 'none';
+      document.body.appendChild(element);
+
+      element.click();
+
+      document.body.removeChild(element);
+    },
     copyToClipboard() {
       navigator.clipboard.writeText(this.code);
       this.notify('positive', 'Copied to clipboard.');
