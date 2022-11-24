@@ -11,8 +11,7 @@
         <q-card-section class="row items-center">
           <span class="q-ml-sm"
             >To change your username you will be logged out and have to relogin
-            with your new credentials. It is recommended to refresh the page
-            afterwards to reload any cached data.</span
+            with your new credentials. </span
           >
         </q-card-section>
 
@@ -1061,10 +1060,6 @@ export default {
         .put('/auth/update/username', data, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
-            this.notify(
-              'positive',
-              'Username has been changed. Please log in again.'
-            );
             api
               .post('/auth/logout', '', this.axios_config)
               .then((response) => {
@@ -1134,19 +1129,7 @@ export default {
         .then((response) => {
           if (response.status == 200) {
             this.notify('positive', 'Email has been changed.');
-            api
-              .post('/auth/logout', '', this.axios_config)
-              .then((response) => {
-                if (response.status == 200) {
-                  this.userStore.setAuthState(false);
-                  LocalStorage.clear();
-                  this.userStore.setHeaderInfo();
-                  LocalStorage.remove('header');
-                  this.$router.push('/');
-                  this.notify('positive', 'Please log in again.');
-                }
-              })
-              .catch();
+            this.getAccountInformation();
           } else if (response.status == 244) {
             this.notify('negative', 'Current Password is wrong.');
           } else {

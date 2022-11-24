@@ -278,12 +278,6 @@
                 label="Request username"
                 v-model="request_username"
               />
-              <p
-                v-if="request_username && request_password"
-                class="text-center text-red q-mt-md"
-              >
-                Will be sent in seperate E-Mails
-              </p>
               <q-card-actions class="q-mt-md">
                 <q-btn
                   rounded
@@ -803,7 +797,7 @@ export default {
 
       if (this.request_password) {
         api
-          .post('auth/password_reset/', formData, this.axios_config)
+          .post('auth/password_reset', formData, this.axios_config)
           .then((response) => {
             if (response.status == 200) {
               this.loading = false;
@@ -826,7 +820,7 @@ export default {
 
       if (this.request_username) {
         api
-          .post('auth/username_request/', formData, this.axios_config)
+          .post('auth/username_request', formData, this.axios_config)
           .then((response) => {
             if (response.status == 200) {
               this.loading = false;
