@@ -113,8 +113,10 @@
         :style="{ height: editorHeight + 'px' }"
         v-if="
           (lang == 'markdown' && respData.permissions.includes('write')) ||
-          respData.permissions == 'owner' ||
-          (respData.permissions.includes('read') && readOnlyEnableMdEdit)
+          (lang == 'markdown' && respData.permissions == 'owner') ||
+          (lang == 'markdown' &&
+            respData.permissions.includes('read') &&
+            readOnlyEnableMdEdit)
         "
       >
         <template v-slot:before>
