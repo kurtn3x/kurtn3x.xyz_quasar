@@ -109,33 +109,75 @@
                           <q-separator />
                           <q-card-section horizontal>
                             <q-card-section>
-                              <div class="text-body1">Name</div>
-                              <div class="q-mt-sm text-body1">Location</div>
-                              <div class="q-mt-sm text-body1">Joined</div>
-                              <div class="q-mt-sm text-body1">Last Seen</div>
-                              <div class="q-mt-sm text-body1">Status</div>
-                              <div class="q-mt-sm text-body1">Role</div>
+                              <div class="text-body1" style="height: 24px">
+                                Name
+                              </div>
+                              <div
+                                class="q-mt-sm text-body1"
+                                style="height: 24px"
+                              >
+                                Location
+                              </div>
+                              <div
+                                class="q-mt-sm text-body1"
+                                style="height: 24px"
+                              >
+                                Joined
+                              </div>
+                              <div
+                                class="q-mt-sm text-body1"
+                                style="height: 24px"
+                              >
+                                Last Seen
+                              </div>
+                              <div
+                                class="q-mt-sm text-body1"
+                                style="height: 24px"
+                              >
+                                Status
+                              </div>
+                              <div
+                                class="q-mt-sm text-body1"
+                                style="height: 24px"
+                              >
+                                Role
+                              </div>
                             </q-card-section>
 
                             <q-separator vertical class="q-mt-sm" />
 
                             <q-card-section>
-                              <div class="text-body1">
+                              <div class="text-body1" style="height: 24px">
                                 {{ this.user.name }}
                               </div>
-                              <div class="q-mt-sm text-body1">
+                              <div
+                                class="q-mt-sm text-body1"
+                                style="height: 24px"
+                              >
                                 {{ this.user.location }}
                               </div>
-                              <div class="q-mt-sm text-body1">
+                              <div
+                                class="q-mt-sm text-body1"
+                                style="height: 24px"
+                              >
                                 {{ this.user.date_joined }}
                               </div>
-                              <div class="q-mt-sm text-body1">
+                              <div
+                                class="q-mt-sm text-body1"
+                                style="height: 24px"
+                              >
                                 {{ this.user.last_seen }}
                               </div>
-                              <div class="q-mt-sm text-body1">
+                              <div
+                                class="q-mt-sm text-body1"
+                                style="height: 24px"
+                              >
                                 {{ this.user.status }}
                               </div>
-                              <div class="q-mt-sm text-body1">
+                              <div
+                                class="q-mt-sm text-body1"
+                                style="height: 24px"
+                              >
                                 {{ this.user.role }}
                               </div>
                             </q-card-section>
