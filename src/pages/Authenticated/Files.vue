@@ -1013,13 +1013,6 @@
                   }
                 "
               >
-                <q-menu
-                  style="pointer-events: none"
-                  anchor="center middle"
-                  self="center middle"
-                  v-model="folder.drag_over"
-                  >Add to folder: {{ folder.name }}</q-menu
-                >
                 <q-item-section avatar>
                   <q-checkbox
                     v-model="selectedFolders"
@@ -1122,13 +1115,6 @@
                 "
                 @v-drag-drop="changeFolder($event, folder_link.id)"
               >
-                <q-menu
-                  style="pointer-events: none"
-                  anchor="center middle"
-                  self="center middle"
-                  v-model="folder_link.drag_over"
-                  >Add to folder: {{ folder_link.name }}</q-menu
-                >
                 <q-item-section avatar>
                   <q-checkbox
                     v-model="selectedFolderLinks"
