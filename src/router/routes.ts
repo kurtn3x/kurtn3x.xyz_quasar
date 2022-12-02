@@ -15,10 +15,6 @@ const routes: RouteRecordRaw[] = [
         component: () => import('pages/UserProfileIDReferrer.vue'),
       },
       {
-        path: 'test',
-        component: () => import('pages/test.vue'),
-      },
-      {
         path: 'p/:id',
         component: () => import('pages/public/Permalink.vue'),
       },

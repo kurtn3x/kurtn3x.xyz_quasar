@@ -780,20 +780,26 @@
             <q-item-section avatar top style="pointer-events: none">
               <q-avatar
                 icon="folder"
-                color="primary"
-                text-color="white"
+                color="transparent"
+                text-color="primary"
+                size="4.5em"
+                style="height: 40px"
                 v-if="newObjType == 'folder'"
               />
               <q-avatar
                 icon="article"
-                color="primary"
-                text-color="white"
+                color="transparent"
+                text-color="primary"
+                size="4.5em"
+                style="height: 40px"
                 v-if="newObjType == 'document'"
               />
               <q-avatar
                 :icon="condIcon"
-                color="primary"
-                text-color="white"
+                color="transparent"
+                text-color="primary"
+                size="4.5em"
+                style="height: 40px"
                 v-if="newObjType == 'code'"
               />
             </q-item-section>
@@ -1023,7 +1029,13 @@
                   />
                 </q-item-section>
                 <q-item-section avatar top style="pointer-events: none">
-                  <q-avatar icon="folder" color="primary" text-color="white" />
+                  <q-avatar
+                    icon="folder"
+                    color="transparent"
+                    text-color="primary"
+                    size="4.5em"
+                    style="height: 40px"
+                  />
                 </q-item-section>
 
                 <q-item-section style="pointer-events: none">
@@ -1128,8 +1140,10 @@
                 <q-item-section avatar top style="pointer-events: none">
                   <q-avatar
                     icon="folder_shared"
-                    color="primary"
-                    text-color="white"
+                    color="transparent"
+                    text-color="primary"
+                    size="4.5em"
+                    style="height: 40px"
                   />
                 </q-item-section>
 
@@ -1211,8 +1225,10 @@
                 <q-item-section avatar top>
                   <q-avatar
                     icon="file_present"
-                    color="primary"
-                    text-color="white"
+                    color="transparent"
+                    text-color="primary"
+                    size="4.5em"
+                    style="height: 40px"
                   />
                 </q-item-section>
                 <q-item-section>
@@ -1296,8 +1312,10 @@
                 <q-item-section avatar top>
                   <q-avatar
                     icon="article"
-                    color="light-blue"
-                    text-color="white"
+                    color="transparent"
+                    text-color="primary"
+                    size="4.5em"
+                    style="height: 40px"
                   />
                 </q-item-section>
                 <q-item-section>
@@ -1379,8 +1397,10 @@
                 <q-item-section avatar top>
                   <q-avatar
                     :icon="codeIcon(code_item.language)"
-                    color="light-blue"
-                    text-color="white"
+                    color="transparent"
+                    text-color="primary"
+                    size="4.5em"
+                    style="height: 40px"
                   />
                 </q-item-section>
                 <q-item-section>
@@ -1435,9 +1455,9 @@
           </template>
         </div>
       </q-scroll-area>
-      <q-separator color="primary" />
+      <q-separator color="primary" v-if="!dropField" />
       <div
-        style="height: 100px"
+        style="height: 100px; border: 2px dotted grey"
         v-if="dropField"
         @drop.self.prevent="onBackgroundDrop"
         @dragover.prevent="
@@ -1473,6 +1493,7 @@
           Drag/Drop files or folders here to upload to current folder
         </div>
       </div>
+
       <q-page-sticky position="bottom" :offset="[18, 0]" v-if="!mobile">
         <q-fab
           color="primary"
@@ -1678,17 +1699,81 @@ export default defineComponent({
       rawFolderContent: ref({
         name: 'Home',
         path: 'Home',
-        id: '0',
-        README: {
-          exist: true,
-          content: '',
-        },
+        id: '9c98e79b-1e52-47a8-bf98-e4aaa56b858b',
         children: {
           private_files: [],
           folder_links: [],
-          folders: [],
-          documents: [],
-          code: [],
+          folders: [
+            {
+              name: 'NetzwerkProjekt',
+              id: '0737c1a4-4b61-4250-a82a-8f77394dd6b5',
+              path: 'Home/NetzwerkProjekt',
+              modified: '2022-11-22, 20:55:33',
+              created: '2022-11-22, 20:55:26',
+              size: 0,
+              shared: false,
+              allow_all_read: false,
+              allow_all_write: false,
+            },
+            {
+              name: 'RaspbyProjekt',
+              id: '40481c29-a5d1-459e-a00d-76324b4f8506',
+              path: 'Home/RaspbyProjekt',
+              modified: '2022-12-01, 11:37:47',
+              created: '2022-11-22, 20:45:22',
+              size: 0,
+              shared: false,
+              allow_all_read: false,
+              allow_all_write: false,
+            },
+          ],
+          documents: [
+            {
+              name: 'HelloWorld',
+              id: '0d8e795c-7e4a-49b7-a6ab-bb79eaa8bbb7',
+              modified: '2022-12-01, 12:30:42',
+              created: '2022-11-28, 11:16:00',
+              shared: false,
+              allow_all_read: false,
+              allow_all_write: false,
+            },
+          ],
+          code: [
+            {
+              name: 'LF7Code.py',
+              id: '0dd89e19-96b8-492e-ad6c-84d946686e70',
+              modified: '2022-11-24, 11:55:02',
+              created: '2022-11-24, 11:54:32',
+              language: 'python',
+              shared: true,
+              allow_all_read: true,
+              allow_all_write: false,
+            },
+            {
+              name: 'LF7Messungen.md',
+              id: '52494d46-9496-4e90-b7e8-246cfb100d78',
+              modified: '2022-11-24, 13:00:46',
+              created: '2022-11-24, 13:00:36',
+              language: 'markdown',
+              shared: false,
+              allow_all_read: false,
+              allow_all_write: false,
+            },
+            {
+              name: 'LF7V1.0Code.py',
+              id: '8c207e60-f506-4900-ab94-33e2664d7236',
+              modified: '2022-11-28, 10:42:27',
+              created: '2022-11-24, 12:59:49',
+              language: 'python',
+              shared: false,
+              allow_all_read: false,
+              allow_all_write: false,
+            },
+          ],
+        },
+        README: {
+          exist: false,
+          content: '',
         },
       }),
 
@@ -1882,20 +1967,9 @@ export default defineComponent({
   },
   methods: {
     downloadFolderZip(id) {
-      api
-        .get('/files/folder/zip/' + id, this.axios_config)
-        .then((response) => {
-          if (response.status == 200) {
-          } else {
-            this.notify('negative', '' + response.data.error);
-            this.loading = false;
-          }
-        })
-        .catch((error) => {
-          this.notify('negative', 'API ERROR :/');
-          this.loading = false;
-          console.log(error);
-        });
+      window
+        .open('https://api.kurtn3x.xyz/files/folder/zip/' + id, '_blank')
+        .focus();
     },
     handlePermalink() {
       this.loading = true;
@@ -2990,6 +3064,12 @@ export default defineComponent({
             this.loading = false;
             this.updateItemDrawer = false;
             this.availParents = [];
+            this.selectedCode = [];
+            this.selectedFolderLinks = [];
+            this.selectedFolders = [];
+            this.selectedFiles = [];
+            this.selectedDocuments = [];
+            this.allSelected = false;
           } else {
             this.notify('negative', '' + response.data.error);
             this.loading = false;
@@ -3124,7 +3204,7 @@ export default defineComponent({
         });
     },
 
-    // create documents and folders from add button
+    // create documents and folders and code from add button
     createObj() {
       this.loading = true;
       var data = {
@@ -3135,7 +3215,6 @@ export default defineComponent({
         data.language = this.newObjLanguage;
         data.name += this.condSuff;
       }
-      console.log(data);
       api
         .post('/files/create/' + this.newObjType, data, this.axios_config)
         .then((response) => {

@@ -82,12 +82,86 @@
         border-right: 1px solid;
       "
     >
-      <ckeditor
-        :editor="myeditor"
+      <q-editor
         v-model="editorData"
-        :config="editorConfig"
-        @ready="onReady"
-      ></ckeditor>
+        :dense="$q.screen.lt.md"
+        :toolbar="[
+          [
+            {
+              label: $q.lang.editor.align,
+              icon: $q.iconSet.editor.align,
+              fixedLabel: true,
+              list: 'only-icons',
+              options: ['left', 'center', 'right', 'justify'],
+            },
+            {
+              label: $q.lang.editor.align,
+              icon: $q.iconSet.editor.align,
+              fixedLabel: true,
+              options: ['left', 'center', 'right', 'justify'],
+            },
+          ],
+          ['bold', 'italic', 'strike', 'underline', 'subscript', 'superscript'],
+          ['token', 'hr', 'link', 'custom_btn'],
+          ['print', 'fullscreen'],
+          [
+            {
+              label: $q.lang.editor.formatting,
+              icon: $q.iconSet.editor.formatting,
+              list: 'no-icons',
+              options: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'code'],
+            },
+            {
+              label: $q.lang.editor.fontSize,
+              icon: $q.iconSet.editor.fontSize,
+              fixedLabel: true,
+              fixedIcon: true,
+              list: 'no-icons',
+              options: [
+                'size-1',
+                'size-2',
+                'size-3',
+                'size-4',
+                'size-5',
+                'size-6',
+                'size-7',
+              ],
+            },
+            {
+              label: $q.lang.editor.defaultFont,
+              icon: $q.iconSet.editor.font,
+              fixedIcon: true,
+              list: 'no-icons',
+              options: [
+                'default_font',
+                'arial',
+                'arial_black',
+                'comic_sans',
+                'courier_new',
+                'impact',
+                'lucida_grande',
+                'times_new_roman',
+                'verdana',
+              ],
+            },
+            'removeFormat',
+          ],
+          ['quote', 'unordered', 'ordered', 'outdent', 'indent'],
+
+          ['undo', 'redo'],
+          ['viewsource'],
+        ]"
+        :fonts="{
+          arial: 'Arial',
+          arial_black: 'Arial Black',
+          comic_sans: 'Comic Sans MS',
+          courier_new: 'Courier New',
+          impact: 'Impact',
+          lucida_grande: 'Lucida Grande',
+          times_new_roman: 'Times New Roman',
+          verdana: 'Verdana',
+        }"
+      />
     </div>
     <q-btn label="WWWW" @click="printtxt" />
     <q-separator />
@@ -108,14 +182,9 @@ import { useUserStore } from 'stores/user';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { useSettingsStore } from 'stores/settings';
-import CKEditor from '@ckeditor/ckeditor5-vue';
-import DecoupledEditor from 'ckeditor-custom';
 
 export default defineComponent({
-  name: 'DocEditorView',
-  components: {
-    ckeditor: CKEditor.component,
-  },
+  name: 'PublicDocEditorView',
 
   setup() {
     const userStore = useUserStore();
@@ -133,49 +202,8 @@ export default defineComponent({
       userStore,
       settingsStore,
       q,
-      myeditor: DecoupledEditor,
       // permanent editor data
       editorData: '',
-      editorConfig: {
-        width: 300,
-        toolbar: [
-          'heading',
-          'Alignment',
-          '|',
-          'fontColor',
-          'fontFamily',
-          'fontSize',
-          'fontBackgroundColor',
-          '|',
-          'bold',
-          'italic',
-          'underline',
-          '|',
-          'bulletedList',
-          'numberedList',
-          'toDoList',
-          '|',
-          'Outdent',
-          'Indent',
-          '|',
-          'link',
-          'uploadImage',
-          'insertImage',
-          'insertMedia',
-          'Blockquote',
-          'insertTable',
-          'code',
-          'codeBlock',
-          'specialCharacters',
-          '|',
-          'undo',
-          'redo',
-          '|',
-          'horizontalLine',
-          'findAndReplace',
-          'pageBreak',
-        ],
-      },
 
       // permanent doc name
       docName: ref(''),
@@ -199,20 +227,11 @@ export default defineComponent({
   },
   async created() {
     this.docId = this.$route.params.id;
+    this.getDoc();
   },
   methods: {
     printtxt() {
       console.log(this.editorData);
-    },
-    printDocument() {
-      var wnd = window.open('about:blank', '', '_blank');
-      console.log(this.editorData);
-      wnd.document.write('<br>');
-      wnd.document.write(this.editorData);
-      wnd.document.write(
-        "<head><style type='text/css' media='print'> @page {size: auto; margin-top: 0; margin-bottom:0; margin-left: 16mm; margin-right:16mm; } </style> </head>"
-      );
-      wnd.print();
     },
     async getDoc() {
       await api
@@ -323,38 +342,6 @@ export default defineComponent({
           this.loading = false;
           console.log(error);
         });
-    },
-    async onReady(editor) {
-      const wordCountPlugin = editor.plugins.get('WordCount');
-      const wordCountWrapper = document.getElementById('word-counter');
-      wordCountWrapper.appendChild(wordCountPlugin.wordCountContainer);
-
-      await this.getDoc();
-      editor.setData(this.editorData);
-
-      // Insert the toolbar before the editable area.
-      const container = document.getElementById('editor');
-      container.parentNode.insertBefore(
-        editor.ui.view.toolbar.element,
-        container
-      );
-      window.editor = editor;
-
-      // Set a custom container for the toolbar.
-      const view = editor.editing.view;
-      const viewDocument = view.document;
-      // handle tab keys
-      viewDocument.on('keydown', (evt, data) => {
-        if (data.keyCode == 9 && viewDocument.isFocused) {
-          // with white space setting to pre
-          // editor.execute('input', { text: '\t' });
-          editor.execute('input', { text: '    ' });
-
-          evt.stop(); // Prevent executing the default handler.
-          data.preventDefault();
-          view.scrollToTheSelection();
-        }
-      });
     },
   },
 });
