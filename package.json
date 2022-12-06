@@ -44,6 +44,7 @@
     "v-drag-drop": "^4.0.0",
     "vue": "^3.0.0",
     "vue-advanced-cropper": "^2.8.6",
+    "vue-client-recaptcha": "^1.0.9",
     "vue-codemirror": "^6.1.1",
     "vue-final-modal": "^3.4.11",
     "vue-pdf-embed": "^1.1.4",

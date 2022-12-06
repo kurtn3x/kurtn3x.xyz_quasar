@@ -59,14 +59,6 @@
                   lazy-rules
                   :rules="[(val) => val.length < 15 || 'Maximum 15 Characters']"
                 >
-                  <template v-slot:prepend>
-                    <q-icon name="add_reaction" class="button_hover">
-                      <q-menu>
-                        <EmojiPicker :native="true" @select="onSelectEmoji" />
-                      </q-menu>
-                      <q-tooltip> Add a emoji to status</q-tooltip>
-                    </q-icon>
-                  </template>
                   <template v-slot:after>
                     <q-icon
                       name="send"
@@ -632,15 +624,13 @@ import { api } from 'boot/axios';
 import { useUserStore } from 'stores/user.ts';
 import { useSettingsStore } from 'stores/settings';
 import ParticlesBG from 'components/ParticlesBG.vue';
-import EmojiPicker from 'vue3-emoji-picker';
-import '../../node_modules/vue3-emoji-picker/dist/style.css';
 import {
   defaultHeaderInformation,
   serializeHeaderInformation,
 } from 'src/models';
 
 export default {
-  components: { ParticlesBG, EmojiPicker },
+  components: { ParticlesBG },
 
   setup() {
     const userStore = useUserStore();
@@ -758,10 +748,6 @@ export default {
         progress: true,
         multiLine: true,
       });
-    },
-
-    onSelectEmoji(emoji) {
-      this.status += emoji.i;
     },
 
     updateHeaderStatus() {

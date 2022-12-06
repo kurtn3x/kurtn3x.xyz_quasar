@@ -18,6 +18,10 @@ const routes: RouteRecordRaw[] = [
         path: 'p/:id',
         component: () => import('pages/public/Permalink.vue'),
       },
+      {
+        path: 'register',
+        component: () => import('pages/Register.vue'),
+      },
     ],
   },
 
