@@ -2,10 +2,8 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
+  <div v-if="initialFetch && initialFetchSuccessful">Something went wrong.</div>
   <div v-if="initialFetch && !initialFetchSuccessful">
-    Something went wrong.
-  </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
     <q-dialog v-model="folderDeleteDialog" @hide="availParents = []">
       <q-card bordered>
         <div class="text-body1 text-center q-ma-md">
@@ -1441,7 +1439,7 @@
           </template>
         </div>
       </q-scroll-area>
-      <q-separator color="primary" v-if="!dropField" />
+      <q-separator color="primary" />
       <div
         style="height: 100px; border: 2px dotted grey"
         v-if="dropField"
@@ -1504,58 +1502,6 @@
         >
         </q-btn>
       </q-page-sticky>
-      <!-- <q-page-sticky
-        :offset="fabPos"
-        style="z-index: 99999999999999"
-        v-if="readMeShow"
-      >
-        <q-card
-          bordered
-          :style="
-            'width:' +
-            readMeSize[0] +
-            'px' +
-            ';' +
-            'height:' +
-            readMeSize[1] +
-            'px'
-          "
-          style="overflow: scroll; cursor: grab"
-          v-touch-pan.prevent.mouse="moveFab"
-        >
-          <q-card-section class="q-ma-none q-pa-none">
-            <div class="row">
-              <a class="text-h6 q-ma-sm">Readme.md</a>
-              <q-space />
-              <q-btn
-                icon="close"
-                color="red"
-                flat
-                outline
-                @click="readMeShow = false"
-              ></q-btn>
-            </div>
-            <q-separator />
-            <Markdown
-              :source="rawFolderContent.README.content"
-              style="overflow: scroll"
-            />
-          </q-card-section>
-          <q-card-actions
-            class="absolute-bottom q-ma-sm"
-            v-touch-pan.prevent.mouse="moveFab"
-            style="cursor: grab"
-          >
-            <a> Window Size</a>
-            <q-slider
-              v-model="slider"
-              :min="300"
-              :max="800"
-              @change="changeReadMeSize"
-            />
-          </q-card-actions>
-        </q-card>
-      </q-page-sticky> -->
       <div>
         <vue-final-modal
           v-model="readMeShow"

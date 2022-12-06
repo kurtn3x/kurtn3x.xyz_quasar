@@ -2,17 +2,15 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
+  <div v-if="initialFetch && initialFetchSuccessful">Something went wrong.</div>
   <div v-if="initialFetch && !initialFetchSuccessful">
-    Something went wrong.
-  </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
     <q-dialog v-model="confirm">
       <q-card>
         <q-card-section class="row items-center">
           <span class="q-ml-sm"
             >To change your username you will be logged out and have to relogin
-            with your new credentials. </span
-          >
+            with your new credentials.
+          </span>
         </q-card-section>
 
         <q-card-actions align="right">
@@ -366,6 +364,10 @@
                     </q-file>
                     <div class="text-body1 q-mt-xl q-ml-md">
                       Allowed Images: .jpg, .png, .gif, .jpeg, less than 2mb
+                      <br />
+                      Recommended Profile Picture Aspect Ratio: Square <br />
+                      Recommended Background Picture: Any length, max 200px
+                      height
                     </div>
                   </div>
                 </template>
@@ -590,6 +592,7 @@
                   <q-icon name="attach_file" />
                 </template>
               </q-file>
+
               <q-file
                 v-model="background"
                 outlined
@@ -612,6 +615,9 @@
 
               <div class="text-body1 text-center q-mt-md">
                 Allowed Images: .jpg, .png, .gif, .jpeg, less than 2mb
+                <br />
+                Recommended Profile Picture Aspect Ratio: Square <br />
+                Recommended Background Picture: Any length, 200px height
               </div>
 
               <div class="row justify-center q-mt-lg">
@@ -922,6 +928,7 @@ import {
 } from 'src/models';
 import EmojiPicker from 'vue3-emoji-picker';
 import '../../../node_modules/vue3-emoji-picker/dist/style.css';
+
 export default {
   name: 'SettingsView',
   components: { EmojiPicker },
@@ -973,7 +980,7 @@ export default {
   },
 
   created() {
-    if (!this.userStore.authenticated) {
+    if (this.userStore.authenticated) {
       this.$router.push('/');
       this.notify(
         'negative',
@@ -1166,6 +1173,7 @@ export default {
     },
 
     updateUserProfile() {
+      console.log(this.avatar);
       let config = {
         withCredentials: true,
         headers: {
@@ -1247,6 +1255,28 @@ export default {
 
           this.notify('negative', 'API ERROR :/');
           console.log(error);
+          this.account = {
+            profile: {
+              name: 'Kurt',
+              status: 'New here!',
+              location: 'kurtn3x.xyz',
+              description: "Hi, i'm new here and this is my description!",
+              avatar: null,
+              background: null,
+            },
+            account: {
+              id: '6e6a5e42-ee59-4c82-ab6f-4c8fda4dd9b0',
+              password:
+                'pbkdf2_sha256$216000$A1q7l7JslgHE$A1/4Rv1yi11wxHa4FqEVnEp83QsMvOCSkreHq5U2BpM=',
+              last_login: '2022-12-05T18:29:16.325692Z',
+              username: 'kurt',
+              email: 'demlusius@gmail.com',
+              is_active: true,
+              is_admin: true,
+              date_joined: '2022-11-22T20:43:16.604458Z',
+              last_seen: '2022-12-06T07:33:43.673260Z',
+            },
+          };
         });
     },
   },
