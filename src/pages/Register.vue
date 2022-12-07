@@ -177,14 +177,6 @@
               style="max-width: 600px"
               class="q-mt-xl"
             >
-              <template v-slot:append>
-                <q-icon name="add_reaction" class="button_hover">
-                  <q-menu>
-                    <EmojiPicker :native="true" @select="onSelectEmojiName" />
-                  </q-menu>
-                  <q-tooltip> Add emoji</q-tooltip>
-                </q-icon>
-              </template>
             </q-input>
             <q-input
               dense
@@ -199,17 +191,6 @@
               style="max-width: 600px"
               class="q-mt-sm"
             >
-              <template v-slot:append>
-                <q-icon name="add_reaction" class="button_hover">
-                  <q-menu>
-                    <EmojiPicker
-                      :native="true"
-                      @select="onSelectEmojiLocation"
-                    />
-                  </q-menu>
-                  <q-tooltip> Add emoji</q-tooltip>
-                </q-icon>
-              </template>
             </q-input>
 
             <q-input
@@ -225,14 +206,6 @@
               style="max-width: 600px"
               class="q-mt-sm"
             >
-              <template v-slot:append>
-                <q-icon name="add_reaction" class="button_hover">
-                  <q-menu>
-                    <EmojiPicker :native="true" @select="onSelectEmojiStatus" />
-                  </q-menu>
-                  <q-tooltip> Add emoji</q-tooltip>
-                </q-icon>
-              </template>
             </q-input>
 
             <q-input
@@ -249,17 +222,6 @@
               style="max-width: 600px"
               class="q-mt-sm"
             >
-              <template v-slot:append>
-                <q-icon name="add_reaction" class="button_hover">
-                  <q-menu>
-                    <EmojiPicker
-                      :native="true"
-                      @select="onSelectEmojiDescription"
-                    />
-                  </q-menu>
-                  <q-tooltip> Add emoji</q-tooltip>
-                </q-icon>
-              </template>
             </q-input>
 
             <q-file
@@ -272,6 +234,7 @@
               style="max-width: 400px"
               counter
               class="q-mt-sm"
+              @update:model-value="onAvatarSelect"
             >
               <template v-slot:prepend>
                 <q-icon name="attach_file" />
@@ -293,6 +256,7 @@
               style="max-width: 400px"
               counter
               class="q-mt-md"
+              @update:model-value="onBackgroundSelect"
             >
               <template v-slot:prepend>
                 <q-icon name="attach_file" />
@@ -452,6 +416,7 @@ export default {
       q,
       isPwd: ref(true),
       isPwd2: ref(true),
+      registerSuccessful: ref(false),
 
       registerData: ref({
         username: ref(''),
@@ -479,6 +444,15 @@ export default {
   },
 
   methods: {
+    onAvatarSelect() {
+      this.avatarPreview = URL.createObjectURL(this.registerData.avatar);
+    },
+    onBackgroundSelect() {
+      this.backgroundPreview = URL.createObjectURL(
+        this.registerData.background
+      );
+    },
+
     checkCaptcha() {
       this.captchaVerified = this.captchaVal;
       if (this.captchaVerified) {
@@ -488,6 +462,7 @@ export default {
         this.captchaError = true;
       }
     },
+
     notify(type, message) {
       this.q.notify({
         type: type,
@@ -495,6 +470,30 @@ export default {
         progress: true,
         multiLine: true,
       });
+    },
+
+    submitRegister() {
+      this.loading = true;
+
+      api
+        .post('/auth/register', this.registerData, this.axios_config)
+        .then((response) => {
+          if (response.status == 200) {
+          } else {
+            this.loading = false;
+            var msg = response.data.error;
+            this.notify('negative', msg);
+          }
+        })
+        .catch((error) => {
+          this.loading = false;
+          var msg = 'Error (Server Error): ' + error;
+          this.notify('negative', msg);
+        });
+    },
+
+    onRejected() {
+      this.notify('negative', 'Invalid Image');
     },
   },
 };
