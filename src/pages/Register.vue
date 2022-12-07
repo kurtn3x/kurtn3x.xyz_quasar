@@ -17,6 +17,8 @@
         active-color="primary"
         title="Required Information"
         :done="step > 1"
+        :error="checkErrorRequired"
+        error-color="red"
       >
         <q-card
           class="no-shadow row justify-center"
@@ -31,7 +33,7 @@
             <q-input
               square
               filled
-              v-model="registerData.username"
+              v-model="registerDataRequired.username"
               label="Username"
               lazy-rules
               input-class="text-body1"
@@ -39,52 +41,104 @@
                 (val) => (val && val.length > 0) || 'Please type something',
                 (val) => (val && val.length > 3) || 'At least 4 characters',
                 (val) =>
-                  (val && val.length < 50) || 'Not more than 16 characters',
+                  (val && val.length < 17) || 'Not more than 16 characters',
                 (val) =>
                   /^([a-zA-Z0-9\u0600-\u06FF\u0660-\u0669\u06F0-\u06F9 _.-]+)$/.test(
                     val
                   ) || 'Only alphanumeric characters allowed.',
               ]"
               class="q-mt-lg"
+              ref="usernameInput"
+              v-on:blur="isValidUsername"
             >
               <template v-slot:prepend>
                 <q-icon name="person" />
               </template>
 
               <template v-slot:after>
-                <q-btn icon="info" flat round />
+                <q-btn
+                  icon="info"
+                  flat
+                  round
+                  :tabindex="-1"
+                  v-if="!errorMap.usernameError"
+                  color="red"
+                >
+                  <q-menu anchor="bottom middle" self="top middle">
+                    <div
+                      class="q-ma-sm text-body2 text-center"
+                      style="max-width: 250px"
+                    >
+                      <a class="text-red">Alphanumeric </a> username between
+                      <a class="text-red">4-16 </a>characters
+                    </div>
+                  </q-menu>
+                </q-btn>
+                <q-btn
+                  icon="done"
+                  flat
+                  round
+                  :tabindex="-1"
+                  v-if="errorMap.usernameError"
+                  color="green"
+                />
               </template>
             </q-input>
 
             <q-input
               square
               filled
-              v-model="registerData.email"
+              v-model="registerDataRequired.email"
               type="email"
               label="Email"
               input-class="text-body1"
               lazy-rules
               :rules="[
                 (val) => (val && val.length > 0) || 'Please type something',
-                (val) => (val && val.length > 3) || 'At least 4 characters',
                 (val) =>
                   /^(?=[a-zA-Z0-9@._%+-]{6,254}$)[a-zA-Z0-9._%+-]{1,64}@(?:[a-zA-Z0-9-]{1,63}\.){1,8}[a-zA-Z]{2,63}$/.test(
                     val
                   ) || 'Not a valid E-Mail',
               ]"
               class="q-mt-md"
+              ref="emailInput"
+              v-on:blur="isValidEmail"
             >
               <template v-slot:prepend>
                 <q-icon name="email" />
               </template>
               <template v-slot:after>
-                <q-btn icon="info" flat round />
+                <q-btn
+                  icon="info"
+                  flat
+                  round
+                  :tabindex="-1"
+                  v-if="!errorMap.emailError"
+                  color="red"
+                >
+                  <q-menu anchor="bottom middle" self="top middle">
+                    <div
+                      class="q-ma-sm text-body2 text-center"
+                      style="max-width: 250px"
+                    >
+                      A valid email address.
+                    </div>
+                  </q-menu>
+                </q-btn>
+                <q-btn
+                  icon="done"
+                  flat
+                  round
+                  :tabindex="-1"
+                  v-if="errorMap.emailError"
+                  color="green"
+                />
               </template>
             </q-input>
             <q-input
               square
               filled
-              v-model="registerData.password"
+              v-model="registerDataRequired.password"
               label="Password"
               input-class="text-body1"
               lazy-rules
@@ -97,10 +151,11 @@
                   /(?=.*[a-z])/.test(val) || 'At least 1 lowercase letter',
                 (val) =>
                   /(?=.*[A-Z])/.test(val) || 'At least 1 uppercase letter',
-                (val) => /(?=.*[0-9])/.test(val) || 'At least 1 number',
               ]"
               :type="isPwd ? 'password' : 'text'"
               class="q-mt-md"
+              ref="passwordInput"
+              v-on:blur="isValidPassword"
             >
               <template v-slot:prepend>
                 <q-icon
@@ -110,23 +165,56 @@
                 />
               </template>
               <template v-slot:after>
-                <q-btn icon="info" flat round />
+                <q-btn
+                  icon="info"
+                  flat
+                  round
+                  :tabindex="-1"
+                  v-if="!errorMap.passwordError"
+                  color="red"
+                >
+                  <q-menu anchor="bottom middle" self="top middle">
+                    <div
+                      class="q-ma-sm text-body2 text-center"
+                      style="max-width: 250px"
+                    >
+                      A Password with
+                      <a class="text-red">8-100 </a> characters containing at
+                      least
+                      <a class="text-red"
+                        >one lowercase and one uppercase letter</a
+                      >.
+                    </div>
+                  </q-menu>
+                </q-btn>
+                <q-btn
+                  icon="done"
+                  flat
+                  round
+                  :tabindex="-1"
+                  v-if="errorMap.passwordError"
+                  color="green"
+                />
               </template>
             </q-input>
 
             <q-input
               square
               filled
-              v-model="registerData.password2"
+              v-model="registerDataRequired.password2"
               label="Confirm Password"
               input-class="text-body1"
               lazy-rules
               :rules="[
                 (val) => (val && val.length > 0) || 'Please type something',
-                (val) => val == password || 'Passwords do not match',
+                (val) =>
+                  val == registerDataRequired.password ||
+                  'Passwords do not match',
               ]"
               :type="isPwd2 ? 'password' : 'text'"
               class="q-mt-md"
+              ref="password2Input"
+              v-on:blur="isValidPassword2"
             >
               <template v-slot:prepend>
                 <q-icon
@@ -136,7 +224,31 @@
                 />
               </template>
               <template v-slot:after>
-                <q-btn icon="info" flat round />
+                <q-btn
+                  icon="info"
+                  flat
+                  round
+                  :tabindex="-1"
+                  v-if="!errorMap.password2Error"
+                  color="red"
+                >
+                  <q-menu anchor="bottom middle" self="top middle">
+                    <div
+                      class="q-ma-sm text-body2 text-center"
+                      style="max-width: 250px"
+                    >
+                      Passwords must match.
+                    </div>
+                  </q-menu>
+                </q-btn>
+                <q-btn
+                  icon="done"
+                  flat
+                  round
+                  :tabindex="-1"
+                  v-if="errorMap.password2Error"
+                  color="green"
+                />
               </template>
             </q-input>
           </q-card-section>
@@ -152,6 +264,8 @@
         active-color="primary"
         icon="person"
         :done="step > 2"
+        :error="checkErrorOptional"
+        error-color="red"
       >
         <q-card
           class="no-shadow row justify-center"
@@ -167,7 +281,7 @@
               dense
               square
               filled
-              v-model="registerData.name"
+              v-model="registerDataOptional.name"
               type="name"
               label="Name"
               lazy-rules
@@ -176,13 +290,13 @@
               ]"
               style="max-width: 600px"
               class="q-mt-xl"
-            >
-            </q-input>
+              ref="nameInput"
+            />
             <q-input
               dense
               square
               filled
-              v-model="registerData.location"
+              v-model="registerDataOptional.location"
               label="Location"
               lazy-rules
               :rules="[
@@ -190,14 +304,14 @@
               ]"
               style="max-width: 600px"
               class="q-mt-sm"
-            >
-            </q-input>
+              ref="locationInput"
+            />
 
             <q-input
               dense
               square
               filled
-              v-model="registerData.status"
+              v-model="registerDataOptional.status"
               label="Status"
               lazy-rules
               :rules="[
@@ -205,15 +319,15 @@
               ]"
               style="max-width: 600px"
               class="q-mt-sm"
-            >
-            </q-input>
+              ref="statusInput"
+            />
 
             <q-input
               type="textarea"
               dense
               square
               filled
-              v-model="registerData.description"
+              v-model="registerDataOptional.description"
               label="Description"
               lazy-rules
               :rules="[
@@ -221,11 +335,11 @@
               ]"
               style="max-width: 600px"
               class="q-mt-sm"
-            >
-            </q-input>
+              ref="descriptionInput"
+            />
 
             <q-file
-              v-model="registerData.avatar"
+              v-model="registerDataOptional.avatar"
               outlined
               label="Profile Picture"
               max-file-size="2048000"
@@ -247,7 +361,7 @@
             </q-file>
 
             <q-file
-              v-model="registerData.background"
+              v-model="registerDataOptional.background"
               outlined
               label="Background Picture"
               max-file-size="2048000"
@@ -359,8 +473,16 @@
       >
       </q-step>
     </q-stepper>
-    <div class="row justify-center" v-if="captchaVerified">
-      <q-btn size="xl" label="Register" class="text-white" color="green" />
+    <div v-if="captchaVerified">
+      <div class="row justify-center">
+        <q-btn size="xl" label="Register" class="text-white" color="green" />
+      </div>
+      <div
+        v-if="checkErrorRequired || checkErrorOptional"
+        class="q-mt-lg text-center text-red text-h6"
+      >
+        You still have some errors though, please fix them first!
+      </div>
     </div>
     <q-page-sticky position="bottom" :offset="[50, 18]">
       <q-btn
@@ -390,6 +512,7 @@ import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import VueClientRecaptcha from 'vue-client-recaptcha';
+import { mdiConsoleLine } from '@quasar/extras/mdi-v6';
 
 export default {
   name: 'RegisterView',
@@ -418,11 +541,14 @@ export default {
       isPwd2: ref(true),
       registerSuccessful: ref(false),
 
-      registerData: ref({
+      registerDataRequired: ref({
         username: ref(''),
         password: ref(''),
         password2: ref(''),
         email: ref(''),
+      }),
+
+      registerDataOptional: ref({
         name: ref(''),
         location: ref(''),
         status: ref(''),
@@ -431,8 +557,21 @@ export default {
         background: ref(null),
       }),
 
+      errorMap: ref({
+        usernameError: ref(null),
+        emailError: ref(null),
+        passwordError: ref(null),
+        password2Error: ref(null),
+        nameError: ref(null),
+        statusError: ref(null),
+        locationError: ref(null),
+        descriptionError: ref(null),
+      }),
+
       avatarPreview: ref('https://media.kurtn3x.xyz/default.png'),
       backgroundPreview: ref('https://media.kurtn3x.xyz/background.png'),
+      checkErrorRequired: ref(true),
+      checkErrorOptional: ref(false),
 
       // captcha
       captchaRegister: ref(''),
@@ -443,13 +582,95 @@ export default {
     };
   },
 
+  watch: {
+    step() {
+      if (this.step > 1) {
+        this.testRequiredInformation();
+      }
+    },
+
+    registerDataOptional: {
+      async handler(val) {
+        await this.testOptionalInformation();
+      },
+      deep: true,
+    },
+  },
+
   methods: {
+    async isValidUsername() {
+      this.$nextTick(async () => {
+        var val = await this.$refs.usernameInput.validate();
+        this.errorMap.usernameError = val;
+      });
+    },
+
+    async isValidEmail() {
+      this.$nextTick(async () => {
+        var val = await this.$refs.emailInput.validate();
+        this.errorMap.emailError = val;
+      });
+    },
+    async isValidPassword() {
+      this.$nextTick(async () => {
+        var val = await this.$refs.passwordInput.validate();
+        this.errorMap.passwordError = val;
+      });
+    },
+    async isValidPassword2() {
+      this.$nextTick(async () => {
+        var val = await this.$refs.password2Input.validate();
+        this.errorMap.password2Error = val;
+      });
+    },
+
+    async isValidName() {
+      var val = await this.$refs.nameInput.validate();
+      this.errorMap.nameError = val;
+      return val;
+    },
+    async isValidLocation() {
+      var val = await this.$refs.locationInput.validate();
+      this.errorMap.locationError = val;
+      return val;
+    },
+    async isValidStatus() {
+      var val = await this.$refs.statusInput.validate();
+      this.errorMap.statusError = val;
+      return val;
+    },
+    async isValidDescription() {
+      var val = await this.$refs.descriptionInput.validate();
+      this.errorMap.descriptionError = val;
+      return val;
+    },
+
+    testRequiredInformation() {
+      var final =
+        this.errorMap.usernameError &&
+        this.errorMap.emailError &&
+        this.errorMap.passwordError &&
+        this.errorMap.password2Error;
+      this.checkErrorRequired = !final;
+    },
+
+    async testOptionalInformation() {
+      var bool1 = await this.isValidLocation();
+      var bool2 = await this.isValidName();
+      var bool3 = await this.isValidStatus();
+      var bool4 = await this.isValidDescription();
+      var final = bool1 && bool2 && bool3 && bool4;
+      this.checkErrorOptional = !final;
+    },
+
     onAvatarSelect() {
-      this.avatarPreview = URL.createObjectURL(this.registerData.avatar);
+      this.avatarPreview = URL.createObjectURL(
+        this.registerDataOptional.avatar
+      );
     },
     onBackgroundSelect() {
       this.backgroundPreview = URL.createObjectURL(
-        this.registerData.background
+        this.registerDataOptional.background
       );
     },
 
