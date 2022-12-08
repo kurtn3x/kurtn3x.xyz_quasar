@@ -1,27 +1,9 @@
 <template>
   <Particles
-    id="tsparticles"
+    id="tsparticles_index"
     :class="active ? '' : 'hidden'"
     :options="{
-      // HERE
-      themes: [
-        {
-          name: 'light',
-          default: {
-            value: false,
-            mode: 'light',
-          },
-          options: {
-            particles: {
-              color: {
-                value: ['#120912'],
-              },
-            },
-          },
-        },
-      ],
-
-      fpsLimit: 45,
+      fpsLimit: 60,
       interactivity: {
         detect_on: 'canvas',
         events: {
@@ -70,7 +52,6 @@
       // HERE
     }"
     :particlesInit="particlesInit2"
-    :particlesLoaded="particlesLoaded"
   />
 </template>
 
@@ -82,43 +63,20 @@ import { loadLightInteraction } from 'tsparticles-interaction-light';
 import { useSettingsStore } from 'stores/settings';
 
 export default defineComponent({
-  name: 'ParticlesBG',
+  name: 'ParticlesIndex',
   setup() {
     var particlesContainer;
-    const settingsStore = useSettingsStore();
+    var settingsStore = useSettingsStore();
+    var active = ref(settingsStore.backgroundAnimationState);
+
     return {
+      active,
       particlesContainer,
-      settingsStore,
     };
   },
-  computed: {
-    darkmode() {
-      return this.settingsStore.darkmode;
-    },
-  },
 
-  updated() {
-    if (this.settingsStore.darkmode) {
-      this.particlesContainer.loadTheme();
-    } else {
-      this.particlesContainer.loadTheme('light');
-    }
-  },
-
-  watch: {
-    darkmode(valChanged) {
-      if (this.particlesContainer) {
-        if (!valChanged) {
-          this.particlesContainer.loadTheme('light');
-        } else {
-          this.particlesContainer.loadTheme();
-        }
-      }
-    },
-  },
   data() {
     return {
-      active: ref(false),
       particlesInit2: async (engine: Engine) => {
         loadLightInteraction(engine);
         await loadFull(engine);
@@ -129,7 +87,7 @@ export default defineComponent({
     };
   },
   methods: {
-    toogle_active(background_val: boolean) {
+    toogleActive(background_val: boolean) {
       this.active = background_val;
     },
   },
