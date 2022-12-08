@@ -291,7 +291,35 @@
               style="max-width: 600px"
               class="q-mt-xl"
               ref="nameInput"
-            />
+            >
+              <template v-slot:after>
+                <q-btn
+                  icon="info"
+                  flat
+                  round
+                  :tabindex="-1"
+                  v-if="!errorMap.nameError"
+                  color="red"
+                >
+                  <q-menu anchor="bottom middle" self="top middle">
+                    <div
+                      class="q-ma-sm text-body2 text-center"
+                      style="max-width: 250px"
+                    >
+                      Max Length = 50 characters.
+                    </div>
+                  </q-menu>
+                </q-btn>
+                <q-btn
+                  icon="done"
+                  flat
+                  round
+                  :tabindex="-1"
+                  v-if="errorMap.nameError"
+                  color="green"
+                />
+              </template>
+            </q-input>
             <q-input
               dense
               square
@@ -305,6 +333,46 @@
               style="max-width: 600px"
               class="q-mt-sm"
               ref="locationInput"
+            >
+              <template v-slot:after>
+                <q-btn
+                  icon="info"
+                  flat
+                  round
+                  :tabindex="-1"
+                  v-if="!errorMap.locationError"
+                  color="red"
+                >
+                  <q-menu anchor="bottom middle" self="top middle">
+                    <div
+                      class="q-ma-sm text-body2 text-center"
+                      style="max-width: 250px"
+                    >
+                      Max Length = 50 characters
+                    </div>
+                  </q-menu>
+                </q-btn>
+                <q-btn
+                  icon="done"
+                  flat
+                  round
+                  :tabindex="-1"
+                  v-if="errorMap.locationError"
+                  color="green"
+                />
+              </template>
+            </q-input>
+
+            <q-select
+              v-model="registerDataOptional.location"
+              :options="options"
+              label="Standard"
+              use-input
+              hide-selected
+              fill-input
+              input-debounce="0"
+              @filter="filterFn"
+              @input-value="setModel"
             />
 
             <q-input
@@ -315,12 +383,40 @@
               label="Status"
               lazy-rules
               :rules="[
-                (val) => val.length < 15 || 'Max Length = 15 characters',
+                (val) => val.length < 16 || 'Max Length = 15 characters',
               ]"
               style="max-width: 600px"
               class="q-mt-sm"
               ref="statusInput"
-            />
+            >
+              <template v-slot:after>
+                <q-btn
+                  icon="info"
+                  flat
+                  round
+                  :tabindex="-1"
+                  v-if="!errorMap.statusError"
+                  color="red"
+                >
+                  <q-menu anchor="bottom middle" self="top middle">
+                    <div
+                      class="q-ma-sm text-body2 text-center"
+                      style="max-width: 250px"
+                    >
+                      Max Length = 15 characters
+                    </div>
+                  </q-menu>
+                </q-btn>
+                <q-btn
+                  icon="done"
+                  flat
+                  round
+                  :tabindex="-1"
+                  v-if="errorMap.statusError"
+                  color="green"
+                />
+              </template>
+            </q-input>
 
             <q-input
               type="textarea"
@@ -331,12 +427,40 @@
               label="Description"
               lazy-rules
               :rules="[
-                (val) => val.length < 255 || 'Max Length = 255 characters',
+                (val) => val.length < 256 || 'Max Length = 255 characters',
               ]"
               style="max-width: 600px"
               class="q-mt-sm"
               ref="descriptionInput"
-            />
+            >
+              <template v-slot:after>
+                <q-btn
+                  icon="info"
+                  flat
+                  round
+                  :tabindex="-1"
+                  v-if="!errorMap.descriptionError"
+                  color="red"
+                >
+                  <q-menu anchor="bottom middle" self="top middle">
+                    <div
+                      class="q-ma-sm text-body2 text-center"
+                      style="max-width: 250px"
+                    >
+                      Max Length = 255 characters.
+                    </div>
+                  </q-menu>
+                </q-btn>
+                <q-btn
+                  icon="done"
+                  flat
+                  round
+                  :tabindex="-1"
+                  v-if="errorMap.descriptionError"
+                  color="green"
+                />
+              </template>
+            </q-input>
 
             <q-file
               v-model="registerDataOptional.avatar"
@@ -484,6 +608,8 @@
         You still have some errors though, please fix them first!
       </div>
     </div>
+
+    <q-btn label="test" size="xl" @click="test" />
     <q-page-sticky position="bottom" :offset="[50, 18]">
       <q-btn
         style="width: 140px"
@@ -512,7 +638,7 @@ import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import VueClientRecaptcha from 'vue-client-recaptcha';
-import { mdiConsoleLine } from '@quasar/extras/mdi-v6';
+import countries from '../components/countries';
 
 export default {
   name: 'RegisterView',
@@ -532,8 +658,18 @@ export default {
     const checkCaptchaRegister = (val) => {
       captchaVal.value = val;
     };
-
+    const options = ref(countries);
+    const registerDataOptional = ref({
+      name: ref(''),
+      location: ref(''),
+      status: ref(''),
+      description: ref(''),
+      avatar: ref(null),
+      background: ref(null),
+    });
     return {
+      countries,
+      options,
       step: ref(1),
       axios_config,
       q,
@@ -548,24 +684,17 @@ export default {
         email: ref(''),
       }),
 
-      registerDataOptional: ref({
-        name: ref(''),
-        location: ref(''),
-        status: ref(''),
-        description: ref(''),
-        avatar: ref(null),
-        background: ref(null),
-      }),
+      registerDataOptional,
 
       errorMap: ref({
         usernameError: ref(null),
         emailError: ref(null),
         passwordError: ref(null),
         password2Error: ref(null),
-        nameError: ref(null),
-        statusError: ref(null),
-        locationError: ref(null),
-        descriptionError: ref(null),
+        nameError: ref(true),
+        statusError: ref(true),
+        locationError: ref(true),
+        descriptionError: ref(true),
       }),
 
       avatarPreview: ref('https://media.kurtn3x.xyz/default.png'),
@@ -579,6 +708,19 @@ export default {
       captchaVal,
       captchaVerified: ref(false),
       captchaError: ref(false),
+
+      filterFn(val, update, abort) {
+        update(() => {
+          const needle = val.toLocaleLowerCase();
+          options.value = countries.filter(
+            (v) => v.toLocaleLowerCase().indexOf(needle) > -1
+          );
+        });
+      },
+
+      setModel(val) {
+        registerDataOptional.value.location = val;
+      },
     };
   },
 
