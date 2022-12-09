@@ -521,7 +521,6 @@
           </q-tab-panels>
         </q-card>
       </q-dialog>
-      <ParticlesBG ref="backgroundAnimation" />
       <router-view />
     </q-page-container>
 
@@ -623,15 +622,12 @@ import { useQuasar, QSpinnerGears } from 'quasar';
 import { api } from 'boot/axios';
 import { useUserStore } from 'stores/user.ts';
 import { useSettingsStore } from 'stores/settings';
-import ParticlesBG from 'components/ParticlesBG.vue';
 import {
   defaultHeaderInformation,
   serializeHeaderInformation,
 } from 'src/models';
 
 export default {
-  components: { ParticlesBG },
-
   setup() {
     const userStore = useUserStore();
     const settingsStore = useSettingsStore();
