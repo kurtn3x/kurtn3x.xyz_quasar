@@ -17,6 +17,7 @@
         style="font-family: 'SourceCodePro', Helvetica, Arial"
         :array="['login / register to continue']"
         :iterations="1"
+        :typeSpeed="65"
       >
       </VueWriter>
       <div
@@ -27,8 +28,16 @@
       </div>
     </div>
     <div
-      class="row justify-center q-mt-lg non-selectable text-white"
+      class="row non-selectable text-white"
       v-if="mobile"
+      style="
+        position: absolute;
+        top: 35%;
+        left: 50%;
+        -moz-transform: translateX(-50%) translateY(-50%);
+        -webkit-transform: translateX(-50%) translateY(-50%);
+        transform: translateX(-50%) translateY(-50%);
+      "
     >
       <VueWriter
         class="text-h6"
@@ -36,6 +45,7 @@
         :array="['login / register to continue']"
         :caret="underscore"
         :iterations="1"
+        :typeSpeed="65"
       >
       </VueWriter>
       <div

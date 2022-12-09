@@ -1,4 +1,5 @@
 var countries = [
+  'You can also write something yourself!',
   'Afghanistan      🇦🇫',
   'Åland Islands      🇦🇽',
   'Albania      🇦🇱',

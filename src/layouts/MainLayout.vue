@@ -78,10 +78,7 @@
           flat
           icon="login"
           label="Login"
-          @click="
-            login_popup = true;
-            login_tab = 'login';
-          "
+          @click="rightDrawer = !rightDrawer"
           v-if="!authenticated && fetched"
         />
         <q-btn
@@ -89,14 +86,80 @@
           flat
           icon="add"
           label="Register"
-          @click="
-            login_popup = true;
-            login_tab = 'register';
-          "
+          to="/register"
           v-if="!authenticated && fetched"
         />
       </q-toolbar>
     </q-header>
+
+    <q-drawer
+      v-model="rightDrawer"
+      side="right"
+      bordered
+      :width="250"
+      overlay
+      behavior="default"
+      class="bg-layout-bg text-layout-text"
+    >
+      <div v-if="!authenticated">
+        <q-card style="background: transparent" class="q-ma-sm">
+          <p class="text-weight-bolder text-h6 text-center q-mt-md">
+            Login to your account
+          </p>
+          <q-form
+            class="q-gutter-sm"
+            ref="loginform"
+            @submit.prevent="submitLogin"
+          >
+            <q-input
+              square
+              filled
+              input-class="text-body1"
+              v-model="username"
+              type="username"
+              label="Username"
+              lazy-rules
+              :rules="[
+                (val) => (val && val.length > 0) || 'Please type something',
+              ]"
+            >
+              <template v-slot:prepend>
+                <q-icon name="person" />
+              </template>
+            </q-input>
+            <q-input
+              square
+              filled
+              input-class="text-body1"
+              v-model="login_password"
+              label="Password"
+              :type="isPwd ? 'password' : 'text'"
+              lazy-rules
+              :rules="[
+                (val) => (val && val.length > 0) || 'Please type something',
+              ]"
+            >
+              <template v-slot:prepend>
+                <q-icon
+                  class="pw_icon"
+                  :name="isPwd ? 'lock' : 'lock_open'"
+                  @click="isPwd = !isPwd"
+                />
+              </template>
+            </q-input>
+            <q-btn
+              rounded
+              size="lg"
+              color="green"
+              class="full-width"
+              label="Sign In"
+              type="submit"
+              :loading="loading"
+            />
+          </q-form>
+        </q-card>
+      </div>
+    </q-drawer>
 
     <q-drawer
       v-model="leftDrawer"
@@ -185,8 +248,8 @@
     <!-- fix  -->
 
     <q-page-container>
-      <q-dialog v-model="forgot_popup">
-        <q-card bordered style="width: 17%; min-width: 250px">
+      <!-- <q-dialog v-model="forgot_popup">
+        <q-card dark bordered style="width: 17%; min-width: 250px">
           <p
             class="text-weight-bolder text-center text-primary text-h6 q-mt-lg"
           >
@@ -247,7 +310,7 @@
             </q-form>
           </q-card-section>
         </q-card>
-      </q-dialog>
+      </q-dialog> -->
 
       <q-dialog v-model="login_popup" seamless bordered position="right">
         <q-card square class="no-shadow" style="width: 100%">
@@ -400,7 +463,7 @@
               </q-item-section>
             </q-item>
 
-            <q-item v-if="currentRoute == '/'">
+            <q-item v-if="currentRoute == '/' || currentRoute == '/register'">
               <q-toggle
                 v-model="backgroundAnimationToogle"
                 checked-icon="check"
@@ -458,6 +521,7 @@ export default {
 
     return {
       fetched: ref(false),
+      rightDrawer: ref(false),
       toggleLeftDrawer() {
         leftDrawer.value = !leftDrawer.value;
       },
