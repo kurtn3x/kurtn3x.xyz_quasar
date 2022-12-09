@@ -49,6 +49,7 @@
     "vue-final-modal": "^3.4.11",
     "vue-pdf-embed": "^1.1.4",
     "vue-router": "^4.0.0",
+    "vue-writer": "^1.2.0",
     "vue3-emoji-picker": "^1.1.4",
     "vuedraggable": "^4.1.0"
   },

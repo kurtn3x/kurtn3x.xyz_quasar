@@ -5,11 +5,13 @@ export const useSettingsStore = defineStore('settings', {
   state: () => ({
     darkmode: LocalStorage.getItem('darkmode'),
     theme: LocalStorage.getItem('theme'),
+    backgroundAnimation: LocalStorage.getItem('backgroundAnimation'),
   }),
 
   getters: {
-    darkmode_state: (state) => state.darkmode,
-    theme_state: (state) => state.theme,
+    darkmodeState: (state) => state.darkmode,
+    themeState: (state) => state.theme,
+    backgroundAnimationState: (state) => state.backgroundAnimation,
   },
 
   actions: {},

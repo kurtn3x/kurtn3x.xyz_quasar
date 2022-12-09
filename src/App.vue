@@ -22,11 +22,16 @@ export default defineComponent({
     const q = useQuasar();
     const settingsStore = useSettingsStore();
     const userStore = useUserStore();
-    if (settingsStore.darkmode_state == null) {
+
+    // setup store
+    if (settingsStore.darkmodeState == null) {
       settingsStore.darkmode = true;
     }
+    if (settingsStore.backgroundAnimationState == null) {
+      settingsStore.backgroundAnimation = true;
+    }
 
-    q.dark.set(settingsStore.darkmode_state);
+    q.dark.set(settingsStore.darkmodeState);
 
     userStore.$subscribe((mutation, state) => {
       LocalStorage.set('header', state.headerinfo);
@@ -39,6 +44,11 @@ export default defineComponent({
     settingsStore.$subscribe((mutation, state) => {
       LocalStorage.set('theme', state.theme);
     });
+
+    settingsStore.$subscribe((mutation, state) => {
+      LocalStorage.set('backgroundAnimation', state.backgroundAnimation);
+    });
+
     return { q, userStore, settingsStore };
   },
 
@@ -49,7 +59,7 @@ export default defineComponent({
   },
 
   async created() {
-    if (this.settingsStore.theme_state == null) {
+    if (this.settingsStore.themeState == null) {
       document.body.setAttribute('data-theme', 'default');
       this.settingsStore.theme = 'default';
     } else {

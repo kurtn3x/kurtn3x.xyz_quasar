@@ -1,41 +1,98 @@
 <template>
-  <div class="disable-select text-primary" v-if="show">
-    <h1 class="text-center">login / register to continue.</h1>
-  </div>
+  <q-page class="bg">
+    <div
+      class="row non-selectable text-white"
+      v-if="!mobile"
+      style="
+        position: absolute;
+        top: 35%;
+        left: 50%;
+        -moz-transform: translateX(-50%) translateY(-50%);
+        -webkit-transform: translateX(-50%) translateY(-50%);
+        transform: translateX(-50%) translateY(-50%);
+      "
+    >
+      <VueWriter
+        class="text-h4"
+        style="font-family: 'SourceCodePro', Helvetica, Arial"
+        :array="['login / register to continue']"
+        :iterations="1"
+      >
+      </VueWriter>
+      <div
+        class="blink text-h4"
+        style="font-family: 'SourceCodePro', Helvetica, Arial"
+      >
+        _
+      </div>
+    </div>
+    <div
+      class="row justify-center q-mt-lg non-selectable text-white"
+      v-if="mobile"
+    >
+      <VueWriter
+        class="text-h6"
+        style="font-family: 'SourceCodePro', Helvetica, Arial"
+        :array="['login / register to continue']"
+        :caret="underscore"
+        :iterations="1"
+      >
+      </VueWriter>
+      <div
+        class="blink text-h6"
+        style="font-family: 'SourceCodePro', Helvetica, Arial"
+      >
+        _
+      </div>
+    </div>
+  </q-page>
+  <ParticlesIndex ref="backgroundAnimation" />
 </template>
 
 <script>
 import { defineComponent, ref } from 'vue';
 import { useUserStore } from 'stores/user';
 import { useQuasar } from 'quasar';
-import { api } from 'boot/axios';
 import { useSettingsStore } from 'stores/settings';
+import VueWriter from 'vue-writer';
+import ParticlesIndex from '../components/ParticlesIndex.vue';
 
 export default defineComponent({
   name: 'IndexPage',
+  components: { VueWriter, ParticlesIndex },
 
   setup() {
     const userStore = useUserStore();
-    const settings_store = useSettingsStore();
+    const settingsStore = useSettingsStore();
     const q = useQuasar();
 
     return {
       show: ref(false),
       userStore,
-      settings_store,
+      settingsStore,
       q,
       text_animation: ref(true),
     };
   },
   computed: {
     mobile() {
-      if (this.q.screen.width < 600) {
+      if (this.q.screen.width < 1024) {
         return true;
       } else {
         return false;
       }
     },
+
+    backgroundAnimation() {
+      return this.settingsStore.backgroundAnimation;
+    },
   },
+  watch: {
+    backgroundAnimation(newVal, oldVal) {
+      this.$refs.backgroundAnimation.toogleActive(newVal);
+    },
+  },
+
   created() {
     if (this.userStore.authenticated) {
       this.$router.push('/dashboard/home');
@@ -43,20 +100,36 @@ export default defineComponent({
       this.show = true;
     }
   },
-  methods: {
-    toogleTextAnimation(val) {
-      this.$refs.textAnimation.toogle_active(val);
-    },
-  },
 });
 </script>
 
-<style scoped>
-.disable-select {
-  user-select: none; /* supported by Chrome and Opera */
-  -webkit-user-select: none; /* Safari */
-  -khtml-user-select: none; /* Konqueror HTML */
-  -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* Internet Explorer/Edge */
+<style scoped lang="scss">
+@font-face {
+  font-family: 'SourceCodePro';
+  src: local('SourceCodePro'),
+    url(../css//SourceCodePro-VariableFont_wght.ttf) format('truetype');
+}
+
+.blink {
+  animation: blink-animation 1s steps(5, start) infinite;
+  -webkit-animation: blink-animation 1s steps(5, start) infinite;
+}
+@keyframes blink-animation {
+  to {
+    visibility: hidden;
+  }
+}
+@-webkit-keyframes blink-animation {
+  to {
+    visibility: hidden;
+  }
+}
+
+.bg {
+  position: relative;
+  overflow: hidden;
+  width: inherit;
+  height: 500%;
+  background: linear-gradient(#000729 1%, rgb(255, 188, 188, 0.6) 200%);
 }
 </style>

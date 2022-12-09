@@ -1,4 +1,5 @@
 <template>
+  <!-- Vue quill with plugins -->
   <q-dialog v-model="editSettingsDialog" @hide="availParents = []">
     <q-card>
       <div class="text-h6 q-ma-md text-primary">UPDATE DOCUMENT</div>

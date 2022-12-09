@@ -8,6 +8,7 @@
       animated
       flat
       vertical
+      style="background: transparent"
     >
       <q-step
         :name="1"
@@ -19,14 +20,17 @@
         :done="step > 1"
         :error="checkErrorRequired"
         error-color="red"
+        style="background: transparent"
       >
         <q-card
           class="no-shadow row justify-center"
-          style="width: 100%; min-width: 275px"
+          style="width: 100%; min-width: 275px; background: transparent"
           flat
           bordered
         >
-          <q-card-section style="width: 69%; min-width: 275px">
+          <q-card-section
+            style="width: 69%; min-width: 275px; background: transparent"
+          >
             <div class="text-center text-h4 text-primary">
               Required Information
             </div>
@@ -266,14 +270,15 @@
         :done="step > 2"
         :error="checkErrorOptional"
         error-color="red"
+        style="background: transparent"
       >
         <q-card
           class="no-shadow row justify-center"
-          style="width: 100%; min-width: 275px"
+          style="width: 100%; min-width: 275px; background: transparent"
           flat
           bordered
         >
-          <q-card-section style="min-width: 275px">
+          <q-card-section style="min-width: 275px; background: transparent">
             <div class="text-center text-h4 text-primary">
               Optional Profile Information
             </div>
@@ -320,18 +325,18 @@
                 />
               </template>
             </q-input>
-            <q-input
-              dense
-              square
-              filled
+            <q-select
               v-model="registerDataOptional.location"
-              label="Location"
-              lazy-rules
-              :rules="[
-                (val) => val.length < 50 || 'Max Length = 50 characters',
-              ]"
-              style="max-width: 600px"
-              class="q-mt-sm"
+              :options="options"
+              label="Location (select or write something yourself)"
+              use-input
+              hide-selected
+              fill-input
+              input-debounce="0"
+              @filter="filterFn"
+              @input-value="setModel"
+              outlined
+              dense
               ref="locationInput"
             >
               <template v-slot:after>
@@ -348,7 +353,7 @@
                       class="q-ma-sm text-body2 text-center"
                       style="max-width: 250px"
                     >
-                      Max Length = 50 characters
+                      Max Length = 50 characters.
                     </div>
                   </q-menu>
                 </q-btn>
@@ -361,19 +366,7 @@
                   color="green"
                 />
               </template>
-            </q-input>
-
-            <q-select
-              v-model="registerDataOptional.location"
-              :options="options"
-              label="Standard"
-              use-input
-              hide-selected
-              fill-input
-              input-debounce="0"
-              @filter="filterFn"
-              @input-value="setModel"
-            />
+            </q-select>
 
             <q-input
               dense
@@ -386,7 +379,7 @@
                 (val) => val.length < 16 || 'Max Length = 15 characters',
               ]"
               style="max-width: 600px"
-              class="q-mt-sm"
+              class="q-mt-md"
               ref="statusInput"
             >
               <template v-slot:after>
@@ -525,10 +518,11 @@
         icon="smart_toy"
         :error="captchaVerified == false"
         :done="captchaVerified"
+        style="background: transparent"
       >
         <q-card
           class="no-shadow"
-          style="width: 100%; min-width: 275px"
+          style="width: 100%; min-width: 275px; background: transparent"
           flat
           bordered
         >
@@ -609,7 +603,6 @@
       </div>
     </div>
 
-    <q-btn label="test" size="xl" @click="test" />
     <q-page-sticky position="bottom" :offset="[50, 18]">
       <q-btn
         style="width: 140px"
