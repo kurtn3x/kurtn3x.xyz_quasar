@@ -95,69 +95,73 @@
     <q-drawer
       v-model="rightDrawer"
       side="right"
-      bordered
-      :width="250"
+      elevated
       overlay
-      behavior="default"
+      :width="250"
+      behavior="desktop"
       class="bg-layout-bg text-layout-text"
     >
       <div v-if="!authenticated">
-        <q-card style="background: transparent" class="q-ma-sm">
+        <q-toolbar class="q-ma-none q-pa-none">
+          <q-btn icon="remove" size="md" flat @click="rightDrawer = false" />
+        </q-toolbar>
+        <q-separator />
+        <q-card style="background: transparent" class="q-ma-md q-mt-xl" flat>
           <p class="text-weight-bolder text-h6 text-center q-mt-md">
             Login to your account
           </p>
-          <q-form
-            class="q-gutter-sm"
-            ref="loginform"
-            @submit.prevent="submitLogin"
+
+          <q-input
+            filled
+            dense
+            input-class="text-body1"
+            v-model="username"
+            type="username"
+            label="Username"
+            lazy-rules
+            :rules="[
+              (val) => (val && val.length > 0) || 'Please type something',
+            ]"
           >
-            <q-input
-              square
-              filled
-              input-class="text-body1"
-              v-model="username"
-              type="username"
-              label="Username"
-              lazy-rules
-              :rules="[
-                (val) => (val && val.length > 0) || 'Please type something',
-              ]"
-            >
-              <template v-slot:prepend>
-                <q-icon name="person" />
-              </template>
-            </q-input>
-            <q-input
-              square
-              filled
-              input-class="text-body1"
-              v-model="login_password"
-              label="Password"
-              :type="isPwd ? 'password' : 'text'"
-              lazy-rules
-              :rules="[
-                (val) => (val && val.length > 0) || 'Please type something',
-              ]"
-            >
-              <template v-slot:prepend>
-                <q-icon
-                  class="pw_icon"
-                  :name="isPwd ? 'lock' : 'lock_open'"
-                  @click="isPwd = !isPwd"
-                />
-              </template>
-            </q-input>
-            <q-btn
-              rounded
-              size="lg"
-              color="green"
-              class="full-width"
-              label="Sign In"
-              type="submit"
-              :loading="loading"
-            />
-          </q-form>
+            <template v-slot:prepend>
+              <q-icon name="person" />
+            </template>
+          </q-input>
+          <q-input
+            filled
+            dense
+            input-class="text-body1"
+            v-model="login_password"
+            label="Password"
+            :type="isPwd ? 'password' : 'text'"
+            lazy-rules
+            :rules="[
+              (val) => (val && val.length > 0) || 'Please type something',
+            ]"
+            class="q-mt-md"
+          >
+            <template v-slot:prepend>
+              <q-icon
+                class="pw_icon"
+                :name="isPwd ? 'lock' : 'lock_open'"
+                @click="isPwd = !isPwd"
+              />
+            </template>
+          </q-input>
+          <q-btn
+            size="lg"
+            class="full-width q-mt-md"
+            label="Sign In"
+            :loading="loading"
+            outline
+            @click="submitLogin"
+          />
         </q-card>
+        <div class="text-center text-body1 q-mt-lg">
+          <router-link to="/register" class="text-layout-text"
+            >New here? Register</router-link
+          >
+        </div>
       </div>
     </q-drawer>
 
@@ -311,81 +315,6 @@
           </q-card-section>
         </q-card>
       </q-dialog> -->
-
-      <q-dialog v-model="login_popup" seamless bordered position="right">
-        <q-card square class="no-shadow" style="width: 100%">
-          <p
-            class="text-weight-bolder text-primary text-h6 text-center q-mt-md"
-          >
-            Login to your account
-          </p>
-          <q-card-section>
-            <q-form
-              class="q-gutter-sm"
-              ref="loginform"
-              @submit.prevent="submitLogin"
-            >
-              <q-input
-                square
-                filled
-                input-class="text-body1"
-                v-model="username"
-                type="username"
-                label="Username"
-                lazy-rules
-                :rules="[
-                  (val) => (val && val.length > 0) || 'Please type something',
-                ]"
-              >
-                <template v-slot:prepend>
-                  <q-icon name="person" />
-                </template>
-              </q-input>
-              <q-input
-                square
-                filled
-                input-class="text-body1"
-                v-model="login_password"
-                label="Password"
-                :type="isPwd ? 'password' : 'text'"
-                lazy-rules
-                :rules="[
-                  (val) => (val && val.length > 0) || 'Please type something',
-                ]"
-              >
-                <template v-slot:prepend>
-                  <q-icon
-                    class="pw_icon"
-                    :name="isPwd ? 'lock' : 'lock_open'"
-                    @click="isPwd = !isPwd"
-                  />
-                </template>
-              </q-input>
-              <q-card-actions>
-                <q-btn
-                  rounded
-                  size="lg"
-                  color="green"
-                  class="full-width"
-                  label="Sign In"
-                  type="submit"
-                  :loading="loading"
-                />
-              </q-card-actions>
-              <q-card-section class="q-pa-none q-mt-md">
-                <q-btn
-                  class="full-width"
-                  flat
-                  size="md"
-                  @click="forgot_popup = !forgot_popup"
-                >
-                  Forgot something?
-                </q-btn>
-              </q-card-section>
-            </q-form>
-          </q-card-section>
-        </q-card>
-      </q-dialog>
       <router-view />
     </q-page-container>
 

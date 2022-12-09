@@ -4,17 +4,6 @@
     :class="active ? '' : 'hidden'"
     :options="{
       fpsLimit: 60,
-      interactivity: {
-        detect_on: 'canvas',
-        events: {
-          onclick: { enable: true, mode: 'repulse' },
-
-          resize: true,
-        },
-        modes: {
-          repulse: { distance: 200, duration: 6.0 },
-        },
-      },
       particles: {
         color: { value: '#f8f0e3' },
         move: {
@@ -28,28 +17,27 @@
           straight: false,
         },
         number: {
-          density: { enable: true, value_area: 800 },
-          value: 500,
+          density: { enable: true, value_area: 1000 },
+          value: 300,
         },
         opacity: {
           anim: { enable: true, opacity_min: 0.3, speed: 5, sync: false },
           random: {
             enable: true,
-            minimumValue: 0.3,
+            minimumValue: 0.4,
           },
-          value: 0.6,
+          value: 0.7,
         },
         shape: {
           type: 'circle',
         },
         size: {
-          anim: { enable: false, size_min: 0.3, speed: 4, sync: false },
+          anim: { enable: false, size_min: 0.6, speed: 4, sync: false },
           random: false,
           value: 1,
         },
       },
       retina_detect: true,
-      // HERE
     }"
     :particlesInit="particlesInit2"
   />
