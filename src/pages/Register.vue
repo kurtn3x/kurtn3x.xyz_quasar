@@ -16,8 +16,18 @@
         active-icon="manage_accounts"
         icon="manage_accounts"
         active-color="primary"
-        title="Required Information"
+        title="Welcome"
         :done="step > 1"
+      >
+      </q-step>
+      <q-step
+        :name="2"
+        done-color="green"
+        active-icon="manage_accounts"
+        icon="manage_accounts"
+        active-color="primary"
+        title="Required Information"
+        :done="step > 2"
         :error="checkErrorRequired"
         error-color="red"
         style="background: transparent"
@@ -260,14 +270,14 @@
       </q-step>
 
       <q-step
-        :name="2"
+        :name="3"
         title="Optional Information"
         caption="Optional"
         done-color="green"
         active-icon="person"
         active-color="primary"
         icon="person"
-        :done="step > 2"
+        :done="step > 3"
         :error="checkErrorOptional"
         error-color="red"
         style="background: transparent"
@@ -510,7 +520,7 @@
       </q-step>
 
       <q-step
-        :name="3"
+        :name="4"
         title="Verify that you are not a bot"
         done-color="green"
         active-icon="smart_toy"
@@ -581,7 +591,7 @@
         </q-card>
       </q-step>
       <q-step
-        :name="4"
+        :name="5"
         title="Done!"
         done-color="green"
         active-icon="done"
@@ -614,7 +624,7 @@
         @click="$refs.stepper.previous()"
       />
       <q-btn
-        v-if="step < 4"
+        v-if="step < 5"
         style="width: 140px"
         label="Next Step"
         fab
@@ -719,7 +729,7 @@ export default {
 
   watch: {
     step() {
-      if (this.step > 1) {
+      if (this.step > 2) {
         this.testRequiredInformation();
       }
     },
