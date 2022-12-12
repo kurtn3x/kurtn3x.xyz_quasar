@@ -28,16 +28,8 @@
       </div>
     </div>
     <div
-      class="row non-selectable text-white"
+      class="row non-selectable text-white justify-center q-mt-xl"
       v-if="mobile"
-      style="
-        position: absolute;
-        top: 35%;
-        left: 50%;
-        -moz-transform: translateX(-50%) translateY(-50%);
-        -webkit-transform: translateX(-50%) translateY(-50%);
-        transform: translateX(-50%) translateY(-50%);
-      "
     >
       <VueWriter
         class="text-h6"

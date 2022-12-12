@@ -2,8 +2,10 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">Something went wrong.</div>
   <div v-if="initialFetch && !initialFetchSuccessful">
+    Something went wrong.
+  </div>
+  <div v-if="initialFetch && initialFetchSuccessful">
     <q-dialog v-model="folderDeleteDialog" @hide="availParents = []">
       <q-card bordered>
         <div class="text-body1 text-center q-ma-md">

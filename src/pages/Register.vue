@@ -299,10 +299,11 @@
           active-icon="person"
           active-color="primary"
           icon="person"
-          :done="step > 3"
+          :done="true"
           :error="checkErrorOptional"
           error-color="red"
           style="background: transparent"
+          color="white"
         >
           <q-card
             class="no-shadow row justify-center"
@@ -361,24 +362,23 @@
                   />
                 </template>
               </q-input>
-              <q-select
+              <q-input
                 dark
-                v-model="registerDataOptional.location"
-                :options="options"
-                label="Location"
                 style="
                   font-family: 'SourceCodePro', Helvetica, Arial;
                   max-width: 600px;
                 "
-                use-input
-                hide-selected
-                fill-input
-                input-debounce="0"
-                @filter="filterFn"
-                @input-value="setModel"
-                outlined
                 dense
-                ref="locationInput"
+                filled
+                v-model="registerDataOptional.location"
+                type="name"
+                label="Location"
+                lazy-rules
+                :rules="[
+                  (val) => val.length < 50 || 'Max Length = 50 characters',
+                ]"
+                class="q-mt-md"
+                ref="nameInput"
               >
                 <template v-slot:after>
                   <q-btn
@@ -407,7 +407,7 @@
                     color="green"
                   />
                 </template>
-              </q-select>
+              </q-input>
 
               <q-input
                 dense
@@ -652,7 +652,7 @@
                     :value="captchaRegister"
                     @isValid="checkCaptchaRegister"
                     height="50"
-                    width="200"
+                    width="150"
                   >
                     <template #icon>
                       <div style="color: blue; font-size: large">Refresh</div>
@@ -712,6 +712,7 @@
           active-icon="done"
           active-color="green"
           icon="done"
+          :done="true"
           v-if="captchaVerified"
         >
         </q-step>
@@ -752,23 +753,31 @@
           <q-spinner v-if="!loading" color="green" size="4em" :thickness="2" />
         </div>
       </div>
-      <q-page-sticky position="bottom-right" :offset="[50, 18]">
+      <q-page-sticky position="bottom" :offset="[50, 18]">
         <q-btn
-          style="width: 140px"
           fab
-          label="Previous Step"
+          icon="arrow_back_ios_new"
           v-if="step > 1"
           color="red"
           @click="$refs.stepper.previous()"
         />
+
         <q-btn
           v-if="step < 4 || (step < 5 && captchaVerified)"
-          style="width: 140px"
-          label="Next Step"
+          icon="arrow_forward_ios"
           fab
           color="green"
           @click="$refs.stepper.next()"
-          class="q-ml-xl"
+          class="q-ml-lg"
+        />
+
+        <q-btn
+          v-if="captchaVerified"
+          icon="done"
+          fab
+          color="green"
+          class="q-ml-lg"
+          @click="submitRegister"
         />
       </q-page-sticky>
     </div>
@@ -807,7 +816,6 @@ import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import VueClientRecaptcha from 'vue-client-recaptcha';
-import countries from '../components/countries';
 import ParticlesIndex from '../components/ParticlesIndex.vue';
 import { useSettingsStore } from 'stores/settings';
 import VueWriter from 'vue-writer';
@@ -830,10 +838,9 @@ export default {
     const checkCaptchaRegister = (val) => {
       captchaVal.value = val;
     };
-    const options = ref(countries);
     const registerDataOptional = ref({
       name: ref(''),
-      location: ref(''),
+      location: ref('Germany'),
       status: ref(''),
       description: ref(''),
       avatar: ref(null),
@@ -851,8 +858,6 @@ export default {
 
     return {
       settingsStore,
-      countries,
-      options,
       step: ref(1),
       axios_config,
       q,
@@ -889,19 +894,6 @@ export default {
       captchaVal,
       captchaVerified: ref(false),
       captchaError: ref(false),
-
-      filterFn(val, update, abort) {
-        update(() => {
-          const needle = val.toLocaleLowerCase();
-          options.value = countries.filter(
-            (v) => v.toLocaleLowerCase().indexOf(needle) > -1
-          );
-        });
-      },
-
-      setModel(val) {
-        registerDataOptional.value.location = val;
-      },
     };
   },
 
@@ -1039,14 +1031,27 @@ export default {
       if (this.checkErrorRequired || this.checkErrorOptional) {
         var d = document.getElementById('errorText');
         d.classList.add('shake');
+        this.testRequiredInformation();
+        this.testOptionalInformation();
       } else {
-        this.loading = true;
-        var data = {
-          registerDataRequired: this.registerDataRequired,
-          registerDataOptional: this.registerDataOptional,
-        };
+        let form_data = new FormData();
+        form_data.append('username', this.registerDataRequired.username);
+        form_data.append('password', this.registerDataRequired.password);
+        form_data.append('password2', this.registerDataRequired.password2);
+        form_data.append('email', this.registerDataRequired.email);
+        form_data.append('name', this.registerDataOptional.name);
+        form_data.append('location', this.registerDataOptional.location);
+        form_data.append('description', this.registerDataOptional.description);
+        form_data.append('status', this.registerDataOptional.status);
+
+        if (this.registerDataOptional.avatar != null) {
+          form_data.append('avatar', this.registerDataOptional.avatar);
+        }
+        if (this.registerDataOptional.background != null) {
+          form_data.append('background', this.registerDataOptional.background);
+        }
         api
-          .post('/auth/register', data, this.axios_config)
+          .post('/auth/register', form_data, this.axios_config)
           .then((response) => {
             if (response.status == 200) {
               this.registerSuccessful = true;

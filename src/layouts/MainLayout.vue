@@ -97,28 +97,38 @@
       side="right"
       elevated
       overlay
-      :width="250"
+      :width="300"
       behavior="desktop"
-      class="bg-layout-bg text-layout-text"
     >
-      <div v-if="!authenticated">
-        <q-toolbar class="q-ma-none q-pa-none">
-          <q-btn icon="remove" size="md" flat @click="rightDrawer = false" />
-        </q-toolbar>
-        <q-separator />
+      <q-btn
+        icon="arrow_forward_ios"
+        size="md"
+        outline
+        @click="rightDrawer = false"
+        class="full-width"
+        style="height: 50px"
+      />
+      <div
+        v-if="!authenticated"
+        style="font-family: 'SourceCodePro', Helvetica, Arial"
+      >
         <q-card style="background: transparent" class="q-ma-md q-mt-xl" flat>
-          <p class="text-weight-bolder text-h6 text-center q-mt-md">
-            Login to your account
+          <p
+            class="text-weight-bolder text-h5 text-center q-mt-md"
+            style="text-decoration: underline"
+          >
+            Login
           </p>
 
           <q-input
-            filled
-            dense
-            input-class="text-body1"
             v-model="username"
             type="username"
             label="Username"
+            outlined
+            input-style="font-size: 18px; font-family: 'SourceCodePro', Helvetica, Arial"
+            input-class="text-body1"
             lazy-rules
+            class="q-mt-lg"
             :rules="[
               (val) => (val && val.length > 0) || 'Please type something',
             ]"
@@ -128,8 +138,8 @@
             </template>
           </q-input>
           <q-input
-            filled
-            dense
+            outlined
+            input-style="font-size: 18px; font-family: 'SourceCodePro', Helvetica, Arial"
             input-class="text-body1"
             v-model="login_password"
             label="Password"
@@ -138,7 +148,7 @@
             :rules="[
               (val) => (val && val.length > 0) || 'Please type something',
             ]"
-            class="q-mt-md"
+            class="q-mt-md text-layout-text"
           >
             <template v-slot:prepend>
               <q-icon
@@ -158,7 +168,9 @@
           />
         </q-card>
         <div class="text-center text-body1 q-mt-lg">
-          <router-link to="/register" class="text-layout-text"
+          <router-link
+            to="/register"
+            :class="darkmode ? 'text-light' : 'text-dark'"
             >New here? Register</router-link
           >
         </div>
@@ -338,7 +350,7 @@
                 <q-item
                   clickable
                   @click="setTheme('default')"
-                  style="background: #0eb1d2"
+                  style="background: #000729"
                 />
                 <q-item
                   clickable
@@ -752,11 +764,13 @@ export default {
 </script>
 
 <style scoped>
-.pw_icon:hover {
-  color: whitesmoke;
-}
-
 .button_hover:hover {
   background-color: rgba(255, 255, 255, 0.3);
+}
+
+@font-face {
+  font-family: 'SourceCodePro';
+  src: local('SourceCodePro'),
+    url(../css//SourceCodePro-VariableFont_wght.ttf) format('truetype');
 }
 </style>
