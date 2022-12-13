@@ -1,6 +1,5 @@
 <template>
   <q-page class="q-pa-md bg">
-    <ParticlesIndex ref="backgroundAnimation" />
     <div v-if="!registerSuccessful" class="fade-in-text">
       <q-stepper
         v-model="step"
@@ -619,7 +618,7 @@
               >
                 Allowed Images: .jpg, .png, .gif, .jpeg, less than 2mb
                 <br />
-                Recommended Profile Picture Aspect Ratio: <br />
+                Recommended Profile Picture Aspect Ratio: square <br />
                 Recommended Background Picture: Any length, 200px height
               </div>
             </q-card-section>
@@ -816,13 +815,12 @@ import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import VueClientRecaptcha from 'vue-client-recaptcha';
-import ParticlesIndex from '../components/ParticlesIndex.vue';
 import { useSettingsStore } from 'stores/settings';
 import VueWriter from 'vue-writer';
 
 export default {
   name: 'RegisterView',
-  components: { VueClientRecaptcha, ParticlesIndex, VueWriter },
+  components: { VueClientRecaptcha, VueWriter },
 
   setup() {
     const q = useQuasar();
@@ -897,28 +895,12 @@ export default {
     };
   },
 
-  computed: {
-    backgroundAnimation() {
-      return this.settingsStore.backgroundAnimation;
-    },
-  },
-
   watch: {
-    step() {
-      if (this.step > 2) {
-        this.testRequiredInformation();
-      }
-    },
-
     registerDataOptional: {
       async handler(val) {
         await this.testOptionalInformation();
       },
       deep: true,
-    },
-
-    backgroundAnimation(newVal, oldVal) {
-      this.$refs.backgroundAnimation.toogleActive(newVal);
     },
   },
 

@@ -35,7 +35,6 @@
         class="text-h6"
         style="font-family: 'SourceCodePro', Helvetica, Arial"
         :array="['login / register to continue']"
-        :caret="underscore"
         :iterations="1"
         :typeSpeed="65"
       >
@@ -48,30 +47,25 @@
       </div>
     </div>
   </q-page>
-  <ParticlesIndex ref="backgroundAnimation" />
 </template>
 
 <script>
 import { defineComponent, ref } from 'vue';
-import { useUserStore } from 'stores/user';
 import { useQuasar } from 'quasar';
-import { useSettingsStore } from 'stores/settings';
 import VueWriter from 'vue-writer';
-import ParticlesIndex from '../components/ParticlesIndex.vue';
+import { useUserStore } from 'stores/user';
 
 export default defineComponent({
   name: 'IndexPage',
-  components: { VueWriter, ParticlesIndex },
+  components: { VueWriter },
 
   setup() {
     const userStore = useUserStore();
-    const settingsStore = useSettingsStore();
     const q = useQuasar();
 
     return {
       show: ref(false),
       userStore,
-      settingsStore,
       q,
       text_animation: ref(true),
     };
@@ -83,15 +77,6 @@ export default defineComponent({
       } else {
         return false;
       }
-    },
-
-    backgroundAnimation() {
-      return this.settingsStore.backgroundAnimation;
-    },
-  },
-  watch: {
-    backgroundAnimation(newVal, oldVal) {
-      this.$refs.backgroundAnimation.toogleActive(newVal);
     },
   },
 
