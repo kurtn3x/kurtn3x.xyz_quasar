@@ -9,7 +9,7 @@
     >
       <div v-if="authenticated">
         <q-toolbar class="q-pa-none">
-          <q-btn stretch flat icon="home" to="/" />
+          <q-btn stretch flat icon="home" to="/dashboard/home" />
           <q-space />
           <q-btn
             stretch
@@ -18,9 +18,9 @@
             class="button_hover"
             @click="rightDrawer = !rightDrawer"
           >
-            <a class="q-mr-md">kurtkirsten</a>
+            <a class="q-mr-md text-body1">{{ headerinfo.username }}</a>
 
-            <q-avatar size="34px" square>
+            <q-avatar size="34px" rounded>
               <img :src="this.headerinfo.avatar" />
             </q-avatar>
           </q-btn>
@@ -65,34 +65,28 @@
       />
 
       <div v-if="authenticated">
-        <q-list padding>
-          <q-item
-            clickable
-            v-ripple
-            to="/dashboard/home"
-            class="text-weight-bold"
-          >
-            <q-icon name="home" />
-            Home
-          </q-item>
-          <q-item
-            clickable
-            v-ripple
-            :to="myprofileroute"
-            class="text-primary text-weight-bold"
-          >
-            <q-item-section avatar>
-              <q-icon name="account_circle" />
-            </q-item-section>
+        <q-btn :to="myprofileroute" flat class="full-width">
+          <div class="row justify-center q-mt-md">
+            <q-avatar size="128px" rounded>
+              <img :src="this.headerinfo.avatar" />
+            </q-avatar>
+          </div>
 
-            <q-item-section> My Profile </q-item-section>
-          </q-item>
-
+          <div
+            class="text-center q-mt-md text-h5 q-mb-md"
+            style="min-width: 200px"
+          >
+            {{ headerinfo.username }}
+          </div>
+        </q-btn>
+        <q-separator />
+        <q-list padding class="full-height q-pa-none">
           <q-item
             clickable
             v-ripple
-            class="text-primary text-weight-bold"
+            class="text-body1"
             to="/dashboard/files"
+            style="height: 65px"
           >
             <q-item-section avatar>
               <q-icon name="cloud" />
@@ -100,33 +94,33 @@
 
             <q-item-section> My Files </q-item-section>
           </q-item>
+          <div class="absolute-bottom">
+            <q-item
+              clickable
+              v-ripple
+              to="/dashboard/settings"
+              class="text-body1"
+              style="height: 65px"
+            >
+              <q-item-section avatar>
+                <q-icon name="settings" />
+              </q-item-section>
 
-          <q-space />
-
-          <q-item
-            clickable
-            v-ripple
-            to="/dashboard/settings"
-            class="text-primary text-weight-bold"
-          >
-            <q-item-section avatar>
-              <q-icon name="settings" />
-            </q-item-section>
-
-            <q-item-section> Settings </q-item-section>
-          </q-item>
-
-          <q-item
-            clickable
-            v-ripple
-            @click="logout"
-            class="text-primary text-weight-bold"
-          >
-            <q-item-section avatar>
-              <q-icon name="logout" />
-            </q-item-section>
-            <q-item-section> Logout </q-item-section>
-          </q-item>
+              <q-item-section> Settings </q-item-section>
+            </q-item>
+            <q-item
+              clickable
+              v-ripple
+              @click="logout"
+              class="text-body1"
+              style="height: 65px"
+            >
+              <q-item-section avatar>
+                <q-icon name="logout" />
+              </q-item-section>
+              <q-item-section> Logout </q-item-section>
+            </q-item>
+          </div>
         </q-list>
       </div>
 
@@ -145,45 +139,46 @@
           >
             Login
           </p>
-
-          <q-input
-            v-model="loginUsername"
-            type="username"
-            label="Username"
-            outlined
-            input-style="font-size: 18px; font-family: 'SourceCodePro', Helvetica, Arial"
-            input-class="text-body1"
-            class="q-mt-lg"
-          >
-            <template v-slot:prepend>
-              <q-icon name="person" />
-            </template>
-          </q-input>
-          <q-input
-            outlined
-            input-style="font-size: 18px; font-family: 'SourceCodePro', Helvetica, Arial"
-            input-class="text-body1"
-            v-model="loginPassword"
-            label="Password"
-            :type="isPwd ? 'password' : 'text'"
-            class="q-mt-md text-layout-text"
-          >
-            <template v-slot:prepend>
-              <q-icon
-                class="pw_icon"
-                :name="isPwd ? 'lock' : 'lock_open'"
-                @click="isPwd = !isPwd"
-              />
-            </template>
-          </q-input>
-          <q-btn
-            size="lg"
-            class="full-width q-mt-md"
-            label="Sign In"
-            :loading="loading"
-            outline
-            @click="submitLogin"
-          />
+          <q-form @submit="submitLogin">
+            <q-input
+              v-model="loginUsername"
+              type="username"
+              label="Username"
+              outlined
+              input-style="font-size: 18px; font-family: 'SourceCodePro', Helvetica, Arial"
+              input-class="text-body1"
+              class="q-mt-lg"
+            >
+              <template v-slot:prepend>
+                <q-icon name="person" />
+              </template>
+            </q-input>
+            <q-input
+              outlined
+              input-style="font-size: 18px; font-family: 'SourceCodePro', Helvetica, Arial"
+              input-class="text-body1"
+              v-model="loginPassword"
+              label="Password"
+              :type="isPwd ? 'password' : 'text'"
+              class="q-mt-md text-layout-text"
+            >
+              <template v-slot:prepend>
+                <q-icon
+                  class="pw_icon"
+                  :name="isPwd ? 'lock' : 'lock_open'"
+                  @click="isPwd = !isPwd"
+                />
+              </template>
+            </q-input>
+            <q-btn
+              size="lg"
+              class="full-width q-mt-md"
+              label="Sign In"
+              :loading="loading"
+              outline
+              type="submit"
+            />
+          </q-form>
           <div
             v-if="loginError"
             class="text-red text-body1 q-mt-md shake text-center"
@@ -406,8 +401,7 @@ export default {
     },
 
     authenticated() {
-      // return this.userStore.authenticated;
-      return true;
+      return this.userStore.authenticated;
     },
     headerinfoStore() {
       return this.userStore.headerinfo;
@@ -597,7 +591,6 @@ export default {
 }
 @font-face {
   font-family: 'SourceCodePro';
-  src: local('SourceCodePro'),
-    url(../css//SourceCodePro-VariableFont_wght.ttf) format('truetype');
+  src: local('SourceCodePro'), url(../css//SourceCodePro.ttf) format('truetype');
 }
 </style>

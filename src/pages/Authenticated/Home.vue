@@ -1,8 +1,17 @@
 <template>
-  <div class="disable-select text-primary">
-    <h1 class="text-center gt-xs">Dashboard</h1>
-    <h3 class="text-center lt-sm">Dashboard</h3>
-  </div>
+  <q-page class="bg">
+    <div class="text-center text-h4 text-primary q-mt-lg">Dashboard</div>
+    <div class="disable-select row justify-center q-mt-xl">
+      <VueWriter
+        class="text-h6 text-white"
+        style="font-family: 'SourceCodePro', Helvetica, Arial"
+        :array="['Welcome ' + this.userStore.headerinfo.username]"
+        :iterations="1"
+        :typeSpeed="65"
+      >
+      </VueWriter>
+    </div>
+  </q-page>
 </template>
 
 <script>
@@ -11,9 +20,11 @@ import { useUserStore } from 'stores/user';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { useSettingsStore } from 'stores/settings';
+import VueWriter from 'vue-writer';
 
 export default defineComponent({
   name: 'HomeView',
+  components: { VueWriter },
   setup() {
     const userStore = useUserStore();
     const settings_store = useSettingsStore();
@@ -35,5 +46,13 @@ export default defineComponent({
   -khtml-user-select: none; /* Konqueror HTML */
   -moz-user-select: none; /* Firefox */
   -ms-user-select: none; /* Internet Explorer/Edge */
+}
+
+.bg {
+  position: relative;
+  overflow: hidden;
+  width: inherit;
+  height: 500%;
+  background: linear-gradient(#000729 1%, rgb(255, 188, 188, 0.6) 200%);
 }
 </style>

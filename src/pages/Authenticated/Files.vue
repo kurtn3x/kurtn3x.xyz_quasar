@@ -1441,9 +1441,9 @@
           </template>
         </div>
       </q-scroll-area>
-      <q-separator color="primary" />
+      <q-separator color="primary" :class="dropField ? 'q-mb-sm' : ''" />
       <div
-        style="height: 100px; border: 2px dotted grey"
+        style="height: 200px; border: 2px dashed grey"
         v-if="dropField"
         @drop.self.prevent="onBackgroundDrop"
         @dragover.prevent="
@@ -1476,7 +1476,8 @@
         :class="dropFieldDragover ? 'bg-blue' : ''"
       >
         <div class="text-h6 text-center">
-          Drag/Drop files or folders here to upload to current folder
+          Drag/Drop files or folders here to upload to current folder <br />
+          Large, recursive folders are not recommended.
         </div>
       </div>
 
@@ -1781,7 +1782,7 @@ export default defineComponent({
 
     item_parent_container_height() {
       if (this.dropField) {
-        var height = this.q.screen.height - 425;
+        var height = this.q.screen.height - 502;
         return { '--min-height': height + 'px' };
       } else {
         var height = this.q.screen.height - 300;

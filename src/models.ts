@@ -28,16 +28,14 @@ export interface HeaderInformation {
   fetched: boolean;
   username: string;
   admin: boolean;
-  status: string;
   avatar: string;
 }
 
 export function defaultHeaderInformation() {
   const info: HeaderInformation = {
     fetched: false,
-    username: '',
+    username: 'User',
     admin: false,
-    status: '',
     avatar: 'https://media.kurtn3x.xyz/default.png',
   };
   return info;
@@ -47,7 +45,6 @@ export function serializeHeaderInformation(fetchedData: any) {
   const info: HeaderInformation = {
     fetched: true,
     admin: fetchedData.is_admin,
-    status: fetchedData.profile.status,
     username: fetchedData.username,
     avatar: path_to_link_av(fetchedData.profile.avatar),
   };

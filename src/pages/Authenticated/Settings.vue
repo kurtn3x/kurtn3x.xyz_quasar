@@ -2,8 +2,10 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">Something went wrong.</div>
   <div v-if="initialFetch && !initialFetchSuccessful">
+    Something went wrong.
+  </div>
+  <div v-if="initialFetch && initialFetchSuccessful">
     <q-dialog v-model="confirm">
       <q-card>
         <q-card-section class="row items-center">
@@ -980,7 +982,7 @@ export default {
   },
 
   created() {
-    if (this.userStore.authenticated) {
+    if (!this.userStore.authenticated) {
       this.$router.push('/');
       this.notify(
         'negative',

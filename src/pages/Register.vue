@@ -21,7 +21,7 @@
           active-icon="manage_accounts"
           icon="manage_accounts"
           active-color="primary"
-          title="Welcome"
+          title="Hi!"
           :done="step > 1"
         >
           <div class="q-ml-lg">
@@ -29,10 +29,10 @@
               class="text-h6"
               style="font-family: 'SourceCodePro', Helvetica, Arial"
               :array="[
-                'Welcome! Please fill out all required information. Optionally you can also already set up your profile.',
+                'Hi! To register you need to fill out the required information and solve the Captcha.',
               ]"
               :iterations="1"
-              :typeSpeed="25"
+              :typeSpeed="15"
             />
           </div>
         </q-step>
@@ -659,32 +659,34 @@
                   </VueClientRecaptcha>
                 </section>
               </div>
-              <div class="row justify-center q-mt-md">
-                <q-input
-                  dark
-                  class="row justify-center"
-                  dense
-                  filled
-                  v-model="captchaRegister"
-                  label="Captcha"
-                  :rules="[(val) => val.length == 5 || '5 characters.']"
-                  style="
-                    font-family: 'SourceCodePro', Helvetica, Arial;
-                    width: 200px;
-                  "
-                >
-                </q-input>
-              </div>
-              <div class="row justify-center">
-                <q-btn
-                  label="Verify"
-                  color="green"
-                  class="text-white q-mt-md q-mb-md"
-                  size="xl"
-                  @click="checkCaptcha"
-                  style="font-family: 'SourceCodePro', Helvetica, Arial"
-                />
-              </div>
+              <q-form @submit="checkCaptcha">
+                <div class="row justify-center q-mt-md">
+                  <q-input
+                    dark
+                    class="row justify-center"
+                    dense
+                    filled
+                    v-model="captchaRegister"
+                    label="Captcha"
+                    :rules="[(val) => val.length == 5 || '5 characters.']"
+                    style="
+                      font-family: 'SourceCodePro', Helvetica, Arial;
+                      width: 200px;
+                    "
+                  >
+                  </q-input>
+                </div>
+                <div class="row justify-center">
+                  <q-btn
+                    label="Verify"
+                    color="green"
+                    class="text-white q-mt-md q-mb-md"
+                    size="xl"
+                    type="submit"
+                    style="font-family: 'SourceCodePro', Helvetica, Arial"
+                  />
+                </div>
+              </q-form>
 
               <div
                 v-if="captchaError"
@@ -838,7 +840,7 @@ export default {
     };
     const registerDataOptional = ref({
       name: ref(''),
-      location: ref('Germany'),
+      location: ref(''),
       status: ref(''),
       description: ref(''),
       avatar: ref(null),
@@ -1107,8 +1109,7 @@ export default {
 }
 @font-face {
   font-family: 'SourceCodePro';
-  src: local('SourceCodePro'),
-    url(../css//SourceCodePro-VariableFont_wght.ttf) format('truetype');
+  src: local('SourceCodePro'), url(../css//SourceCodePro.ttf) format('truetype');
 }
 
 code {

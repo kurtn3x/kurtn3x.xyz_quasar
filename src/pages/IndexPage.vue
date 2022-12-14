@@ -93,8 +93,7 @@ export default defineComponent({
 <style scoped lang="scss">
 @font-face {
   font-family: 'SourceCodePro';
-  src: local('SourceCodePro'),
-    url(../css//SourceCodePro-VariableFont_wght.ttf) format('truetype');
+  src: local('SourceCodePro'), url(../css//SourceCodePro.ttf) format('truetype');
 }
 
 .blink {
