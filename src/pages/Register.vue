@@ -377,7 +377,7 @@
                   (val) => val.length < 50 || 'Max Length = 50 characters',
                 ]"
                 class="q-mt-md"
-                ref="nameInput"
+                ref="locationInput"
               >
                 <template v-slot:after>
                   <q-btn
@@ -768,7 +768,14 @@
           icon="arrow_forward_ios"
           fab
           color="green"
-          @click="$refs.stepper.next()"
+          @click="
+            if (step == 2) {
+              this.testRequiredInformation();
+            } else if (step == 3) {
+              this.testOptionalInformation();
+            }
+            $refs.stepper.next();
+          "
           class="q-ml-lg"
         />
 
@@ -778,6 +785,7 @@
           fab
           color="green"
           class="q-ml-lg"
+          :loading="loading"
           @click="submitRegister"
         />
       </q-page-sticky>
@@ -918,6 +926,7 @@ export default {
       this.$nextTick(async () => {
         var val = await this.$refs.usernameInput.validate();
         this.errorMap.usernameError = val;
+        this.testRequiredInformation();
       });
     },
 
@@ -925,18 +934,21 @@ export default {
       this.$nextTick(async () => {
         var val = await this.$refs.emailInput.validate();
         this.errorMap.emailError = val;
+        this.testRequiredInformation();
       });
     },
     async isValidPassword() {
       this.$nextTick(async () => {
         var val = await this.$refs.passwordInput.validate();
         this.errorMap.passwordError = val;
+        this.testRequiredInformation();
       });
     },
     async isValidPassword2() {
       this.$nextTick(async () => {
         var val = await this.$refs.password2Input.validate();
         this.errorMap.password2Error = val;
+        this.testRequiredInformation();
       });
     },
 
@@ -997,6 +1009,8 @@ export default {
       if (this.captchaVerified) {
         this.captchaError = false;
         this.step += 1;
+        this.testRequiredInformation();
+        this.testOptionalInformation();
       } else {
         this.captchaError = true;
       }
@@ -1018,6 +1032,7 @@ export default {
         this.testRequiredInformation();
         this.testOptionalInformation();
       } else {
+        this.loading = true;
         let form_data = new FormData();
         form_data.append('username', this.registerDataRequired.username);
         form_data.append('password', this.registerDataRequired.password);

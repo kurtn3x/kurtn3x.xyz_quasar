@@ -9,18 +9,29 @@
     >
       <div v-if="authenticated">
         <q-toolbar class="q-pa-none">
-          <q-btn stretch flat icon="home" to="/dashboard/home" />
+          <q-item clickable v-ripple to="/dashboard/home">
+            <q-item-section>
+              <q-icon name="home" size="md" />
+            </q-item-section>
+          </q-item>
+          <q-item clickable v-ripple to="/dashboard/files">
+            <q-item-section>
+              <q-icon name="cloud" size="md" />
+            </q-item-section>
+          </q-item>
           <q-space />
           <q-btn
             stretch
             flat
-            v-if="authenticated"
             class="button_hover"
             @click="rightDrawer = !rightDrawer"
           >
-            <a class="q-mr-md text-body1">{{ headerinfo.username }}</a>
-
-            <q-avatar size="34px" rounded>
+            <q-icon
+              :name="rightDrawer ? 'chevron_right' : 'chevron_left'"
+              class="q-mr-xs"
+            />
+            <a class="text-body1">{{ headerinfo.username }}</a>
+            <q-avatar size="28px" rounded class="q-ml-md">
               <img :src="this.headerinfo.avatar" />
             </q-avatar>
           </q-btn>
@@ -54,15 +65,17 @@
       :width="300"
       behavior="desktop"
       style="font-family: 'SourceCodePro', Helvetica, Arial"
+      :persistent="true"
     >
       <q-btn
         icon="arrow_forward_ios"
         size="md"
-        outline
+        flat
         @click="rightDrawer = false"
         class="full-width"
         style="height: 50px"
       />
+      <q-separator />
 
       <div v-if="authenticated">
         <q-btn :to="myprofileroute" flat class="full-width">
@@ -85,6 +98,21 @@
             clickable
             v-ripple
             class="text-body1"
+            to="/dashboard/home"
+            style="height: 65px"
+          >
+            <q-item-section avatar>
+              <q-icon name="home" />
+            </q-item-section>
+
+            <q-item-section> Home </q-item-section>
+          </q-item>
+          <q-separator />
+
+          <q-item
+            clickable
+            v-ripple
+            class="text-body1"
             to="/dashboard/files"
             style="height: 65px"
           >
@@ -94,7 +122,10 @@
 
             <q-item-section> My Files </q-item-section>
           </q-item>
+          <q-separator />
           <div class="absolute-bottom">
+            <q-separator />
+
             <q-item
               clickable
               v-ripple
@@ -108,6 +139,8 @@
 
               <q-item-section> Settings </q-item-section>
             </q-item>
+            <q-separator />
+
             <q-item
               clickable
               v-ripple
@@ -120,6 +153,7 @@
               </q-item-section>
               <q-item-section> Logout </q-item-section>
             </q-item>
+            <q-separator />
           </div>
         </q-list>
       </div>
@@ -514,6 +548,7 @@ export default {
         .post('/auth/login', formData, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
+            this.rightDrawer = false;
             this.headerinfo = serializeHeaderInformation(response.data);
             this.userStore.setHeaderInfo(this.headerinfo);
             this.userStore.setAuthState(true);

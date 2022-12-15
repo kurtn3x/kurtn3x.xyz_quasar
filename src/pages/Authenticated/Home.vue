@@ -1,15 +1,21 @@
 <template>
   <q-page class="bg">
-    <div class="text-center text-h4 text-primary q-mt-lg">Dashboard</div>
+    <div class="text-center text-h3 text-primary q-mt-lg">Dashboard</div>
     <div class="disable-select row justify-center q-mt-xl">
       <VueWriter
-        class="text-h6 text-white"
+        class="text-h4 text-white"
         style="font-family: 'SourceCodePro', Helvetica, Arial"
         :array="['Welcome ' + this.userStore.headerinfo.username]"
-        :iterations="1"
-        :typeSpeed="65"
+        :typeSpeed="75"
+        :delay="4000"
       >
       </VueWriter>
+      <div
+        class="blink text-h4 text-white"
+        style="font-family: 'SourceCodePro', Helvetica, Arial"
+      >
+        _
+      </div>
     </div>
   </q-page>
 </template>
@@ -54,5 +60,20 @@ export default defineComponent({
   width: inherit;
   height: 500%;
   background: linear-gradient(#000729 1%, rgb(255, 188, 188, 0.6) 200%);
+}
+
+.blink {
+  animation: blink-animation 1s steps(5, start) infinite;
+  -webkit-animation: blink-animation 1s steps(5, start) infinite;
+}
+@keyframes blink-animation {
+  to {
+    visibility: hidden;
+  }
+}
+@-webkit-keyframes blink-animation {
+  to {
+    visibility: hidden;
+  }
 }
 </style>

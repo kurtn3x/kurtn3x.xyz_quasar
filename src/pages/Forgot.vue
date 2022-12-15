@@ -17,14 +17,19 @@
           Request your Account Data
         </p>
         <q-card-section>
-          <q-form ref="forgotform" @submit.prevent="submitForget">
+          <q-form
+            ref="forgotform"
+            @submit.prevent="submitForget"
+            class="text-white"
+          >
             <q-input
               dense
               square
+              dark
               filled
               v-model="email"
               type="email"
-              input-class="text-body1"
+              input-class="text-body1 text-white"
               label="Your Email"
               lazy-rules
               :rules="[
