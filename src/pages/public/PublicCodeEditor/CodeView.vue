@@ -2,8 +2,8 @@
   <div class="absolute-center" v-if="!loaded">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="!fetched && loaded">No permissions.</div>
-  <div v-if="fetched && loaded">
+  <div v-if="fetched && loaded">No permissions.</div>
+  <div v-if="!fetched && loaded">
     <q-toolbar class="q-mt-sm">
       <q-btn-dropdown icon="download" flat>
         <div>
@@ -35,38 +35,39 @@
           respData.permissions == 'owner'
         "
       ></q-btn>
-      <q-toolbar-title class="absolute-center"
+      <q-space />
+      <q-toolbar-title style="overflow: hidden"
         >{{ respData.code.name }}
-        <q-btn icon="info" flat round class="q-ml-md">
-          <q-menu>
-            <q-card bordered>
-              <div class="q-ma-sm text-body 1">
-                <a class="text-weight-bolder"> Filename: </a>
-                {{ respData.code.name }}
-              </div>
-              <div class="q-ma-sm text-body 1">
-                <a class="text-weight-bolder"> Modified: </a>
-                {{ respData.code.modified }}
-              </div>
-              <div class="q-ma-sm text-body 1">
-                <a class="text-weight-bolder"> Created: </a>
-                {{ respData.code.created }}
-              </div>
-              <div class="q-ma-sm text-body 1">
-                <a class="text-weight-bolder"> Path: </a>
-                {{ respData.code.path }}
-              </div>
-              <div class="q-ma-sm text-body 1">
-                <a class="text-weight-bolder"> Owner: </a> {{ respData.owner }}
-              </div>
-              <div class="q-ma-sm text-body 1">
-                <a class="text-weight-bolder"> Permissions: </a>
-                {{ respData.permissions }}
-              </div>
-            </q-card>
-          </q-menu>
-        </q-btn></q-toolbar-title
-      >
+      </q-toolbar-title>
+      <q-btn icon="info" flat round class="q-ml-md">
+        <q-menu>
+          <q-card bordered>
+            <div class="q-ma-sm text-body 1">
+              <a class="text-weight-bolder"> Filename: </a>
+              {{ respData.code.name }}
+            </div>
+            <div class="q-ma-sm text-body 1">
+              <a class="text-weight-bolder"> Modified: </a>
+              {{ respData.code.modified }}
+            </div>
+            <div class="q-ma-sm text-body 1">
+              <a class="text-weight-bolder"> Created: </a>
+              {{ respData.code.created }}
+            </div>
+            <div class="q-ma-sm text-body 1">
+              <a class="text-weight-bolder"> Path: </a>
+              {{ respData.code.path }}
+            </div>
+            <div class="q-ma-sm text-body 1">
+              <a class="text-weight-bolder"> Owner: </a> {{ respData.owner }}
+            </div>
+            <div class="q-ma-sm text-body 1">
+              <a class="text-weight-bolder"> Permissions: </a>
+              {{ respData.permissions }}
+            </div>
+          </q-card>
+        </q-menu>
+      </q-btn>
       <q-space />
       <q-checkbox
         v-model="readOnlyEnableMdEdit"
@@ -217,7 +218,7 @@ export default defineComponent({
       langmap,
       thememap,
       respData: ref({
-        code: { name: 'temp.txt', modified: '', created: '', path: ''},
+        code: { name: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa.txt', modified: '', created: '', path: ''},
         path: '',
         parentid: '',
         owner: '',

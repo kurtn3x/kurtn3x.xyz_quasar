@@ -1,5 +1,7 @@
 <template>
   <q-page class="bg">
+    <ParticlesIndex ref="backgroundAnimation" />
+
     <div
       class="row non-selectable text-white"
       v-if="!mobile"
@@ -54,10 +56,11 @@ import { defineComponent, ref } from 'vue';
 import { useQuasar } from 'quasar';
 import VueWriter from 'vue-writer';
 import { useUserStore } from 'stores/user';
+import ParticlesIndex from '../components/ParticlesIndex.vue';
 
 export default defineComponent({
   name: 'IndexPage',
-  components: { VueWriter },
+  components: { VueWriter, ParticlesIndex },
 
   setup() {
     const userStore = useUserStore();

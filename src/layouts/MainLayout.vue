@@ -250,7 +250,6 @@
 
     <q-page-container>
       <router-view />
-      <ParticlesIndex ref="backgroundAnimation" />
     </q-page-container>
 
     <q-footer reveal elevated class="bg-layout-bg text-layout-text">
@@ -327,7 +326,7 @@
               </q-item-section>
             </q-item>
 
-            <q-item>
+            <!-- <q-item>
               <q-toggle
                 v-model="backgroundAnimationToogle"
                 checked-icon="check"
@@ -336,7 +335,7 @@
                 label="Background Animation"
                 @click="toogleBackgroundAnimation"
               />
-            </q-item>
+            </q-item> -->
           </q-list>
         </q-btn-dropdown>
       </q-toolbar>
@@ -356,10 +355,8 @@ import {
   serializeHeaderInformation,
 } from 'src/models';
 import { useRoute } from 'vue-router';
-import ParticlesIndex from '../components/ParticlesIndex.vue';
 
 export default {
-  components: { ParticlesIndex },
   setup() {
     const userStore = useUserStore();
     const settingsStore = useSettingsStore();

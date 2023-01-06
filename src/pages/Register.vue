@@ -1,5 +1,6 @@
 <template>
   <q-page class="q-pa-md bg">
+    <ParticlesIndex ref="backgroundAnimation" />
     <div v-if="!registerSuccessful" class="fade-in-text">
       <q-stepper
         v-model="step"
@@ -827,10 +828,11 @@ import { api } from 'boot/axios';
 import VueClientRecaptcha from 'vue-client-recaptcha';
 import { useSettingsStore } from 'stores/settings';
 import VueWriter from 'vue-writer';
+import ParticlesIndex from '../components/ParticlesIndex.vue';
 
 export default {
   name: 'RegisterView',
-  components: { VueClientRecaptcha, VueWriter },
+  components: { VueClientRecaptcha, VueWriter, ParticlesIndex },
 
   setup() {
     const q = useQuasar();
