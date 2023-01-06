@@ -2,8 +2,8 @@
   <div class="absolute-center" v-if="!loaded">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="fetched && loaded">No permissions.</div>
-  <div v-if="!fetched && loaded">
+  <div v-if="!fetched && loaded">No permissions.</div>
+  <div v-if="fetched && loaded">
     <q-toolbar class="q-mt-sm">
       <q-btn-dropdown icon="download" flat>
         <div>

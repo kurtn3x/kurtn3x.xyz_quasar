@@ -1,5 +1,7 @@
 <template>
   <q-page class="bg">
+    <ParticlesIndex ref="backgroundAnimation" />
+
     <div class="text-center text-h3 text-primary q-mt-lg">Dashboard</div>
     <div class="disable-select row justify-center q-mt-xl">
       <VueWriter
@@ -27,10 +29,11 @@ import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { useSettingsStore } from 'stores/settings';
 import VueWriter from 'vue-writer';
+import ParticlesIndex from '../../components/ParticlesIndex.vue';
 
 export default defineComponent({
   name: 'HomeView',
-  components: { VueWriter },
+  components: { VueWriter, ParticlesIndex },
   setup() {
     const userStore = useUserStore();
     const settings_store = useSettingsStore();

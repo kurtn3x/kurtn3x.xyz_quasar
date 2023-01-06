@@ -34,31 +34,39 @@
         label="Save"
         @click="saveCodeFile()"
       ></q-btn>
-      <q-toolbar-title class="absolute-center">
-        {{ respData.code.name }}
-        <q-btn icon="info" flat round class="q-ml-md">
-          <q-menu>
-            <q-card bordered>
-              <div class="q-ma-sm text-body 1">
-                <a class="text-weight-bolder"> Filename: </a>
-                {{ respData.code.name }}
-              </div>
-              <div class="q-ma-sm text-body 1">
-                <a class="text-weight-bolder"> Modified: </a>
-                {{ respData.code.modified }}
-              </div>
-              <div class="q-ma-sm text-body 1">
-                <a class="text-weight-bolder"> Created: </a>
-                {{ respData.code.created }}
-              </div>
-              <div class="q-ma-sm text-body 1">
-                <a class="text-weight-bolder"> Path: </a>
-                {{ respData.code.path }}
-              </div>
-            </q-card>
-          </q-menu>
-        </q-btn>
+      <q-space />
+      <q-toolbar-title style="overflow: hidden"
+        >{{ respData.code.name }}
       </q-toolbar-title>
+      <q-btn icon="info" flat round class="q-ml-md">
+        <q-menu>
+          <q-card bordered>
+            <div class="q-ma-sm text-body 1">
+              <a class="text-weight-bolder"> Filename: </a>
+              {{ respData.code.name }}
+            </div>
+            <div class="q-ma-sm text-body 1">
+              <a class="text-weight-bolder"> Modified: </a>
+              {{ respData.code.modified }}
+            </div>
+            <div class="q-ma-sm text-body 1">
+              <a class="text-weight-bolder"> Created: </a>
+              {{ respData.code.created }}
+            </div>
+            <div class="q-ma-sm text-body 1">
+              <a class="text-weight-bolder"> Path: </a>
+              {{ respData.code.path }}
+            </div>
+            <div class="q-ma-sm text-body 1">
+              <a class="text-weight-bolder"> Owner: </a> {{ respData.owner }}
+            </div>
+            <div class="q-ma-sm text-body 1">
+              <a class="text-weight-bolder"> Permissions: </a>
+              {{ respData.permissions }}
+            </div>
+          </q-card>
+        </q-menu>
+      </q-btn>
       <q-space />
       <q-btn-dropdown icon="settings" flat>
         <q-card bordered style="min-width: 190px; max-width: 190px">
