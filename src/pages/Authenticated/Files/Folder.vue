@@ -1156,7 +1156,7 @@
                   </q-item-section>
                   <q-item-section avatar top>
                     <q-avatar
-                      :icon="getIcon(item.mime)"
+                      :icon="getIcon(item.mime as string)"
                       color="transparent"
                       text-color="primary"
                       size="4.5em"
@@ -1475,7 +1475,7 @@ import {
   NavbarIndexType,
   AllAvailableFoldersType,
   RawFolderContentType,
-} from '../../../types/index';
+} from 'src/types/index';
 
 export default defineComponent({
   name: 'FilesView',

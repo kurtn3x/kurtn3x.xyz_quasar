@@ -32,7 +32,7 @@ export interface FolderObjectType {
   type: string;
   // file specific
   size?: number;
-  mime: string;
+  mime?: string;
   // set on demand
   selected?: boolean;
   drag_over?: boolean;
