@@ -1,0 +1,203 @@
+<template>
+  <div v-if="loading" class="absolute-center">
+    <q-spinner color="primary" size="10em" />
+  </div>
+  <div v-if="!allowed && !loading">Not allowed.</div>
+  <div v-if="allowed && !loading">
+    <div class="text-primary text-h4 text-center q-mt-lg">
+      File: {{ fileData.name }}
+    </div>
+    <q-separator class="q-ma-md" size="3px" />
+    <div class="row justify-center">
+      <div>
+        <q-card bordered class="rounded-borders q-ma-sm">
+          <q-expansion-item
+            icon="info"
+            label="File Info"
+            class="text-h5 text-center"
+            style="min-width: 350px"
+          >
+            <q-separator />
+            <q-card-section>
+              <div class="text-h6 text-left row">
+                <a class="text-weight-bolder col">Name:</a>
+                <a class="col-8">{{ fileData.name }}</a>
+              </div>
+              <div
+                class="text-h6 text-left row q-mt-md"
+                style="overflow-wrap: break-word; line-break: anywhere"
+              >
+                <a class="text-weight-bolder col">ID:</a>
+                <a class="col-8">{{ fileData.id }}</a>
+              </div>
+              <div
+                class="text-h6 text-left row q-mt-md"
+                style="overflow-wrap: break-word; line-break: anywhere"
+              >
+                <a class="text-weight-bolder col">Path:</a>
+                <a class="col-8">{{ fileData.path }}</a>
+              </div>
+              <div class="text-h6 text-left row q-mt-md">
+                <a class="text-weight-bolder col">Owner:</a>
+                <a
+                  class="text-blue col-8"
+                  :href="'https://www.kurtn3x.xyz/user/' + fileData.owner"
+                >
+                  {{ fileData.owner }}</a
+                >
+              </div>
+              <div class="text-h6 text-left row q-mt-md">
+                <a class="text-weight-bolder col">Modified:</a>
+                <a class="col-8">{{ fileData.modified }}</a>
+              </div>
+              <div class="text-h6 text-left row q-mt-md">
+                <a class="text-weight-bolder col">Created:</a>
+                <a class="col-8">{{ fileData.created }}</a>
+              </div>
+            </q-card-section>
+          </q-expansion-item>
+        </q-card>
+      </div>
+    </div>
+    <div class="row justify-center">
+      <q-btn
+        label="Download"
+        icon="file_download"
+        class="cursor-pointer bg-green text-white q-mt-lg"
+        flat
+        @click="openInNewTab(fileData.id)"
+        size="xl"
+      />
+    </div>
+    <div class="text-h6 text-center q-mt-md">
+      <a class="text-weight-bolder">Size:</a> {{ fileData.size }}
+    </div>
+  </div>
+</template>
+
+<script>
+import { defineComponent, ref } from 'vue';
+import { useUserStore } from 'stores/user';
+import { useQuasar } from 'quasar';
+import { api } from 'boot/axios';
+import { useSettingsStore } from 'stores/settings';
+
+const filedata = {
+  id: '066b8d5e-51ad-460d-9641-e963b579dfc3',
+  name: 'changelog.txt',
+  modified: '2023-07-11, 17:11:21',
+  created: '2023-07-08, 17:55:04',
+  shared_allow_all_read: false,
+  shared_allow_all_write: false,
+  shared: true,
+  size: '12.0KB',
+  permissions: 'owner',
+  owner: 'kurt',
+  ownerid: 'abeb69f0-a469-4511-bc88-fd3d8635c194',
+  parentid: 'fbf346c8-00b4-40e7-9482-d936d012cdb7',
+  path: 'Users/kurt/Home/changelog.txt',
+};
+
+export default defineComponent({
+  name: 'IndexPage',
+  setup() {
+    const userStore = useUserStore();
+    const settings_store = useSettingsStore();
+    const q = useQuasar();
+    return {
+      userStore,
+      settings_store,
+      q,
+      text_animation: ref(true),
+      loading: ref(true),
+      allowed: ref(false),
+      fileData: ref(filedata),
+      // fileData: ref({
+      //   name: '',
+      //   owner: '',
+      //   ownerid: '',
+      //   modified: '',
+      //   created: '',
+      //   path: '',
+      //   size: '0',
+      //   id: '',
+      //   permissions: '',
+      // }),
+    };
+  },
+  computed: {
+    mobile() {
+      if (this.q.screen.width < 600) {
+        return true;
+      } else {
+        return false;
+      }
+    },
+    readableSize() {
+      return this.humanFileSize(this.fileData.size);
+    },
+  },
+  created() {
+    this.getInitialFile();
+  },
+  methods: {
+    openInNewTab(id) {
+      window
+        .open('https://api.kurtn3x.xyz/files/download/' + id, '_blank')
+        .focus();
+    },
+    notify(type, message) {
+      this.q.notify({
+        type: type,
+        message: message,
+        progress: true,
+        multiLine: true,
+      });
+    },
+    getInitialFile() {
+      var id = this.$route.params.id;
+      const axiosConfig = {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': this.q.cookies.get('csrftoken'),
+        },
+      };
+      api
+        .get('/files/file/' + id, axiosConfig)
+        .then((response) => {
+          if (response.status == 200) {
+            this.allowed = true;
+            this.loading = false;
+            this.fileData = response.data;
+            console.log(this.fileData);
+          } else {
+            this.loading = false;
+            this.allowed = false;
+          }
+        })
+        .catch((error) => {
+          if (error.response) {
+            this.notify('negative', error.response.data.error);
+          } else {
+            console.log(error);
+          }
+          this.loading = false;
+          this.allowed = false;
+        });
+    },
+  },
+});
+</script>
+
+<style scoped>
+.disable-select {
+  user-select: none; /* supported by Chrome and Opera */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+}
+.my-custom-class {
+  outline: 5px dotted green;
+}
+</style>
