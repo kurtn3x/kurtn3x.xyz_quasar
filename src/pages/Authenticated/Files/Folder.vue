@@ -2,10 +2,10 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="initialFetch && !initialFetchSuccessful">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="initialFetch && initialFetchSuccessful">
     <!-- delteSelectedItemsDialog (Confirmation) -->
     <q-dialog v-model="deleteItemsDialog">
       <q-card bordered style="width: 350px">
@@ -1457,9 +1457,8 @@
 
 <script lang="ts">
 import { defineComponent, ref, reactive, computed } from 'vue';
-import { useUserStore } from 'stores/user';
+import { useLocalStore } from 'stores/localStore';
 import { useQuasar, scroll, QInput } from 'quasar';
-import { useSettingsStore } from 'stores/settings';
 import { api } from 'boot/axios';
 import { draggable, selected } from 'components/draggable.js';
 import { droppable } from 'components/droppable.js';
@@ -1487,8 +1486,7 @@ export default defineComponent({
   components: { RightClickMenu },
 
   setup() {
-    const userStore = useUserStore();
-    const settingsStore = useSettingsStore();
+    const localStore = useLocalStore();
     const q = useQuasar();
     const axiosConfig = {
       withCredentials: true,
@@ -1515,8 +1513,7 @@ export default defineComponent({
       // general
       selected,
       axiosConfig,
-      userStore,
-      settingsStore,
+      localStore,
       q,
       setVerticalScrollPosition,
 
@@ -1684,8 +1681,9 @@ export default defineComponent({
     pathNames() {
       return this.navbarIndex.navbarItems.length;
     },
+
     darkmode() {
-      return this.settingsStore.darkmode;
+      return this.localStore.darkmode;
     },
 
     scrollAreaHeight() {

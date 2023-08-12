@@ -7,22 +7,19 @@
 
 <script>
 import { defineComponent, ref } from 'vue';
-import { useUserStore } from 'stores/user';
+import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
-import { useSettingsStore } from 'stores/settings';
 
 export default defineComponent({
   name: 'IndexPage',
 
   setup() {
-    const userStore = useUserStore();
-    const settings_store = useSettingsStore();
+    const localStore = useLocalStore();
     const q = useQuasar();
 
     return {
-      userStore,
-      settings_store,
+      localStore,
       q,
       ok: ref(true),
     };

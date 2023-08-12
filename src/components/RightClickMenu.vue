@@ -159,7 +159,7 @@
 
 <script lang="js">
 import { defineComponent, ref } from 'vue';
-import { useSettingsStore } from 'stores/settings';
+import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 
@@ -174,7 +174,7 @@ export default defineComponent({
     'showInformation'
 ],
   setup(props) {
-    const settingsStore = useSettingsStore();
+    const localStore = useLocalStore();
     var item = ref(props.propItem);
     const q = useQuasar();
     const axiosConfig = {
@@ -190,7 +190,7 @@ export default defineComponent({
       q,
       axiosConfig,
       item,
-      settingsStore,
+      localStore,
       itemInformationDialog: ref(false),
       newName,
     };
@@ -198,7 +198,7 @@ export default defineComponent({
 
   computed: {
     darkmode() {
-      return this.settingsStore.darkmode;
+      return this.localStore.darkmode;
     },
     itemShareLink() {
       return (

@@ -70,28 +70,28 @@
 
 <script lang="js">
 import { defineComponent, ref } from 'vue';
-import { useSettingsStore } from 'stores/settings';
+import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
 
 export default defineComponent({
   name: 'RightClickLayoutMenu',
 
   setup() {
-    const settingsStore = useSettingsStore();
+    const localStore = useLocalStore();
     const q = useQuasar();
-    const darkmodeToogle = ref(settingsStore.darkmodeState);
+    const darkmodeToogle = ref(localStore.darkmodeState);
 
 
     return {
       darkmodeToogle,
       q,
-      settingsStore,
+      localStore,
     };
   },
 
   computed: {
     darkmode() {
-      return this.settingsStore.darkmode;
+      return this.localStore.darkmode;
     },
     mobile() {
       if (this.q.screen.width < 700) {
@@ -106,11 +106,11 @@ export default defineComponent({
   methods: {
     setTheme(theme) {
       document.body.setAttribute('data-theme', theme);
-      this.settingsStore.theme = theme;
+      this.localStore.theme = theme;
     },
 
     darkmodeChanged() {
-      this.settingsStore.darkmode = this.darkmodeToogle;
+      this.localStore.darkmode = this.darkmodeToogle;
     },
   },
 });

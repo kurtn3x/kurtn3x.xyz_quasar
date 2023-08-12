@@ -1,7 +1,7 @@
 <template>
   <q-page class="bg row justify-center items-center" :class="theme">
     <ParticlesIndex />
-    <div class="column fade-in-text" :class="mobile ? 'q-pa-xs' : 'q-pa-lg'">
+    <div class="column fade-in-text q-ma-xs">
       <div v-if="!registerSuccessful">
         <q-card
           style="max-width: 400px"
@@ -299,10 +299,10 @@
                   width="150px"
                   height="55px"
                 >
-                  <div class="fit" v-if="captchaLoading">
+                  <div class="fit" v-if="captchaData.loading">
                     <q-spinner color="blue" size="2em" />
                   </div>
-                  <div class="fit text-red" v-if="captchaError">
+                  <div class="fit text-red" v-if="captchaData.error">
                     Failed to load Captcha.
                   </div>
                 </q-img>
@@ -337,7 +337,9 @@
                   class="text-center text-red text-h6 shake"
                   ref="errorText"
                   v-on:animationend="
-                    ($event) => $event.target.classList.remove('shake')
+                    ($event: any) => {
+                        $event.target.classList.remove('shake')
+                    }
                   "
                   v-if="serverError"
                 >
@@ -367,11 +369,11 @@
   </q-page>
 </template>
 
-<script>
+<script lang="ts">
 import { ref } from 'vue';
-import { useQuasar } from 'quasar';
+import { useQuasar, QInput } from 'quasar';
 import { api } from 'boot/axios';
-import { useSettingsStore } from 'stores/settings';
+import { useLocalStore } from 'stores/localStore';
 import ParticlesIndex from 'components/ParticlesIndex.vue';
 
 export default {
@@ -397,12 +399,14 @@ export default {
       img: '',
       id: '',
       value: '',
+      loading: true,
+      error: false,
     });
 
-    const settingsStore = useSettingsStore();
+    const localStore = useLocalStore();
 
     return {
-      settingsStore,
+      localStore,
       axiosConfig,
       q,
       isPwd: ref(true),
@@ -415,16 +419,14 @@ export default {
       registerDataRequired,
 
       errorMap: ref({
-        usernameError: ref(null),
-        emailError: ref(null),
-        passwordError: ref(null),
-        password2Error: ref(null),
+        usernameError: ref(false),
+        emailError: ref(false),
+        passwordError: ref(false),
+        password2Error: ref(false),
       }),
 
       checkErrorRequired: ref(true),
       captchaData,
-      captchaLoading: ref(true),
-      captchaError: ref(false),
     };
   },
 
@@ -432,57 +434,31 @@ export default {
     this.getCaptcha();
   },
 
-  // watch: {
-  //   'registerDataRequired.username'() {
-  //     this.isValidUsername();
-  //   },
-  //   'registerDataRequired.email'() {
-  //     this.isValidEmail();
-  //   },
-  //   'registerDataRequired.password'() {
-  //     this.isValidPassword();
-  //     if (this.registerDataRequired.password2 != '') {
-  //       this.isValidPassword2();
-  //     }
-  //   },
-  //   'registerDataRequired.password2'() {
-  //     this.isValidPassword2();
-  //   },
-  // },
-
   computed: {
     card_width() {
       return this.q.screen.width - 25;
     },
 
-    mobile() {
-      if (this.q.screen.width < 1024) {
-        return true;
-      } else {
-        return false;
-      }
-    },
-
     darkmode() {
-      return this.settingsStore.darkmodeState;
+      return this.localStore.darkmodeState;
     },
 
     theme() {
-      if (this.settingsStore.theme == 'default') {
+      if (this.localStore.theme == 'default') {
         return 'bg-default';
-      } else if (this.settingsStore.theme == 'cool-orange') {
+      } else if (this.localStore.theme == 'cool-orange') {
         return 'bg-cool-orange';
-      } else if (this.settingsStore.theme == 'nice-green') {
+      } else if (this.localStore.theme == 'nice-green') {
         return 'bg-nice-green';
-      } else if (this.settingsStore.theme == 'olive-green') {
+      } else if (this.localStore.theme == 'olive-green') {
         return 'bg-olive-green';
-      } else if (this.settingsStore.theme == 'epic-blue') {
+      } else if (this.localStore.theme == 'epic-blue') {
         return 'bg-epic-blue';
-      } else if (this.settingsStore.theme == 'orange') {
+      } else if (this.localStore.theme == 'orange') {
         return 'bg-orange';
-      } else if (this.settingsStore.theme == 'light') {
+      } else if (this.localStore.theme == 'light') {
         return 'bg-lightp';
-      } else if (this.settingsStore.theme == 'dark') {
+      } else if (this.localStore.theme == 'dark') {
         return 'bg-darkp';
       } else {
         return 'bg-default';
@@ -493,7 +469,9 @@ export default {
   methods: {
     async isValidUsername() {
       this.$nextTick(async () => {
-        var val = await this.$refs.usernameInput.validate();
+        var val = await (
+          this.$refs.usernameInput as InstanceType<typeof QInput>
+        ).validate();
         this.errorMap.usernameError = val;
         this.testRequiredInformation();
       });
@@ -501,21 +479,27 @@ export default {
 
     async isValidEmail() {
       this.$nextTick(async () => {
-        var val = await this.$refs.emailInput.validate();
+        var val = await (
+          this.$refs.emailInput as InstanceType<typeof QInput>
+        ).validate();
         this.errorMap.emailError = val;
         this.testRequiredInformation();
       });
     },
     async isValidPassword() {
       this.$nextTick(async () => {
-        var val = await this.$refs.passwordInput.validate();
+        var val = await (
+          this.$refs.passwordInput as InstanceType<typeof QInput>
+        ).validate();
         this.errorMap.passwordError = val;
         this.testRequiredInformation();
       });
     },
     async isValidPassword2() {
       this.$nextTick(async () => {
-        var val = await this.$refs.password2Input.validate();
+        var val = await (
+          this.$refs.password2Input as InstanceType<typeof QInput>
+        ).validate();
         this.errorMap.password2Error = val;
         this.testRequiredInformation();
       });
@@ -531,7 +515,7 @@ export default {
     },
 
     getCaptcha() {
-      this.captchaLoading = true;
+      this.captchaData.loading = true;
       api
         .get('/auth/captcha', this.axiosConfig)
         .then((response) => {
@@ -539,13 +523,13 @@ export default {
             this.captchaData.img =
               'data:image/png;base64,' + response.data.captcha;
             this.captchaData.id = response.data.id;
-            this.captchaLoading = false;
+            this.captchaData.loading = false;
           }
         })
         .catch((error) => {
           this.loading = false;
-          this.captchaError = true;
-          this.captchaLoading = false;
+          this.captchaData.error = true;
+          this.captchaData.loading = false;
           if (error.response) {
             this.errorMessage = error.response.data.error;
           } else {
@@ -558,7 +542,7 @@ export default {
       console.log(this.captchaData.value);
       if (this.checkErrorRequired) {
         this.$nextTick(() => {
-          this.$refs.errorText.classList.add('shake');
+          (this.$refs.errorText as HTMLElement).classList.add('shake');
         });
       } else {
         this.loading = true;
@@ -581,7 +565,7 @@ export default {
               this.serverError = true;
               this.errorMessage = response.data.error;
               this.$nextTick(() => {
-                this.$refs.errorText.classList.add('shake');
+                (this.$refs.errorText as HTMLElement).classList.add('shake');
               });
             }
           })
@@ -595,7 +579,7 @@ export default {
             this.getCaptcha();
             this.serverError = true;
             this.$nextTick(() => {
-              this.$refs.errorText.classList.add('shake');
+              (this.$refs.errorText as HTMLElement).classList.add('shake');
             });
           });
       }

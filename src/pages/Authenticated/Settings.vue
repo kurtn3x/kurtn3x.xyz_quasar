@@ -440,15 +440,6 @@
               <q-separator />
 
               <q-item>
-                <q-item-section side> Last Seen: </q-item-section>
-                <q-item-section>
-                  {{ accountData.account.last_seen }}
-                </q-item-section>
-              </q-item>
-
-              <q-separator />
-
-              <q-item>
                 <q-item-section side> Location: </q-item-section>
                 <q-item-section>
                   {{ accountData.profile.location }}
@@ -732,20 +723,14 @@
 import { Ref, ref } from 'vue';
 import { useQuasar, LocalStorage } from 'quasar';
 import { api } from 'boot/axios';
-import { useUserStore } from 'stores/user';
-import { useSettingsStore } from 'stores/settings';
-import {
-  serializeHeaderInformation,
-  defaultHeaderInformation,
-  path_to_link_av,
-} from 'src/models';
+import { useLocalStore } from 'stores/localStore';
+import { defaultHeaderInformation } from 'src/types/defaults';
 import { AccountSettingsType, HeaderInformationType } from 'src/types/index';
 
 export default {
   name: 'SettingsView',
   setup() {
-    const settingsStore = useSettingsStore();
-    const userStore = useUserStore();
+    const localStore = useLocalStore();
     const q = useQuasar();
 
     const axiosConfig = {
@@ -754,16 +739,15 @@ export default {
         'X-CSRFToken': q.cookies.get('csrftoken'),
       },
     };
-    const darkmodeToogle = ref(settingsStore.darkmodeState);
+    const darkmodeToogle = ref(localStore.darkmodeState);
 
     return {
       darkmodeToogle,
       axiosConfig,
       tab: ref('site'),
       splitterModel: ref(20),
-      settingsStore,
+      localStore,
       q,
-      userStore,
       loading: ref(false),
 
       // data
@@ -810,7 +794,7 @@ export default {
 
   computed: {
     darkmode() {
-      return this.settingsStore.darkmode;
+      return this.localStore.darkmode;
     },
     small() {
       if (this.q.screen.width < 1024) {
@@ -846,9 +830,9 @@ export default {
         .get('/profile/headerinfo', axiosConfig)
         .then((response) => {
           if (response.status == 200) {
-            var headerinfo = serializeHeaderInformation(response.data);
-            this.userStore.setHeaderInfo(headerinfo);
-            this.userStore.setAuthState(true);
+            var headerinfo = response.data;
+            this.localStore.setHeaderInfo(headerinfo);
+            this.localStore.setAuthState(true);
           } else {
             this.notify('negative', response.data.error);
           }
@@ -864,11 +848,11 @@ export default {
 
     setTheme(theme: string) {
       document.body.setAttribute('data-theme', theme);
-      this.settingsStore.theme = theme;
+      this.localStore.theme = theme;
     },
 
     darkmodeChanged() {
-      this.settingsStore.darkmode = this.darkmodeToogle;
+      this.localStore.darkmode = this.darkmodeToogle;
     },
 
     deleteAccount() {
@@ -887,8 +871,8 @@ export default {
         .then((response) => {
           if (response.status == 200) {
             this.notify('positive', 'Deleted your account');
-            this.userStore.setAuthState(false);
-            this.userStore.setHeaderInfo(defaultHeaderInformation());
+            this.localStore.setAuthState(false);
+            this.localStore.setHeaderInfo(defaultHeaderInformation());
             this.$router.push('/');
             LocalStorage.remove('header');
           } else if (response.status == 244) {
@@ -917,7 +901,6 @@ export default {
         .then((response) => {
           if (response.status == 200) {
             this.notify('positive', 'Username has been changed!');
-
             this.getHeaderInfo();
             this.getAccountInformation();
           } else {
@@ -985,9 +968,9 @@ export default {
         .post('/auth/logout', '', this.axiosConfig)
         .then((response) => {
           if (response.status == 200) {
-            this.userStore.setAuthState(false);
+            this.localStore.setAuthState(false);
             LocalStorage.clear();
-            this.userStore.setHeaderInfo({} as HeaderInformationType);
+            this.localStore.setHeaderInfo({} as HeaderInformationType);
             LocalStorage.remove('header');
             this.$router.push('/');
             this.notify('positive', 'Password changed. Please login again.');
@@ -1054,7 +1037,7 @@ export default {
         .then((response) => {
           if (response.status == 200) {
             this.accountData = response.data;
-            this.avatarPreview = path_to_link_av(response.data.profile.avatar);
+            this.avatarPreview = response.data.profile.avatar;
 
             this.initialFetch = true;
             this.initialFetchSuccessful = true;

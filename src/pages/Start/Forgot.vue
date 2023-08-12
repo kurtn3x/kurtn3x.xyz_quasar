@@ -86,9 +86,8 @@
 
 <script>
 import { defineComponent, ref } from 'vue';
-import { useUserStore } from 'stores/user';
 import { useQuasar } from 'quasar';
-import { useSettingsStore } from 'stores/settings';
+import { useLocalStore } from 'stores/localStore';
 import { api } from 'boot/axios';
 import ParticlesIndex from 'components/ParticlesIndex.vue';
 import RightClickLayoutMenu from 'src/components/RightClickLayoutMenu.vue';
@@ -98,8 +97,7 @@ export default defineComponent({
   components: { ParticlesIndex, RightClickLayoutMenu },
 
   setup() {
-    const userStore = useUserStore();
-    const settingsStore = useSettingsStore();
+    const localStore = uselocalStore();
     const q = useQuasar();
     const axiosConfig = {
       withCredentials: true,
@@ -112,8 +110,7 @@ export default defineComponent({
       axiosConfig,
       loading: ref(false),
       show: ref(false),
-      userStore,
-      settingsStore,
+      localStore,
       q,
       requestPassword: ref(false),
       requestUsername: ref(false),
@@ -135,21 +132,21 @@ export default defineComponent({
     },
 
     theme() {
-      if (this.settingsStore.theme == 'default') {
+      if (this.localStore.theme == 'default') {
         return 'bg-default';
-      } else if (this.settingsStore.theme == 'cool-orange') {
+      } else if (this.localStore.theme == 'cool-orange') {
         return 'bg-cool-orange';
-      } else if (this.settingsStore.theme == 'nice-green') {
+      } else if (this.localStore.theme == 'nice-green') {
         return 'bg-nice-green';
-      } else if (this.settingsStore.theme == 'olive-green') {
+      } else if (this.localStore.theme == 'olive-green') {
         return 'bg-olive-green';
-      } else if (this.settingsStore.theme == 'epic-blue') {
+      } else if (this.localStore.theme == 'epic-blue') {
         return 'bg-epic-blue';
-      } else if (this.settingsStore.theme == 'orange') {
+      } else if (this.localStore.theme == 'orange') {
         return 'bg-orange';
-      } else if (this.settingsStore.theme == 'light') {
+      } else if (this.localStore.theme == 'light') {
         return 'bg-lightp';
-      } else if (this.settingsStore.theme == 'dark') {
+      } else if (this.localStore.theme == 'dark') {
         return 'bg-darkp';
       } else {
         return 'bg-default';

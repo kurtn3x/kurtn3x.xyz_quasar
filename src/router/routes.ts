@@ -51,10 +51,7 @@ const routes: RouteRecordRaw[] = [
         path: 'file/:id',
         component: () => import('pages/public/PublicFileView.vue'),
       },
-      {
-        path: 'folder/:id',
-        component: () => import('pages/public/PublicFolderView.vue'),
-      },
+
       {
         path: 'code/:id',
         component: () => import('pages/public/PublicCodeEditor/CodeView.vue'),

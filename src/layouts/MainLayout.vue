@@ -2,7 +2,7 @@
   <q-layout view="hHh LpR fff">
     <!-- HEADER -->
     <q-header reveal height-hint="98" class="bg-layout-bg text-layout-text">
-      <q-toolbar class="q-pa-none" v-if="authenticated">
+      <q-toolbar class="q-pa-none" v-if="localStore.isAuthenticated">
         <q-btn
           flat
           stretch
@@ -149,7 +149,7 @@
         </q-btn>
       </q-toolbar>
 
-      <q-toolbar class="q-pa-none" v-if="!authenticated">
+      <q-toolbar class="q-pa-none" v-if="!localStore.isAuthenticated">
         <q-btn stretch flat icon="home" size="md" to="/" />
 
         <q-btn
@@ -242,7 +242,7 @@
       @mouseover="miniState = false"
       @mouseout="miniState = true"
       class="bg-layout-bg text-layout-text"
-      v-if="authenticated"
+      v-if="localStore.isAuthenticated"
     >
       <q-list padding class="q-pa-none">
         <q-item
@@ -313,53 +313,47 @@
   </q-layout>
 </template>
 
-<script>
+<script lang="ts">
 import { ref } from 'vue';
 import { LocalStorage } from 'quasar';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
-import { useUserStore } from 'stores/user.ts';
-import { useSettingsStore } from 'stores/settings';
-import {
-  defaultHeaderInformation,
-  serializeHeaderInformation,
-} from 'src/models';
+import { useLocalStore } from 'stores/localStore';
+import { defaultHeaderInformation } from 'src/types/defaults';
 
 export default {
   setup() {
-    const userStore = useUserStore();
-    const settingsStore = useSettingsStore();
+    const localStore = useLocalStore();
     const q = useQuasar();
 
     var navDrawer = ref(true);
     var miniState = ref(true);
 
+    // if screen is too small, put the left side drawer into hidden mode
     if (q.screen.width < 1024) {
       navDrawer.value = false;
       miniState.value = false;
     }
 
-    const darkmodeToogle = ref(settingsStore.darkmodeState);
-    const headerInfo = ref(userStore.headerInfo);
+    const darkmodeToogle = ref(localStore.darkmodeState);
+    const headerInfo = ref(localStore.headerInfo);
 
     return {
       navDrawer,
       miniState,
       darkmodeToogle,
-      // layout & styling
-      settingsStore,
-      userStore,
+      localStore,
       q,
       headerInfo,
     };
   },
 
   created() {
-    if (this.userStore.authenticated) {
+    if (this.localStore.isAuthenticated) {
       this.getHeaderInfo();
     } else {
-      this.headerInfo = '';
-      this.userStore.setHeaderInfo(defaultHeaderInformation());
+      this.headerInfo = defaultHeaderInformation();
+      this.localStore.deleteAll();
     }
   },
 
@@ -367,22 +361,13 @@ export default {
     myprofileroute() {
       return '/user/' + this.headerInfo.username;
     },
+
     darkmode() {
-      return this.settingsStore.darkmodeState;
-    },
-    mobile() {
-      if (this.q.screen.width < 650) {
-        return true;
-      } else {
-        return false;
-      }
+      return this.localStore.darkmodeState;
     },
 
-    authenticated() {
-      return this.userStore.authenticated;
-    },
     headerInfoStore() {
-      return this.userStore.headerInfo;
+      return this.localStore.headerInfo;
     },
   },
 
@@ -397,16 +382,16 @@ export default {
   },
 
   methods: {
-    setTheme(theme) {
+    setTheme(theme: string) {
       document.body.setAttribute('data-theme', theme);
-      this.settingsStore.theme = theme;
+      this.localStore.theme = theme;
     },
 
     darkmodeChanged() {
-      this.settingsStore.darkmode = !this.darkmodeToogle;
+      this.localStore.darkmode = !this.darkmodeToogle;
     },
 
-    notify(type, message) {
+    notify(type: string, message: string) {
       this.q.notify({
         type: type,
         message: message,
@@ -426,15 +411,17 @@ export default {
         .post('/auth/logout', '', axiosConfig)
         .then((response) => {
           if (response.status == 200) {
-            this.userStore.setAuthState(false);
-            this.userStore.setHeaderInfo(defaultHeaderInformation());
+            this.localStore.deleteAll();
             this.notify('positive', 'Logged out!');
             LocalStorage.remove('header');
-            LocalStorage.remove('user');
             window.location.replace('https://kurtn3x.xyz');
           }
         })
-        .catch();
+        .catch((error) => {
+          console.log(error);
+          this.notify('negative', 'API ERROR.');
+          this.localStore.deleteAll();
+        });
     },
 
     getHeaderInfo() {
@@ -448,21 +435,20 @@ export default {
         .get('/profile/headerinfo', axiosConfig)
         .then((response) => {
           if (response.status == 200) {
-            this.headerInfo = serializeHeaderInformation(response.data);
-            this.userStore.setHeaderInfo(this.headerInfo);
-            this.userStore.setAuthState(true);
-            this.status = this.headerInfo.status;
+            this.headerInfo = response.data;
+            this.localStore.loginUser(response.data);
           } else {
             this.notify(
               'negative',
               'Something went wrong when fetching the user.'
             );
-            this.userStore.setAuthState(false);
+            this.localStore.deleteAll();
           }
         })
         .catch((error) => {
+          console.log(error);
           this.notify('negative', 'API ERROR.');
-          this.userStore.setAuthState(false);
+          this.localStore.deleteAll();
         });
     },
   },

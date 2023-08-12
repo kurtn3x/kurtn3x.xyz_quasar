@@ -6,7 +6,7 @@
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
   <div v-if="initialFetch && initialFetchSuccessful">
-    <q-dialog v-model="fastSetupVPNDialog">
+    <q-dialog v-model="setupVPNDialog">
       <q-card bordered style="max-width: 400px">
         <q-toolbar class="bg-layout-bg text-layout-text text-center">
           <q-toolbar-title class="q-ma-sm"
@@ -19,7 +19,7 @@
             below.
           </div>
           <q-input
-            v-model="vpnSetupName"
+            v-model="vpnSetupInput.name"
             outlined
             dense
             :color="darkmode ? 'white' : 'black'"
@@ -31,7 +31,7 @@
           />
 
           <q-input
-            v-model="vpnSetupPublicKey"
+            v-model="vpnSetupInput.publicKey"
             outlined
             dense
             :color="darkmode ? 'white' : 'black'"
@@ -70,22 +70,11 @@
         </div>
       </q-card>
     </q-dialog>
-    <q-dialog
-      v-model="fastSetupVPNDialogSuccessful"
-      persistent
-      @hide="
-        vpnSetupName = '';
-        vpnSetupPublicKey = '';
-        vpnSetupPrivateKey = '';
-        vpnSetupAddresses = '';
-        vpnSetupServerPublicKey = '';
-        vpnSetupPSK = '';
-      "
-    >
+    <q-dialog v-model="setupVPNDialogSuccessful" persistent>
       <q-card bordered class="full-width">
         <q-tabs
           inline-label
-          v-model="fastSetupVPNDialogTabs"
+          v-model="setupVPNDialogTabs"
           style="height: 50px"
           align="justify"
           indicator-color="transparent"
@@ -98,7 +87,7 @@
         </q-tabs>
 
         <q-tab-panels
-          v-model="fastSetupVPNDialogTabs"
+          v-model="setupVPNDialogTabs"
           animated
           style="height: 270px"
         >
@@ -139,7 +128,7 @@
             </div>
             <div class="row justify-center">
               <q-input
-                v-model="vpnSetupPrivateKey"
+                v-model="vpnSetupConnection.privateKey"
                 outlined
                 :color="darkmode ? 'white' : 'black'"
                 dense
@@ -165,7 +154,7 @@
             <q-input
               outlined
               readonly
-              v-model="vpnSetupAddresses"
+              v-model="vpnSetupConnection.addresses"
               style="height: 50px"
               :color="darkmode ? 'white' : 'dark'"
               dense
@@ -176,7 +165,7 @@
                 icon="content_copy"
                 class="absolute-right"
                 size="md"
-                @click="copyToClipboard(vpnSetupAddresses)"
+                @click="copyToClipboard(vpnSetupConnection.addresses)"
               />
               <template v-slot:prepend>
                 <a
@@ -191,7 +180,7 @@
             <q-input
               outlined
               readonly
-              v-model="vpnStaticDNS"
+              v-model="vpnSetupConnection.dnsServer"
               style="height: 50px"
               :color="darkmode ? 'white' : 'dark'"
               dense
@@ -202,7 +191,7 @@
                 icon="content_copy"
                 class="absolute-right"
                 size="md"
-                @click="copyToClipboard(vpnStaticDNS)"
+                @click="copyToClipboard(vpnSetupConnection.dnsServer)"
               />
               <template v-slot:prepend>
                 <a
@@ -223,7 +212,7 @@
               outlined
               readonly
               :color="darkmode ? 'white' : 'dark'"
-              v-model="vpnSetupPSK"
+              v-model="vpnSetupConnection.presharedKey"
               style="height: 50px"
               dense
             >
@@ -234,7 +223,7 @@
                 icon="content_copy"
                 class="absolute-right"
                 size="md"
-                @click="copyToClipboard(vpnSetupPSK)"
+                @click="copyToClipboard(vpnSetupConnection.presharedKey)"
               />
               <template v-slot:prepend>
                 <a
@@ -250,7 +239,7 @@
               outlined
               readonly
               :color="darkmode ? 'white' : 'dark'"
-              v-model="vpnSetupServerPublicKey"
+              v-model="vpnSetupConnection.serverKey"
               style="height: 50px"
               dense
             >
@@ -260,7 +249,7 @@
                 icon="content_copy"
                 class="absolute-right"
                 size="md"
-                @click="copyToClipboard(vpnSetupServerPublicKey)"
+                @click="copyToClipboard(vpnSetupConnection.serverKey)"
               />
               <template v-slot:prepend>
                 <a
@@ -275,7 +264,7 @@
             <q-input
               outlined
               readonly
-              v-model="vpnStaticAllowedIPs"
+              v-model="vpnSetupConnection.allowedIPs"
               style="height: 50px"
               dense
               :color="darkmode ? 'white' : 'dark'"
@@ -286,7 +275,7 @@
                 icon="content_copy"
                 class="absolute-right"
                 size="md"
-                @click="copyToClipboard(vpnStaticAllowedIPs)"
+                @click="copyToClipboard(vpnSetupConnection.allowedIPs)"
               />
               <template v-slot:prepend>
                 <a
@@ -301,7 +290,7 @@
             <q-input
               outlined
               readonly
-              v-model="vpnStaticEndpoint"
+              v-model="vpnSetupConnection.endpoint"
               style="height: 50px"
               dense
               :color="darkmode ? 'white' : 'dark'"
@@ -312,7 +301,7 @@
                 icon="content_copy"
                 class="absolute-right"
                 size="md"
-                @click="copyToClipboard(vpnStaticEndpoint)"
+                @click="copyToClipboard(vpnSetupConnection.endpoint)"
               />
               <template v-slot:prepend>
                 <a
@@ -349,30 +338,26 @@
       <q-card bordered style="width: 400px">
         <q-toolbar class="bg-layout-bg text-layout-text text-center">
           <q-toolbar-title class="q-ma-sm"
-            >Info for {{ vpnInfoName }}</q-toolbar-title
+            >Info for {{ vpnClientInfo.name }}</q-toolbar-title
           >
         </q-toolbar>
         <div class="q-ma-sm">
           <div class="row q-mt-md">
             <div class="col text-weight-bold">Name</div>
-            <div class="col-10">{{ vpnInfoName }}</div>
+            <div class="col-10">{{ vpnClientInfo.name }}</div>
           </div>
           <div class="row q-mt-md">
-            <div class="col text-weight-bold">IPv4</div>
-            <div class="col-10">{{ vpnInfoIPV4 }}</div>
+            <div class="col text-weight-bold">Addresses</div>
+            <div class="col-10">{{ vpnClientInfo.addresses }}</div>
           </div>
           <div class="row q-mt-md">
-            <div class="col text-weight-bold">IPv6</div>
-            <div class="col-10">{{ vpnInfoIPV6 }}</div>
-          </div>
-          <div class="row q-mt-md">
-            <div class="col text-weight-bold">Added</div>
-            <div class="col-10">{{ vpnInfoCreated }}</div>
+            <div class="col text-weight-bold">Created</div>
+            <div class="col-10">{{ vpnClientInfo.created }}</div>
           </div>
           <div class="row q-mt-md">
             <div class="col-4 text-weight-bold">Public Key</div>
             <div>
-              {{ vpnInfoPublicKey }}
+              {{ vpnClientInfo.public_key }}
             </div>
           </div>
         </div>
@@ -406,7 +391,7 @@
           round
           padding="sm"
           style="height: 60px; width: 60px"
-          @click="fastSetupVPNDialog = !fastSetupVPNDialog"
+          @click="setupVPNDialog = !setupVPNDialog"
         />
       </q-page-sticky>
       <q-list bordered separator class="q-mt-md">
@@ -415,8 +400,7 @@
             <q-item-section class="text-body1">
               <q-item-label overline> Name: {{ item.name }} </q-item-label>
               <div class="row">
-                <div class="col">{{ item.ipv4 }}</div>
-                <div class="col">{{ item.ipv6 }}</div>
+                <div class="col">{{ item.addresses }}</div>
               </div>
             </q-item-section>
             <q-item-section side class="row">
@@ -429,11 +413,7 @@
                   round
                   @click="
                     vpnInfoDialog = true;
-                    vpnInfoName = item.name;
-                    vpnInfoIPV4 = item.ipv4;
-                    vpnInfoIPV6 = item.ipv6;
-                    vpnInfoPublicKey = item.client_publickey;
-                    vpnInfoCreated = item.created;
+                    vpnClientInfo = item;
                   "
                 />
                 <q-btn
@@ -453,21 +433,43 @@
   </div>
 </template>
 
-<script>
-import { defineComponent, ref } from 'vue';
-import { useUserStore } from 'stores/user';
+<script lang="ts">
+import { defineComponent, ref, Ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
-import { useSettingsStore } from 'stores/settings';
+import { useLocalStore } from 'stores/localStore';
 import { mdiAndroid } from '@quasar/extras/mdi-v6';
 import { mdiMicrosoftWindows } from '@quasar/extras/mdi-v6';
-import { mdiLinux } from '@quasar/extras/mdi-v6';
+
+interface VPNSetupInputType {
+  publicKey: string;
+  name: string;
+}
+
+interface VPNSetupConnectionType {
+  name: string;
+  addresses: string;
+  clientKey: string;
+  serverKey: string;
+  presharedKey: string;
+  dnsServer: string;
+  allowedIPs: string;
+  endpoint: string;
+  privateKey: string;
+}
+
+interface VPNClientInfoType {
+  name: string;
+  addresses: string;
+  public_key: string;
+  id: string;
+  created: string;
+}
 
 export default defineComponent({
   name: 'VPNView',
   setup() {
-    const userStore = useUserStore();
-    const settingsStore = useSettingsStore();
+    const localStore = useLocalStore();
     const q = useQuasar();
 
     const axios_config = {
@@ -480,36 +482,22 @@ export default defineComponent({
     return {
       mdiAndroid,
       mdiMicrosoftWindows,
-      mdiLinux,
       axios_config,
-      userStore,
-      settingsStore,
+      localStore,
       q,
       initialFetch: ref(false),
       initialFetchSuccessful: ref(false),
       loading: ref(false),
-      vpnConnections: ref([]),
-      fastSetupVPNDialog: ref(false),
-      fastSetupVPNDialogSuccessful: ref(false),
-      fastSetupVPNDialogTabs: ref('windows'),
-
-      vpnSetupPublicKey: ref(''),
-      vpnSetupName: ref(''),
-      vpnSetupPrivateKey: ref('Your private Key'),
-      vpnSetupAddresses: ref(''),
-      vpnSetupServerPublicKey: ref(''),
-      vpnSetupPSK: ref(''),
-
-      vpnStaticDNS: ref('10.0.0.1, fde9:9757:b59b::1'),
-      vpnStaticAllowedIPs: ref('0.0.0.0/0, ::/0'),
-      vpnStaticEndpoint: ref('193.218.118.184:51820'),
-
+      setupVPNDialog: ref(false),
       vpnInfoDialog: ref(false),
-      vpnInfoName: ref(''),
-      vpnInfoIPV4: ref(''),
-      vpnInfoIPV6: ref(''),
-      vpnInfoPublicKey: ref(''),
-      vpnInfoCreated: ref(''),
+
+      setupVPNDialogSuccessful: ref(false),
+      setupVPNDialogTabs: ref('windows'),
+
+      vpnConnections: ref({}) as Ref<VPNClientInfoType[]>,
+      vpnSetupInput: ref({ publicKey: '', name: '' }) as Ref<VPNSetupInputType>,
+      vpnSetupConnection: ref() as Ref<VPNSetupConnectionType>,
+      vpnClientInfo: ref({}) as Ref<VPNClientInfoType>,
     };
   },
 
@@ -517,27 +505,27 @@ export default defineComponent({
     serverConfig() {
       return (
         'Address = ' +
-        this.vpnSetupAddresses +
+        this.vpnSetupConnection.addresses +
         '\n' +
         'DNS = ' +
-        this.vpnStaticDNS +
+        this.vpnSetupConnection.dnsServer +
         '\n' +
         '[Peer]\n' +
         'PresharedKey = ' +
-        this.vpnSetupPSK +
+        this.vpnSetupConnection.presharedKey +
         '\n' +
         'PublicKey = ' +
-        this.vpnSetupServerPublicKey +
+        this.vpnSetupConnection.serverKey +
         '\n' +
         'AllowedIPs = ' +
-        this.vpnStaticAllowedIPs +
+        this.vpnSetupConnection.allowedIPs +
         '\n' +
         'Endpoint = ' +
-        this.vpnStaticEndpoint
+        this.vpnSetupConnection.endpoint
       );
     },
     darkmode() {
-      return this.settingsStore.darkmode;
+      return this.localStore.darkmode;
     },
   },
 
@@ -546,7 +534,7 @@ export default defineComponent({
   },
 
   methods: {
-    deleteVPNConnection(con) {
+    deleteVPNConnection(con: VPNClientInfoType) {
       api
         .delete('/vpn_torrent/delete/vpn/' + con.id, this.axios_config)
         .then((response) => {
@@ -571,26 +559,26 @@ export default defineComponent({
       var config =
         '[Interface]\n' +
         'PrivateKey = ' +
-        this.vpnSetupPrivateKey +
+        this.vpnSetupConnection.privateKey +
         '\n' +
         'Address = ' +
-        this.vpnSetupAddresses +
+        this.vpnSetupConnection.addresses +
         '\n' +
         'DNS = ' +
-        this.vpnStaticDNS +
+        this.vpnSetupConnection.dnsServer +
         '\n' +
         '[Peer]\n' +
         'PresharedKey = ' +
-        this.vpnSetupPSK +
+        this.vpnSetupConnection.presharedKey +
         '\n' +
         'PublicKey = ' +
-        this.vpnSetupServerPublicKey +
+        this.vpnSetupConnection.serverKey +
         '\n' +
         'AllowedIPs = ' +
-        this.vpnStaticAllowedIPs +
+        this.vpnSetupConnection.allowedIPs +
         '\n' +
         'Endpoint = ' +
-        this.vpnStaticEndpoint;
+        this.vpnSetupConnection.endpoint;
 
       element.setAttribute(
         'href',
@@ -607,12 +595,12 @@ export default defineComponent({
       document.body.removeChild(element);
     },
 
-    copyToClipboard(text) {
+    copyToClipboard(text: string) {
       navigator.clipboard.writeText(text);
       this.notify('positive', 'Copied.');
     },
 
-    notify(type, message) {
+    notify(type: string, message: string) {
       this.q.notify({
         type: type,
         message: message,
@@ -627,7 +615,7 @@ export default defineComponent({
         .get('/vpn_torrent/list/vpn', this.axios_config)
         .then((response) => {
           if (response.status == 200) {
-            this.vpnConnections = response.data.clients;
+            this.vpnConnections = response.data.clients as VPNClientInfoType[];
             this.initialFetch = true;
             this.initialFetchSuccessful = true;
             this.loading = false;
@@ -649,25 +637,22 @@ export default defineComponent({
     },
 
     createVPNClient() {
-      if (this.vpnSetupName.length < 1 || this.vpnSetupPublicKey.length < 1) {
+      if (
+        this.vpnSetupInput.name.length < 1 ||
+        this.vpnSetupInput.publicKey.length < 1
+      ) {
         this.notify('negative', 'Please fill out all required fields.');
         return;
       }
-      var data = {
-        name: this.vpnSetupName,
-        public_key: this.vpnSetupPublicKey,
-      };
+
       this.loading = true;
       api
-        .post('/vpn_torrent/create/vpn', data, this.axios_config)
+        .post('/vpn_torrent/create/vpn', this.vpnSetupInput, this.axios_config)
         .then((response) => {
           if (response.status == 200) {
-            this.fastSetupVPNDialogSuccessful = true;
-            this.fastSetupVPNDialog = false;
-            this.vpnSetupAddresses =
-              response.data.ipv4 + '/8,' + response.data.ipv6 + '/64';
-            this.vpnSetupServerPublicKey = response.data.server_key;
-            this.vpnSetupPSK = response.data.psk;
+            this.setupVPNDialogSuccessful = true;
+            this.setupVPNDialog = false;
+            this.vpnSetupConnection = response.data;
             this.loading = false;
             this.getVPNConnections();
           } else {

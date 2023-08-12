@@ -109,19 +109,16 @@ export interface AccountSettingsType {
     date_joined: string;
     username: string;
     is_admin: boolean;
-    last_seen: string;
     email: string;
   };
 }
 
 // Profile Data, used when showing a profile
 export interface UserProfileType {
-  fetched: boolean;
   role: string;
   username: string;
   name: string;
   id: string;
-  last_seen: string;
   date_joined: string;
   description: string;
   location: string;
@@ -131,9 +128,8 @@ export interface UserProfileType {
 
 // used to load data on the header
 export interface HeaderInformationType {
-  fetched: boolean;
   username: string;
-  admin: boolean;
+  is_admin: boolean;
   avatar: string;
 }
 

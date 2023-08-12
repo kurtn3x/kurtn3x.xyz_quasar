@@ -5,13 +5,13 @@
   <div
     v-if="initialFetch && !initialFetchSuccessful"
     class="text-center q-pa-md flex flex-center"
-    :key="user"
+    :key="user.id"
   >
     <div>
       <div class="text-h5 q-mt-md">User not found.</div>
     </div>
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful" :key="user">
+  <div v-if="initialFetch && initialFetchSuccessful" :key="user.id">
     <div v-if="!small" class="q-ma-md">
       <div class="row">
         <q-card
@@ -59,10 +59,6 @@
 
           <q-card-actions vertical class="full-width">
             <q-separator color="layout-text" size="2px" />
-            <div class="q-mt-sm q-ml-sm text-body1">
-              Last seen: {{ user.last_seen }}
-            </div>
-
             <q-btn
               size="xl"
               outline
@@ -121,7 +117,7 @@
                   <q-input filled square v-model="userlink" readonly />
                   <q-item
                     clickable
-                    @click="copyuserlink"
+                    @click="copyToClipboard(userlink)"
                     class="justify-center text-body1"
                   >
                     Copy the link</q-item
@@ -154,7 +150,7 @@
             <q-tab-panels v-model="profile_tab" animated class="bg-transparent">
               <q-tab-panel name="about" style="min-height: 300px">
                 <q-card flat class="full-width full-height bg-transparent">
-                  <q-splitter model-value="50" v-model="splitter">
+                  <q-splitter :model-value="50">
                     <template v-slot:before>
                       <div class="text-h5">About</div>
                       <q-separator />
@@ -263,7 +259,6 @@
               <q-icon name="account_circle" />
             </div>
           </div>
-          <div class="q-mt-sm">Last seen: {{ user.last_seen }}</div>
         </div>
         <q-separator size="2px" color="primary" class="q-mt-md" />
 
@@ -346,7 +341,11 @@
             <q-menu>
               <q-list style="min-width: 300px">
                 <q-input filled square v-model="userlink" readonly />
-                <q-item clickable @click="copyuserlink" class="justify-center">
+                <q-item
+                  clickable
+                  @click="copyToClipboard(userlink)"
+                  class="justify-center"
+                >
                   Copy the link</q-item
                 >
               </q-list>
@@ -358,20 +357,18 @@
   </div>
 </template>
 
-<script>
-import { ref } from 'vue';
+<script lang="ts">
+import { ref, Ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
-import { useUserStore } from 'stores/user.ts';
-import { useSettingsStore } from 'stores/settings';
-import { defaultUser, serializeUser } from 'src/models';
+import { useLocalStore } from 'stores/localStore';
+import { UserProfileType } from 'src/types/index';
 
 export default {
   name: 'UserProfile',
 
   setup() {
-    const settingsStore = useSettingsStore();
-    const userStore = useUserStore();
+    const localStore = useLocalStore();
     const q = useQuasar();
     const axiosConfig = {
       withCredentials: true,
@@ -385,10 +382,9 @@ export default {
       initialFetch: ref(false),
       initialFetchSuccessful: ref(false),
       axiosConfig,
-      user: ref(defaultUser()),
-      settingsStore,
+      user: ref({}) as Ref<UserProfileType>,
       q,
-      userStore,
+      localStore,
       loading: ref(false),
       profile_tab: ref('about'),
       user_found: ref(false),
@@ -403,7 +399,7 @@ export default {
 
   computed: {
     darkmode() {
-      return this.settingsStore.darkmode;
+      return this.localStore.darkmode;
     },
     small() {
       if (this.q.screen.width < 1024) {
@@ -415,7 +411,7 @@ export default {
   },
 
   methods: {
-    notify(type, message) {
+    notify(type: string, message: string) {
       this.q.notify({
         type: type,
         message: message,
@@ -424,14 +420,10 @@ export default {
       });
     },
 
-    selectuserlink() {
-      var autoselect = document.getElementById('userlink');
-      autoselect.select();
-    },
-
-    copyuserlink() {
-      navigator.clipboard.writeText(this.userlink);
-      this.notify('positive', 'copied the link');
+    // copy a text to clipboard
+    copyToClipboard(text: string) {
+      navigator.clipboard.writeText(text);
+      this.notify('positive', 'Copied to clipboard.');
     },
 
     getUser() {
@@ -440,7 +432,7 @@ export default {
         .get('/profile/user/' + user, this.axiosConfig)
         .then((response) => {
           if (response.status == 200) {
-            this.user = serializeUser(response.data);
+            this.user = response.data;
             this.userlink = 'kurtn3x.xyz/id/' + this.user.id;
             this.initialFetch = true;
             this.initialFetchSuccessful = true;

@@ -48,8 +48,8 @@
     </div>
     <div class="q-mb-xl">
       <div class="text-center non-selectable text-white text-h4 q-mb-xl">
-        <a v-if="!authenticated">Welcome!</a>
-        <a v-if="authenticated">Welcome, {{ username }}!</a>
+        <a v-if="!localStore.isAuthenticated">Welcome!</a>
+        <a v-if="localStore.isAuthenticated">Welcome, {{ username }}!</a>
       </div>
     </div>
   </q-page>
@@ -58,49 +58,47 @@
 <script>
 import { defineComponent, ref } from 'vue';
 import { useQuasar } from 'quasar';
-import { useUserStore } from 'stores/user';
+import { useLocalStore } from 'stores/localStore';
 import ParticlesIndex from 'components/ParticlesIndex.vue';
-import { useSettingsStore } from 'stores/settings';
 
 export default defineComponent({
   name: 'IndexPage',
   components: { ParticlesIndex },
 
   setup() {
-    const userStore = useUserStore();
+    const localStore = useLocalStore();
     const q = useQuasar();
-    const settingsStore = useSettingsStore();
 
-    const darkmodeToogle = ref(settingsStore.darkmodeState);
+    const darkmodeToogle = ref(localStore.darkmodeState);
 
     return {
       darkmodeToogle,
-      settingsStore,
-      userStore,
+      localStore,
       q,
       username: ref(''),
     };
   },
   computed: {
     darkmode() {
-      return this.settingsStore.darkmode;
+      return this.localStore.darkmode;
     },
+
     theme() {
-      if (this.settingsStore.theme == 'default') {
+      if (this.localStore.theme == 'default') {
         return 'bg-default';
-      } else if (this.settingsStore.theme == 'cool-orange') {
+      } else if (this.localStore.theme == 'cool-orange') {
         return 'bg-cool-orange';
-      } else if (this.settingsStore.theme == 'nice-green') {
+      } else if (this.localStore.theme == 'nice-green') {
         return 'bg-nice-green';
-      } else if (this.settingsStore.theme == 'olive-green') {
+      } else if (this.localStore.theme == 'olive-green') {
         return 'bg-olive-green';
-      } else if (this.settingsStore.theme == 'epic-blue') {
+      } else if (this.localStore.theme == 'epic-blue') {
         return 'bg-epic-blue';
-      } else if (this.settingsStore.theme == 'orange') {
+      } else if (this.localStore.theme == 'orange') {
         return 'bg-orange';
-      } else if (this.settingsStore.theme == 'light') {
+      } else if (this.localStore.theme == 'light') {
         return 'bg-lightp';
-      } else if (this.settingsStore.theme == 'dark') {
+      } else if (this.localStore.theme == 'dark') {
         return 'bg-darkp';
       } else {
         return 'bg-default';
@@ -114,20 +112,20 @@ export default defineComponent({
     },
   },
   created() {
-    if (this.userStore.authenticated) {
+    if (this.localStore.isAuthenticated) {
       this.$router.push('/dashboard/home');
-      this.username = this.userStore.username;
+      this.username = this.localStore.username;
     }
   },
 
   methods: {
     setTheme(theme) {
       document.body.setAttribute('data-theme', theme);
-      this.settingsStore.theme = theme;
+      this.localStore.theme = theme;
     },
 
     darkmodeChanged() {
-      this.settingsStore.darkmode = this.darkmodeToogle;
+      this.localStore.darkmode = this.darkmodeToogle;
     },
   },
 });

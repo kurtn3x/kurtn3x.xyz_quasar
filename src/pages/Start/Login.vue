@@ -99,20 +99,17 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
-import { useUserStore } from 'stores/user';
+import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
-import { useSettingsStore } from 'stores/settings';
 import { api } from 'boot/axios';
 import ParticlesIndex from 'components/ParticlesIndex.vue';
-import { serializeHeaderInformation } from 'src/models';
 
 export default defineComponent({
   name: 'ForgotView',
   components: { ParticlesIndex },
 
   setup() {
-    const userStore = useUserStore();
-    const settingsStore = useSettingsStore();
+    const localStore = useLocalStore();
     const q = useQuasar();
     const axiosConfig = {
       withCredentials: true,
@@ -123,8 +120,7 @@ export default defineComponent({
 
     return {
       axiosConfig,
-      userStore,
-      settingsStore,
+      localStore,
       q,
       error: ref(false),
       loading: ref(false),
@@ -149,25 +145,25 @@ export default defineComponent({
     },
 
     darkmode() {
-      return this.settingsStore.darkmodeState;
+      return this.localStore.darkmodeState;
     },
 
     theme() {
-      if (this.settingsStore.theme == 'default') {
+      if (this.localStore.theme == 'default') {
         return 'bg-default';
-      } else if (this.settingsStore.theme == 'cool-orange') {
+      } else if (this.localStore.theme == 'cool-orange') {
         return 'bg-cool-orange';
-      } else if (this.settingsStore.theme == 'nice-green') {
+      } else if (this.localStore.theme == 'nice-green') {
         return 'bg-nice-green';
-      } else if (this.settingsStore.theme == 'olive-green') {
+      } else if (this.localStore.theme == 'olive-green') {
         return 'bg-olive-green';
-      } else if (this.settingsStore.theme == 'epic-blue') {
+      } else if (this.localStore.theme == 'epic-blue') {
         return 'bg-epic-blue';
-      } else if (this.settingsStore.theme == 'orange') {
+      } else if (this.localStore.theme == 'orange') {
         return 'bg-orange';
-      } else if (this.settingsStore.theme == 'light') {
+      } else if (this.localStore.theme == 'light') {
         return 'bg-lightp';
-      } else if (this.settingsStore.theme == 'dark') {
+      } else if (this.localStore.theme == 'dark') {
         return 'bg-darkp';
       } else {
         return 'bg-default';
@@ -197,9 +193,7 @@ export default defineComponent({
         .post('/auth/login', formData, this.axiosConfig)
         .then((response) => {
           if (response.status == 200) {
-            let headerInfo = serializeHeaderInformation(response.data);
-            this.userStore.setHeaderInfo(headerInfo);
-            this.userStore.setAuthState(true);
+            this.localStore.loginUser(response.data);
             this.loginError = false;
             this.loading = false;
             this.$router.push('/');
@@ -220,9 +214,9 @@ export default defineComponent({
             this.loginError = true;
             this.loginErrorMessage = response.data.error;
             this.loading = false;
-            this.userStore.setAuthState(false);
+            this.localStore.setAuthState(false);
             this.$nextTick(() => {
-              (this.$refs.errorText as any).classList.add('shake');
+              (this.$refs.errorText as HTMLElement).classList.add('shake');
               console.log(this.$refs.errorText);
             });
           }
@@ -235,9 +229,9 @@ export default defineComponent({
             this.loginErrorMessage = error;
           }
           this.loading = false;
-          this.userStore.setAuthState(false);
+          this.localStore.setAuthState(false);
           this.$nextTick(() => {
-            (this.$refs.errorText as any).classList.add('shake');
+            (this.$refs.errorText as HTMLElement).classList.add('shake');
             console.log(this.$refs.errorText);
           });
         });

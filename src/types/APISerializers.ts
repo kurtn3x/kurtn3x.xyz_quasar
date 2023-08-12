@@ -1,3 +1,6 @@
+import { AxiosResponse } from 'axios';
+import * as types from 'src/types/index';
+
 // this file includes functions that handle the serialization of API Endpoints
 
 // /files

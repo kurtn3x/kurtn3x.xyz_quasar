@@ -10,19 +10,16 @@
 
 <script>
 import { defineComponent, ref } from 'vue';
-import { useUserStore } from 'stores/user';
+import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
-import { api } from 'boot/axios';
-import { useSettingsStore } from 'stores/settings';
 
 export default defineComponent({
   name: 'TorrentView',
   setup() {
-    const userStore = useUserStore();
-    const settingsStore = useSettingsStore();
+    const localStore = useLocalStore();
     const q = useQuasar();
 
-    const axios_config = {
+    const axiosConfig = {
       withCredentials: true,
       headers: {
         'X-CSRFToken': q.cookies.get('csrftoken'),
@@ -30,19 +27,13 @@ export default defineComponent({
     };
 
     return {
-      axios_config,
-      userStore,
-      settingsStore,
+      axiosConfig,
+      localStore,
       q,
       initialFetch: ref(false),
       initialFetchSuccessful: ref(false),
       loading: ref(false),
-      vpnConnections: ref(''),
     };
-  },
-
-  created() {
-    this.getVPNConnections();
   },
 
   methods: {
@@ -54,43 +45,6 @@ export default defineComponent({
         multiLine: true,
       });
     },
-
-    getVPNConnections() {
-      this.loading = true;
-      api
-        .get('/vpn_torrent/list/vpn', this.axios_config)
-        .then((response) => {
-          if (response.status == 200) {
-            this.vpnConnections = response.data.clients;
-            this.initialFetch = true;
-            this.initialFetchSuccessful = true;
-            this.loading = false;
-          } else {
-            this.initialFetch = true;
-            this.notify('negative', response.data.error);
-            this.loading = false;
-          }
-        })
-        .catch((error) => {
-          this.initialFetch = true;
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            console.log(error);
-          }
-          this.loading = false;
-        });
-    },
   },
 });
 </script>
-
-<style scoped>
-.disable-select {
-  user-select: none; /* supported by Chrome and Opera */
-  -webkit-user-select: none; /* Safari */
-  -khtml-user-select: none; /* Konqueror HTML */
-  -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* Internet Explorer/Edge */
-}
-</style>

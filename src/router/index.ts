@@ -5,10 +5,8 @@ import {
   createWebHashHistory,
   createWebHistory,
 } from 'vue-router';
-import Vue from 'vue';
 import routes from './routes';
-import { useUserStore } from 'stores/user';
-// const userStore = useUserStore();
+import { useLocalStore } from 'src/stores/localStore';
 
 /*
  * If not building with SSR mode, you can
@@ -37,11 +35,11 @@ export default route(function () {
   });
 
   Router.beforeEach((to, from, next) => {
-    const store = useUserStore();
+    const localStore = useLocalStore();
 
     if (
       to.matched.some((record) => record.meta.requiresAuth) &&
-      !store.auth_state
+      !localStore.isAuthenticated
     ) {
       next();
       // next({ path: '/login' });

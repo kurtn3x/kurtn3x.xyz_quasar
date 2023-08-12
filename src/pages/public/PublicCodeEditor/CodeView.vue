@@ -195,10 +195,9 @@ import { Codemirror } from 'vue-codemirror';
 import { basicSetup } from 'codemirror';
 import { langmap } from './langmap';
 import { thememap } from './thememap';
-import { useSettingsStore } from 'stores/settings';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
-import { useUserStore } from 'stores/user';
+import { useLocalStore } from 'stores/localStore';
 import  Markdown from 'vue3-markdown-it';
 import 'highlight.js/styles/github-dark.css';
 import { mdiContentSaveCogOutline } from '@quasar/extras/mdi-v6';
@@ -216,11 +215,10 @@ export default defineComponent({
       view.value = payload.view;
     };
 
-    const userStore = useUserStore();
+    const localStore = useLocalStore();
 
 
-    const settingsStore = useSettingsStore();
-    if (settingsStore.darkmode) {
+    if (localStore.darkmode) {
       var theme = ref('oneDark');
     } else {
       var theme = ref('default');
@@ -229,8 +227,7 @@ export default defineComponent({
     const q = useQuasar();
 
     return {
-      userStore,
-      settingsStore,
+      localStore,
       q,
       fetched: ref(false),
       allowed: ref(false),

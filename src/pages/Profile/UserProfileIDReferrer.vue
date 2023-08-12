@@ -6,7 +6,7 @@
 import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
-import { defaultUser } from 'src/models';
+import { defaultUser } from 'src/types/defaults';
 
 export default {
   name: 'UserProfile',

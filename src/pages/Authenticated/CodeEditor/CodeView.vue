@@ -194,10 +194,9 @@ import { Codemirror } from 'vue-codemirror';
 import { basicSetup } from 'codemirror';
 import { langmap } from './langmap';
 import { thememap } from './thememap';
-import { useSettingsStore } from 'stores/settings';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
-import { useUserStore } from 'stores/user';
+import { useLocalStore } from 'stores/localStore';
 import  Markdown from 'vue3-markdown-it';
 import 'highlight.js/styles/github-dark.css';
 
@@ -220,7 +219,7 @@ export default defineComponent({
       length: null ,
     });
 
-    const userStore = useUserStore();
+    const localStore = useLocalStore();
 
     const handleStateUpdate = (viewUpdate) => {
       const ranges = viewUpdate.state.selection.ranges;
@@ -233,8 +232,7 @@ export default defineComponent({
       state.lines = viewUpdate.state.doc.lines;
     };
 
-    const settingsStore = useSettingsStore();
-    if (settingsStore.darkmode) {
+    if (localStore.darkmode) {
       var theme = ref('oneDark');
     } else {
       var theme = ref('default');
@@ -246,9 +244,7 @@ export default defineComponent({
       fetched: ref(false),
       allowed: ref(false),
       q,
-      userStore,
-
-      settingsStore,
+      localStore,
       // codemirror settings & functions
       tabsize: ref(4),
       theme,

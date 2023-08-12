@@ -169,7 +169,7 @@
       <q-space />
       <div
         class="q-mr-md q-mt-md"
-        :class="settingsStore.darkmode ? 'text-light' : 'text-dark'"
+        :class="localStoretore.darkmode ? 'text-light' : 'text-dark'"
         id="word-counter"
       ></div>
     </div>
@@ -178,17 +178,15 @@
 
 <script>
 import { defineComponent, ref } from 'vue';
-import { useUserStore } from 'stores/user';
+import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
-import { useSettingsStore } from 'stores/settings';
 
 export default defineComponent({
   name: 'PublicDocEditorView',
 
   setup() {
-    const userStore = useUserStore();
-    const settingsStore = useSettingsStore();
+    const localStore = useLocalStore();
     const q = useQuasar();
     const axiosConfig = {
       withCredentials: true,
@@ -199,8 +197,8 @@ export default defineComponent({
 
     return {
       axiosConfig,
-      userStore,
-      settingsStore,
+      localStore,
+      localStoretore,
       q,
       // permanent editor data
       editorData: '',

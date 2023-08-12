@@ -110,10 +110,9 @@
 
 <script>
 import { defineComponent, ref } from 'vue';
-import { useUserStore } from 'stores/user';
+import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
-import { useSettingsStore } from 'stores/settings';
 import { useRoute } from 'vue-router';
 import 'tinymce/tinymce';
 import 'tinymce/icons/default/icons';
@@ -141,8 +140,7 @@ export default defineComponent({
   components: { editor: Editor },
 
   setup() {
-    const userStore = useUserStore();
-    const settingsStore = useSettingsStore();
+    const localStore = useLocalStore();
     const q = useQuasar();
 
     const axiosConfig = {
@@ -191,7 +189,7 @@ export default defineComponent({
     var contenturl =
       'https://media.kurtn3x.xyz/skins/content/dark/content.min.css';
 
-    if (!settingsStore.darkmode) {
+    if (!localStore.darkmode) {
       contenturl =
         'https://media.kurtn3x.xyz/skins/content/default/content.min.css';
       skinurl = 'https://media.kurtn3x.xyz/skins/ui/oxide/';
@@ -251,8 +249,7 @@ export default defineComponent({
       init,
       editor: null,
       axiosConfig,
-      userStore,
-      settingsStore,
+      localStore,
       q,
       loading,
       docName,
@@ -278,7 +275,7 @@ export default defineComponent({
       return height;
     },
     bottom_part_color() {
-      if (this.settingsStore.darkmode) {
+      if (this.localStore.darkmode) {
         return 'background-color: #222f3e';
       } else {
         return 'background-color: #fff';
