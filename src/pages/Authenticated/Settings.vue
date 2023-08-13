@@ -45,7 +45,9 @@
           </q-input>
         </q-card-section>
 
-        <q-card-actions align="center">
+        <q-separator class="q-mt-sm" />
+
+        <q-card-actions align="center" class="q-mt-sm q-mb-sm">
           <q-btn
             v-close-popup
             flat
@@ -424,7 +426,7 @@
               <q-item>
                 <q-item-section side> Joined: </q-item-section>
                 <q-item-section>
-                  {{ accountData.account.date_joined }}
+                  {{ accountData.profile.date_joined }}
                 </q-item-section>
               </q-item>
 
@@ -745,7 +747,6 @@ export default {
       darkmodeToogle,
       axiosConfig,
       tab: ref('site'),
-      splitterModel: ref(20),
       localStore,
       q,
       loading: ref(false),

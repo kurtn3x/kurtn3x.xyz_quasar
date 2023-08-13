@@ -5,7 +5,7 @@
       <div v-if="!registerSuccessful">
         <q-card
           style="max-width: 400px"
-          :style="'width:' + card_width + 'px;'"
+          :style="'width:' + cardWidth + 'px;'"
           dark
           class="bg-transparent no-shadow"
         >
@@ -356,7 +356,7 @@
           bordered
           dark
           style="max-width: 400px"
-          :style="'width:' + card_width + 'px;'"
+          :style="'width:' + cardWidth + 'px;'"
           class="no-shadow bg-layout-bg text-h6 text-center text-layout-text fade-in-text"
         >
           <div class="q-ma-md">
@@ -435,7 +435,7 @@ export default {
   },
 
   computed: {
-    card_width() {
+    cardWidth() {
       return this.q.screen.width - 25;
     },
 

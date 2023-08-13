@@ -6,7 +6,7 @@
       <div class="row">
         <q-card
           style="max-width: 400px"
-          :style="'width:' + card_width + 'px;'"
+          :style="'width:' + cardWidth + 'px;'"
           dark
           class="no-shadow bg-transparent"
         >
@@ -133,7 +133,7 @@ export default defineComponent({
   },
 
   computed: {
-    card_width() {
+    cardWidth() {
       return this.q.screen.width - 25;
     },
     mobile() {

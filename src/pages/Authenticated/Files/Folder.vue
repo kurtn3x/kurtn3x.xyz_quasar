@@ -2,10 +2,10 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="initialFetch && initialFetchSuccessful">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="initialFetch && !initialFetchSuccessful">
     <!-- delteSelectedItemsDialog (Confirmation) -->
     <q-dialog v-model="deleteItemsDialog">
       <q-card bordered style="width: 350px">
@@ -17,8 +17,8 @@
         <div class="text-body1 text-center q-ma-md">
           This will delete all selected items and all their subitems.
         </div>
-        <q-separator />
-        <q-card-actions align="center" class="q-ma-sm">
+        <q-separator class="q-mt-sm" />
+        <q-card-actions align="center" class="q-mt-sm q-mb-sm">
           <q-btn
             v-close-popup
             flat
@@ -59,7 +59,7 @@
           v-if="allAvailableFolders.length == 0"
           class="row justify-center q-ma-md"
         >
-          <q-spinner size="10em" />
+          <q-spinner size="10em" style="min-height: 200px" />
         </div>
         <div class="q-ma-md" v-if="allAvailableFolders.length > 0">
           <q-input
@@ -84,6 +84,7 @@
             no-selection-unset
             no-results-label="No folder found"
             @update:selected="moveItemsUpdateSelectedLabel"
+            style="min-height: 200px"
           />
           <div class="q-mt-md">
             <a class="text-weight-bolder">Selection: </a>
@@ -91,9 +92,9 @@
           </div>
         </div>
 
-        <q-separator />
+        <q-separator class="q-mt-sm" />
 
-        <q-card-actions align="center" class="q-ma-sm">
+        <q-card-actions align="center" class="q-mt-sm q-mb-sm">
           <q-btn
             v-close-popup
             flat
@@ -142,7 +143,7 @@
           v-if="allAvailableFolders.length == 0"
           class="row justify-center q-ma-md"
         >
-          <q-spinner size="10em" />
+          <q-spinner size="10em" style="min-height: 200px" />
         </div>
         <div class="q-ma-md" v-if="allAvailableFolders.length > 0">
           <q-input
@@ -167,15 +168,16 @@
             no-selection-unset
             no-results-label="No folder found"
             @update:selected="moveItemsUpdateSelectedLabel"
+            style="min-height: 200px"
           />
           <div class="q-mt-md">
             <a class="text-weight-bolder">Selection: </a>
             {{ moveItemsSelectedPath }}
           </div>
         </div>
-        <q-separator />
+        <q-separator class="q-mt-sm" />
 
-        <q-card-actions align="center" class="q-ma-sm">
+        <q-card-actions align="center" class="q-mt-sm q-mb-sm">
           <q-btn
             v-close-popup
             flat
@@ -330,9 +332,9 @@
           </div>
         </div>
 
-        <q-separator />
+        <q-separator class="q-mt-sm" />
 
-        <q-card-actions align="center" class="q-ma-sm">
+        <q-card-actions align="center" class="q-mt-sm q-mb-sm">
           <q-btn
             v-close-popup
             flat
@@ -349,12 +351,12 @@
     <q-dialog v-model="uploadFilesDialog" persistent>
       <q-card bordered style="width: 350px; height: 475px">
         <q-toolbar class="bg-layout-bg text-layout-text text-center">
-          <q-toolbar-title class="q-ma-sm">Upload </q-toolbar-title>
+          <q-toolbar-title class="q-ma-sm">Upload Files </q-toolbar-title>
         </q-toolbar>
 
         <div class="q-ma-sm">
           <div
-            style="border: 2px dashed lightblue; height: 275px"
+            style="border: 2px dashed lightblue; height: 265px"
             class="q-mt-md"
             @drop.prevent="uploadFilesDialogAreaDrop"
             @dragover.prevent="
@@ -386,7 +388,7 @@
             "
             :class="uploadFilesDialogAreaDragover ? 'bg-blue' : ''"
           >
-            <q-scroll-area class="row" style="height: 265px">
+            <q-scroll-area class="row" style="height: 255px">
               <div
                 v-if="uploadFilesDialogUploadMap.length == 0"
                 class="text-center text-h6 q-mt-md"
@@ -409,8 +411,8 @@
                       dense
                       clickable
                       @click="
-                        file.edit = !file.edit;
                         file.temp = file.name;
+                        file.edit = !file.edit;
                       "
                       class="bg-primary text-layout-text"
                     >
@@ -478,8 +480,21 @@
                             round
                             @click="
                               if (!/\/|\x00/.test(file.temp as string)) {
-                                file.name = file.temp as string;
-                                file.edit = false;
+                                if (
+                                  checkNameExistFolderContext(
+                                    file.temp as string,
+                                    'file'
+                                  ) == false &&
+                                  checkNameExistUploadContext(
+                                    file.temp as string,
+                                    'file'
+                                  ) == false
+                                ) {
+                                  file.name = file.temp as string;
+                                  file.edit = false;
+                                } else {
+                                  notify('negative', 'Name already exists');
+                                }
                               }
                             "
                           />
@@ -501,7 +516,7 @@
               @update:model-value="appendFiles"
               style="max-width: 160px"
               :color="darkmode ? 'white' : 'dark'"
-              class="q-mt-sm"
+              class="q-mt-md"
             >
               <template v-slot:label>
                 <q-icon name="attach_file" size="24px" />
@@ -510,7 +525,7 @@
             </q-file>
             <q-space />
             <q-btn
-              style="height: 35px; width: 35px"
+              style="height: 25px; width: 35px"
               @click="uploadFilesDialogUploadMap = []"
               icon="delete"
               size="xs"
@@ -523,7 +538,7 @@
 
         <q-separator class="q-mt-sm" />
 
-        <q-card-actions align="evenly" class="q-mt-sm q-mb-xs">
+        <q-card-actions align="evenly" class="q-mt-sm q-mb-sm">
           <q-btn
             v-close-popup
             flat
@@ -694,40 +709,40 @@
             style="height: 40px; width: 50px; z-index: 1"
           >
             <q-fab-action
-              color="light-green"
+              class="text-body1 bg-light-green"
               text-color="white"
+              outline
               icon="create_new_folder"
               label="New Folder"
               @click="
                 newObjShow = true;
                 newObj.type = 'folder';
               "
-              class="text-body1"
               square
               style="width: 180px"
             />
             <q-fab-action
-              color="light-green"
-              text-color="white"
               @click="
                 newObjShow = true;
                 newObj.type = 'file';
               "
               icon="note_add"
               label="New File"
-              class="text-body1"
+              class="text-body1 bg-light-green"
+              text-color="white"
+              outline
               square
               style="width: 180px"
             />
             <q-fab-action
-              color="light-green"
-              text-color="white"
               @click="uploadFilesDialog = true"
               icon="file_upload"
               label="Upload Files"
-              class="text-body1"
+              class="text-body1 bg-light-green"
+              text-color="white"
               square
               style="width: 180px"
+              outline
             />
           </q-fab>
           <q-space />
@@ -804,25 +819,25 @@
               style="height: 40px; width: 140px; z-index: 1"
             >
               <q-fab-action
-                color="blue"
+                class="text-body1 bg-blue"
                 text-color="white"
+                outline
                 label="Move"
                 icon="trending_flat"
                 @click="
                   moveSelectedItemsDialog = true;
                   fetchAllAvailableFolders();
                 "
-                class="text-body1"
                 square
                 style="width: 150px"
               />
               <q-fab-action
-                color="red"
-                icon="close"
+                class="text-body1 bg-red"
                 text-color="white"
+                outline
+                icon="close"
                 label="Delete"
                 @click="deleteItemsDialog = true"
-                class="text-body1"
                 square
                 style="width: 150px"
               />
@@ -2060,18 +2075,11 @@ export default defineComponent({
     // if a filename is doubled, add a parenthesis with a number e.g. test(1)
     // number is counted up if multiple double names
     findValidName(name: string, type: string): [number, string] {
-      // check if the name exists in the current folder context
-      var nameExist = this.rawFolderContent.children.some(
-        (el: FolderObjectType) => el.name == name && el.type == type
-      );
-
-      // check if the name is already in the files being uploaded
-      var nameExist2 = this.uploadFilesDialogUploadMap.some(
-        (el) => el.name == name && el.type == type
-      );
-
-      // return 0 if everything is Ok
-      if (nameExist == false && nameExist2 == false) {
+      // check existance of name, return 0 if everything is Ok
+      if (
+        this.checkNameExistFolderContext(name, type) == false &&
+        this.checkNameExistUploadContext(name, type) == false
+      ) {
         return [0, name];
       }
 
@@ -2259,6 +2267,20 @@ export default defineComponent({
     /////////// GENERAL METHODS ///////////////////////
     ///////////////////////////////////////////////////
 
+    // check if a name of type exists in current folder context (rawFoldercontent.children)
+    checkNameExistFolderContext(name: string, type: string) {
+      return this.rawFolderContent.children.some(
+        (el: FolderObjectType) => el.name == name && el.type == type
+      );
+    },
+
+    // check if a name of type exists in current upload context (uploadFilesDialogUploadMap)
+    checkNameExistUploadContext(name: string, type: string) {
+      return this.uploadFilesDialogUploadMap.some(
+        (el) => el.name == name && el.type == type
+      );
+    },
+
     // copy a text to clipboard
     copyToClipboard(text: string) {
       navigator.clipboard.writeText(text);
@@ -2372,6 +2394,15 @@ export default defineComponent({
         this.notify('negative', 'No slash or null char.');
         return;
       }
+
+      if (
+        this.checkNameExistFolderContext(this.newObj.name, this.newObj.type) ==
+        true
+      ) {
+        this.notify('negative', 'Name already exists.');
+        return;
+      }
+
       this.loading = true;
 
       var data = {

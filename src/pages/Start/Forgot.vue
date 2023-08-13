@@ -1,8 +1,5 @@
 <template>
   <q-page class="bg" :class="theme">
-    <q-popup-proxy context-menu :breakpoint="0">
-      <RightClickLayoutMenu />
-    </q-popup-proxy>
     <ParticlesIndex />
 
     <div
@@ -15,89 +12,85 @@
       class="row justify-center fade-in-text absolute-center"
       v-if="!requestSuccessful"
     >
-      <q-card flat style="background: transparent; min-width: 400px">
-        <p class="text3d-primary text-center text-h5">
-          Request your Account Data
-        </p>
-        <q-card-section>
-          <q-form
-            ref="forgotform"
-            @submit.prevent="submitForget"
-            class="text-white"
+      <div class="column fade-in-text" :class="mobile ? 'q-pa-xs' : 'q-pa-lg'">
+        <div class="row">
+          <q-card
+            style="max-width: 400px"
+            :style="'width:' + cardWidth + 'px;'"
+            dark
+            class="no-shadow bg-transparent"
           >
-            <q-input
-              dark
-              outlined
-              :color="darkmode ? 'black' : 'white'"
-              v-model="email"
-              type="email"
-              input-class="text-body1 text-white"
-              label="Your Email"
-              lazy-rules
-              no-error-icon
-              :rules="[
-                (val) => (val && val.length > 0) || 'Please type something',
-                (val) => (val && val.length > 3) || 'At least 4 characters',
-                (val) =>
-                  /^(?=[a-zA-Z0-9@._%+-]{6,254}$)[a-zA-Z0-9._%+-]{1,64}@(?:[a-zA-Z0-9-]{1,63}\.){1,8}[a-zA-Z]{2,63}$/.test(
-                    val
-                  ) || 'Not a valid E-Mail',
-              ]"
+            <div
+              class="text3d-primary text-weight-bolder text-h5 text-center q-mt-lg non-selectable"
             >
-              <template v-slot:prepend>
-                <q-icon name="email" />
-              </template>
-            </q-input>
+              Request your Account Data
+            </div>
+            <q-card-section align="center" class="q-mr-sm q-ml-sm">
+              <q-form @submit="submitForget">
+                <q-input
+                  dark
+                  outlined
+                  v-model="email"
+                  type="email"
+                  label="Disabled"
+                  lazy-rules
+                  no-error-icon
+                  input-style="font-size: 18px"
+                  input-class="text-body1 text-layout-text"
+                  class="q-mt-lg text-white"
+                  color="layout-text"
+                  label-color="layout-text"
+                  bg-color="layout-bg"
+                  disable
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="email" />
+                  </template>
+                </q-input>
 
-            <q-toggle
-              class="q-mt-sm"
-              checked-icon="check"
-              color="green"
-              unchecked-icon="clear"
-              label="Request password reset link"
-              v-model="requestPassword"
-            />
-            <!-- <q-toggle
-              checked-icon="check"
-              color="green"
-              unchecked-icon="clear"
-              label="Request username"
-              v-model="requestUsername"
-            /> -->
-            <q-card-actions class="q-mt-md">
-              <q-btn
-                size="lg"
-                color="green"
-                class="full-width"
-                label="Request"
-                @click="submitForget"
-                :loading="loading"
-              />
-              <div v-if="error" class="text-red text-h6 text-center q-mt-lg">
+                <q-btn
+                  rounded
+                  size="lg"
+                  class="full-width q-mt-lg layout-btn bg-green text-white"
+                  label="Request"
+                  :loading="loading"
+                  unelevated
+                  type="submit"
+                />
+              </q-form>
+            </q-card-section>
+            <div style="height: 20px">
+              <div
+                v-if="error"
+                ref="errorText"
+                class="text-red text-body1 text-center shake q-ml-sm q-mr-sm"
+                v-on:animationend="
+                ($event) => ($event.target as any).classList.remove('shake')
+              "
+              >
                 {{ errorMessage }}
               </div>
-            </q-card-actions>
-          </q-form>
-        </q-card-section>
-      </q-card>
+            </div>
+          </q-card>
+        </div>
+      </div>
     </div>
   </q-page>
 </template>
 
-<script>
+<script lang="ts">
 import { defineComponent, ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { useLocalStore } from 'stores/localStore';
 import { api } from 'boot/axios';
 import ParticlesIndex from 'components/ParticlesIndex.vue';
-import RightClickLayoutMenu from 'src/components/RightClickLayoutMenu.vue';
 
 export default defineComponent({
   name: 'ForgotView',
-  components: { ParticlesIndex, RightClickLayoutMenu },
+  components: { ParticlesIndex },
 
   setup() {
-    const localStore = uselocalStore();
+    const localStore = useLocalStore();
     const q = useQuasar();
     const axiosConfig = {
       withCredentials: true,
@@ -129,6 +122,10 @@ export default defineComponent({
       } else {
         return false;
       }
+    },
+
+    cardWidth() {
+      return this.q.screen.width - 25;
     },
 
     theme() {

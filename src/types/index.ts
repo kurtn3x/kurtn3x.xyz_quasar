@@ -103,10 +103,10 @@ export interface AccountSettingsType {
     location: string;
     description: string;
     avatar: string | null;
+    date_joined: string;
   };
   account: {
     id: string;
-    date_joined: string;
     username: string;
     is_admin: boolean;
     email: string;

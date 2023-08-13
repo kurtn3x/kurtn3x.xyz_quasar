@@ -47,8 +47,8 @@
           <div v-if="loading" class="text-center text-body1 q-mt-sm q-mb-md">
             Generating Client Data... Please Wait.
           </div>
-          <q-separator class="q-mt-md" />
-          <q-card-actions align="center" class="q-ma-sm">
+          <q-separator class="q-mt-sm" />
+          <q-card-actions align="center" class="q-mt-sm q-mb-sm">
             <q-btn
               v-close-popup
               flat
@@ -317,7 +317,7 @@
         </q-tab-panels>
 
         <q-separator class="q-mt-sm" />
-        <q-card-actions align="center" class="q-ma-sm" vertical>
+        <q-card-actions align="center" class="q-mt-sm q-mb-sm" vertical>
           <div class="text-body2 text-center text-red" style="font-size: 10pt">
             You won't be able to recover this information.
           </div>
@@ -362,8 +362,8 @@
           </div>
         </div>
 
-        <q-separator />
-        <q-card-actions align="center" class="q-ma-sm">
+        <q-separator class="q-mt-sm" />
+        <q-card-actions align="center" class="q-mt-sm q-mb-sm">
           <q-btn
             v-close-popup
             flat
