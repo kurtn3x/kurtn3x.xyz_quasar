@@ -1024,7 +1024,11 @@
                     context-menu
                     :breakpoint="0"
                     @before-show="item.selected = true"
-                    @before-hide="item.selected = false"
+                    @before-hide="
+                      selectedItems.indexOf(item) == -1
+                        ? (item.selected = false)
+                        : (item.selected = true)
+                    "
                   >
                     <RightClickMenu
                       :propItem="item"
@@ -1134,7 +1138,11 @@
                     context-menu
                     :breakpoint="0"
                     @before-show="item.selected = true"
-                    @before-hide="item.selected = false"
+                    @before-hide="
+                      selectedItems.indexOf(item) == -1
+                        ? (item.selected = false)
+                        : (item.selected = true)
+                    "
                   >
                     <RightClickMenu
                       :propItem="item"
