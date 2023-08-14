@@ -1,4 +1,4 @@
-import { CancelTokenSource, CancelTokenStatic } from 'axios';
+import { CancelTokenSource } from 'axios';
 
 // this file includes all types used
 
@@ -48,8 +48,8 @@ export interface UploadProgressEntryType {
   abort: CancelTokenSource;
   size: string;
   transferred: string;
-  transferredPercent: number;
-  transferredPercentLabel: string;
+  transferred_percent_num: number;
+  transferred_percent_label: string;
 }
 export interface TraverseFolderMapType {
   type: string;
@@ -69,17 +69,17 @@ export interface UploadDialogEntryType {
 }
 
 export interface NavbarIndexType {
-  homeFolderId: string;
-  navbarItems: { name: string; id: string }[];
-  menuItems: { name: string; id: string }[];
-  lastMovedItemId: string;
+  home_folder_id: string;
+  navbar_items: { name: string; id: string }[];
+  menu_items: { name: string; id: string }[];
+  last_moved_item_id: string;
 }
 
 export interface AllAvailableFoldersType {
-  homeFolderId: string;
-  navbarItems: { name: string; id: string }[];
-  menuItems: { name: string; id: string }[];
-  lastMovedItemId: string;
+  id: string;
+  name: string;
+  path: string;
+  children: AllAvailableFoldersType[];
 }
 
 export interface RawFolderContentType {

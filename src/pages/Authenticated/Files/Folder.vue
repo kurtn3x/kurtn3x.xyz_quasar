@@ -588,7 +588,7 @@
               class="text-primary text-weight-bold text-h5"
               @click="navGoBack"
               style="display: inline-block"
-              v-if="navbarIndex.navbarItems.length != 0"
+              v-if="navbarIndex.navbar_items.length != 0"
             >
               <q-icon
                 size="25px"
@@ -610,7 +610,7 @@
                 (e: any, x: any, y: any) => y.target.classList.remove('bg-indigo-11')
               "
               @v-drag-drop="
-                changeParentDragNDrop($event, navbarIndex.homeFolderId)
+                changeParentDragNDrop($event, navbarIndex.home_folder_id)
               "
               v-droppable
               style="display: inline-block"
@@ -621,12 +621,12 @@
                 class="full-width full-height no-pointer-events"
               />
             </q-item>
-            <a v-if="navbarIndex.menuItems.length != 0">/</a>
+            <a v-if="navbarIndex.menu_items.length != 0">/</a>
             <q-item
               clickable
               flat
               class="rounded-borders text-primary text-weight-bold text-h5"
-              v-if="navbarIndex.menuItems.length > 0"
+              v-if="navbarIndex.menu_items.length > 0"
               style="display: inline-block"
               @dragover="navbarOverflowMenuHover = true"
               @dragstop="navbarOverflowMenuHover = false"
@@ -637,7 +637,7 @@
                 @mouseleave="navbarOverflowMenuHover = false"
               >
                 <q-list bordered seperator>
-                  <template v-for="item in navbarIndex.menuItems" :key="item">
+                  <template v-for="item in navbarIndex.menu_items" :key="item">
                     <q-item
                       clickable
                       flat
@@ -663,7 +663,7 @@
                 </q-list>
               </q-menu>
             </q-item>
-            <template v-for="item in navbarIndex.navbarItems" :key="item">
+            <template v-for="item in navbarIndex.navbar_items" :key="item">
               <a class="text-weight-bolder">/</a>
               <q-item
                 clickable
@@ -1364,7 +1364,7 @@
                         <q-item-section no-wrap>
                           <q-linear-progress
                             size="25px"
-                            :value="progress.transferredPercent"
+                            :value="progress.transferred_percent_num"
                             :color="
                               progress.status == 'error'
                                 ? 'red-8'
@@ -1386,7 +1386,7 @@
                                 :label="
                                   progress.error
                                     ? 'Error'
-                                    : progress.transferredPercentLabel
+                                    : progress.transferred_percent_label
                                 "
                               />
                             </div>
@@ -1513,12 +1513,12 @@ export default defineComponent({
 
     const navbarIndex: Ref<NavbarIndexType> = ref({
       // holds the id of the home folder
-      homeFolderId: '',
+      home_folder_id: '',
       // holds all items in the navbar
-      navbarItems: [],
+      navbar_items: [],
       // holds items in the menu if navbar is too big
-      menuItems: [],
-      lastMovedItemId: '',
+      menu_items: [],
+      last_moved_item_id: '',
     });
 
     return {
@@ -1657,34 +1657,34 @@ export default defineComponent({
 
           // check if the last element of the navbar isn't the last moved item
           // this is used to prevent an infinite loop
-          var l = this.navbarIndex.navbarItems.length;
-          var x = this.navbarIndex.navbarItems[l - 1];
-          if (x.id != this.navbarIndex.lastMovedItemId) {
+          var l = this.navbarIndex.navbar_items.length;
+          var x = this.navbarIndex.navbar_items[l - 1];
+          if (x.id != this.navbarIndex.last_moved_item_id) {
             // grab the first item of the navbar and push it to the menu list
-            var removed = this.navbarIndex.navbarItems.shift() as {
+            var removed = this.navbarIndex.navbar_items.shift() as {
               name: string;
               id: string;
             };
-            this.navbarIndex.menuItems.push(removed);
+            this.navbarIndex.menu_items.push(removed);
             // set the moved element as the last moved element
-            this.navbarIndex.lastMovedItemId = removed.id;
+            this.navbarIndex.last_moved_item_id = removed.id;
           }
         } else {
           // if the width of the item is smaller than the actual place for it
           // we may be able to clear items of the list which is created when content overflows
-          if (this.navbarIndex.menuItems.length > 0) {
-            // grab the last item of menuItems array
-            var l = this.navbarIndex.menuItems.length;
-            var x = this.navbarIndex.menuItems[l - 1];
+          if (this.navbarIndex.menu_items.length > 0) {
+            // grab the last item of menu_items array
+            var l = this.navbarIndex.menu_items.length;
+            var x = this.navbarIndex.menu_items[l - 1];
             // check if that isn't the item that was moved in a previous run → prevent inf loop
-            if (x.id != this.navbarIndex.lastMovedItemId) {
-              // remove that item from the menuItems array and add it to the navbar Items
-              var removed = this.navbarIndex.menuItems.shift() as {
+            if (x.id != this.navbarIndex.last_moved_item_id) {
+              // remove that item from the menu_items array and add it to the navbar Items
+              var removed = this.navbarIndex.menu_items.shift() as {
                 name: string;
                 id: string;
               };
-              this.navbarIndex.navbarItems.push(removed);
-              this.navbarIndex.lastMovedItemId = removed.id;
+              this.navbarIndex.navbar_items.push(removed);
+              this.navbarIndex.last_moved_item_id = removed.id;
             }
           }
         }
@@ -1694,7 +1694,7 @@ export default defineComponent({
 
   computed: {
     pathNames() {
-      return this.navbarIndex.navbarItems.length;
+      return this.navbarIndex.navbar_items.length;
     },
 
     darkmode() {
@@ -1726,7 +1726,7 @@ export default defineComponent({
         .then((response) => {
           if (response.status == 200) {
             this.rawFolderContent = response.data;
-            this.navbarIndex.homeFolderId = response.data.id;
+            this.navbarIndex.home_folder_id = response.data.id;
 
             this.initialFetch = true;
             this.initialFetchSuccessful = true;
@@ -1793,7 +1793,7 @@ export default defineComponent({
     // cancel the upload of an file
     cancelRequest(progress: UploadProgressEntryType) {
       progress.abort.cancel();
-      progress.transferredPercent = 1;
+      progress.transferred_percent_num = 1;
       progress.transferred = 'ERROR';
       progress.status = 'ok';
     },
@@ -1907,11 +1907,11 @@ export default defineComponent({
             abort: source,
             size: '0B',
             transferred: '0B',
-            transferredPercent: 0,
-            transferredPercentLabel: computed(
+            transferred_percent_num: 0,
+            transferred_percent_label: computed(
               () =>
-                (folderProgress.transferredPercent > 1
-                  ? Math.round(folderProgress.transferredPercent * 100)
+                (folderProgress.transferred_percent_num > 1
+                  ? Math.round(folderProgress.transferred_percent_num * 100)
                   : 100) + '%'
             ),
           });
@@ -1986,7 +1986,7 @@ export default defineComponent({
               folderProgress.transferred = this.fileSizeIEC(
                 progressEvent.loaded
               );
-              folderProgress.transferredPercent = (progressEvent.loaded /
+              folderProgress.transferred_percent_num = (progressEvent.loaded /
                 folderSizeByte) as number;
             },
             cancelToken: source.token,
@@ -2001,12 +2001,12 @@ export default defineComponent({
             .catch((error) => {
               folderProgress.status = 'error';
               folderProgress.color = 'bg-red';
-              folderProgress.transferredPercent = 0.0;
+              folderProgress.transferred_percent_num = 0.0;
               folderProgress.error = error;
             });
           if (response !== undefined) {
             folderProgress.status = 'ok';
-            folderProgress.transferredPercent = 1.0;
+            folderProgress.transferred_percent_num = 1.0;
             folderProgress.color = 'bg-green';
             this.refreshFolder();
           }
@@ -2031,11 +2031,11 @@ export default defineComponent({
             abort: source,
             size: this.fileSizeIEC(itemSize),
             transferred: '0B',
-            transferredPercent: 0,
-            transferredPercentLabel: computed(
+            transferred_percent_num: 0,
+            transferred_percent_label: computed(
               () =>
-                (fileProgress.transferredPercent > 1
-                  ? Math.round(fileProgress.transferredPercent * 100)
+                (fileProgress.transferred_percent_num > 1
+                  ? Math.round(fileProgress.transferred_percent_num * 100)
                   : 100) + '%'
             ),
           });
@@ -2045,7 +2045,8 @@ export default defineComponent({
             withCredentials: true,
             onUploadProgress: (progressEvent: ProgressEvent) => {
               fileProgress.transferred = this.fileSizeIEC(progressEvent.loaded);
-              fileProgress.transferredPercent = progressEvent.loaded / itemSize;
+              fileProgress.transferred_percent_num =
+                progressEvent.loaded / itemSize;
             },
             cancelToken: source.token,
             headers: {
@@ -2058,12 +2059,12 @@ export default defineComponent({
             .catch((error) => {
               fileProgress.status = 'error';
               fileProgress.color = 'bg-red';
-              fileProgress.transferredPercent = 0.0;
+              fileProgress.transferred_percent_num = 0.0;
               fileProgress.error = error;
             });
           if (response !== undefined) {
             fileProgress.status = 'ok';
-            fileProgress.transferredPercent = 1.0;
+            fileProgress.transferred_percent_num = 1.0;
             fileProgress.color = 'bg-green';
             this.refreshFolder();
           }
@@ -2581,24 +2582,24 @@ export default defineComponent({
       if (identifier == 0) {
         // home folder
         // → clear the arrays
-        this.navbarIndex.menuItems = [];
-        this.navbarIndex.navbarItems = [];
+        this.navbarIndex.menu_items = [];
+        this.navbarIndex.navbar_items = [];
         this.getHomeFolder();
       } else if (identifier == 1) {
         // menu items
-        this.navbarIndex.lastMovedItemId = '';
-        this.navbarIndex.navbarItems = [];
-        const index = this.navbarIndex.menuItems.findIndex(
+        this.navbarIndex.last_moved_item_id = '';
+        this.navbarIndex.navbar_items = [];
+        const index = this.navbarIndex.menu_items.findIndex(
           (i) => i.id === item.id
         );
-        this.navbarIndex.menuItems.length = index + 1;
+        this.navbarIndex.menu_items.length = index + 1;
         this.getFolderId(item.id, false);
       } else {
         // navbar items
-        const index = this.navbarIndex.navbarItems.findIndex(
+        const index = this.navbarIndex.navbar_items.findIndex(
           (i) => i.id === item.id
         );
-        this.navbarIndex.navbarItems.length = index + 1;
+        this.navbarIndex.navbar_items.length = index + 1;
         this.getFolderId(item.id, false);
       }
     },
@@ -2614,8 +2615,8 @@ export default defineComponent({
         .then((response) => {
           if (response.status == 200) {
             this.rawFolderContent = response.data;
-            this.navbarIndex.lastMovedItemId = '';
-            this.navbarIndex.navbarItems.pop();
+            this.navbarIndex.last_moved_item_id = '';
+            this.navbarIndex.navbar_items.pop();
             this.selectedItems = [];
             this.allSelected = false;
             this.loading = false;
@@ -2663,7 +2664,7 @@ export default defineComponent({
 
             // push the data to the navbarindex map
             if (navbarAdd == true) {
-              this.navbarIndex.navbarItems.push({
+              this.navbarIndex.navbar_items.push({
                 name: response.data.name,
                 id: response.data.id,
               });
