@@ -3,7 +3,6 @@
     <ParticlesIndex />
     <div class="absolute-bottom-right q-mb-md q-mr-md">
       <div class="text-right">
-        <router-link to="/about" class="text-white">About</router-link>
         <router-link to="/privacy" class="q-ml-md text-white"
           >Privacy Policy</router-link
         >

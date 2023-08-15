@@ -440,31 +440,11 @@ import { api } from 'boot/axios';
 import { useLocalStore } from 'stores/localStore';
 import { mdiAndroid } from '@quasar/extras/mdi-v6';
 import { mdiMicrosoftWindows } from '@quasar/extras/mdi-v6';
-
-interface VPNSetupInputType {
-  publicKey: string;
-  name: string;
-}
-
-interface VPNSetupConnectionType {
-  name: string;
-  addresses: string;
-  clientKey: string;
-  serverKey: string;
-  presharedKey: string;
-  dnsServer: string;
-  allowedIPs: string;
-  endpoint: string;
-  privateKey: string;
-}
-
-interface VPNClientInfoType {
-  name: string;
-  addresses: string;
-  public_key: string;
-  id: string;
-  created: string;
-}
+import {
+  VPNSetupInputType,
+  VPNSetupConnectionType,
+  VPNClientInfoType,
+} from 'src/types/index';
 
 export default defineComponent({
   name: 'VPNView',

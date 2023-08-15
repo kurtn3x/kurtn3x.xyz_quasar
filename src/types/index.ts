@@ -11,16 +11,19 @@ const mimeMap: Map<string, MimeType> = new Map<string, MimeType>();
 
 mimeMap.set('video/mp4', { icon: 'movie', link: 'video' });
 
-export { mimeMap };
-
-export interface NameIdType {
-  name: string;
-  id: string;
+export function getIcon(mime: string) {
+  const t = mimeMap.get(mime);
+  if (t == undefined) {
+    return 'file_present';
+  } else {
+    return t.icon;
+  }
 }
 
-// a basic Item in a Folder, can be either an file or folder (type)
-export interface FolderObjectType {
-  // all folders & files have those values
+export { mimeMap };
+
+// Types for Files/ Folders
+export interface FileItemType {
   id: string;
   name: string;
   created: string;
@@ -30,15 +33,27 @@ export interface FolderObjectType {
   shared_allow_all_write: boolean;
   path: string;
   type: string;
-  // file specific
-  size?: number;
-  mime?: string;
+  size: number;
+  mime: string;
+  // set on demand
+  selected?: boolean;
+}
+
+export interface FileFolderType {
+  id: string;
+  name: string;
+  created: string;
+  modified: string;
+  shared: boolean;
+  shared_allow_all_read: boolean;
+  shared_allow_all_write: boolean;
+  path: string;
+  type: string;
   // set on demand
   selected?: boolean;
   drag_over?: boolean;
 }
 
-// a progress item in the bottom right sticky
 export interface UploadProgressEntryType {
   name: string;
   icon: string;
@@ -93,24 +108,20 @@ export interface RawFolderContentType {
   parentid: string;
   path: string;
   type: string;
-  children: FolderObjectType[];
+  children: (FileFolderType | FileItemType)[];
 }
 
+// Account / Profile Types
 export interface AccountSettingsType {
-  profile: {
-    name: string;
-    status: string;
-    location: string;
-    description: string;
-    avatar: string | null;
-    date_joined: string;
-  };
-  account: {
-    id: string;
-    username: string;
-    is_admin: boolean;
-    email: string;
-  };
+  profile: UserProfileType;
+  account: AccountType;
+}
+
+export interface AccountType {
+  id: string;
+  username: string;
+  is_admin: boolean;
+  email: string;
 }
 
 // Profile Data, used when showing a profile
@@ -126,18 +137,35 @@ export interface UserProfileType {
   avatar: string;
 }
 
-// used to load data on the header
 export interface HeaderInformationType {
   username: string;
   is_admin: boolean;
   avatar: string;
 }
 
-export function getIcon(mime: string) {
-  const t = mimeMap.get(mime);
-  if (t == undefined) {
-    return 'file_present';
-  } else {
-    return t.icon;
-  }
+// VPN
+
+export interface VPNSetupInputType {
+  publicKey: string;
+  name: string;
+}
+
+export interface VPNSetupConnectionType {
+  name: string;
+  addresses: string;
+  clientKey: string;
+  serverKey: string;
+  presharedKey: string;
+  dnsServer: string;
+  allowedIPs: string;
+  endpoint: string;
+  privateKey: string;
+}
+
+export interface VPNClientInfoType {
+  name: string;
+  addresses: string;
+  public_key: string;
+  id: string;
+  created: string;
 }

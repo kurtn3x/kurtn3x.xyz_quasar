@@ -2,10 +2,10 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="initialFetch && !initialFetchSuccessful">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="initialFetch && initialFetchSuccessful">
     <!-- delteSelectedItemsDialog (Confirmation) -->
     <q-dialog v-model="deleteItemsDialog">
       <q-card bordered style="width: 350px">
@@ -275,14 +275,14 @@
             >
               <div class="text-weight-bolder q-mr-sm">Mime:</div>
               <div class="ellipsis">
-                {{ itemInformationData.mime }}
+                {{ (itemInformationData as FileItemType).mime }}
                 <q-tooltip
                   class="text-body1"
                   :class="
                     darkmode ? 'bg-dark text-white' : 'bg-white text-dark'
                   "
                 >
-                  {{ itemInformationData.mime }}
+                  {{ (itemInformationData as FileItemType).mime }}
                 </q-tooltip>
               </div>
             </div>
@@ -291,7 +291,7 @@
               v-if="itemInformationData.type == 'file'"
             >
               <div class="text-weight-bolder q-mr-sm">Size:</div>
-              <div>{{ itemInformationData.size }}</div>
+              <div>{{ (itemInformationData as FileItemType).size }}</div>
             </div>
             <div class="text-body1 q-mt-md row">
               <div class="text-weight-bolder q-mr-sm">Created:</div>
@@ -963,21 +963,21 @@
                   v-droppable
                   v-draggable="['folder', item.id]"
                   :class="[
-                    item.drag_over ? 'bg-indigo-11' : '',
+                    (item as FileFolderType).drag_over ? 'bg-indigo-11' : '',
                     item.selected ? 'bg-cyan-14 text-layout-text' : '',
                   ]"
                   @v-drag-enter="
                     (ev: string[]) => {
                       if (ev[1] != item.id) {
-                        item.drag_over = true;
+                        (item as FileFolderType).drag_over = true;
                       }
                     }
                   "
-                  @v-drag-leave="item.drag_over = false"
+                  @v-drag-leave="(item as FileFolderType).drag_over = false"
                   @v-drag-over="
                     (ev: string[]) => {
                       if (ev[1] != item.id) {
-                        item.drag_over = true;
+                        (item as FileFolderType).drag_over = true;
                       }
                     }
                   "
@@ -987,7 +987,7 @@
                       if (ev.dataTransfer!.items.length > 0) {
                         if (ev.dataTransfer!.items[0].kind == 'file') {
                           onFolderDrop(ev, item.id);
-                          item.drag_over = false;
+                          (item as FileFolderType).drag_over = false;
                         }
                       }
                     }
@@ -996,7 +996,7 @@
                     (ev: InputEvent) => {
                       if (ev.dataTransfer!.items.length > 0) {
                         if (ev.dataTransfer!.items[0].kind == 'file') {
-                          item.drag_over = true;
+                          (item as FileFolderType).drag_over = true;
                         }
                       }
                     }
@@ -1005,7 +1005,7 @@
                     (ev: InputEvent) => {
                       if (ev.dataTransfer!.items.length > 0) {
                         if (ev.dataTransfer!.items[0].kind == 'file') {
-                          item.drag_over = true;
+                          (item as FileFolderType).drag_over = true;
                         }
                       }
                     }
@@ -1014,7 +1014,7 @@
                     (ev: InputEvent) => {
                       if (ev.dataTransfer!.items.length > 0) {
                         if (ev.dataTransfer!.items[0].kind == 'file') {
-                          item.drag_over = false;
+                          (item as FileFolderType).drag_over = false;
                         }
                       }
                     }
@@ -1179,7 +1179,7 @@
                   </q-item-section>
                   <q-item-section avatar top>
                     <q-avatar
-                      :icon="getIcon(item.mime as string)"
+                      :icon="getIcon((item as FileItemType).mime as string)"
                       color="transparent"
                       text-color="primary"
                       size="4.5em"
@@ -1198,7 +1198,7 @@
                       class="text-caption"
                       style="pointer-events: none"
                       ><a class="q-mr-md">{{ item.modified }}</a>
-                      <a class="q-ml-md"> {{ item.size }}</a>
+                      <a class="q-ml-md"> {{ (item as FileItemType).size }}</a>
                     </q-item-label>
                   </q-item-section>
 
@@ -1492,7 +1492,8 @@ import {
   TraverseFolderMapType,
   UploadProgressEntryType,
   getIcon,
-  FolderObjectType,
+  FileFolderType,
+  FileItemType,
   UploadDialogEntryType,
   NavbarIndexType,
   AllAvailableFoldersType,
@@ -1600,10 +1601,10 @@ export default defineComponent({
       ],
 
       itemInformationDialog: ref(false),
-      itemInformationData: ref({}) as Ref<FolderObjectType>,
+      itemInformationData: ref({}) as Ref<FileItemType | FileFolderType>,
 
       // selection handlers
-      selectedItems: ref([]) as Ref<FolderObjectType[]>,
+      selectedItems: ref([]) as Ref<(FileItemType | FileFolderType)[]>,
       allSelected: ref(false),
 
       // move items
@@ -1764,27 +1765,35 @@ export default defineComponent({
       var type_val = type.value;
       if (type_val == 1) {
         // by type
-        this.rawFolderContent.children.sort((a: FolderObjectType) =>
-          a.type != 'folder' ? 1 : 0
+        this.rawFolderContent.children.sort(
+          (a: FileItemType | FileFolderType) => (a.type != 'folder' ? 1 : 0)
         );
       } else if (type_val == 2) {
         // alphabetically
         this.rawFolderContent.children.sort(
-          (a: FolderObjectType, b: FolderObjectType) =>
-            a.name.localeCompare(b.name)
+          (
+            a: FileItemType | FileFolderType,
+            b: FileItemType | FileFolderType
+          ) => a.name.localeCompare(b.name)
         );
       } else if (type_val == 3) {
         // created time
         this.rawFolderContent.children
-          .sort((a: FolderObjectType, b: FolderObjectType) =>
-            a.created.localeCompare(b.created)
+          .sort(
+            (
+              a: FileItemType | FileFolderType,
+              b: FileItemType | FileFolderType
+            ) => a.created.localeCompare(b.created)
           )
           .reverse();
       } else if (type_val == 4) {
         // last changed time
         this.rawFolderContent.children
-          .sort((a: FolderObjectType, b: FolderObjectType) =>
-            a.modified.localeCompare(b.modified)
+          .sort(
+            (
+              a: FileItemType | FileFolderType,
+              b: FileItemType | FileFolderType
+            ) => a.modified.localeCompare(b.modified)
           )
           .reverse();
       } else if (type_val == 5) {
@@ -2279,7 +2288,8 @@ export default defineComponent({
     // check if a name of type exists in current folder context (rawFoldercontent.children)
     checkNameExistFolderContext(name: string, type: string) {
       return this.rawFolderContent.children.some(
-        (el: FolderObjectType) => el.name == name && el.type == type
+        (el: FileItemType | FileFolderType) =>
+          el.name == name && el.type == type
       );
     },
 
@@ -2369,14 +2379,20 @@ export default defineComponent({
     // select all items
     selectAllItems() {
       if (this.allSelected == true) {
-        for (var item of this.rawFolderContent.children as FolderObjectType[]) {
+        for (var item of this.rawFolderContent.children as (
+          | FileItemType
+          | FileFolderType
+        )[]) {
           if (!this.selectedItems.includes(item)) {
             this.selectedItems.push(item);
             item.selected = true;
           }
         }
       } else {
-        for (var item of this.rawFolderContent.children as FolderObjectType[]) {
+        for (var item of this.rawFolderContent.children as (
+          | FileItemType
+          | FileFolderType
+        )[]) {
           item.selected = false;
         }
 
@@ -2475,7 +2491,10 @@ export default defineComponent({
       }
       this.selectedItems = [];
       this.allSelected = false;
-      for (var item of this.rawFolderContent.children as FolderObjectType[]) {
+      for (var item of this.rawFolderContent.children as (
+        | FileItemType
+        | FileFolderType
+      )[]) {
         item.selected = false;
       }
     },
@@ -2545,7 +2564,10 @@ export default defineComponent({
       this.selectedItems = [];
       this.allSelected = false;
       this.moveSelectedItemsDialog = false;
-      for (var item of this.rawFolderContent.children as FolderObjectType[]) {
+      for (var item of this.rawFolderContent.children as (
+        | FileItemType
+        | FileFolderType
+      )[]) {
         item.selected = false;
       }
     },

@@ -22,6 +22,7 @@
     "@quasar/cli": "^2.2.1",
     "@quasar/extras": "^1.16.5",
     "@tinymce/tinymce-vue": "^5.0.0",
+    "@videojs-player/vue": "^1.0.0",
     "axios": "^0.21.1",
     "codemirror": "^6.0.1",
     "highlight.js": "^11.6.0",
@@ -32,6 +33,7 @@
     "quasar": "^2.12.2",
     "tinymce": "^6.3.1",
     "tsparticles": "^2.3.4",
+    "video.js": "^8.3.0",
     "vue": "^3.0.0",
     "vue-codemirror": "^6.1.1",
     "vue-router": "^4.0.0"

@@ -25,11 +25,7 @@ const routes: RouteRecordRaw[] = [
         path: 'forgot',
         component: () => import('pages/Start/Forgot.vue'),
       },
-      {
-        name: 'about',
-        path: 'about',
-        component: () => import('pages/Start/About.vue'),
-      },
+
       {
         name: 'privacy',
         path: 'privacy',
@@ -85,6 +81,10 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'files',
         component: () => import('pages/Authenticated/Files/Folder.vue'),
+      },
+      {
+        path: 'video/:id',
+        component: () => import('pages/Authenticated/Files/Video.vue'),
       },
       {
         path: 'doc/:id',
