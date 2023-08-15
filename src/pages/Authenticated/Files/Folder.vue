@@ -2,10 +2,10 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="initialFetch && initialFetchSuccessful">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="initialFetch && !initialFetchSuccessful">
     <!-- delteSelectedItemsDialog (Confirmation) -->
     <q-dialog v-model="deleteItemsDialog">
       <q-card bordered style="width: 350px">
@@ -59,7 +59,7 @@
           v-if="allAvailableFolders.length == 0"
           class="row justify-center q-ma-md"
         >
-          <q-spinner size="10em" style="min-height: 200px" />
+          <q-spinner size="10em" style="min-height: 230px" />
         </div>
         <div class="q-ma-md" v-if="allAvailableFolders.length > 0">
           <q-input
@@ -69,23 +69,24 @@
             outlined
             label="Search"
             class="text-primary text-body1"
+            style="height: 30px"
           />
-
-          <q-tree
-            :nodes="allAvailableFolders"
-            v-model:selected="moveItemsSelectedId"
-            v-model:expanded="moveItemsExpanded"
-            :filter="moveItemsFilter"
-            node-key="id"
-            label-key="name"
-            selected-color="green"
-            class="q-mt-md text-body1"
-            no-transition
-            no-selection-unset
-            no-results-label="No folder found"
-            @update:selected="moveItemsUpdateSelectedLabel"
-            style="min-height: 200px"
-          />
+          <div style="min-height: 190px" class="q-mt-md">
+            <q-tree
+              :nodes="allAvailableFolders"
+              v-model:selected="moveItemsSelectedId"
+              v-model:expanded="moveItemsExpanded"
+              :filter="moveItemsFilter"
+              node-key="id"
+              label-key="name"
+              selected-color="green"
+              class="text-body1"
+              no-transition
+              no-selection-unset
+              no-results-label="No folder found"
+              @update:selected="moveItemsUpdateSelectedLabel"
+            />
+          </div>
           <div class="q-mt-md">
             <a class="text-weight-bolder">Selection: </a>
             {{ moveItemsSelectedPath }}
@@ -133,7 +134,7 @@
         moveItemsSelectedId = '';
       "
     >
-      <q-card bordered style="min-height: 350px; width: 350px">
+      <q-card bordered style="width: 350px">
         <q-toolbar class="bg-layout-bg text-layout-text text-center">
           <q-toolbar-title class="q-ma-sm"
             >Move Selection to new Folder</q-toolbar-title
@@ -155,21 +156,22 @@
             class="text-primary text-body1"
           />
 
-          <q-tree
-            :nodes="allAvailableFolders"
-            v-model:selected="moveItemsSelectedId"
-            v-model:expanded="moveItemsExpanded"
-            :filter="moveItemsFilter"
-            node-key="id"
-            label-key="name"
-            selected-color="green"
-            class="q-mt-md text-body1 scroll"
-            no-transition
-            no-selection-unset
-            no-results-label="No folder found"
-            @update:selected="moveItemsUpdateSelectedLabel"
-            style="min-height: 200px"
-          />
+          <div style="min-height: 200px">
+            <q-tree
+              :nodes="allAvailableFolders"
+              v-model:selected="moveItemsSelectedId"
+              v-model:expanded="moveItemsExpanded"
+              :filter="moveItemsFilter"
+              node-key="id"
+              label-key="name"
+              selected-color="green"
+              class="q-mt-md text-body1 scroll"
+              no-transition
+              no-selection-unset
+              no-results-label="No folder found"
+              @update:selected="moveItemsUpdateSelectedLabel"
+            />
+          </div>
           <div class="q-mt-md">
             <a class="text-weight-bolder">Selection: </a>
             {{ moveItemsSelectedPath }}
@@ -1247,7 +1249,7 @@
           </template>
         </div>
       </q-scroll-area>
-      <q-page-sticky position="bottom-right">
+      <q-page-sticky position="bottom-right" style="z-index: 100">
         <q-btn
           icon="analytics"
           class="bg-layout-bg text-layout-text"
