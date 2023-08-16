@@ -2,10 +2,10 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="initialFetch && !initialFetchSuccessful">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="initialFetch && initialFetchSuccessful">
     <!-- delteSelectedItemsDialog (Confirmation) -->
     <q-dialog v-model="deleteItemsDialog">
       <q-card bordered style="width: 350px">
@@ -1249,6 +1249,9 @@
           </template>
         </div>
       </q-scroll-area>
+
+      <!-- Bottom Right Upload Progress -->
+
       <q-page-sticky position="bottom-right" style="z-index: 100">
         <q-btn
           icon="analytics"
@@ -1913,7 +1916,6 @@ export default defineComponent({
       this.progressSticky = true;
       var copyOfUploadMap = uploadMap;
       for (var item of copyOfUploadMap) {
-        console.log(item.content);
         if (item.type == 'folder') {
           let source = this.$axios.CancelToken.source();
 
@@ -1929,7 +1931,7 @@ export default defineComponent({
             transferred_percent_num: 0,
             transferred_percent_label: computed(
               () =>
-                (folderProgress.transferred_percent_num > 1
+                (folderProgress.transferred_percent_num < 0.99
                   ? Math.round(folderProgress.transferred_percent_num * 100)
                   : 100) + '%'
             ),
@@ -2031,8 +2033,9 @@ export default defineComponent({
           }
         } else if (item.type == 'file' && item.content instanceof File) {
           let form_data = new FormData();
-          var itemSize = item.content.size;
           var file = item.content;
+          var itemSize = file.size;
+
           form_data.append('name', item.name);
           form_data.append('parent_id', parentFolderId);
           form_data.append('file', file);
@@ -2053,7 +2056,7 @@ export default defineComponent({
             transferred_percent_num: 0,
             transferred_percent_label: computed(
               () =>
-                (fileProgress.transferred_percent_num > 1
+                (fileProgress.transferred_percent_num < 0.99
                   ? Math.round(fileProgress.transferred_percent_num * 100)
                   : 100) + '%'
             ),

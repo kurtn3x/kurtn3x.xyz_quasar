@@ -35,6 +35,9 @@ export interface FileItemType {
   type: string;
   size: number;
   mime: string;
+  modified_iso: string;
+  created_iso: string;
+  size_bytes: number;
   // set on demand
   selected?: boolean;
 }
@@ -49,6 +52,8 @@ export interface FileFolderType {
   shared_allow_all_write: boolean;
   path: string;
   type: string;
+  modified_iso: string;
+  created_iso: string;
   // set on demand
   selected?: boolean;
   drag_over?: boolean;

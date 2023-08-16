@@ -47,27 +47,27 @@
           <div v-if="loading" class="text-center text-body1 q-mt-sm q-mb-md">
             Generating Client Data... Please Wait.
           </div>
-          <q-separator class="q-mt-sm" />
-          <q-card-actions align="center" class="q-mt-sm q-mb-sm">
-            <q-btn
-              v-close-popup
-              flat
-              icon="close"
-              label="Cancel"
-              class="bg-red text-white"
-              style="width: 130px"
-            />
-            <q-btn
-              flat
-              class="bg-green text-white"
-              icon="done"
-              size="md"
-              label="Continue"
-              @click="createVPNClient"
-              style="width: 130px"
-            />
-          </q-card-actions>
         </div>
+        <q-separator class="q-mt-sm" />
+        <q-card-actions align="center" class="q-mt-sm q-mb-sm">
+          <q-btn
+            v-close-popup
+            flat
+            icon="close"
+            label="Cancel"
+            class="bg-red text-white"
+            style="width: 130px"
+          />
+          <q-btn
+            flat
+            class="bg-green text-white"
+            icon="done"
+            size="md"
+            label="Continue"
+            @click="createVPNClient"
+            style="width: 130px"
+          />
+        </q-card-actions>
       </q-card>
     </q-dialog>
     <q-dialog v-model="setupVPNDialogSuccessful" persistent>
