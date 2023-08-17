@@ -17,7 +17,7 @@
         <q-toolbar class="bg-layout-bg text-layout-text text-center">
           <q-toolbar-title class="q-ma-sm">Delete Account</q-toolbar-title>
         </q-toolbar>
-        <q-card-section>
+        <div class="q-ma-md">
           <div class="text-red text-body1 text-weight-bolder">
             This will delete your account and all data associated with it.
           </div>
@@ -43,7 +43,7 @@
               />
             </template>
           </q-input>
-        </q-card-section>
+        </div>
 
         <q-separator class="q-mt-sm" />
 

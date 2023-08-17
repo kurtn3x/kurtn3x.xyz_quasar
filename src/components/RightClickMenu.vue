@@ -84,8 +84,8 @@
         <q-item-label>Rename</q-item-label>
       </q-item-section>
       <q-menu
-        anchor="center right"
-        self="center left"
+        anchor="bottom middle"
+        self="top middle"
         separate-close-popup
         ref="inputMenu"
       >
@@ -97,7 +97,7 @@
             :color="darkmode ? 'white' : 'black'"
             @keyup.enter="updateName"
             class="text-primary text-body1 q-ma-sm"
-            style="width: 215px"
+            style="width: 230px"
             outlined
             dense
             clearable
@@ -272,7 +272,7 @@ export default defineComponent({
       }
       api
         .put(
-          '/files/update-sharing/' + this.item.type,
+          '/files/update/' + this.item.type,
           data,
           this.axiosConfig
         )
@@ -304,18 +304,11 @@ export default defineComponent({
     },
 
     downloadItem(){
-      if (this.item.type == 'file'){
         window
-        .open('https://api.kurtn3x.xyz/files/download/' + this.item.id, '_blank')
+        .open('https://api.kurtn3x.xyz/files/download/' + this.item.type + '/' + this.item.id, '_blank')
         .focus();
-      } else if (this.item.type == 'folder'){
-        window
-        .open('https://api.kurtn3x.xyz/files/folder/zip/' + this.item.id, '_blank')
-        .focus();
-      }
+
     }
   },
 });
 </script>
-
-<style></style>

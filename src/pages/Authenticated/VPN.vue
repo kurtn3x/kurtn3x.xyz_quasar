@@ -341,7 +341,7 @@
             >Info for {{ vpnClientInfo.name }}</q-toolbar-title
           >
         </q-toolbar>
-        <div class="q-ma-sm">
+        <div class="q-ma-md">
           <div class="row q-mt-md">
             <div class="col text-weight-bold">Name</div>
             <div class="col-10">{{ vpnClientInfo.name }}</div>

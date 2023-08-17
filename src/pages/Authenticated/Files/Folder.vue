@@ -41,9 +41,9 @@
       </q-card>
     </q-dialog>
 
-    <!-- moveSingleItemDialog -->
+    <!-- moveSelectedItemsDialog -->
     <q-dialog
-      v-model="moveSingleItemDialog"
+      v-model="moveSelectedItemsDialog"
       @hide="
         moveItemsExpanded = [];
         moveItemsFilter = '';
@@ -53,25 +53,52 @@
     >
       <q-card bordered style="width: 350px">
         <q-toolbar class="bg-layout-bg text-layout-text text-center">
-          <q-toolbar-title class="q-ma-sm">Move Selected Item</q-toolbar-title>
+          <q-toolbar-title class="q-ma-sm"
+            >Move Items to new Folder</q-toolbar-title
+          >
         </q-toolbar>
         <div
           v-if="allAvailableFolders.length == 0"
-          class="row justify-center q-ma-md"
+          class="q-ma-md row justify-center items-center"
+          style="height: 375px"
         >
-          <q-spinner size="10em" style="min-height: 230px" />
+          <q-spinner size="10em" />
         </div>
         <div class="q-ma-md" v-if="allAvailableFolders.length > 0">
-          <q-input
-            :color="darkmode ? 'white' : 'black'"
-            v-model="moveItemsFilter"
-            dense
-            outlined
-            label="Search"
-            class="text-primary text-body1"
-            style="height: 30px"
-          />
-          <div style="min-height: 190px" class="q-mt-md">
+          <div class="row">
+            <q-input
+              :color="darkmode ? 'white' : 'black'"
+              v-model="moveItemsFilter"
+              dense
+              outlined
+              label="Search"
+              class="text-primary text-body1"
+              style="height: 50px; width: 190px"
+            />
+            <q-btn
+              label="Items"
+              icon="expand_more"
+              class="bg-blue text-white q-ml-sm text-body2"
+              unelevated
+              style="height: 40px"
+            >
+              <q-menu anchor="bottom middle" self="top middle">
+                <q-card flat style="max-width: 200px; max-height: 250px">
+                  <template v-for="item in selectedItems" :key="item">
+                    <div class="ellipsis text-body1 q-ma-sm">
+                      <q-icon
+                        :name="
+                          item.type == 'folder' ? 'folder' : 'file_present'
+                        "
+                      />
+                      <a class="q-ml-sm"> {{ item.name }} </a>
+                    </div>
+                  </template>
+                </q-card>
+              </q-menu>
+            </q-btn>
+          </div>
+          <q-scroll-area style="height: 325px">
             <q-tree
               :nodes="allAvailableFolders"
               v-model:selected="moveItemsSelectedId"
@@ -86,94 +113,9 @@
               no-results-label="No folder found"
               @update:selected="moveItemsUpdateSelectedLabel"
             />
-          </div>
+          </q-scroll-area>
           <div class="q-mt-md">
-            <a class="text-weight-bolder">Selection: </a>
-            {{ moveItemsSelectedPath }}
-          </div>
-        </div>
-
-        <q-separator class="q-mt-sm" />
-
-        <q-card-actions align="center" class="q-mt-sm q-mb-sm">
-          <q-btn
-            v-close-popup
-            flat
-            icon="close"
-            label="Cancel"
-            class="bg-red text-white"
-            style="width: 130px"
-          />
-          <q-btn
-            v-close-popup
-            flat
-            class="bg-green text-white"
-            icon="done"
-            size="md"
-            label="Move"
-            @click="
-              updateItemParent(
-                moveSingleItemId,
-                moveItemsSelectedId,
-                moveSingleItemType
-              )
-            "
-            style="width: 130px"
-          />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
-
-    <!-- moveSelectedItemsDialog -->
-    <q-dialog
-      v-model="moveSelectedItemsDialog"
-      @hide="
-        moveItemsExpanded = [];
-        moveItemsFilter = '';
-        moveItemsSelectedPath = '';
-        moveItemsSelectedId = '';
-      "
-    >
-      <q-card bordered style="width: 350px">
-        <q-toolbar class="bg-layout-bg text-layout-text text-center">
-          <q-toolbar-title class="q-ma-sm"
-            >Move Selection to new Folder</q-toolbar-title
-          >
-        </q-toolbar>
-        <div
-          v-if="allAvailableFolders.length == 0"
-          class="row justify-center q-ma-md"
-        >
-          <q-spinner size="10em" style="min-height: 200px" />
-        </div>
-        <div class="q-ma-md" v-if="allAvailableFolders.length > 0">
-          <q-input
-            :color="darkmode ? 'white' : 'black'"
-            v-model="moveItemsFilter"
-            dense
-            outlined
-            label="Search"
-            class="text-primary text-body1"
-          />
-
-          <div style="min-height: 200px">
-            <q-tree
-              :nodes="allAvailableFolders"
-              v-model:selected="moveItemsSelectedId"
-              v-model:expanded="moveItemsExpanded"
-              :filter="moveItemsFilter"
-              node-key="id"
-              label-key="name"
-              selected-color="green"
-              class="q-mt-md text-body1 scroll"
-              no-transition
-              no-selection-unset
-              no-results-label="No folder found"
-              @update:selected="moveItemsUpdateSelectedLabel"
-            />
-          </div>
-          <div class="q-mt-md">
-            <a class="text-weight-bolder">Selection: </a>
+            <a class="text-weight-bolder">New Folder: </a>
             {{ moveItemsSelectedPath }}
           </div>
         </div>
@@ -356,9 +298,9 @@
           <q-toolbar-title class="q-ma-sm">Upload Files </q-toolbar-title>
         </q-toolbar>
 
-        <div class="q-ma-sm">
+        <div class="q-ma-md">
           <div
-            style="border: 2px dashed lightblue; height: 265px"
+            style="border: 2px dashed lightblue; height: 278px"
             class="q-mt-md"
             @drop.prevent="uploadFilesDialogAreaDrop"
             @dragover.prevent="
@@ -390,7 +332,7 @@
             "
             :class="uploadFilesDialogAreaDragover ? 'bg-blue' : ''"
           >
-            <q-scroll-area class="row" style="height: 255px">
+            <q-scroll-area class="row" style="height: 270px">
               <div
                 v-if="uploadFilesDialogUploadMap.length == 0"
                 class="text-center text-h6 q-mt-md"
@@ -408,7 +350,7 @@
                   v-for="file in uploadFilesDialogUploadMap"
                   :key="file"
                 >
-                  <q-card class="bg-primary text-layout-text q-mt-sm">
+                  <q-card class="bg-primary text-layout-text q-mt-sm" flat>
                     <q-item
                       dense
                       clickable
@@ -508,33 +450,54 @@
               </q-list>
             </q-scroll-area>
           </div>
-          <div class="row">
-            <q-file
-              outlined
-              dense
-              v-model="uploadFilesDialogFiles"
-              display-value=""
-              label-slot
-              @update:model-value="appendFiles"
-              style="max-width: 160px"
-              :color="darkmode ? 'white' : 'dark'"
-              class="q-mt-md"
-            >
-              <template v-slot:label>
-                <q-icon name="attach_file" size="24px" />
-                Select File
-              </template>
-            </q-file>
-            <q-space />
-            <q-btn
-              style="height: 25px; width: 35px"
-              @click="uploadFilesDialogUploadMap = []"
-              icon="delete"
-              size="xs"
-              class="bg-red text-white"
-              unelevated
-              v-if="uploadFilesDialogUploadMap.length > 0"
-            />
+          <div class="row justify-between q-mt-xs">
+            <div class="row">
+              <q-file
+                unelevated
+                dense
+                v-model="uploadFilesDialogFiles"
+                display-value=""
+                label-slot
+                @update:model-value="appendFiles"
+                style="max-width: 75px"
+                color="white"
+                class="bg-blue text-white rounded-borders q-mr-md"
+                label-color="white"
+              >
+                <template v-slot:label>
+                  <q-icon name="add" size="24px" class="q-ml-sm" />
+                  <q-icon name="description" size="24px" class="q-ml-sm" />
+                </template>
+              </q-file>
+              <q-file
+                unelevated
+                dense
+                v-model="uploadFilesDialogFiles"
+                display-value=""
+                label-slot
+                @update:model-value="appendFiles"
+                style="max-width: 75px"
+                color="white"
+                class="bg-blue text-white rounded-borders"
+                label-color="white"
+              >
+                <template v-slot:label>
+                  <q-icon name="add" size="24px" class="q-ml-sm" />
+                  <q-icon name="folder" size="24px" class="q-ml-sm" />
+                </template>
+              </q-file>
+            </div>
+            <div style="height: 25px; width: 35px">
+              <q-btn
+                style="height: 25px; width: 35px"
+                @click="uploadFilesDialogUploadMap = []"
+                icon="delete"
+                size="xs"
+                class="bg-red text-white"
+                unelevated
+                v-if="uploadFilesDialogUploadMap.length > 0"
+              />
+            </div>
           </div>
         </div>
 
@@ -569,7 +532,7 @@
 
     <q-page class="column q-mr-xs q-ml-xs" :style-fn="styleFn">
       <div class="q-mt-md" @dragover.stop.prevent="" @drop.prevent="">
-        <q-toolbar class="q-pl-sm">
+        <q-toolbar>
           <!-- navbar toolbar -->
 
           <div
@@ -700,56 +663,59 @@
             @click="selectAllItems"
           />
 
-          <q-fab
-            unelevated
-            icon="add"
-            direction="down"
-            class="q-ml-lg"
-            color="light-green"
-            square
-            padding="none"
-            style="height: 40px; width: 50px; z-index: 1"
-          >
-            <q-fab-action
-              class="text-body1 bg-light-green"
-              text-color="white"
-              outline
-              icon="create_new_folder"
-              label="New Folder"
-              @click="
-                newObjShow = true;
-                newObj.type = 'folder';
-              "
-              square
-              style="width: 180px"
-            />
-            <q-fab-action
-              @click="
-                newObjShow = true;
-                newObj.type = 'file';
-              "
-              icon="note_add"
-              label="New File"
-              class="text-body1 bg-light-green"
-              text-color="white"
-              outline
-              square
-              style="width: 180px"
-            />
-            <q-fab-action
-              @click="uploadFilesDialog = true"
-              icon="file_upload"
-              label="Upload Files"
-              class="text-body1 bg-light-green"
-              text-color="white"
-              square
-              style="width: 180px"
-              outline
-            />
-          </q-fab>
-          <q-space />
+          <!-- toolbar on larger screens -->
 
-          <div class="row gt-sm">
+          <div class="row gt-sm full-width">
+            <q-fab
+              unelevated
+              icon="add"
+              direction="down"
+              class="q-ml-lg"
+              color="light-green"
+              square
+              padding="none"
+              style="height: 40px; width: 50px; z-index: 1"
+            >
+              <q-fab-action
+                class="text-body1 bg-light-green"
+                text-color="white"
+                outline
+                icon="create_new_folder"
+                label="New Folder"
+                @click="
+                  newObjShow = true;
+                  newObj.type = 'folder';
+                "
+                square
+                style="width: 180px"
+              />
+              <q-fab-action
+                @click="
+                  newObjShow = true;
+                  newObj.type = 'file';
+                "
+                icon="note_add"
+                label="New File"
+                class="text-body1 bg-light-green"
+                text-color="white"
+                outline
+                square
+                style="width: 180px"
+              />
+              <q-fab-action
+                @click="uploadFilesDialog = true"
+                icon="file_upload"
+                label="Upload Files"
+                class="text-body1 bg-light-green"
+                text-color="white"
+                square
+                style="width: 180px"
+                outline
+              />
+            </q-fab>
+
+            <q-space />
+
             <q-input
               :color="darkmode ? 'white' : 'black'"
               v-model="filterSearch"
@@ -792,60 +758,152 @@
               label="Advanced..."
               style="height: 40px; width: 150px"
             />
+            <q-space />
+            <div style="width: 140px">
+              <q-fab
+                unelevated
+                icon="more_horiz"
+                active-icon="more_vert"
+                direction="down"
+                color="cyan-14"
+                square
+                :label="
+                  selectedItems.length +
+                  ' Item' +
+                  (selectedItems.length > 1 ? 's' : '')
+                "
+                v-if="selectedItems.length > 0"
+                padding="none"
+                style="height: 40px; width: 140px; z-index: 1"
+              >
+                <q-fab-action
+                  class="text-body1 bg-blue"
+                  text-color="white"
+                  outline
+                  label="Move"
+                  icon="trending_flat"
+                  @click="
+                    moveSelectedItemsDialog = true;
+                    fetchAllAvailableFolders();
+                  "
+                  square
+                  style="width: 150px"
+                />
+                <q-fab-action
+                  class="text-body1 bg-red"
+                  text-color="white"
+                  outline
+                  icon="close"
+                  label="Delete"
+                  @click="deleteItemsDialog = true"
+                  square
+                  style="width: 150px"
+                />
+              </q-fab>
+            </div>
           </div>
-          <q-btn
-            unelevated
-            dense
-            icon="search"
-            class="bg-primary text-white q-ml-md lt-md"
-            @click="filterDialog = !filterDialog"
-            label="Search..."
-            style="height: 40px; width: 120px"
-          />
-          <q-space />
-          <div style="width: 140px">
+
+          <!-- toolbar on small screens -->
+          <div class="row lt-md full-width">
             <q-fab
               unelevated
-              icon="more_horiz"
-              active-icon="more_vert"
+              icon="add"
               direction="down"
-              color="cyan-14"
+              class="q-ml-lg"
+              color="light-green"
               square
-              :label="
-                selectedItems.length +
-                ' Item' +
-                (selectedItems.length > 1 ? 's' : '')
-              "
-              v-if="selectedItems.length > 0"
               padding="none"
-              style="height: 40px; width: 140px; z-index: 1"
+              style="height: 40px; width: 50px; z-index: 1"
             >
               <q-fab-action
-                class="text-body1 bg-blue"
+                class="text-body1 bg-light-green"
                 text-color="white"
                 outline
-                label="Move"
-                icon="trending_flat"
+                icon="create_new_folder"
+                label="New Folder"
                 @click="
-                  moveSelectedItemsDialog = true;
-                  fetchAllAvailableFolders();
+                  newObjShow = true;
+                  newObj.type = 'folder';
                 "
                 square
-                style="width: 150px"
+                style="width: 180px"
               />
               <q-fab-action
-                class="text-body1 bg-red"
+                @click="
+                  newObjShow = true;
+                  newObj.type = 'file';
+                "
+                icon="note_add"
+                label="New File"
+                class="text-body1 bg-light-green"
                 text-color="white"
                 outline
-                icon="close"
-                label="Delete"
-                @click="deleteItemsDialog = true"
                 square
-                style="width: 150px"
+                style="width: 180px"
+              />
+              <q-fab-action
+                @click="uploadFilesDialog = true"
+                icon="file_upload"
+                label="Upload Files"
+                class="text-body1 bg-light-green"
+                text-color="white"
+                square
+                style="width: 180px"
+                outline
               />
             </q-fab>
+
+            <q-space />
+            <q-btn
+              unelevated
+              dense
+              icon="search"
+              class="bg-primary text-white q-ml-md"
+              @click="filterDialog = !filterDialog"
+              label="Search..."
+              style="height: 40px; width: 120px"
+            />
+            <q-space />
+            <div style="width: 100px" class="q-mr-md q-ml-md">
+              <q-fab
+                unelevated
+                icon="more_horiz check_box"
+                active-icon="more_vert check_box"
+                direction="down"
+                color="cyan-14"
+                square
+                v-if="selectedItems.length > 0"
+                padding="none"
+                style="height: 40px; width: 80px; z-index: 1"
+              >
+                <q-fab-action
+                  class="text-body1 bg-blue"
+                  text-color="white"
+                  outline
+                  label="Move"
+                  icon="trending_flat"
+                  @click="
+                    moveSelectedItemsDialog = true;
+                    fetchAllAvailableFolders();
+                  "
+                  square
+                  style="width: 130px"
+                />
+                <q-fab-action
+                  class="text-body1 bg-red"
+                  text-color="white"
+                  outline
+                  icon="close"
+                  label="Delete"
+                  @click="deleteItemsDialog = true"
+                  square
+                  style="width: 130px"
+                />
+              </q-fab>
+            </div>
           </div>
         </q-toolbar>
+
         <q-separator size="2px" color="primary" class="q-mt-xs" />
       </div>
       <q-scroll-area class="col">
@@ -1036,10 +1094,10 @@
                       :propItem="item"
                       @moveItem="
                         () => {
+                          clearSelectedItems();
                           fetchAllAvailableFolders();
-                          moveSingleItemDialog = true;
-                          moveSingleItemId = item.id;
-                          moveSingleItemType = item.type;
+                          moveSelectedItemsDialog = true;
+                          selectedItems.push(item);
                         }
                       "
                       @deleteItem="
@@ -1104,10 +1162,10 @@
                           :propItem="item"
                           @moveItem="
                             () => {
+                              clearSelectedItems();
                               fetchAllAvailableFolders();
-                              moveSingleItemDialog = true;
-                              moveSingleItemId = item.id;
-                              moveSingleItemType = item.type;
+                              moveSelectedItemsDialog = true;
+                              selectedItems.push(item);
                             }
                           "
                           @deleteItem="
@@ -1150,10 +1208,10 @@
                       :propItem="item"
                       @moveItem="
                         () => {
+                          clearSelectedItems();
                           fetchAllAvailableFolders();
-                          moveSingleItemDialog = true;
-                          moveSingleItemId = item.id;
-                          moveSingleItemType = item.type;
+                          moveSelectedItemsDialog = true;
+                          selectedItems.push(item);
                         }
                       "
                       @deleteItem="
@@ -1218,10 +1276,10 @@
                           :propItem="item"
                           @moveItem="
                             () => {
+                              clearSelectedItems();
                               fetchAllAvailableFolders();
-                              moveSingleItemDialog = true;
-                              moveSingleItemId = item.id;
-                              moveSingleItemType = item.type;
+                              moveSelectedItemsDialog = true;
+                              selectedItems.push(item);
                             }
                           "
                           @deleteItem="
@@ -1492,6 +1550,8 @@ import { draggable, selected } from 'components/draggable.js';
 import { droppable } from 'components/droppable.js';
 import RightClickMenu from 'components/RightClickMenu.vue';
 import { FOLDER } from './testdata/folder.js';
+import { minFolder } from './testdata/all_available_folders.js';
+
 import type { Ref } from 'vue';
 import {
   TraverseFolderMapType,
@@ -1613,13 +1673,10 @@ export default defineComponent({
       allSelected: ref(false),
 
       // move items
-      allAvailableFolders: ref([]) as Ref<AllAvailableFoldersType[]>,
+      allAvailableFolders: ref(minFolder) as Ref<AllAvailableFoldersType[]>,
       // dialog for moving selections
       moveSelectedItemsDialog: ref(false),
-      // dialog for moving a single item
-      moveSingleItemDialog: ref(false),
-      moveSingleItemId: ref(''),
-      moveSingleItemType: ref(''),
+      moveSingleItem: ref(false),
 
       moveItemsExpanded: ref(['']),
       moveItemsFilter: ref(''),
@@ -2018,7 +2075,7 @@ export default defineComponent({
           };
 
           var response = await api
-            .post('/files/upload-folder', form_data, config)
+            .post('/files/upload/folder', form_data, config)
             .catch((error) => {
               folderProgress.status = 'error';
               folderProgress.color = 'bg-red';
@@ -2290,6 +2347,15 @@ export default defineComponent({
     /////////// GENERAL METHODS ///////////////////////
     ///////////////////////////////////////////////////
 
+    // clear selected items
+    clearSelectedItems() {
+      console.log('x');
+      this.selectedItems.forEach(function (item) {
+        item.selected = false;
+      });
+      this.selectedItems = [];
+    },
+
     // check if a name of type exists in current folder context (rawFoldercontent.children)
     checkNameExistFolderContext(name: string, type: string) {
       return this.rawFolderContent.children.some(
@@ -2377,7 +2443,10 @@ export default defineComponent({
     // zip download caller
     downloadAsZip(folderid: string) {
       window
-        ?.open('https://api.kurtn3x.xyz/files/folder/zip/' + folderid, '_blank')
+        ?.open(
+          'https://api.kurtn3x.xyz/files/download/folder/' + folderid,
+          '_blank'
+        )
         ?.focus();
     },
 
@@ -2682,7 +2751,7 @@ export default defineComponent({
     // download a private-storage file
     openInNewTab(id: string) {
       window
-        ?.open('https://api.kurtn3x.xyz/files/download/' + id, '_blank')
+        ?.open('https://api.kurtn3x.xyz/files/content/file/' + id, '_blank')
         ?.focus();
     },
 
