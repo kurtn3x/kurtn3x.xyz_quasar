@@ -344,18 +344,18 @@
         <div class="q-ma-md">
           <div class="row q-mt-md">
             <div class="col text-weight-bold">Name</div>
-            <div class="col-10">{{ vpnClientInfo.name }}</div>
+            <div class="col">{{ vpnClientInfo.name }}</div>
           </div>
           <div class="row q-mt-md">
             <div class="col text-weight-bold">Addresses</div>
-            <div class="col-10">{{ vpnClientInfo.addresses }}</div>
+            <div class="col">{{ vpnClientInfo.addresses }}</div>
           </div>
           <div class="row q-mt-md">
             <div class="col text-weight-bold">Created</div>
-            <div class="col-10">{{ vpnClientInfo.created }}</div>
+            <div class="col">{{ vpnClientInfo.created }}</div>
           </div>
           <div class="row q-mt-md">
-            <div class="col-4 text-weight-bold">Public Key</div>
+            <div class="col text-weight-bold">Public Key</div>
             <div>
               {{ vpnClientInfo.public_key }}
             </div>

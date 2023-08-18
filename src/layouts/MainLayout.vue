@@ -7,66 +7,22 @@
           flat
           stretch
           icon="menu"
-          class="text-body1 text-weight-bold"
+          class="text-body1 text-weight-bold lt-md"
           size="md"
           @click="navDrawer = !navDrawer"
           style="width: 57px"
         />
-        <q-space />
         <q-btn
-          @click="darkmodeChanged"
-          :icon="darkmodeToogle ? 'light_mode' : 'dark_mode'"
-          round
-          outline
-          size="sm"
-          class="q-ml-sm text-layout-text"
+          flat
+          stretch
+          icon="menu"
+          class="text-body1 text-weight-bold gt-sm"
+          size="md"
+          @click="miniState = !miniState"
+          style="width: 57px"
         />
-        <q-btn round outline size="sm" class="q-ml-sm text-layout-text">
-          <q-menu
-            anchor="bottom middle"
-            self="top middle"
-            style="overflow-x: hidden; width: 100px"
-          >
-            <q-list>
-              <q-item
-                clickable
-                @click="setTheme('default')"
-                style="background: #3b4fb5"
-              />
+        <q-space />
 
-              <q-item
-                clickable
-                @click="setTheme('cool-orange')"
-                style="background: #ee4d2e"
-              />
-              <q-item
-                clickable
-                @click="setTheme('nice-green')"
-                style="background: #1db992"
-              />
-              <q-item
-                clickable
-                @click="setTheme('olive-green')"
-                style="background: #bfbc06"
-              />
-              <q-item
-                clickable
-                @click="setTheme('epic-blue')"
-                style="background: #008fff"
-              />
-              <q-item
-                clickable
-                @click="setTheme('dark')"
-                style="background: #1d1d1d"
-              />
-              <q-item
-                clickable
-                @click="setTheme('light')"
-                style="background: #f8f0e3"
-              />
-            </q-list>
-          </q-menu>
-        </q-btn>
         <q-btn stretch flat class="button_hover q-ml-sm">
           <q-avatar class="q-mr-sm q-ml-xs" size="26px" rounded>
             <img :src="headerInfo.avatar" />
@@ -149,63 +105,79 @@
         </q-btn>
       </q-toolbar>
 
-      <q-toolbar class="q-pa-none" v-if="!localStore.isAuthenticated">
-        <q-btn stretch flat icon="home" size="md" to="/" />
+      <q-toolbar class="q-pa-none q-ma-none" v-if="!localStore.isAuthenticated">
+        <q-btn unelevated stretch icon="home" size="md" to="/" />
+        <q-fab
+          unelevated
+          icon="palette"
+          color="layout-bg"
+          text-color="layout-text"
+          active-icon="expand_more"
+          direction="down"
+          padding="none"
+          square
+          style="height: 50px; width: 56px"
+          class="gt-xs"
+        >
+          <q-fab-action
+            style="background: #3b4fb5 !important"
+            color="layout-text"
+            outline
+            square
+            @click="setTheme('default')"
+          />
+          <q-fab-action
+            style="background: #ee4d2e !important"
+            outline
+            square
+            color="layout-text"
+            @click="setTheme('cool-orange')"
+          />
+          <q-fab-action
+            style="background: #1db992 !important"
+            outline
+            square
+            color="layout-text"
+            @click="setTheme('nice-green')"
+          />
+          <q-fab-action
+            style="background: #bfbc06 !important"
+            outline
+            square
+            color="layout-text"
+            @click="setTheme('olive-green')"
+          />
+          <q-fab-action
+            style="background: #008fff !important"
+            outline
+            square
+            color="layout-text"
+            @click="setTheme('epic-blue')"
+          />
+          <q-fab-action
+            style="background: #1d1d1d !important"
+            outline
+            square
+            color="layout-text"
+            @click="setTheme('dark')"
+          />
+          <q-fab-action
+            color="layout-text"
+            style="background: #f8f0e3 !important"
+            outline
+            square
+            @click="setTheme('light')"
+          />
+        </q-fab>
 
         <q-btn
+          unelevated
           @click="darkmodeChanged"
           :icon="darkmodeToogle ? 'light_mode' : 'dark_mode'"
-          round
-          outline
-          size="sm"
-          class="q-ml-sm"
+          size="md"
+          class="bg-layout-bg text-layout-text gt-xs"
+          style="height: 50px; width: 56px"
         />
-        <q-btn round outline size="sm" class="q-ml-sm">
-          <q-menu
-            anchor="bottom middle"
-            self="top middle"
-            style="overflow-x: hidden; width: 100px"
-          >
-            <q-list>
-              <q-item
-                clickable
-                @click="setTheme('default')"
-                style="background: #3b4fb5"
-              />
-
-              <q-item
-                clickable
-                @click="setTheme('cool-orange')"
-                style="background: #ee4d2e"
-              />
-              <q-item
-                clickable
-                @click="setTheme('nice-green')"
-                style="background: #1db992"
-              />
-              <q-item
-                clickable
-                @click="setTheme('olive-green')"
-                style="background: #bfbc06"
-              />
-              <q-item
-                clickable
-                @click="setTheme('epic-blue')"
-                style="background: #008fff"
-              />
-              <q-item
-                clickable
-                @click="setTheme('dark')"
-                style="background: #1d1d1d"
-              />
-              <q-item
-                clickable
-                @click="setTheme('light')"
-                style="background: #f8f0e3"
-              />
-            </q-list>
-          </q-menu>
-        </q-btn>
 
         <q-space />
         <q-btn
@@ -239,9 +211,7 @@
       mini-to-overlay
       side="left"
       :mini="miniState"
-      @mouseover="miniState = false"
-      @mouseout="miniState = true"
-      class="bg-layout-bg text-layout-text"
+      class="bg-layout-bg text-layout-text column justify-between"
       v-if="localStore.isAuthenticated"
     >
       <q-list padding class="q-pa-none">
@@ -250,7 +220,7 @@
           v-ripple
           class="text-body1 text-layout-text"
           to="/dashboard/home"
-          style="height: 65px"
+          style="height: 55px"
         >
           <q-item-section avatar>
             <q-icon name="home" />
@@ -265,7 +235,7 @@
           v-ripple
           class="text-body1 text-layout-text"
           to="/dashboard/files"
-          style="height: 65px"
+          style="height: 55px"
         >
           <q-item-section avatar>
             <q-icon name="folder" />
@@ -280,7 +250,7 @@
           v-ripple
           class="text-body1 text-layout-text"
           to="/dashboard/vpn"
-          style="height: 65px"
+          style="height: 55px"
         >
           <q-item-section avatar>
             <q-icon name="cloud" />
@@ -294,7 +264,7 @@
           v-ripple
           class="text-body1 text-layout-text"
           to="/dashboard/torrent"
-          style="height: 65px"
+          style="height: 55px"
         >
           <q-item-section avatar>
             <q-icon name="cloud_download" />
@@ -302,6 +272,78 @@
           <q-item-section> Torrents </q-item-section>
         </q-item>
         <q-separator color="layout-text" />
+      </q-list>
+      <q-list padding class="q-pa-none column">
+        <q-fab
+          unelevated
+          icon="palette"
+          color="layout-bg"
+          text-color="layout-text"
+          active-icon="expand_less"
+          direction="up"
+          padding="none"
+          square
+          style="width: 57px; height: 40px"
+        >
+          <q-fab-action
+            style="background: #3b4fb5 !important"
+            color="layout-text"
+            outline
+            square
+            @click="setTheme('default')"
+          />
+          <q-fab-action
+            style="background: #ee4d2e !important"
+            outline
+            square
+            color="layout-text"
+            @click="setTheme('cool-orange')"
+          />
+          <q-fab-action
+            style="background: #1db992 !important"
+            outline
+            square
+            color="layout-text"
+            @click="setTheme('nice-green')"
+          />
+          <q-fab-action
+            style="background: #bfbc06 !important"
+            outline
+            square
+            color="layout-text"
+            @click="setTheme('olive-green')"
+          />
+          <q-fab-action
+            style="background: #008fff !important"
+            outline
+            square
+            color="layout-text"
+            @click="setTheme('epic-blue')"
+          />
+          <q-fab-action
+            style="background: #1d1d1d !important"
+            outline
+            square
+            color="layout-text"
+            @click="setTheme('dark')"
+          />
+          <q-fab-action
+            color="layout-text"
+            style="background: #f8f0e3 !important"
+            outline
+            square
+            @click="setTheme('light')"
+          />
+        </q-fab>
+
+        <q-btn
+          unelevated
+          @click="darkmodeChanged"
+          :icon="darkmodeToogle ? 'light_mode' : 'dark_mode'"
+          size="md"
+          class="bg-layout-bg text-layout-text q-mt-sm"
+          style="width: 57px; height: 40px"
+        />
       </q-list>
     </q-drawer>
 

@@ -17,25 +17,44 @@
         <div class="text-body1 text-center q-ma-md">
           This will delete all selected items and all their subitems.
         </div>
+        <div class="row justify-center q-ma-md">
+          <q-btn
+            icon="expand_more"
+            label="Items"
+            class="bg-blue text-white q-ml-sm text-body2"
+            unelevated
+          >
+            <q-menu anchor="bottom middle" self="top middle">
+              <q-card flat style="max-width: 200px; max-height: 250px">
+                <template v-for="item in selectedItems" :key="item">
+                  <div class="ellipsis text-body1 q-ma-sm">
+                    <q-icon
+                      :name="item.type == 'folder' ? 'folder' : 'file_present'"
+                    />
+                    <a class="q-ml-sm"> {{ item.name }} </a>
+                  </div>
+                </template>
+              </q-card>
+            </q-menu>
+          </q-btn>
+        </div>
         <q-separator class="q-mt-sm" />
-        <q-card-actions align="center" class="q-mt-sm q-mb-sm">
+        <q-card-actions align="center" class="row q-mt-sm q-mb-sm">
           <q-btn
             v-close-popup
             flat
             icon="close"
             label="Cancel"
-            class="bg-red text-white"
-            style="width: 130px"
+            class="bg-red text-white col"
           />
           <q-btn
             v-close-popup
             flat
-            class="bg-green text-white"
+            class="bg-green text-white col"
             icon="done"
             size="md"
             label="Continue"
             @click="deleteSelection"
-            style="width: 130px"
           />
         </q-card-actions>
       </q-card>
@@ -64,7 +83,7 @@
         >
           <q-spinner size="10em" />
         </div>
-        <div class="q-ma-md" v-if="allAvailableFolders.length > 0">
+        <div class="q-ma-md" v-if="allAvailableFolders.length != 0">
           <div class="row">
             <q-input
               :color="darkmode ? 'white' : 'black'"
@@ -72,13 +91,13 @@
               dense
               outlined
               label="Search"
-              class="text-primary text-body1"
-              style="height: 50px; width: 190px"
+              class="text-primary text-body1 col"
+              style="height: 50px"
             />
             <q-btn
-              label="Items"
               icon="expand_more"
-              class="bg-blue text-white q-ml-sm text-body2"
+              label="..."
+              class="bg-blue text-white q-ml-sm text-body2 col-4"
               unelevated
               style="height: 40px"
             >
@@ -121,24 +140,22 @@
         </div>
         <q-separator class="q-mt-sm" />
 
-        <q-card-actions align="center" class="q-mt-sm q-mb-sm">
+        <q-card-actions align="center" class="row q-mt-sm q-mb-sm">
           <q-btn
             v-close-popup
             flat
             icon="close"
             label="Cancel"
-            class="bg-red text-white"
-            style="width: 130px"
+            class="bg-red text-white col"
           />
           <q-btn
             v-close-popup
             flat
-            class="bg-green text-white"
+            class="bg-green text-white col"
             icon="done"
             size="md"
             label="Move"
             @click="moveSelection"
-            style="width: 130px"
           />
         </q-card-actions>
       </q-card>
@@ -282,25 +299,25 @@
           <q-btn
             v-close-popup
             flat
-            class="bg-green text-white"
+            class="bg-green text-white col"
             icon="done"
             size="md"
             label="OK"
-            style="width: 130px"
+            style="max-width: 130px"
           />
         </q-card-actions>
       </q-card>
     </q-dialog>
 
     <q-dialog v-model="uploadFilesDialog" persistent>
-      <q-card bordered style="width: 350px; height: 475px">
+      <q-card bordered style="width: 350px; height: 500px">
         <q-toolbar class="bg-layout-bg text-layout-text text-center">
           <q-toolbar-title class="q-ma-sm">Upload Files </q-toolbar-title>
         </q-toolbar>
 
         <div class="q-ma-md">
           <div
-            style="border: 2px dashed lightblue; height: 278px"
+            style="border: 2px dashed lightblue; height: 295px"
             class="q-mt-md"
             @drop.prevent="uploadFilesDialogAreaDrop"
             @dragover.prevent="
@@ -332,7 +349,7 @@
             "
             :class="uploadFilesDialogAreaDragover ? 'bg-blue' : ''"
           >
-            <q-scroll-area class="row" style="height: 270px">
+            <q-scroll-area class="row" style="height: 290px">
               <div
                 v-if="uploadFilesDialogUploadMap.length == 0"
                 class="text-center text-h6 q-mt-md"
@@ -503,20 +520,20 @@
 
         <q-separator class="q-mt-sm" />
 
-        <q-card-actions align="evenly" class="q-mt-sm q-mb-sm">
+        <q-card-actions align="evenly" class="q-mt-sm q-mb-sm row">
           <q-btn
             v-close-popup
             flat
             icon="close"
             label="Close"
-            class="bg-red text-white"
-            style="width: 110px; height: 45px"
+            class="bg-red text-white col-4"
+            style="height: 45px"
             @click="uploadFilesDialogUploadMap = []"
           />
           <q-btn
             v-close-popup
             flat
-            class="bg-green text-white"
+            class="bg-green text-white col"
             icon="done"
             size="md"
             label="Upload"
@@ -532,7 +549,7 @@
 
     <q-page class="column q-mr-xs q-ml-xs" :style-fn="styleFn">
       <div class="q-mt-md" @dragover.stop.prevent="" @drop.prevent="">
-        <q-toolbar>
+        <q-toolbar class="q-pa-none">
           <!-- navbar toolbar -->
 
           <div
@@ -547,21 +564,6 @@
             class="row"
             ref="navbar"
           >
-            <q-item
-              clickable
-              flat
-              class="text-primary text-weight-bold text-h5"
-              @click="navGoBack"
-              style="display: inline-block"
-              v-if="navbarIndex.navbar_items.length != 0"
-            >
-              <q-icon
-                size="25px"
-                color="primary"
-                name="arrow_back"
-                class="full-width full-height no-pointer-events"
-              />
-            </q-item>
             <q-item
               clickable
               flat
@@ -646,9 +648,9 @@
                 "
                 @v-drag-drop="changeParentDragNDrop($event, item.id)"
                 v-droppable
-                style="display: inline-block"
+                style="display: inline-block; max-width: 350px"
               >
-                <a class="no-pointer-events">
+                <a class="no-pointer-events ellipsis">
                   {{ item.name }}
                 </a>
               </q-item>
@@ -665,12 +667,12 @@
 
           <!-- toolbar on larger screens -->
 
-          <div class="row gt-sm full-width">
+          <div class="row gt-xs full-width">
             <q-fab
               unelevated
               icon="add"
               direction="down"
-              class="q-ml-lg"
+              class="q-ml-md"
               color="light-green"
               square
               padding="none"
@@ -721,10 +723,9 @@
               v-model="filterSearch"
               input-class="text-left"
               label="Search"
-              class="text-body1 q-ml-md"
+              class="text-body1"
               outlined
               dense
-              style="width: 250px"
             >
               <template v-slot:append>
                 <q-icon v-if="filterSearch === ''" name="search" />
@@ -735,31 +736,20 @@
                   @click="filterSearch = ''"
                 />
               </template>
+              <template v-slot:after>
+                <q-btn
+                  unelevated
+                  dense
+                  icon="search add"
+                  class="bg-primary text-white"
+                  @click="filterDialog = !filterDialog"
+                  style="height: 40px; width: 65px"
+                />
+              </template>
             </q-input>
 
-            <q-select
-              :color="darkmode ? 'white' : 'black'"
-              outlined
-              v-model="filterSortBy"
-              :options="filterSortByOptions"
-              label="Sort by..."
-              dense
-              popup-content-style="z-index: 101"
-              @update:model-value="sortFolderContent"
-              style="width: 150px"
-              class="q-ml-md"
-            />
-            <q-btn
-              unelevated
-              dense
-              icon="search"
-              class="bg-primary text-white q-ml-md"
-              @click="filterDialog = !filterDialog"
-              label="Advanced..."
-              style="height: 40px; width: 150px"
-            />
             <q-space />
-            <div style="width: 140px">
+            <div style="width: 130px" class="gt-xs">
               <q-fab
                 unelevated
                 icon="more_horiz"
@@ -804,67 +794,39 @@
           </div>
 
           <!-- toolbar on small screens -->
-          <div class="row lt-md full-width">
-            <q-fab
-              unelevated
-              icon="add"
-              direction="down"
-              class="q-ml-lg"
-              color="light-green"
-              square
-              padding="none"
-              style="height: 40px; width: 50px; z-index: 1"
-            >
-              <q-fab-action
-                class="text-body1 bg-light-green"
-                text-color="white"
-                outline
-                icon="create_new_folder"
-                label="New Folder"
-                @click="
-                  newObjShow = true;
-                  newObj.type = 'folder';
-                "
-                square
-                style="width: 180px"
-              />
-              <q-fab-action
-                @click="
-                  newObjShow = true;
-                  newObj.type = 'file';
-                "
-                icon="note_add"
-                label="New File"
-                class="text-body1 bg-light-green"
-                text-color="white"
-                outline
-                square
-                style="width: 180px"
-              />
-              <q-fab-action
-                @click="uploadFilesDialog = true"
-                icon="file_upload"
-                label="Upload Files"
-                class="text-body1 bg-light-green"
-                text-color="white"
-                square
-                style="width: 180px"
-                outline
-              />
-            </q-fab>
-
+          <div class="row lt-sm full-width">
             <q-space />
-            <q-btn
-              unelevated
+            <q-input
+              :color="darkmode ? 'white' : 'black'"
+              v-model="filterSearch"
+              input-class="text-left"
+              label="Search"
+              class="text-body1 col q-ml-md"
+              outlined
               dense
-              icon="search"
-              class="bg-primary text-white q-ml-md"
-              @click="filterDialog = !filterDialog"
-              label="Search..."
-              style="height: 40px; width: 120px"
-            />
+            >
+              <template v-slot:append>
+                <q-icon v-if="filterSearch === ''" name="search" />
+                <q-icon
+                  v-else
+                  name="clear"
+                  class="cursor-pointer"
+                  @click="filterSearch = ''"
+                />
+              </template>
+              <template v-slot:after>
+                <q-btn
+                  unelevated
+                  dense
+                  icon="search add"
+                  class="bg-primary text-white"
+                  @click="filterDialog = !filterDialog"
+                  style="height: 40px; width: 65px"
+                />
+              </template>
+            </q-input>
             <q-space />
-            <div style="width: 100px" class="q-mr-md q-ml-md">
+            <div style="width: 100px" class="q-ml-md col-2">
               <q-fab
                 unelevated
                 icon="more_horiz check_box"
@@ -1310,6 +1272,60 @@
 
       <!-- Bottom Right Upload Progress -->
 
+      <q-page-sticky
+        class="lt-sm"
+        position="bottom-left"
+        :offset="[80, 15]"
+        style="z-index: 101"
+      >
+        <q-fab
+          unelevated
+          icon="add"
+          direction="up"
+          class="q-mr-md"
+          color="light-green"
+          padding="md"
+          style="z-index: 1"
+        >
+          <q-fab-action
+            class="text-body1 bg-light-green"
+            text-color="white"
+            outline
+            icon="create_new_folder"
+            label="New Folder"
+            @click="
+              newObjShow = true;
+              newObj.type = 'folder';
+            "
+            square
+            style="width: 180px"
+          />
+          <q-fab-action
+            @click="
+              newObjShow = true;
+              newObj.type = 'file';
+            "
+            icon="note_add"
+            label="New File"
+            class="text-body1 bg-light-green"
+            text-color="white"
+            outline
+            square
+            style="width: 180px"
+          />
+          <q-fab-action
+            @click="uploadFilesDialog = true"
+            icon="file_upload"
+            label="Upload Files"
+            class="text-body1 bg-light-green"
+            text-color="white"
+            square
+            style="width: 180px"
+            outline
+          />
+        </q-fab>
+      </q-page-sticky>
+
       <q-page-sticky position="bottom-right" style="z-index: 100">
         <q-btn
           icon="analytics"
@@ -1322,7 +1338,7 @@
             progressPanel = true;
           "
         />
-        <q-card bordered style="width: 350px" v-if="progressSticky">
+        <q-card bordered style="width: 325px" v-if="progressSticky">
           <q-item
             class="bg-layout-bg text-layout-text row justify-center items-center"
             clickable
@@ -1723,7 +1739,8 @@ export default defineComponent({
         var l = navbar.scrollWidth;
 
         // if the width of the item is larger than the actual place for it
-        if (l > t) {
+        // always show at least 1 item even if it's too large
+        if (l > t && this.navbarIndex.navbar_items.length > 1) {
           // → handle overflowing navbar
 
           // check if the last element of the navbar isn't the last moved item
@@ -1778,7 +1795,7 @@ export default defineComponent({
     },
 
     navBarWidth() {
-      var width = this.q.screen.width - 100;
+      var width = this.q.screen.width - 65;
       return { width: width + 'px' };
     },
 
@@ -1789,6 +1806,22 @@ export default defineComponent({
   },
 
   methods: {
+    genRandomString() {
+      var r = Math.floor(Math.random() * (25 - 24 + 24) + 24);
+      let result = '';
+      const characters =
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      const charactersLength = characters.length;
+      let counter = 0;
+      while (counter < r) {
+        result += characters.charAt(
+          Math.floor(Math.random() * charactersLength)
+        );
+        counter += 1;
+      }
+      return result;
+    },
+
     // get Home folder content on initial page load
     getHomeFolder() {
       this.loading = true;
