@@ -20,7 +20,7 @@
         <div class="row justify-center q-ma-md">
           <q-btn
             icon="expand_more"
-            label="Items"
+            :label="selectedItems.length + ' Items'"
             class="bg-blue text-white q-ml-sm text-body2"
             unelevated
           >
@@ -96,8 +96,8 @@
             />
             <q-btn
               icon="expand_more"
-              label="..."
-              class="bg-blue text-white q-ml-sm text-body2 col-4"
+              :label="selectedItems.length + 'Items'"
+              class="bg-blue text-white q-ml-sm text-body2 col"
               unelevated
               style="height: 40px"
             >
@@ -317,7 +317,7 @@
 
         <div class="q-ma-md">
           <div
-            style="border: 2px dashed lightblue; height: 295px"
+            style="border: 2px dashed lightblue; height: 290px"
             class="q-mt-md"
             @drop.prevent="uploadFilesDialogAreaDrop"
             @dragover.prevent="
@@ -349,7 +349,7 @@
             "
             :class="uploadFilesDialogAreaDragover ? 'bg-blue' : ''"
           >
-            <q-scroll-area class="row" style="height: 290px">
+            <q-scroll-area class="row" style="height: 285px">
               <div
                 v-if="uploadFilesDialogUploadMap.length == 0"
                 class="text-center text-h6 q-mt-md"
@@ -723,7 +723,7 @@
               v-model="filterSearch"
               input-class="text-left"
               label="Search"
-              class="text-body1"
+              class="text-body1 col q-ml-md"
               outlined
               dense
             >
@@ -749,11 +749,11 @@
             </q-input>
 
             <q-space />
-            <div style="width: 130px" class="gt-xs">
+            <div style="width: 130px" class="q-ml-md">
               <q-fab
                 unelevated
-                icon="more_horiz"
-                active-icon="more_vert"
+                icon="check_box"
+                active-icon="expand_more"
                 direction="down"
                 color="cyan-14"
                 square
@@ -796,41 +796,12 @@
           <!-- toolbar on small screens -->
           <div class="row lt-sm full-width">
             <q-space />
-            <q-input
-              :color="darkmode ? 'white' : 'black'"
-              v-model="filterSearch"
-              input-class="text-left"
-              label="Search"
-              class="text-body1 col q-ml-md"
-              outlined
-              dense
-            >
-              <template v-slot:append>
-                <q-icon v-if="filterSearch === ''" name="search" />
-                <q-icon
-                  v-else
-                  name="clear"
-                  class="cursor-pointer"
-                  @click="filterSearch = ''"
-                />
-              </template>
-              <template v-slot:after>
-                <q-btn
-                  unelevated
-                  dense
-                  icon="search add"
-                  class="bg-primary text-white"
-                  @click="filterDialog = !filterDialog"
-                  style="height: 40px; width: 65px"
-                />
-              </template>
-            </q-input>
-            <q-space />
-            <div style="width: 100px" class="q-ml-md col-2">
+            <div class="q-ml-md q-mr-sm" style="width: 80px">
               <q-fab
                 unelevated
-                icon="more_horiz check_box"
-                active-icon="more_vert check_box"
+                icon="check_box"
+                :label="selectedItems.length"
+                active-icon=" expand_more"
                 direction="down"
                 color="cyan-14"
                 square
@@ -863,6 +834,35 @@
                 />
               </q-fab>
             </div>
+            <q-input
+              :color="darkmode ? 'white' : 'black'"
+              v-model="filterSearch"
+              input-class="text-left"
+              label="Search"
+              class="text-body1 col q-ml-md"
+              outlined
+              dense
+            >
+              <template v-slot:append>
+                <q-icon v-if="filterSearch === ''" name="search" />
+                <q-icon
+                  v-else
+                  name="clear"
+                  class="cursor-pointer"
+                  @click="filterSearch = ''"
+                />
+              </template>
+              <template v-slot:after>
+                <q-btn
+                  unelevated
+                  dense
+                  icon="search add"
+                  class="bg-primary text-white"
+                  @click="filterDialog = !filterDialog"
+                  style="height: 40px; width: 65px"
+                />
+              </template>
+            </q-input>
           </div>
         </q-toolbar>
 
@@ -1274,8 +1274,8 @@
 
       <q-page-sticky
         class="lt-sm"
-        position="bottom-left"
-        :offset="[80, 15]"
+        position="bottom"
+        :offset="[0, 15]"
         style="z-index: 101"
       >
         <q-fab

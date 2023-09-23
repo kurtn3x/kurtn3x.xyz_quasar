@@ -273,7 +273,7 @@
         </q-item>
         <q-separator color="layout-text" />
       </q-list>
-      <q-list padding class="q-pa-none column">
+      <q-list padding class="q-pa-none">
         <q-fab
           unelevated
           icon="palette"
