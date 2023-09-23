@@ -2,10 +2,10 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="initialFetch && initialFetchSuccessful">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="initialFetch && !initialFetchSuccessful">
     <!-- delteSelectedItemsDialog (Confirmation) -->
     <q-dialog v-model="deleteItemsDialog">
       <q-card bordered style="width: 350px">
@@ -92,7 +92,7 @@
               outlined
               label="Search"
               class="text-primary text-body1 col"
-              style="height: 50px"
+              style="height: 50px; max-width: 300px"
             />
             <q-btn
               icon="expand_more"
@@ -1878,7 +1878,7 @@ export default defineComponent({
             (
               a: FileItemType | FileFolderType,
               b: FileItemType | FileFolderType
-            ) => a.created.localeCompare(b.created)
+            ) => a.created_iso.localeCompare(b.created_iso)
           )
           .reverse();
       } else if (type_val == 4) {
@@ -1888,13 +1888,26 @@ export default defineComponent({
             (
               a: FileItemType | FileFolderType,
               b: FileItemType | FileFolderType
-            ) => a.modified.localeCompare(b.modified)
+            ) => a.modified_iso.localeCompare(b.modified_iso)
           )
           .reverse();
       } else if (type_val == 5) {
         // size
+        this.rawFolderContent.children.sort(
+          (
+            a: FileItemType | FileFolderType,
+            b: FileItemType | FileFolderType
+          ) => (b as FileItemType).size_bytes - (a as FileItemType).size_bytes
+        );
       } else if (type_val == 6) {
-        // shared
+        // this.rawFolderContent.children
+        //   .sort(
+        //     (
+        //       a: FileItemType | FileFolderType,
+        //       b: FileItemType | FileFolderType
+        //     ) => a.modified.localeCompare(b.shared)
+        //   )
+        //   .reverse();
       }
     },
 

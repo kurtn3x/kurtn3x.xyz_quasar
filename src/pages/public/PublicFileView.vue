@@ -2,7 +2,9 @@
   <div v-if="loading" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="!allowed && !loading">Not allowed.</div>
+  <div v-if="!allowed && !loading">
+    <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
+  </div>
   <div v-if="allowed && !loading">
     <div class="text-primary text-h4 text-center q-mt-lg">
       File: {{ fileData.name }}
@@ -10,7 +12,12 @@
     <q-separator class="q-ma-md" size="3px" />
     <div class="row justify-center">
       <div>
-        <q-card bordered class="rounded-borders q-ma-sm">
+        <q-card
+          bordered
+          flat
+          class="rounded-borders q-ma-sm bg-transparent"
+          style="min-width: 350px"
+        >
           <q-expansion-item
             icon="info"
             label="File Info"
@@ -67,6 +74,7 @@
         flat
         @click="openInNewTab(fileData.id)"
         size="xl"
+        style="min-width: 350px"
       />
     </div>
     <div class="text-h6 text-center q-mt-md">
@@ -75,26 +83,26 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import { defineComponent, ref } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
+import { FileItemExtendedType } from 'src/types/index';
+import type { Ref } from 'vue';
 
-const filedata = {
-  id: '066b8d5e-51ad-460d-9641-e963b579dfc3',
-  name: 'changelog.txt',
-  modified: '2023-07-11, 17:11:21',
-  created: '2023-07-08, 17:55:04',
-  shared_allow_all_read: false,
-  shared_allow_all_write: false,
-  shared: true,
-  size: '12.0KB',
+const filedata: FileItemExtendedType = {
+  id: 'ca9c1719-82ff-4bb6-90f0-2e35251bcac6',
+  name: '1_1_1.pdf',
+  modified: '2023-09-14, 06:37:04',
+  created: '2023-08-16, 10:42:01',
+  size: '137.8KB',
   permissions: 'owner',
   owner: 'kurt',
   ownerid: 'abeb69f0-a469-4511-bc88-fd3d8635c194',
-  parentid: 'fbf346c8-00b4-40e7-9482-d936d012cdb7',
-  path: 'Users/kurt/Home/changelog.txt',
+  path: 'Home',
+  type: 'file',
+  mime: 'application/pdf',
 };
 
 export default defineComponent({
@@ -108,7 +116,7 @@ export default defineComponent({
       text_animation: ref(true),
       loading: ref(true),
       allowed: ref(false),
-      fileData: ref(filedata),
+      fileData: ref(filedata) as Ref<FileItemExtendedType>,
       // fileData: ref({
       //   name: '',
       //   owner: '',
@@ -130,20 +138,17 @@ export default defineComponent({
         return false;
       }
     },
-    readableSize() {
-      return this.humanFileSize(this.fileData.size);
-    },
   },
   created() {
     this.getInitialFile();
   },
   methods: {
-    openInNewTab(id) {
+    openInNewTab(id: string) {
       window
-        .open('https://api.kurtn3x.xyz/files/download/' + id, '_blank')
-        .focus();
+        ?.open('https://api.kurtn3x.xyz/files/content/file/' + id, '_blank')
+        ?.focus();
     },
-    notify(type, message) {
+    notify(type: string, message: string) {
       this.q.notify({
         type: type,
         message: message,

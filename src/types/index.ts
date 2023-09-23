@@ -42,6 +42,20 @@ export interface FileItemType {
   selected?: boolean;
 }
 
+export interface FileItemExtendedType {
+  id: string;
+  name: string;
+  created: string;
+  modified: string;
+  path: string;
+  type: string;
+  size: string;
+  mime: string;
+  permissions: string;
+  owner: string;
+  ownerid: string;
+}
+
 export interface FileFolderType {
   id: string;
   name: string;
