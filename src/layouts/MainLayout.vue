@@ -2,7 +2,7 @@
   <q-layout view="hHh LpR fff">
     <!-- HEADER -->
     <q-header reveal height-hint="98" class="bg-layout-bg text-layout-text">
-      <q-toolbar class="q-pa-none" v-if="localStore.isAuthenticated">
+      <q-toolbar class="q-pa-none" v-show="!localStore.isAuthenticated">
         <q-btn
           flat
           stretch
@@ -105,70 +105,83 @@
         </q-btn>
       </q-toolbar>
 
-      <q-toolbar class="q-pa-none q-ma-none" v-if="!localStore.isAuthenticated">
+      <q-toolbar
+        class="q-pa-none q-ma-none"
+        v-show="!localStore.isAuthenticated"
+      >
         <q-btn unelevated stretch icon="home" size="md" to="/" />
-        <q-fab
-          unelevated
+        <q-btn
           icon="palette"
-          color="layout-bg"
-          text-color="layout-text"
-          active-icon="expand_more"
-          direction="down"
-          padding="none"
-          square
-          style="height: 50px; width: 56px"
-          class="gt-xs"
+          class="bg-layout-bg text-layout-text gt-xs"
+          unelevated
+          stretch
         >
-          <q-fab-action
-            style="background: #3b4fb5 !important"
-            color="layout-text"
-            outline
-            square
-            @click="setTheme('default')"
-          />
-          <q-fab-action
-            style="background: #ee4d2e !important"
-            outline
-            square
-            color="layout-text"
-            @click="setTheme('cool-orange')"
-          />
-          <q-fab-action
-            style="background: #1db992 !important"
-            outline
-            square
-            color="layout-text"
-            @click="setTheme('nice-green')"
-          />
-          <q-fab-action
-            style="background: #bfbc06 !important"
-            outline
-            square
-            color="layout-text"
-            @click="setTheme('olive-green')"
-          />
-          <q-fab-action
-            style="background: #008fff !important"
-            outline
-            square
-            color="layout-text"
-            @click="setTheme('epic-blue')"
-          />
-          <q-fab-action
-            style="background: #1d1d1d !important"
-            outline
-            square
-            color="layout-text"
-            @click="setTheme('dark')"
-          />
-          <q-fab-action
-            color="layout-text"
-            style="background: #f8f0e3 !important"
-            outline
-            square
-            @click="setTheme('light')"
-          />
-        </q-fab>
+          <q-menu
+            anchor="bottom middle"
+            self="top middle"
+            class="bg-transparent no-shadow"
+            auto-close
+          >
+            <div class="column" style="height: 400px; width: 35px">
+              <q-btn
+                style="background: #3b4fb5 !important"
+                color="layout-text"
+                outline
+                unelevated
+                @click="setTheme('default')"
+                class="q-mt-sm"
+              />
+              <q-btn
+                style="background: #ee4d2e !important"
+                square
+                outline
+                color="layout-text"
+                @click="setTheme('cool-orange')"
+                class="q-mt-sm"
+              />
+              <q-btn
+                style="background: #1db992 !important"
+                square
+                outline
+                color="layout-text"
+                @click.="setTheme('nice-green')"
+                class="q-mt-sm"
+              />
+              <q-btn
+                style="background: #bfbc06 !important"
+                outline
+                square
+                color="layout-text"
+                @click="setTheme('olive-green')"
+                class="q-mt-sm"
+              />
+              <q-btn
+                style="background: #008fff !important"
+                outline
+                square
+                color="layout-text"
+                @click="setTheme('epic-blue')"
+                class="q-mt-sm"
+              />
+              <q-btn
+                style="background: #1d1d1d !important"
+                outline
+                square
+                color="layout-text"
+                @click="setTheme('dark')"
+                class="q-mt-sm"
+              />
+              <q-btn
+                color="layout-text"
+                style="background: #f8f0e3 !important"
+                outline
+                square
+                @click="setTheme('light')"
+                class="q-mt-sm"
+              />
+            </div>
+          </q-menu>
+        </q-btn>
 
         <q-btn
           unelevated
@@ -176,7 +189,7 @@
           :icon="darkmodeToogle ? 'light_mode' : 'dark_mode'"
           size="md"
           class="bg-layout-bg text-layout-text gt-xs"
-          style="height: 50px; width: 56px"
+          stretch
         />
 
         <q-space />
@@ -212,7 +225,7 @@
       side="left"
       :mini="miniState"
       class="bg-layout-bg text-layout-text column justify-between"
-      v-if="localStore.isAuthenticated"
+      v-show="!localStore.isAuthenticated"
     >
       <q-list padding class="q-pa-none">
         <q-item
@@ -274,68 +287,6 @@
         <q-separator color="layout-text" />
       </q-list>
       <q-list padding class="q-pa-none">
-        <q-fab
-          unelevated
-          icon="palette"
-          color="layout-bg"
-          text-color="layout-text"
-          active-icon="expand_less"
-          direction="up"
-          padding="none"
-          square
-          style="width: 57px; height: 40px"
-        >
-          <q-fab-action
-            style="background: #3b4fb5 !important"
-            color="layout-text"
-            outline
-            square
-            @click="setTheme('default')"
-          />
-          <q-fab-action
-            style="background: #ee4d2e !important"
-            outline
-            square
-            color="layout-text"
-            @click="setTheme('cool-orange')"
-          />
-          <q-fab-action
-            style="background: #1db992 !important"
-            outline
-            square
-            color="layout-text"
-            @click="setTheme('nice-green')"
-          />
-          <q-fab-action
-            style="background: #bfbc06 !important"
-            outline
-            square
-            color="layout-text"
-            @click="setTheme('olive-green')"
-          />
-          <q-fab-action
-            style="background: #008fff !important"
-            outline
-            square
-            color="layout-text"
-            @click="setTheme('epic-blue')"
-          />
-          <q-fab-action
-            style="background: #1d1d1d !important"
-            outline
-            square
-            color="layout-text"
-            @click="setTheme('dark')"
-          />
-          <q-fab-action
-            color="layout-text"
-            style="background: #f8f0e3 !important"
-            outline
-            square
-            @click="setTheme('light')"
-          />
-        </q-fab>
-
         <q-btn
           unelevated
           @click="darkmodeChanged"
@@ -344,6 +295,77 @@
           class="bg-layout-bg text-layout-text q-mt-sm"
           style="width: 57px; height: 40px"
         />
+        <q-btn
+          icon="palette"
+          class="bg-layout-bg text-layout-text gt-xs"
+          unelevated
+          style="width: 57px; height: 40px"
+        >
+          <q-menu
+            anchor="center right"
+            self="center left"
+            class="bg-transparent no-shadow"
+          >
+            <div class="row" style="width: 400px">
+              <q-btn
+                style="background: #3b4fb5 !important"
+                color="layout-text"
+                outline
+                unelevated
+                @click="setTheme('default')"
+                class="q-ml-sm"
+              />
+              <q-btn
+                style="background: #ee4d2e !important"
+                square
+                outline
+                color="layout-text"
+                @click="setTheme('cool-orange')"
+                class="q-ml-sm"
+              />
+              <q-btn
+                style="background: #1db992 !important"
+                square
+                outline
+                color="layout-text"
+                @click.="setTheme('nice-green')"
+                class="q-ml-sm"
+              />
+              <q-btn
+                style="background: #bfbc06 !important"
+                outline
+                square
+                color="layout-text"
+                @click="setTheme('olive-green')"
+                class="q-ml-sm"
+              />
+              <q-btn
+                style="background: #008fff !important"
+                outline
+                square
+                color="layout-text"
+                @click="setTheme('epic-blue')"
+                class="q-ml-sm"
+              />
+              <q-btn
+                style="background: #1d1d1d !important"
+                outline
+                square
+                color="layout-text"
+                @click="setTheme('dark')"
+                class="q-ml-sm"
+              />
+              <q-btn
+                color="layout-text"
+                style="background: #f8f0e3 !important"
+                outline
+                square
+                @click="setTheme('light')"
+                class="q-ml-sm"
+              />
+            </div>
+          </q-menu>
+        </q-btn>
       </q-list>
     </q-drawer>
 
@@ -411,6 +433,9 @@ export default {
     headerInfoStore() {
       return this.localStore.headerInfo;
     },
+    screenWidth() {
+      return this.q.screen.width;
+    },
   },
 
   watch: {
@@ -420,6 +445,16 @@ export default {
 
     darkmode(newVal) {
       this.darkmodeToogle = newVal;
+    },
+
+    screenWidth(newVal) {
+      if (newVal < 1024) {
+        this.navDrawer = false;
+        this.miniState = false;
+      } else {
+        this.navDrawer = true;
+        this.miniState = true;
+      }
     },
   },
 

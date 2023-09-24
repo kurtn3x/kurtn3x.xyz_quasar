@@ -184,7 +184,7 @@ export interface VPNSetupConnectionType {
 export interface VPNClientInfoType {
   name: string;
   addresses: string;
-  public_key: string;
+  client_publickey: string;
   id: string;
   created: string;
 }

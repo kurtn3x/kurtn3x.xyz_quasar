@@ -320,7 +320,7 @@
                   dark
                   class="q-ml-md"
                   mask="AAAAA"
-                  style="max-width: 100px"
+                  style="max-width: 130px"
                 />
               </q-item>
               <q-btn

@@ -85,10 +85,11 @@
           <q-tab name="android" :icon="mdiAndroid" label="Mobile" />
           <q-tab name="info" icon="info" label="Info" />
         </q-tabs>
-
+        <q-separator size="2px" color="primary" />
         <q-tab-panels
           v-model="setupVPNDialogTabs"
           animated
+          class="bg-transparent"
           style="height: 270px"
         >
           <q-tab-panel name="windows">
@@ -357,7 +358,7 @@
           <div class="row q-mt-md">
             <div class="col text-weight-bold">Public Key</div>
             <div>
-              {{ vpnClientInfo.public_key }}
+              {{ vpnClientInfo.client_publickey }}
             </div>
           </div>
         </div>

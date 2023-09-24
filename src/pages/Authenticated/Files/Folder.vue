@@ -567,7 +567,7 @@
             <q-item
               clickable
               flat
-              class="rounded-borders text-primary text-weight-bold text-h5"
+              class="rounded-borders text-primary text-weight-bold text-h5 q-ml-sm"
               @click="getFolderNavbar({ name: '', id: '' }, 0)"
               @v-drag-enter="
                (e: any, x: any, y: any) => y.target.classList.add('bg-indigo-11')
@@ -648,7 +648,7 @@
                 "
                 @v-drag-drop="changeParentDragNDrop($event, item.id)"
                 v-droppable
-                style="display: inline-block; max-width: 350px"
+                style="display: inline-block"
               >
                 <a class="no-pointer-events ellipsis">
                   {{ item.name }}
@@ -726,6 +726,7 @@
               class="text-body1 col q-ml-md"
               outlined
               dense
+              style="max-width: 400px"
             >
               <template v-slot:append>
                 <q-icon v-if="filterSearch === ''" name="search" />
@@ -749,7 +750,7 @@
             </q-input>
 
             <q-space />
-            <div style="width: 130px" class="q-ml-md">
+            <div style="width: 130px" class="q-ml-md q-mr-sm">
               <q-fab
                 unelevated
                 icon="check_box"
@@ -796,44 +797,6 @@
           <!-- toolbar on small screens -->
           <div class="row lt-sm full-width">
             <q-space />
-            <div class="q-ml-md q-mr-sm" style="width: 80px">
-              <q-fab
-                unelevated
-                icon="check_box"
-                :label="selectedItems.length"
-                active-icon=" expand_more"
-                direction="down"
-                color="cyan-14"
-                square
-                v-if="selectedItems.length > 0"
-                padding="none"
-                style="height: 40px; width: 80px; z-index: 1"
-              >
-                <q-fab-action
-                  class="text-body1 bg-blue"
-                  text-color="white"
-                  outline
-                  label="Move"
-                  icon="trending_flat"
-                  @click="
-                    moveSelectedItemsDialog = true;
-                    fetchAllAvailableFolders();
-                  "
-                  square
-                  style="width: 130px"
-                />
-                <q-fab-action
-                  class="text-body1 bg-red"
-                  text-color="white"
-                  outline
-                  icon="close"
-                  label="Delete"
-                  @click="deleteItemsDialog = true"
-                  square
-                  style="width: 130px"
-                />
-              </q-fab>
-            </div>
             <q-input
               :color="darkmode ? 'white' : 'black'"
               v-model="filterSearch"
@@ -863,8 +826,47 @@
                 />
               </template>
             </q-input>
+            <div class="q-ml-md q-mr-sm" style="width: 80px">
+              <q-fab
+                unelevated
+                icon="check_box"
+                :label="selectedItems.length"
+                active-icon=" expand_more"
+                direction="down"
+                color="cyan-14"
+                square
+                v-if="selectedItems.length > 0"
+                padding="none"
+                style="height: 40px; width: 80px; z-index: 1"
+              >
+                <q-fab-action
+                  class="text-body1 bg-blue"
+                  text-color="white"
+                  outline
+                  label="Move"
+                  icon="trending_flat"
+                  @click="
+                    moveSelectedItemsDialog = true;
+                    fetchAllAvailableFolders();
+                  "
+                  square
+                  style="width: 110px"
+                />
+                <q-fab-action
+                  class="text-body1 bg-red"
+                  text-color="white"
+                  outline
+                  icon="close"
+                  label="Delete"
+                  @click="deleteItemsDialog = true"
+                  square
+                  style="width: 110px"
+                />
+              </q-fab>
+            </div>
           </div>
         </q-toolbar>
+        <div class="gt-xs full-width row">test</div>
 
         <q-separator size="2px" color="primary" class="q-mt-xs" />
       </div>
@@ -912,10 +914,7 @@
           "
         >
           <div v-if="newObjShow">
-            <q-item
-              style="background-color: rgba(172, 255, 47, 0.235)"
-              class="full-width rounded-borders"
-            >
+            <q-item class="full-width rounded-borders bg-green-9">
               <q-item-section avatar top class="no-pointer-events">
                 <q-avatar
                   :icon="newObj.type == 'folder' ? 'folder' : 'file_present'"
@@ -928,9 +927,10 @@
 
               <q-item-section>
                 <q-input
+                  dark
                   outlined
                   dense
-                  :color="darkmode ? 'white' : 'black'"
+                  color="white"
                   v-model="newObj.name"
                   :label="'New ' + newObj.type + ' Name'"
                   class="text-body1 q-ml-md"
@@ -1095,7 +1095,7 @@
                       style="height: 40px"
                     />
                   </q-item-section>
-                  <q-item-section style="pointer-events: none">
+                  <q-item-section style="pointer-events: none" class="row">
                     <q-item-label
                       class="item_text ellipsis"
                       :style="itemTextWidth"
@@ -1103,11 +1103,13 @@
                       <q-icon name="share" v-if="item.shared" />
                       {{ item.name }}</q-item-label
                     >
-                    <q-item-label
-                      class="text-caption"
-                      style="pointer-events: none"
-                      >{{ item.modified }}</q-item-label
-                    >
+                  </q-item-section>
+                  <q-item-section />
+                  <q-item-section
+                    class="text-caption"
+                    style="pointer-events: none"
+                  >
+                    {{ item.modified }}
                   </q-item-section>
 
                   <q-item-section side>
@@ -1216,12 +1218,15 @@
                       <q-icon name="share" v-if="item.shared" />
                       {{ item.name }}</q-item-label
                     >
-                    <q-item-label
-                      class="text-caption"
-                      style="pointer-events: none"
-                      ><a class="q-mr-md">{{ item.modified }}</a>
-                      <a class="q-ml-md"> {{ (item as FileItemType).size }}</a>
-                    </q-item-label>
+                  </q-item-section>
+                  <q-item-section
+                    class="text-caption gt-xs row"
+                    style="pointer-events: none"
+                  >
+                    <div class="row">
+                      <a>{{ (item as FileItemType).size }}</a>
+                      <a class="q-ml-sm"> {{ item.modified }} </a>
+                    </div>
                   </q-item-section>
 
                   <q-item-section side>
@@ -1741,6 +1746,7 @@ export default defineComponent({
         // if the width of the item is larger than the actual place for it
         // always show at least 1 item even if it's too large
         if (l > t && this.navbarIndex.navbar_items.length > 1) {
+          console.log('i');
           // → handle overflowing navbar
 
           // check if the last element of the navbar isn't the last moved item
@@ -1790,7 +1796,7 @@ export default defineComponent({
     },
 
     scrollAreaHeight() {
-      var height = this.q.screen.height - 190;
+      var height = this.q.screen.height - 230;
       return { height: height + 'px' };
     },
 
@@ -1800,28 +1806,12 @@ export default defineComponent({
     },
 
     itemTextWidth() {
-      var width = this.q.screen.width - 250;
+      var width = this.q.screen.width - 500;
       return { '--max-width': width + 'px' };
     },
   },
 
   methods: {
-    genRandomString() {
-      var r = Math.floor(Math.random() * (25 - 24 + 24) + 24);
-      let result = '';
-      const characters =
-        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      const charactersLength = characters.length;
-      let counter = 0;
-      while (counter < r) {
-        result += characters.charAt(
-          Math.floor(Math.random() * charactersLength)
-        );
-        counter += 1;
-      }
-      return result;
-    },
-
     // get Home folder content on initial page load
     getHomeFolder() {
       this.loading = true;
