@@ -866,7 +866,28 @@
             </div>
           </div>
         </q-toolbar>
-        <div class="gt-xs full-width row">test</div>
+        <q-item clickable class="rounded-borders full-width">
+          <q-item-section avatar>
+            <q-checkbox color="green" />
+          </q-item-section>
+          <q-item-section avatar top style="pointer-events: none">
+            <q-avatar
+              color="transparent"
+              text-color="primary"
+              size="4.5em"
+              style="height: 40px"
+            />
+          </q-item-section>
+          <q-item-section style="pointer-events: none" class="row">
+          </q-item-section>
+          <q-item-section style="pointer-events: none"> </q-item-section>
+          <q-item-section style="pointer-events: none">size</q-item-section>
+          <q-item-section class="text-caption" style="pointer-events: none">
+            mod
+          </q-item-section>
+
+          <q-item-section side> </q-item-section>
+        </q-item>
 
         <q-separator size="2px" color="primary" class="q-mt-xs" />
       </div>
@@ -1104,7 +1125,10 @@
                       {{ item.name }}</q-item-label
                     >
                   </q-item-section>
-                  <q-item-section />
+                  <q-item-section style="pointer-events: none">
+                  </q-item-section>
+                  <q-item-section style="pointer-events: none"></q-item-section>
+                  <q-item-section style="pointer-events: none"></q-item-section>
                   <q-item-section
                     class="text-caption"
                     style="pointer-events: none"
@@ -1210,6 +1234,7 @@
                       style="height: 40px"
                     />
                   </q-item-section>
+
                   <q-item-section>
                     <q-item-label
                       class="item_text ellipsis"
@@ -1219,14 +1244,19 @@
                       {{ item.name }}</q-item-label
                     >
                   </q-item-section>
+                  <q-item-section style="pointer-events: none"></q-item-section>
+                  <q-item-section style="pointer-events: none"></q-item-section>
                   <q-item-section
-                    class="text-caption gt-xs row"
+                    class="text-caption gt-xs lt-md"
                     style="pointer-events: none"
                   >
-                    <div class="row">
-                      <a>{{ (item as FileItemType).size }}</a>
-                      <a class="q-ml-sm"> {{ item.modified }} </a>
-                    </div>
+                    {{ (item as FileItemType).size }}
+                  </q-item-section>
+                  <q-item-section
+                    class="text-caption gt-xs"
+                    style="pointer-events: none"
+                  >
+                    {{ item.modified }}
                   </q-item-section>
 
                   <q-item-section side>
@@ -1806,7 +1836,7 @@ export default defineComponent({
     },
 
     itemTextWidth() {
-      var width = this.q.screen.width - 500;
+      var width = this.q.screen.width / 3;
       return { '--max-width': width + 'px' };
     },
   },
