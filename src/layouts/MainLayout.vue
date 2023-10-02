@@ -2,7 +2,7 @@
   <q-layout view="hHh LpR fff">
     <!-- HEADER -->
     <q-header reveal height-hint="98" class="bg-layout-bg text-layout-text">
-      <q-toolbar class="q-pa-none" v-show="!localStore.isAuthenticated">
+      <q-toolbar class="q-pa-none" v-show="localStore.isAuthenticated">
         <q-btn
           flat
           stretch
@@ -225,7 +225,7 @@
       side="left"
       :mini="miniState"
       class="bg-layout-bg text-layout-text column justify-between"
-      v-show="!localStore.isAuthenticated"
+      v-show="localStore.isAuthenticated"
     >
       <q-list padding class="q-pa-none">
         <q-item

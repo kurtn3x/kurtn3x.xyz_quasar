@@ -2,10 +2,10 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="initialFetch && !initialFetchSuccessful">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="initialFetch && initialFetchSuccessful">
     <!-- delteSelectedItemsDialog (Confirmation) -->
     <q-dialog v-model="deleteItemsDialog">
       <q-card bordered style="width: 350px">
@@ -548,7 +548,7 @@
     </q-dialog>
 
     <q-page class="column q-mr-xs q-ml-xs" :style-fn="styleFn">
-      <div class="q-mt-md" @dragover.stop.prevent="" @drop.prevent="">
+      <div class="q-mt-sm" @dragover.stop.prevent="" @drop.prevent="">
         <q-toolbar class="q-pa-none">
           <!-- navbar toolbar -->
 
@@ -866,28 +866,55 @@
             </div>
           </div>
         </q-toolbar>
-        <q-item clickable class="rounded-borders full-width">
+        <div class="row gt-xs">
+          <q-item-section avatar class="q-ml-lg"> </q-item-section>
           <q-item-section avatar>
-            <q-checkbox color="green" />
-          </q-item-section>
-          <q-item-section avatar top style="pointer-events: none">
-            <q-avatar
-              color="transparent"
-              text-color="primary"
-              size="4.5em"
-              style="height: 40px"
+            <q-btn
+              align="left"
+              label="Type"
+              size="sm"
+              dense
+              flat
+              style="width: 50px"
+              class="q-ml-xs"
             />
           </q-item-section>
-          <q-item-section style="pointer-events: none" class="row">
+
+          <q-item-section :style="'min-width:' + itemTextWidth + 'px;'">
+            <q-btn
+              align="left"
+              label="Name"
+              size="sm"
+              dense
+              flat
+              :style="'width:' + itemTextWidth + 'px;'"
+            />
           </q-item-section>
-          <q-item-section style="pointer-events: none"> </q-item-section>
-          <q-item-section style="pointer-events: none">size</q-item-section>
-          <q-item-section class="text-caption" style="pointer-events: none">
-            mod
+          <q-item-section>
+            <q-btn
+              align="left"
+              label="Size"
+              size="sm"
+              dense
+              flat
+              class="full-width"
+            />
+          </q-item-section>
+          <q-item-section>
+            <q-btn
+              align="left"
+              label="Modified"
+              size="sm"
+              dense
+              flat
+              class="full-width"
+            />
           </q-item-section>
 
-          <q-item-section side> </q-item-section>
-        </q-item>
+          <q-item-section side class="q-mr-lg">
+            <div style="width: 50px"></div>
+          </q-item-section>
+        </div>
 
         <q-separator size="2px" color="primary" class="q-mt-xs" />
       </div>
@@ -935,7 +962,7 @@
           "
         >
           <div v-if="newObjShow">
-            <q-item class="full-width rounded-borders bg-green-9">
+            <q-item class="full-width rounded-borders bg-light-green-6">
               <q-item-section avatar top class="no-pointer-events">
                 <q-avatar
                   :icon="newObj.type == 'folder' ? 'folder' : 'file_present'"
@@ -1116,21 +1143,27 @@
                       style="height: 40px"
                     />
                   </q-item-section>
-                  <q-item-section style="pointer-events: none" class="row">
+                  <q-item-section
+                    :style="'min-width:' + itemTextWidth + 'px;'"
+                    style="pointer-events: none"
+                    class="row"
+                  >
                     <q-item-label
                       class="item_text ellipsis"
-                      :style="itemTextWidth"
+                      :style="'--max-width: ' + itemTextWidth + 'px;'"
                     >
                       <q-icon name="share" v-if="item.shared" />
                       {{ item.name }}</q-item-label
                     >
                   </q-item-section>
-                  <q-item-section style="pointer-events: none">
-                  </q-item-section>
-                  <q-item-section style="pointer-events: none"></q-item-section>
-                  <q-item-section style="pointer-events: none"></q-item-section>
+
                   <q-item-section
-                    class="text-caption"
+                    class="text-caption gt-xs"
+                    style="pointer-events: none"
+                  ></q-item-section>
+
+                  <q-item-section
+                    class="text-caption gt-xs"
                     style="pointer-events: none"
                   >
                     {{ item.modified }}
@@ -1235,19 +1268,17 @@
                     />
                   </q-item-section>
 
-                  <q-item-section>
+                  <q-item-section :style="'min-width:' + itemTextWidth + 'px;'">
                     <q-item-label
                       class="item_text ellipsis"
-                      :style="itemTextWidth"
+                      :style="'width: ' + itemTextWidth + 'px;'"
                     >
                       <q-icon name="share" v-if="item.shared" />
                       {{ item.name }}</q-item-label
                     >
                   </q-item-section>
-                  <q-item-section style="pointer-events: none"></q-item-section>
-                  <q-item-section style="pointer-events: none"></q-item-section>
                   <q-item-section
-                    class="text-caption gt-xs lt-md"
+                    class="text-caption gt-xs"
                     style="pointer-events: none"
                   >
                     {{ (item as FileItemType).size }}
@@ -1837,7 +1868,7 @@ export default defineComponent({
 
     itemTextWidth() {
       var width = this.q.screen.width / 3;
-      return { '--max-width': width + 'px' };
+      return width;
     },
   },
 
