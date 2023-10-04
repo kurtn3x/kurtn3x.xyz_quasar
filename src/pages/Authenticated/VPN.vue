@@ -2,10 +2,10 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="initialFetch && initialFetchSuccessful">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="initialFetch && !initialFetchSuccessful">
     <q-dialog v-model="setupVPNDialog">
       <q-card bordered style="max-width: 400px">
         <q-toolbar class="bg-layout-bg text-layout-text text-center">
@@ -344,21 +344,27 @@
         </q-toolbar>
         <div class="q-ma-md">
           <div class="row q-mt-md">
-            <div class="col text-weight-bold">Name</div>
-            <div class="col">{{ vpnClientInfo.name }}</div>
+            <div class="col-3 text-weight-bold">Name</div>
+            <div class="col-7">{{ vpnClientInfo.name }}</div>
           </div>
           <div class="row q-mt-md">
-            <div class="col text-weight-bold">Addresses</div>
-            <div class="col">{{ vpnClientInfo.addresses }}</div>
+            <div class="col-3 text-weight-bold">Addresses</div>
+            <div class="col-7">{{ vpnClientInfo.addresses }}</div>
           </div>
           <div class="row q-mt-md">
-            <div class="col text-weight-bold">Created</div>
-            <div class="col">{{ vpnClientInfo.created }}</div>
+            <div class="col-3 text-weight-bold">Created</div>
+            <div class="col-7">{{ vpnClientInfo.created }}</div>
           </div>
           <div class="row q-mt-md">
-            <div class="col text-weight-bold">Public Key</div>
-            <div>
+            <div class="col-3 text-weight-bold">Public Key</div>
+            <div class="col-7 ellipsis">
               {{ vpnClientInfo.client_publickey }}
+              <q-tooltip
+                :class="darkmode ? 'bg-dark text-white' : 'bg-white text-dark'"
+                class="text-caption"
+              >
+                {{ vpnClientInfo.client_publickey }}
+              </q-tooltip>
             </div>
           </div>
         </div>
@@ -475,7 +481,7 @@ export default defineComponent({
       setupVPNDialogSuccessful: ref(false),
       setupVPNDialogTabs: ref('windows'),
 
-      vpnConnections: ref({}) as Ref<VPNClientInfoType[]>,
+      vpnConnections: ref([]) as Ref<VPNClientInfoType[]>,
       vpnSetupInput: ref({ publicKey: '', name: '' }) as Ref<VPNSetupInputType>,
       vpnSetupConnection: ref() as Ref<VPNSetupConnectionType>,
       vpnClientInfo: ref({}) as Ref<VPNClientInfoType>,

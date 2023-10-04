@@ -68,7 +68,7 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-    <q-card bordered flat class="q-ma-sm bg-transparent">
+    <q-card bordered flat class="q-ma-xs bg-transparent">
       <q-tabs
         inline-label
         v-model="tab"
