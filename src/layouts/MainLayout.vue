@@ -2,23 +2,17 @@
   <q-layout view="hHh LpR fff">
     <!-- HEADER -->
     <q-header reveal height-hint="98" class="bg-layout-bg text-layout-text">
-      <q-toolbar class="q-pa-none" v-if="!localStore.isAuthenticated">
+      <q-toolbar class="q-pa-none" v-if="localStore.isAuthenticated">
         <q-btn
           flat
           stretch
           icon="menu"
-          class="text-body1 text-weight-bold lt-md"
+          class="text-body1 text-weight-bold"
           size="md"
-          @click="navDrawer = !navDrawer"
-          style="width: 57px"
-        />
-        <q-btn
-          flat
-          stretch
-          icon="menu"
-          class="text-body1 text-weight-bold gt-sm"
-          size="md"
-          @click="miniState = !miniState"
+          @click="
+            miniState = !miniState;
+            navDrawer = true;
+          "
           style="width: 57px"
         />
         <q-space />
@@ -29,123 +23,112 @@
           </q-avatar>
           <a class="text-body2 q-mr-sm">{{ headerInfo.username }}</a>
           <q-icon name="arrow_drop_down" size="sm" />
-          <q-menu class="no-shadow q-mr-sm">
-            <q-card class="q-pa-sm" flat bordered>
-              <div class="row no-wrap">
-                <div class="column justify-center" style="width: 200px">
-                  <q-btn
-                    outline
-                    to="/dashboard/settings/profile"
-                    icon="person"
-                    label="Profile Settings"
-                    style="font-size: 13px"
-                    class="full-width q-mt-sm"
-                    align="left"
-                  />
+          <q-menu class="q-mr-xs">
+            <q-card class="q-pa-sm" bordered style="max-width: 280px">
+              <div class="no-wrap">
+                <q-btn
+                  push
+                  class="full-width q-mt-xs bg-primary text-layout-text"
+                  :to="myprofileroute"
+                  align="left"
+                  style="font-size: 13px"
+                >
+                  <q-avatar rounded size="20px">
+                    <img :src="headerInfo.avatar" />
+                  </q-avatar>
+                  <div class="q-ml-md ellipsis">My Profile</div>
+                </q-btn>
 
-                  <q-btn
-                    outline
-                    to="/dashboard/settings/account"
-                    icon="admin_panel_settings"
-                    label="Account Settings"
-                    style="font-size: 13px"
-                    class="full-width q-mt-sm q-mb-sm"
-                    align="left"
-                  />
-
-                  <q-btn
-                    outline
-                    class="q-mt-md q-mb-sm"
-                    label="Logout"
-                    icon="logout"
-                    unelevated
-                    size="md"
-                    v-close-popup
-                    @click="logout"
-                    style="font-size: 13px"
-                  />
-                </div>
-                <q-separator
-                  vertical
-                  inset
-                  class="q-mx-sm"
-                  :color="darkmode ? 'white' : 'dark'"
+                <q-btn
+                  push
+                  to="/dashboard/settings/profile"
+                  icon="person"
+                  label="Profile Settings"
+                  style="font-size: 13px"
+                  class="full-width q-mt-sm bg-primary text-layout-text"
+                  align="left"
                 />
-                <div class="column">
-                  <q-btn
-                    outline
-                    class="q-mt-sm full-height q-mb-sm"
-                    style="width: 90px"
-                  >
-                    <q-avatar rounded size="46px" class="q-mt-xs q-mb-xs">
-                      <img :src="headerInfo.avatar" />
-                    </q-avatar>
-                    <a class="text-caption">Profile</a>
-                  </q-btn>
-                </div>
+
+                <q-btn
+                  push
+                  to="/dashboard/settings/account"
+                  icon="admin_panel_settings"
+                  label="Account Settings"
+                  style="font-size: 13px"
+                  class="full-width q-mt-sm q-mb-xs bg-primary text-layout-text"
+                  align="left"
+                />
               </div>
               <q-separator
                 :color="darkmode ? 'white' : 'dark'"
                 class="q-mb-sm q-mt-xs"
               />
-              <div class="row no-wrap q-mb-xs q-mt-xs">
+              <div class="row">
                 <q-btn
                   style="background: #3b4fb5 !important"
-                  outline
-                  unelevated
+                  push
                   @click="setTheme('default')"
                   class="q-mr-xs"
                 />
                 <q-btn
                   style="background: #ee4d2e !important"
-                  square
-                  outline
+                  push
                   @click="setTheme('cool-orange')"
                   class="q-mr-xs"
                 />
                 <q-btn
                   style="background: #1db992 !important"
-                  square
-                  outline
+                  push
                   @click.="setTheme('nice-green')"
                   class="q-mr-xs"
                 />
                 <q-btn
                   style="background: #bfbc06 !important"
-                  outline
-                  square
+                  push
                   @click="setTheme('olive-green')"
                   class="q-mr-xs"
                 />
                 <q-btn
                   style="background: #008fff !important"
-                  outline
-                  square
+                  push
                   @click="setTheme('epic-blue')"
                   class="q-mr-xs"
                 />
                 <q-btn
                   style="background: #1d1d1d !important"
-                  outline
-                  square
+                  push
                   @click="setTheme('dark')"
                   class="q-mr-xs"
                 />
                 <q-btn
                   style="background: #f8f0e3 !important"
-                  outline
-                  square
+                  push
                   @click="setTheme('light')"
                   class="q-mr-xs"
                 />
+              </div>
+              <q-separator
+                :color="darkmode ? 'white' : 'dark'"
+                class="q-mb-sm q-mt-sm"
+              />
+              <div class="row justify-between">
                 <q-btn
                   @click="darkmodeChanged"
-                  outline
+                  push
+                  round
+                  class="bg-primary text-layout-text"
                   :icon="darkmodeToogle ? 'light_mode' : 'dark_mode'"
                   size="sm"
-                  class="q-ml-md"
-                  style="width: 40px"
-                  round
+                />
+                <q-btn
+                  push
+                  icon="logout"
+                  class="bg-primary text-layout-text"
+                  label="Logout"
+                  v-close-popup
+                  @click="logout"
+                  style="font-size: 13px; width: 130px"
+                  align="left"
                 />
               </div>
             </q-card>
@@ -171,13 +154,11 @@
                 style="background: #3b4fb5 !important"
                 color="layout-text"
                 outline
-                unelevated
                 @click="setTheme('default')"
                 class="q-mt-sm"
               />
               <q-btn
                 style="background: #ee4d2e !important"
-                square
                 outline
                 color="layout-text"
                 @click="setTheme('cool-orange')"
@@ -185,7 +166,6 @@
               />
               <q-btn
                 style="background: #1db992 !important"
-                square
                 outline
                 color="layout-text"
                 @click.="setTheme('nice-green')"
@@ -194,7 +174,6 @@
               <q-btn
                 style="background: #bfbc06 !important"
                 outline
-                square
                 color="layout-text"
                 @click="setTheme('olive-green')"
                 class="q-mt-sm"
@@ -202,7 +181,6 @@
               <q-btn
                 style="background: #008fff !important"
                 outline
-                square
                 color="layout-text"
                 @click="setTheme('epic-blue')"
                 class="q-mt-sm"
@@ -210,7 +188,6 @@
               <q-btn
                 style="background: #1d1d1d !important"
                 outline
-                square
                 color="layout-text"
                 @click="setTheme('dark')"
                 class="q-mt-sm"
@@ -219,7 +196,6 @@
                 color="layout-text"
                 style="background: #f8f0e3 !important"
                 outline
-                square
                 @click="setTheme('light')"
                 class="q-mt-sm"
               />
@@ -239,7 +215,7 @@
         <q-space />
         <q-btn
           stretch
-          flat
+          unelevated
           icon="login"
           label="Login"
           class="text-body1 text-weight-bold"
@@ -269,7 +245,7 @@
       side="left"
       :mini="miniState"
       class="bg-layout-bg text-layout-text column justify-between"
-      v-if="!localStore.isAuthenticated"
+      v-if="localStore.isAuthenticated"
     >
       <q-list padding class="q-pa-none">
         <q-item

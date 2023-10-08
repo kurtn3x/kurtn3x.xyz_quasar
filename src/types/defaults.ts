@@ -3,13 +3,14 @@ import * as types from 'src/types/index';
 export function defaultUser() {
   const user: types.UserProfileType = {
     role: 'User',
-    username: '',
-    name: '',
-    id: '',
-    status: '',
-    description: '',
-    location: '',
-    date_joined: '',
+    username: 'WWWWWWWWWWWWWWWW',
+    name: 'Lorem ipsum dolor sit amet, consetetur',
+    id: 'dwadsaiuodhnsad',
+    status: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr',
+    description:
+      'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore',
+    location: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr',
+    date_joined: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr',
     avatar: 'https://media.kurtn3x.xyz/default.png',
   };
 

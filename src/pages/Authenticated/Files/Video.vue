@@ -6,9 +6,7 @@
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
   <div v-if="initialFetch && initialFetchSuccessful">
-    <q-page>
-      <video-player :options="videoOptions" />
-    </q-page>
+    <q-page> </q-page>
   </div>
 </template>
 
@@ -16,14 +14,9 @@
 import { defineComponent, ref } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
-import { VideoPlayer } from '@videojs-player/vue';
-import 'video.js/dist/video-js.css';
 
 export default defineComponent({
   name: 'VideoView',
-  components: {
-    VideoPlayer,
-  },
   setup() {
     const localStore = useLocalStore();
     const q = useQuasar();

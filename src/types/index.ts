@@ -23,7 +23,7 @@ export function getIcon(mime: string) {
 export { mimeMap };
 
 // Types for Files/ Folders
-export interface FileItemType {
+export interface FolderEntryType {
   id: string;
   name: string;
   created: string;
@@ -40,6 +40,7 @@ export interface FileItemType {
   size_bytes: number;
   // set on demand
   selected?: boolean;
+  drag_over?: boolean;
 }
 
 export interface FileItemExtendedType {
@@ -54,23 +55,6 @@ export interface FileItemExtendedType {
   permissions: string;
   owner: string;
   ownerid: string;
-}
-
-export interface FileFolderType {
-  id: string;
-  name: string;
-  created: string;
-  modified: string;
-  shared: boolean;
-  shared_allow_all_read: boolean;
-  shared_allow_all_write: boolean;
-  path: string;
-  type: string;
-  modified_iso: string;
-  created_iso: string;
-  // set on demand
-  selected?: boolean;
-  drag_over?: boolean;
 }
 
 export interface UploadProgressEntryType {
@@ -127,7 +111,7 @@ export interface RawFolderContentType {
   parentid: string;
   path: string;
   type: string;
-  children: (FileFolderType | FileItemType)[];
+  children: FolderEntryType[];
 }
 
 // Account / Profile Types

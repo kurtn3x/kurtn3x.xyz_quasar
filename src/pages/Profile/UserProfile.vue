@@ -12,122 +12,130 @@
     </div>
   </div>
   <div v-if="initialFetch && initialFetchSuccessful" :key="user.id">
-    <div v-if="!small" class="q-ma-md">
+    <div class="q-ma-md gt-sm">
       <div class="row">
-        <q-card
-          bordered
-          flat
-          class="bg-layout-bg text-layout-text full-height q-mr-md col-2"
-        >
-          <q-card-section style="height: 200px" class="items-center">
-            <div class="row justify-center">
-              <q-avatar rounded size="150px">
-                <q-img
-                  :src="user.avatar"
-                  style="border-radius: 10%; height: 150px"
-                >
-                  <q-icon
-                    class="bg-white absolute-bottom-right all-pointer-events q-mt-sm q-ml-sm"
-                    :name="user.role == 'Admin' ? 'shield' : 'account_circle'"
-                    :color="user.role == 'Admin' ? 'red' : 'blue'"
-                    size="30px"
-                    style="border-radius: 30%"
+        <div class="col-3">
+          <q-card
+            bordered
+            flat
+            class="bg-layout-bg text-layout-text full-height q-mr-md"
+          >
+            <q-card-section style="height: 200px" class="items-center">
+              <div class="row justify-center">
+                <q-avatar rounded size="150px">
+                  <q-img
+                    :src="user.avatar"
+                    style="border-radius: 10%; height: 150px"
                   >
-                    <q-tooltip
-                      :class="user.role == 'Admin' ? 'bg-red' : 'bg-blue'"
-                      class="text-white text-body1"
+                    <q-icon
+                      class="bg-white absolute-bottom-right all-pointer-events q-mt-sm q-ml-sm"
+                      :name="user.role == 'Admin' ? 'shield' : 'account_circle'"
+                      :color="user.role == 'Admin' ? 'red' : 'blue'"
+                      size="30px"
+                      style="border-radius: 30%"
                     >
-                      {{ user.role }}
-                    </q-tooltip>
-                  </q-icon>
-                </q-img>
-              </q-avatar>
-            </div>
+                      <q-tooltip
+                        :class="user.role == 'Admin' ? 'bg-red' : 'bg-blue'"
+                        class="text-white text-body1"
+                      >
+                        {{ user.role }}
+                      </q-tooltip>
+                    </q-icon>
+                  </q-img>
+                </q-avatar>
+              </div>
 
-            <div
-              class="ellipsis text-h6 text-weight-bolder q-mt-sm text-center"
-            >
-              {{ user.username }}
+              <div
+                class="ellipsis text-h6 text-weight-bolder q-mt-sm text-center"
+              >
+                {{ user.username }}
 
-              <q-tooltip
-                class="text-h6"
-                :class="darkmode ? 'bg-dark text-white' : 'bg-white text-dark'"
-                >{{ user.username }}</q-tooltip
-              >
-            </div>
-          </q-card-section>
+                <q-tooltip
+                  class="text-h6"
+                  :class="
+                    darkmode ? 'bg-dark text-white' : 'bg-white text-dark'
+                  "
+                  >{{ user.username }}</q-tooltip
+                >
+              </div>
+            </q-card-section>
+            <q-separator
+              color="layout-text"
+              size="2px"
+              class="q-mt-md q-ml-xs q-mr-xs"
+            />
 
-          <q-card-actions vertical class="full-width">
-            <q-separator color="layout-text" size="2px" />
-            <q-btn
-              size="xl"
-              outline
-              stretch
-              color="layout-text"
-              icon="chat"
-              style="height: 60px"
-              class="q-mt-md"
-              unelevated
-            >
-              <q-tooltip
-                class="text-body2"
-                anchor="bottom middle"
-                self="center middle"
+            <q-card-actions vertical>
+              <q-btn
+                size="xl"
+                outline
+                stretch
+                color="layout-text"
+                icon="chat"
+                style="height: 60px"
+                class="q-mt-md"
+                unelevated
               >
-                Start a Conversation
-              </q-tooltip>
-            </q-btn>
-            <q-separator />
-            <q-btn
-              size="xl"
-              outline
-              stretch
-              color="layout-text"
-              icon="person_add"
-              style="height: 60px"
-              class="q-mt-sm"
-            >
-              <q-tooltip
-                class="text-body2"
-                anchor="bottom middle"
-                self="center middle"
+                <q-tooltip
+                  class="text-body2"
+                  anchor="bottom middle"
+                  self="center middle"
+                >
+                  Start a Conversation
+                </q-tooltip>
+              </q-btn>
+              <q-separator />
+              <q-btn
+                size="xl"
+                outline
+                stretch
+                color="layout-text"
+                icon="person_add"
+                style="height: 60px"
+                class="q-mt-md"
               >
-                Add as Friend
-              </q-tooltip>
-            </q-btn>
-            <q-separator />
-            <q-btn
-              size="xl"
-              outline
-              stretch
-              color="layout-text"
-              icon="share"
-              style="height: 60px"
-              class="q-mt-sm"
-            >
-              <q-tooltip
-                anchor="bottom middle"
-                self="center middle"
-                class="text-body2"
+                <q-tooltip
+                  class="text-body2"
+                  anchor="bottom middle"
+                  self="center middle"
+                >
+                  Add as Friend
+                </q-tooltip>
+              </q-btn>
+              <q-separator />
+              <q-btn
+                size="xl"
+                outline
+                stretch
+                color="layout-text"
+                icon="share"
+                style="height: 60px"
+                class="q-mt-md"
               >
-                Copy the profile link
-              </q-tooltip>
-              <q-menu>
-                <q-list style="min-width: 200px">
-                  <q-input filled square v-model="userlink" readonly />
-                  <q-item
-                    clickable
-                    @click="copyToClipboard(userlink)"
-                    class="justify-center text-body1"
-                  >
-                    Copy the link</q-item
-                  >
-                </q-list>
-              </q-menu>
-            </q-btn>
-            <q-separator />
-          </q-card-actions>
-        </q-card>
+                <q-tooltip
+                  anchor="bottom middle"
+                  self="center middle"
+                  class="text-body2"
+                >
+                  Copy the profile link
+                </q-tooltip>
+                <q-menu>
+                  <q-list style="min-width: 200px">
+                    <q-input filled square v-model="userlink" readonly />
+                    <q-item
+                      clickable
+                      @click="copyToClipboard(userlink)"
+                      class="justify-center text-body1"
+                    >
+                      Copy the link</q-item
+                    >
+                  </q-list>
+                </q-menu>
+              </q-btn>
+              <q-separator />
+            </q-card-actions>
+          </q-card>
+        </div>
 
         <div class="col">
           <q-card flat bordered class="full-height bg-transparent">
@@ -148,79 +156,88 @@
             </q-tabs>
             <q-separator size="2px" color="primary" />
             <q-tab-panels v-model="profile_tab" animated class="bg-transparent">
-              <q-tab-panel name="about" style="min-height: 300px">
+              <q-tab-panel name="about">
                 <q-card flat class="full-width full-height bg-transparent">
-                  <q-splitter :model-value="50">
-                    <template v-slot:before>
-                      <div class="text-h5">About</div>
-                      <q-separator />
-                      <q-card-section horizontal>
-                        <q-card-section class="q-mr-md q-ml-md bg-transparent">
-                          <div
-                            class="text-h6 text-weight-bolder"
-                            style="height: 40px"
-                          >
-                            Name
-                          </div>
-                          <div
-                            class="q-mt-sm text-h6 text-weight-bolder"
-                            style="height: 40px"
-                          >
-                            Location
-                          </div>
-                          <div
-                            class="q-mt-sm text-h6 text-weight-bolder"
-                            style="height: 40px"
-                          >
-                            Joined
-                          </div>
-                          <div
-                            class="q-mt-sm text-h6 text-weight-bolder"
-                            style="height: 40px"
-                          >
-                            Status
-                          </div>
-                          <div
-                            class="q-mt-sm text-h6 text-weight-bolder"
-                            style="height: 40px"
-                          >
-                            Role
-                          </div>
-                        </q-card-section>
-
-                        <q-separator vertical />
-
-                        <q-card-section class="q-ml-md">
-                          <div class="text-h6" style="height: 40px">
-                            {{ user.name }}
-                          </div>
-                          <div class="q-mt-sm text-h6" style="height: 40px">
-                            {{ user.location }}
-                          </div>
-                          <div class="q-mt-sm text-h6" style="height: 40px">
-                            {{ user.date_joined }}
-                          </div>
-                          <div class="q-mt-sm text-h6" style="height: 40px">
-                            {{ user.status }}
-                          </div>
-                          <div class="q-mt-sm text-h6" style="height: 40px">
-                            {{ user.role }}
-                          </div>
-                        </q-card-section>
-                      </q-card-section>
-                    </template>
-                    <template v-slot:after>
-                      <div class="text-h6 q-ml-md text-weight-bolder">
-                        Description
+                  <div class="text-h5">About</div>
+                  <q-separator />
+                  <q-card-section horizontal>
+                    <q-card-section class="q-mr-sm q-ml-md bg-transparent">
+                      <div
+                        class="text-h6 text-weight-bolder items-center flex"
+                        style="height: 45px"
+                      >
+                        Name
                       </div>
-                      <q-separator />
 
-                      <div class="text-h6 q-mt-sm q-ml-lg">
-                        {{ user.description }}
+                      <div
+                        class="text-h6 q-mt-sm text-weight-bolder items-center flex"
+                        style="height: 45px"
+                      >
+                        Location
                       </div>
-                      <q-card-section horizontal> </q-card-section>
-                    </template>
-                  </q-splitter>
+                      <div
+                        class="text-h6 q-mt-sm text-weight-bolder items-center flex"
+                        style="height: 45px"
+                      >
+                        Joined
+                      </div>
+                      <div
+                        class="text-h6 q-mt-sm text-weight-bolder items-center flex"
+                        style="height: 45px"
+                      >
+                        Status
+                      </div>
+                      <div
+                        class="text-h6 q-mt-sm text-weight-bolder items-center flex"
+                        style="height: 45px"
+                      >
+                        Role
+                      </div>
+                    </q-card-section>
+
+                    <q-separator vertical />
+
+                    <q-card-section class="q-ml-sm">
+                      <div
+                        class="text-body1 items-center flex"
+                        style="height: 45px"
+                      >
+                        {{ user.name }}
+                      </div>
+                      <div
+                        class="text-body1 items-center flex q-mt-sm"
+                        style="height: 45px"
+                      >
+                        {{ user.location }}
+                      </div>
+                      <div
+                        class="text-body1 items-center flex q-mt-sm"
+                        style="height: 45px"
+                      >
+                        {{ user.date_joined }}
+                      </div>
+                      <div
+                        class="text-body1 items-center flex q-mt-sm"
+                        style="height: 45px"
+                      >
+                        {{ user.status }}
+                      </div>
+                      <div
+                        class="text-body1 items-center flex q-mt-sm"
+                        style="height: 45px"
+                      >
+                        {{ user.role }}
+                      </div>
+                    </q-card-section>
+                  </q-card-section>
+                  <div class="text-h5 q-mt-md">Description</div>
+                  <q-separator />
+
+                  <q-card-section>
+                    <div class="text-body1 q-mt-sm q-ml-lg">
+                      {{ user.description }}
+                    </div>
+                  </q-card-section>
                 </q-card>
               </q-tab-panel>
             </q-tab-panels>
@@ -228,8 +245,8 @@
         </div>
       </div>
     </div>
-    <div v-if="small" class="q-ma-sm">
-      <q-card flat bordered class="bg-transparent">
+    <div class="lt-md">
+      <q-card flat bordered class="bg-transparent q-ma-sm">
         <div style="height: 225px" class="bg-layout-bg">
           <div class="row justify-center items-center">
             <q-avatar
@@ -284,7 +301,7 @@
             <q-card flat class="bg-transparent">
               <q-card-section horizontal class="full-width bg-transparent">
                 <q-card-section class="full-width bg-transparent">
-                  <div class="text-body1 q-mt-sm" style="height: 55px">
+                  <div class="text-body1 q-mt-sm">
                     <a class="text-weight-bolder">Name</a>
                     <div style="line-break: anywhere" class="q-mb-sm">
                       {{ user.name }}
@@ -292,7 +309,7 @@
                   </div>
                   <q-separator />
 
-                  <div class="text-body1 q-mt-sm" style="height: 55px">
+                  <div class="text-body1 q-mt-sm">
                     <a class="text-weight-bolder">Location</a>
                     <div style="line-break: anywhere" class="q-mb-sm">
                       {{ user.location }}
@@ -300,7 +317,7 @@
                   </div>
                   <q-separator />
 
-                  <div class="text-body1 q-mt-sm" style="height: 55px">
+                  <div class="text-body1 q-mt-sm">
                     <a class="text-weight-bolder">Joined</a>
                     <div style="line-break: anywhere" class="q-mb-sm">
                       {{ user.date_joined }}
@@ -308,7 +325,7 @@
                   </div>
                   <q-separator />
 
-                  <div class="text-body1 q-mt-sm" style="height: 55px">
+                  <div class="text-body1 q-mt-sm">
                     <a class="text-weight-bolder">Status</a>
                     <div style="line-break: anywhere" class="q-mb-sm">
                       {{ user.status }}
@@ -316,7 +333,7 @@
                   </div>
                   <q-separator />
 
-                  <div class="text-body1 q-mt-sm" style="height: 55px">
+                  <div class="text-body1 q-mt-sm">
                     <a class="text-weight-bolder">Role</a>
                     <div style="line-break: anywhere" class="q-mb-sm">
                       {{ user.role }}
@@ -363,6 +380,7 @@ import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { useLocalStore } from 'stores/localStore';
 import { UserProfileType } from 'src/types/index';
+import { defaultUser } from '../../types/defaults';
 
 export default {
   name: 'UserProfile',

@@ -236,14 +236,14 @@
             >
               <div class="text-weight-bolder q-mr-sm">Mime:</div>
               <div class="ellipsis">
-                {{ (itemInformationData as FileItemType).mime }}
+                {{ (itemInformationData as FolderEntryType).mime }}
                 <q-tooltip
                   class="text-body1"
                   :class="
                     darkmode ? 'bg-dark text-white' : 'bg-white text-dark'
                   "
                 >
-                  {{ (itemInformationData as FileItemType).mime }}
+                  {{ (itemInformationData as FolderEntryType).mime }}
                 </q-tooltip>
               </div>
             </div>
@@ -252,7 +252,7 @@
               v-if="itemInformationData.type == 'file'"
             >
               <div class="text-weight-bolder q-mr-sm">Size:</div>
-              <div>{{ (itemInformationData as FileItemType).size }}</div>
+              <div>{{ (itemInformationData as FolderEntryType).size }}</div>
             </div>
             <div class="text-body1 q-mt-md row">
               <div class="text-weight-bolder q-mr-sm">Created:</div>
@@ -467,40 +467,24 @@
               </q-list>
             </q-scroll-area>
           </div>
-          <div class="row justify-between q-mt-xs">
+          <div class="row justify-between q-mt-sm">
             <div class="row">
               <q-file
                 unelevated
                 dense
-                v-model="uploadFilesDialogFiles"
-                display-value=""
                 label-slot
+                multiple
+                v-model="uploadFilesDialogFiles"
                 @update:model-value="appendFiles"
-                style="max-width: 75px"
                 color="white"
                 class="bg-blue text-white rounded-borders q-mr-md"
                 label-color="white"
               >
                 <template v-slot:label>
-                  <q-icon name="add" size="24px" class="q-ml-sm" />
-                  <q-icon name="description" size="24px" class="q-ml-sm" />
-                </template>
-              </q-file>
-              <q-file
-                unelevated
-                dense
-                v-model="uploadFilesDialogFiles"
-                display-value=""
-                label-slot
-                @update:model-value="appendFiles"
-                style="max-width: 75px"
-                color="white"
-                class="bg-blue text-white rounded-borders"
-                label-color="white"
-              >
-                <template v-slot:label>
-                  <q-icon name="add" size="24px" class="q-ml-sm" />
-                  <q-icon name="folder" size="24px" class="q-ml-sm" />
+                  <div class="text-body1 q-ml-sm items-center">
+                    <q-icon name="add" size="24px" />
+                    <a class="q-ml-sm">Select Files</a>
+                  </div>
                 </template>
               </q-file>
             </div>
@@ -871,44 +855,79 @@
           <q-item-section avatar>
             <q-btn
               align="left"
-              label="Type"
               size="sm"
               dense
               flat
               style="width: 50px"
-              class="q-ml-xs"
-            />
+              @click="sortRawFolderContent({ name: '', value: 1 })"
+            >
+              Type
+              <q-icon
+                v-if="filterState.type != 0"
+                :name="
+                  filterState.type == 1 ? 'arrow_upward' : 'arrow_downward'
+                "
+                class="q-ml-xs"
+              />
+            </q-btn>
           </q-item-section>
 
           <q-item-section :style="'min-width:' + itemTextWidth + 'px;'">
             <q-btn
               align="left"
-              label="Name"
               size="sm"
               dense
               flat
               :style="'width:' + itemTextWidth + 'px;'"
-            />
+              @click="sortRawFolderContent({ name: '', value: 2 })"
+            >
+              Name
+              <q-icon
+                v-if="filterState.name != 0"
+                :name="
+                  filterState.name == 1 ? 'arrow_upward' : 'arrow_downward'
+                "
+                class="q-ml-md"
+              />
+            </q-btn>
           </q-item-section>
           <q-item-section>
             <q-btn
               align="left"
-              label="Size"
               size="sm"
               dense
               flat
               class="full-width"
-            />
+              @click="sortRawFolderContent({ name: '', value: 5 })"
+            >
+              Size
+              <q-icon
+                v-if="filterState.size != 0"
+                :name="
+                  filterState.size == 1 ? 'arrow_upward' : 'arrow_downward'
+                "
+                class="q-ml-md"
+              />
+            </q-btn>
           </q-item-section>
           <q-item-section>
             <q-btn
               align="left"
-              label="Modified"
               size="sm"
               dense
               flat
               class="full-width"
-            />
+              @click="sortRawFolderContent({ name: '', value: 4 })"
+            >
+              Modified
+              <q-icon
+                v-if="filterState.modified != 0"
+                :name="
+                  filterState.modified == 1 ? 'arrow_upward' : 'arrow_downward'
+                "
+                class="q-ml-md"
+              />
+            </q-btn>
           </q-item-section>
 
           <q-item-section side class="q-mr-lg">
@@ -1033,21 +1052,21 @@
                   v-droppable
                   v-draggable="['folder', item.id]"
                   :class="[
-                    (item as FileFolderType).drag_over ? 'bg-indigo-11' : '',
+                    (item as FolderEntryType).drag_over ? 'bg-indigo-11' : '',
                     item.selected ? 'bg-cyan-14 text-layout-text' : '',
                   ]"
                   @v-drag-enter="
                     (ev: string[]) => {
                       if (ev[1] != item.id) {
-                        (item as FileFolderType).drag_over = true;
+                        (item as FolderEntryType).drag_over = true;
                       }
                     }
                   "
-                  @v-drag-leave="(item as FileFolderType).drag_over = false"
+                  @v-drag-leave="(item as FolderEntryType).drag_over = false"
                   @v-drag-over="
                     (ev: string[]) => {
                       if (ev[1] != item.id) {
-                        (item as FileFolderType).drag_over = true;
+                        (item as FolderEntryType).drag_over = true;
                       }
                     }
                   "
@@ -1057,7 +1076,7 @@
                       if (ev.dataTransfer!.items.length > 0) {
                         if (ev.dataTransfer!.items[0].kind == 'file') {
                           onFolderDrop(ev, item.id);
-                          (item as FileFolderType).drag_over = false;
+                          (item as FolderEntryType).drag_over = false;
                         }
                       }
                     }
@@ -1066,7 +1085,7 @@
                     (ev: InputEvent) => {
                       if (ev.dataTransfer!.items.length > 0) {
                         if (ev.dataTransfer!.items[0].kind == 'file') {
-                          (item as FileFolderType).drag_over = true;
+                          (item as FolderEntryType).drag_over = true;
                         }
                       }
                     }
@@ -1075,7 +1094,7 @@
                     (ev: InputEvent) => {
                       if (ev.dataTransfer!.items.length > 0) {
                         if (ev.dataTransfer!.items[0].kind == 'file') {
-                          (item as FileFolderType).drag_over = true;
+                          (item as FolderEntryType).drag_over = true;
                         }
                       }
                     }
@@ -1084,7 +1103,7 @@
                     (ev: InputEvent) => {
                       if (ev.dataTransfer!.items.length > 0) {
                         if (ev.dataTransfer!.items[0].kind == 'file') {
-                          (item as FileFolderType).drag_over = false;
+                          (item as FolderEntryType).drag_over = false;
                         }
                       }
                     }
@@ -1260,7 +1279,7 @@
                   </q-item-section>
                   <q-item-section avatar top>
                     <q-avatar
-                      :icon="getIcon((item as FileItemType).mime as string)"
+                      :icon="getIcon((item as FolderEntryType).mime as string)"
                       color="transparent"
                       text-color="primary"
                       size="4.5em"
@@ -1281,7 +1300,7 @@
                     class="text-caption gt-xs"
                     style="pointer-events: none"
                   >
-                    {{ (item as FileItemType).size }}
+                    {{ (item as FolderEntryType).size }}
                   </q-item-section>
                   <q-item-section
                     class="text-caption gt-xs"
@@ -1639,8 +1658,7 @@ import {
   TraverseFolderMapType,
   UploadProgressEntryType,
   getIcon,
-  FileFolderType,
-  FileItemType,
+  FolderEntryType,
   UploadDialogEntryType,
   NavbarIndexType,
   AllAvailableFoldersType,
@@ -1695,7 +1713,6 @@ export default defineComponent({
 
       // raw content including children of current folder
       rawFolderContent: ref(FOLDER) as Ref<RawFolderContentType>,
-      scrollAreaDragover: ref(false),
 
       // Dialog handlers when uploading files
       uploadFilesDialog: ref(false),
@@ -1747,15 +1764,27 @@ export default defineComponent({
         },
       ],
 
+      // 0- not active, 1 active, 2 reversed
+      filterState: ref({
+        type: 0,
+        name: 0,
+        size: 0,
+        modified: 0,
+      }),
+
       itemInformationDialog: ref(false),
-      itemInformationData: ref({}) as Ref<FileItemType | FileFolderType>,
+      itemInformationData: ref({}) as Ref<FolderEntryType>,
 
       // selection handlers
-      selectedItems: ref([]) as Ref<(FileItemType | FileFolderType)[]>,
+      selectedItems: ref([]) as Ref<FolderEntryType[]>,
       allSelected: ref(false),
+
+      // dragover
+      scrollAreaDragover: ref(false),
 
       // move items
       allAvailableFolders: ref(minFolder) as Ref<AllAvailableFoldersType[]>,
+
       // dialog for moving selections
       moveSelectedItemsDialog: ref(false),
       moveSingleItem: ref(false),
@@ -1907,58 +1936,113 @@ export default defineComponent({
     /////////// FILTER  //////////////////////////////
     ///////////////////////////////////////////////////
 
+    resetFilterState() {
+      this.filterState.type = 0;
+      this.filterState.modified = 0;
+      this.filterState.name = 0;
+      this.filterState.size = 0;
+    },
+
+    /**
+     * Sort content of current folder context
+     * Name isn't important → Only for Q-Select.
+     *
+     * value mapping:
+     *
+     * 1 - sort by type
+     *
+     * 2 - sort by name (alphabetically)
+     *
+     * 3 - sort by created time
+     *
+     * 4 - sort by modified time
+     *
+     * 5 - sort by size
+     *
+     * @param   type - object: name: string, value:number
+     */
     sortRawFolderContent(type: { name: string; value: number }) {
       var type_val = type.value;
       if (type_val == 1) {
-        // by type
-        this.rawFolderContent.children.sort(
-          (a: FileItemType | FileFolderType) => (a.type != 'folder' ? 1 : 0)
-        );
+        if (this.filterState.type == 1) {
+          // reversed type (type is sorted alphabetically, just to group)
+          this.rawFolderContent.children
+            .sort((a: FolderEntryType) => (a.type != 'folder' ? 1 : 0))
+            .reverse();
+          this.resetFilterState();
+          this.filterState.type = 2;
+        } else {
+          // by type
+          this.rawFolderContent.children.sort((a: FolderEntryType) =>
+            a.type != 'folder' ? 1 : 0
+          );
+          this.resetFilterState();
+          this.filterState.type = 1;
+        }
       } else if (type_val == 2) {
-        // alphabetically
-        this.rawFolderContent.children.sort(
-          (
-            a: FileItemType | FileFolderType,
-            b: FileItemType | FileFolderType
-          ) => a.name.localeCompare(b.name)
-        );
+        if (this.filterState.name == 1) {
+          // reversed alphabetically
+          this.rawFolderContent.children
+            .sort((a: FolderEntryType, b: FolderEntryType) =>
+              a.name.localeCompare(b.name)
+            )
+            .reverse();
+          this.resetFilterState();
+          this.filterState.name = 2;
+        } else {
+          // alphabetically
+          this.rawFolderContent.children.sort(
+            (a: FolderEntryType, b: FolderEntryType) =>
+              a.name.localeCompare(b.name)
+          );
+          this.resetFilterState();
+          this.filterState.name = 1;
+        }
       } else if (type_val == 3) {
         // created time
         this.rawFolderContent.children
-          .sort(
-            (
-              a: FileItemType | FileFolderType,
-              b: FileItemType | FileFolderType
-            ) => a.created_iso.localeCompare(b.created_iso)
+          .sort((a: FolderEntryType, b: FolderEntryType) =>
+            a.created_iso.localeCompare(b.created_iso)
           )
           .reverse();
       } else if (type_val == 4) {
-        // last changed time
-        this.rawFolderContent.children
-          .sort(
-            (
-              a: FileItemType | FileFolderType,
-              b: FileItemType | FileFolderType
-            ) => a.modified_iso.localeCompare(b.modified_iso)
-          )
-          .reverse();
+        if (this.filterState.modified == 1) {
+          // by modified time reversed (oldest file is first)
+          this.rawFolderContent.children.sort(
+            (a: FolderEntryType, b: FolderEntryType) =>
+              a.modified_iso.localeCompare(b.modified_iso)
+          );
+          this.resetFilterState();
+          this.filterState.modified = 2;
+        } else {
+          // by modified time (newest file is first)
+          this.rawFolderContent.children
+            .sort((a: FolderEntryType, b: FolderEntryType) =>
+              a.modified_iso.localeCompare(b.modified_iso)
+            )
+            .reverse();
+          this.resetFilterState();
+          this.filterState.modified = 1;
+        }
       } else if (type_val == 5) {
         // size
-        this.rawFolderContent.children.sort(
-          (
-            a: FileItemType | FileFolderType,
-            b: FileItemType | FileFolderType
-          ) => (b as FileItemType).size_bytes - (a as FileItemType).size_bytes
-        );
-      } else if (type_val == 6) {
-        // this.rawFolderContent.children
-        //   .sort(
-        //     (
-        //       a: FileItemType | FileFolderType,
-        //       b: FileItemType | FileFolderType
-        //     ) => a.modified.localeCompare(b.shared)
-        //   )
-        //   .reverse();
+        if (this.filterState.size == 1) {
+          this.rawFolderContent.children
+            .sort(
+              (a: FolderEntryType, b: FolderEntryType) =>
+                a.size_bytes - b.size_bytes
+            )
+            .reverse();
+          this.resetFilterState();
+          this.filterState.size = 2;
+        } else {
+          this.rawFolderContent.children.sort(
+            (a: FolderEntryType, b: FolderEntryType) =>
+              a.size_bytes - b.size_bytes
+          );
+          this.resetFilterState();
+          this.filterState.size = 1;
+        }
       }
     },
 
@@ -1975,24 +2059,27 @@ export default defineComponent({
     },
 
     // picking files via the pick files selector and adding it to the uploadMap
-    appendFiles(file: File) {
-      var fileName = file.name;
+    appendFiles(files: File[]) {
+      console.log(files);
+      for (var file of files) {
+        var fileName = file.name;
 
-      var returnVal = this.findValidName(fileName, 'file');
+        var returnVal = this.findValidName(fileName, 'file');
 
-      while (returnVal[0] != 0) {
-        returnVal = this.findValidName(returnVal[1], 'file');
+        while (returnVal[0] != 0) {
+          returnVal = this.findValidName(returnVal[1], 'file');
+        }
+
+        var uploadMapObject: UploadDialogEntryType = {
+          name: returnVal[1],
+          content: file,
+          type: 'file',
+        };
+
+        this.uploadFilesDialogUploadMap.push(uploadMapObject);
+
+        this.uploadFilesDialogFiles = null;
       }
-
-      var uploadMapObject: UploadDialogEntryType = {
-        name: returnVal[1],
-        content: file,
-        type: 'file',
-      };
-
-      this.uploadFilesDialogUploadMap.push(uploadMapObject);
-
-      this.uploadFilesDialogFiles = null;
     },
 
     // get the real FileObject of an file
@@ -2456,8 +2543,7 @@ export default defineComponent({
     // check if a name of type exists in current folder context (rawFoldercontent.children)
     checkNameExistFolderContext(name: string, type: string) {
       return this.rawFolderContent.children.some(
-        (el: FileItemType | FileFolderType) =>
-          el.name == name && el.type == type
+        (el: FolderEntryType) => el.name == name && el.type == type
       );
     },
 
@@ -2550,30 +2636,19 @@ export default defineComponent({
     // select all items
     selectAllItems() {
       if (this.allSelected == true) {
-        for (var item of this.rawFolderContent.children as (
-          | FileItemType
-          | FileFolderType
-        )[]) {
+        for (var item of this.rawFolderContent.children as FolderEntryType[]) {
           if (!this.selectedItems.includes(item)) {
             this.selectedItems.push(item);
             item.selected = true;
           }
         }
       } else {
-        for (var item of this.rawFolderContent.children as (
-          | FileItemType
-          | FileFolderType
-        )[]) {
+        for (var item of this.rawFolderContent.children as FolderEntryType[]) {
           item.selected = false;
         }
 
         this.selectedItems = [];
       }
-    },
-
-    // sort the content of the current folder
-    sortFolderContent() {
-      console.log(this.filterSortBy);
     },
 
     ///////////////////////////////////////////////////
@@ -2662,10 +2737,7 @@ export default defineComponent({
       }
       this.selectedItems = [];
       this.allSelected = false;
-      for (var item of this.rawFolderContent.children as (
-        | FileItemType
-        | FileFolderType
-      )[]) {
+      for (var item of this.rawFolderContent.children as FolderEntryType[]) {
         item.selected = false;
       }
     },
@@ -2735,10 +2807,7 @@ export default defineComponent({
       this.selectedItems = [];
       this.allSelected = false;
       this.moveSelectedItemsDialog = false;
-      for (var item of this.rawFolderContent.children as (
-        | FileItemType
-        | FileFolderType
-      )[]) {
+      for (var item of this.rawFolderContent.children as FolderEntryType[]) {
         item.selected = false;
       }
     },
