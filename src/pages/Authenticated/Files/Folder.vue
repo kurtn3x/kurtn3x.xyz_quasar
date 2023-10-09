@@ -19,13 +19,13 @@
         </div>
         <div class="row justify-center q-ma-md">
           <q-btn
+            push
             icon="expand_more"
             :label="selectedItems.length + ' Items'"
             class="bg-blue text-white q-ml-sm text-body2"
-            unelevated
           >
-            <q-menu anchor="bottom middle" self="top middle">
-              <q-card flat style="max-width: 200px; max-height: 250px">
+            <q-menu anchor="bottom middle" self="top middle" class="no-shadow">
+              <q-card bordered flat style="max-width: 200px; max-height: 250px">
                 <template v-for="item in selectedItems" :key="item">
                   <div class="ellipsis text-body1 q-ma-sm">
                     <q-icon
@@ -96,13 +96,22 @@
             />
             <q-btn
               icon="expand_more"
-              :label="selectedItems.length + 'Items'"
+              :label="selectedItems.length + ' Items'"
               class="bg-blue text-white q-ml-sm text-body2 col"
-              unelevated
-              style="height: 40px"
+              push
+              dense
+              style="height: 40px; max-width: 130px"
             >
-              <q-menu anchor="bottom middle" self="top middle">
-                <q-card flat style="max-width: 200px; max-height: 250px">
+              <q-menu
+                anchor="bottom middle"
+                self="top middle"
+                class="no-shadow"
+              >
+                <q-card
+                  flat
+                  bordered
+                  style="max-width: 200px; max-height: 250px"
+                >
                   <template v-for="item in selectedItems" :key="item">
                     <div class="ellipsis text-body1 q-ma-sm">
                       <q-icon
@@ -163,7 +172,7 @@
 
     <!-- filterDialog -->
     <q-page-sticky v-if="filterDialog" position="top" style="z-index: 100">
-      <q-card bordered style="width: 350px">
+      <q-card bordered flat style="width: 350px">
         <div class="q-ma-md">
           <q-input
             :color="darkmode ? 'white' : 'black'"
@@ -185,18 +194,26 @@
               />
             </template>
           </q-input>
-
-          <q-select
-            :color="darkmode ? 'white' : 'black'"
-            outlined
-            v-model="filterSortBy"
-            :options="filterSortByOptions"
-            label="Sort by..."
-            class="q-mt-md"
-            dense
-            popup-content-style="z-index: 101"
-            @update:model-value="sortRawFolderContent"
-          />
+          <div class="row q-mt-md">
+            <q-select
+              :color="darkmode ? 'white' : 'black'"
+              outlined
+              v-model="filterSortBy"
+              :options="filterSortByOptions"
+              label="Sort by..."
+              dense
+              popup-content-style="z-index: 101"
+              @update:model-value="sortRawFolderContent"
+              style="width: 260px"
+            />
+            <q-btn
+              icon="swap_vert"
+              push
+              class="bg-blue text-white q-ml-sm"
+              style="width: 40px; height: 40px"
+              @click="sortRawFolderContent(filterSortBy as any)"
+            />
+          </div>
         </div>
 
         <div style="height: 20px">
@@ -850,8 +867,9 @@
             </div>
           </div>
         </q-toolbar>
+        <q-separator class="gt-xs q-mt-xs" color="primary" inset />
         <div class="row gt-xs">
-          <q-item-section avatar class="q-ml-lg"> </q-item-section>
+          <q-item-section avatar class="q-ml-lg" />
           <q-item-section avatar>
             <q-btn
               align="left"
@@ -931,11 +949,11 @@
           </q-item-section>
 
           <q-item-section side class="q-mr-lg">
-            <div style="width: 50px"></div>
+            <div style="width: 50px" />
           </q-item-section>
         </div>
 
-        <q-separator size="2px" color="primary" class="q-mt-xs" />
+        <q-separator size="2px" color="primary" />
       </div>
       <q-scroll-area class="col">
         <div
@@ -1736,7 +1754,7 @@ export default defineComponent({
       // options
       filterDialog: ref(false),
       filterSearch: ref(''),
-      filterSortBy: ref('Type'),
+      filterSortBy: ref(null) as Ref<string | object | null>,
       filterSortByOptions: [
         {
           label: 'Type',
@@ -1770,6 +1788,8 @@ export default defineComponent({
         name: 0,
         size: 0,
         modified: 0,
+        created: 0,
+        shared: 0,
       }),
 
       itemInformationDialog: ref(false),
@@ -1836,7 +1856,6 @@ export default defineComponent({
         // if the width of the item is larger than the actual place for it
         // always show at least 1 item even if it's too large
         if (l > t && this.navbarIndex.navbar_items.length > 1) {
-          console.log('i');
           // → handle overflowing navbar
 
           // check if the last element of the navbar isn't the last moved item
@@ -1911,10 +1930,10 @@ export default defineComponent({
           if (response.status == 200) {
             this.rawFolderContent = response.data;
             this.navbarIndex.home_folder_id = response.data.id;
-
             this.initialFetch = true;
             this.initialFetchSuccessful = true;
             this.loading = false;
+            this.resetFilterState();
           } else {
             this.initialFetch = true;
             this.notify('negative', response.data.error);
@@ -1945,7 +1964,7 @@ export default defineComponent({
 
     /**
      * Sort content of current folder context
-     * Name isn't important → Only for Q-Select.
+     * Label isn't important → Only for Q-Select.
      *
      * value mapping:
      *
@@ -1959,9 +1978,11 @@ export default defineComponent({
      *
      * 5 - sort by size
      *
-     * @param   type - object: name: string, value:number
+     * 6 - sort by shared status
+     *
+     * @param   type - object: → name: string, value: number
      */
-    sortRawFolderContent(type: { name: string; value: number }) {
+    sortRawFolderContent(type: { label: string; value: number }) {
       var type_val = type.value;
       if (type_val == 1) {
         if (this.filterState.type == 1) {
@@ -1988,6 +2009,7 @@ export default defineComponent({
             )
             .reverse();
           this.resetFilterState();
+
           this.filterState.name = 2;
         } else {
           // alphabetically
@@ -1996,15 +2018,30 @@ export default defineComponent({
               a.name.localeCompare(b.name)
           );
           this.resetFilterState();
+
           this.filterState.name = 1;
         }
       } else if (type_val == 3) {
-        // created time
-        this.rawFolderContent.children
-          .sort((a: FolderEntryType, b: FolderEntryType) =>
-            a.created_iso.localeCompare(b.created_iso)
-          )
-          .reverse();
+        if (this.filterState.created == 1) {
+          // reversed created (item which was created first is shown first)
+          this.rawFolderContent.children
+            .sort((a: FolderEntryType, b: FolderEntryType) =>
+              a.created_iso.localeCompare(b.created_iso)
+            )
+            .reverse();
+          this.resetFilterState();
+          this.filterState.created = 2;
+        } else {
+          // created (item which was created last is shown first)
+          this.rawFolderContent.children
+            .sort((a: FolderEntryType, b: FolderEntryType) =>
+              a.created_iso.localeCompare(b.created_iso)
+            )
+            .reverse();
+          this.resetFilterState();
+          this.filterState.created = 1;
+        }
+        this.resetFilterState();
       } else if (type_val == 4) {
         if (this.filterState.modified == 1) {
           // by modified time reversed (oldest file is first)
@@ -2013,6 +2050,7 @@ export default defineComponent({
               a.modified_iso.localeCompare(b.modified_iso)
           );
           this.resetFilterState();
+
           this.filterState.modified = 2;
         } else {
           // by modified time (newest file is first)
@@ -2022,11 +2060,12 @@ export default defineComponent({
             )
             .reverse();
           this.resetFilterState();
+
           this.filterState.modified = 1;
         }
       } else if (type_val == 5) {
-        // size
         if (this.filterState.size == 1) {
+          // size, smallest first (folders are always 0, so first here)
           this.rawFolderContent.children
             .sort(
               (a: FolderEntryType, b: FolderEntryType) =>
@@ -2034,14 +2073,35 @@ export default defineComponent({
             )
             .reverse();
           this.resetFilterState();
+
           this.filterState.size = 2;
         } else {
+          // size, largest first
           this.rawFolderContent.children.sort(
             (a: FolderEntryType, b: FolderEntryType) =>
               a.size_bytes - b.size_bytes
           );
           this.resetFilterState();
+
           this.filterState.size = 1;
+        }
+      } else if (type_val == 6) {
+        if (this.filterState.shared == 1) {
+          // shared reverse (not shared first)
+          this.rawFolderContent.children.sort(
+            (a: FolderEntryType, b: FolderEntryType) =>
+              a.shared === b.shared ? 0 : a.shared ? 1 : -1
+          );
+          this.resetFilterState();
+          this.filterState.shared = 2;
+        } else {
+          // shared (shared items first)
+          this.rawFolderContent.children.sort(
+            (a: FolderEntryType, b: FolderEntryType) =>
+              a.shared === b.shared ? 0 : a.shared ? -1 : 1
+          );
+          this.resetFilterState();
+          this.filterState.shared = 1;
         }
       }
     },
@@ -2588,6 +2648,7 @@ export default defineComponent({
             this.allAvailableFolders = [];
             this.selectedItems = [];
             this.allSelected = false;
+            this.resetFilterState();
           } else {
             this.notify('negative', response.data.error);
             this.loading = false;
@@ -2690,6 +2751,7 @@ export default defineComponent({
             this.notify('positive', 'Created');
             this.loading = false;
             this.refreshFolder();
+            this.resetFilterState();
           } else {
             this.notify('negative', response.data.error);
             this.loading = false;
@@ -2715,6 +2777,7 @@ export default defineComponent({
             this.notify('positive', 'Deleted');
             this.loading = false;
             this.refreshFolder();
+            this.resetFilterState();
           } else {
             this.notify('negative', response.data.error);
             this.loading = false;
@@ -2826,6 +2889,7 @@ export default defineComponent({
           if (response.status == 200) {
             this.notify('positive', 'Updated');
             this.refreshFolder();
+            this.resetFilterState();
             this.loading = false;
           } else {
             this.notify('negative', response.data.error);
@@ -2890,6 +2954,7 @@ export default defineComponent({
             this.selectedItems = [];
             this.allSelected = false;
             this.loading = false;
+            this.resetFilterState();
           } else {
             this.notify('negative', response.data.error);
             this.loading = false;
@@ -2943,6 +3008,7 @@ export default defineComponent({
             this.loading = false;
             this.selectedItems = [];
             this.allSelected = false;
+            this.resetFilterState();
           } else {
             this.notify('negative', response.data.error);
             this.loading = false;
@@ -3012,6 +3078,8 @@ export default defineComponent({
             if (response.status == 200) {
               this.notify('positive', 'Updated');
               this.refreshFolder();
+              this.resetFilterState();
+
               this.loading = false;
               this.selectedItems = [];
               this.allSelected = false;
