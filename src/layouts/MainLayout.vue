@@ -118,6 +118,7 @@
                   round
                   class="bg-primary text-layout-text"
                   :icon="darkmodeToogle ? 'light_mode' : 'dark_mode'"
+                  style="width: 35px; height: 35px"
                   size="sm"
                 />
                 <q-btn

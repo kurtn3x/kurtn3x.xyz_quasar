@@ -88,10 +88,6 @@
         <q-tab-panel name="site" class="q-pa-none q-ma-none">
           <div class="q-ma-md">
             <div class="text-h4 text-center q-mt-lg">Site Settings</div>
-            <div class="text-center text-caption2 q-mt-sm q-ml-md">
-              These Options can also be accessed by right clicking on the
-              header.
-            </div>
             <q-separator class="q-mt-md" />
             <q-card-section>
               <div class="row justify-center">

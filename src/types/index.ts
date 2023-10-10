@@ -55,6 +55,7 @@ export interface FileItemExtendedType {
   permissions: string;
   owner: string;
   ownerid: string;
+  parentid: string;
 }
 
 export interface UploadProgressEntryType {

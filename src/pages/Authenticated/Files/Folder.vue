@@ -867,7 +867,6 @@
             </div>
           </div>
         </q-toolbar>
-        <q-separator class="gt-xs q-mt-xs" color="primary" inset />
         <div class="row gt-xs">
           <q-item-section avatar class="q-ml-lg" />
           <q-item-section avatar>
@@ -877,7 +876,7 @@
               dense
               flat
               style="width: 50px"
-              @click="sortRawFolderContent({ name: '', value: 1 })"
+              @click="sortRawFolderContent({ label: '', value: 1 })"
             >
               Type
               <q-icon
@@ -897,7 +896,7 @@
               dense
               flat
               :style="'width:' + itemTextWidth + 'px;'"
-              @click="sortRawFolderContent({ name: '', value: 2 })"
+              @click="sortRawFolderContent({ label: '', value: 2 })"
             >
               Name
               <q-icon
@@ -916,7 +915,7 @@
               dense
               flat
               class="full-width"
-              @click="sortRawFolderContent({ name: '', value: 5 })"
+              @click="sortRawFolderContent({ label: '', value: 5 })"
             >
               Size
               <q-icon
@@ -935,7 +934,7 @@
               dense
               flat
               class="full-width"
-              @click="sortRawFolderContent({ name: '', value: 4 })"
+              @click="sortRawFolderContent({ label: '', value: 4 })"
             >
               Modified
               <q-icon
@@ -1186,7 +1185,7 @@
                     class="row"
                   >
                     <q-item-label
-                      class="item_text ellipsis"
+                      class="item_text ellipsis text-white"
                       :style="'--max-width: ' + itemTextWidth + 'px;'"
                     >
                       <q-icon name="share" v-if="item.shared" />
@@ -1307,7 +1306,7 @@
 
                   <q-item-section :style="'min-width:' + itemTextWidth + 'px;'">
                     <q-item-label
-                      class="item_text ellipsis"
+                      class="item_text ellipsis text-white"
                       :style="'width: ' + itemTextWidth + 'px;'"
                     >
                       <q-icon name="share" v-if="item.shared" />

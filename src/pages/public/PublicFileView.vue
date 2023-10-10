@@ -5,49 +5,57 @@
   <div v-if="!allowed && !loading">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="allowed && !loading">
-    <div class="text-primary text-h4 text-center q-mt-lg">
-      File: {{ fileData.name }}
+  <div v-if="allowed && !loading" class="q-ma-sm">
+    <div class="text-primary text-h4 text-center q-ma-md ellipsis">
+      <q-icon name="file_present" class="q-mr-sm" />
+      {{ fileData.name }}
     </div>
-    <q-separator class="q-ma-md" size="3px" />
-    <div class="row justify-center">
-      <div>
-        <q-card
-          bordered
-          flat
-          class="rounded-borders q-ma-sm bg-transparent"
-          style="min-width: 350px"
+    <div class="row justify-center items-center full-width">
+      <q-list
+        bordered
+        class="rounded-borders full-width"
+        style="max-width: 500px"
+      >
+        <q-expansion-item
+          icon="info"
+          label="File Info"
+          class="text-h5 text-center"
         >
-          <q-expansion-item
-            icon="info"
-            label="File Info"
-            class="text-h5 text-center"
-            style="min-width: 350px"
-          >
-            <q-separator />
-            <q-card-section>
+          <q-separator />
+          <q-card flat>
+            <div class="q-ma-sm">
               <div class="text-h6 text-left row">
                 <a class="text-weight-bolder col">Name:</a>
-                <a class="col-8">{{ fileData.name }}</a>
+                <a class="col-8 ellipsis">{{ fileData.name }}</a>
+                <q-tooltip class="text-body1">
+                  {{ fileData.name }}
+                </q-tooltip>
               </div>
-              <div
-                class="text-h6 text-left row q-mt-md"
-                style="overflow-wrap: break-word; line-break: anywhere"
-              >
+              <div class="text-h6 text-left row q-mt-md">
+                <a class="text-weight-bolder col">Size:</a>
+                <a class="col-8">{{ fileData.size }}</a>
+              </div>
+              <div class="text-h6 text-left row q-mt-md">
                 <a class="text-weight-bolder col">ID:</a>
-                <a class="col-8">{{ fileData.id }}</a>
+                <a class="col-8 ellipsis">{{ fileData.id }}</a>
+                <q-tooltip class="text-body1">
+                  {{ fileData.id }}
+                </q-tooltip>
               </div>
               <div
                 class="text-h6 text-left row q-mt-md"
                 style="overflow-wrap: break-word; line-break: anywhere"
               >
                 <a class="text-weight-bolder col">Path:</a>
-                <a class="col-8">{{ fileData.path }}</a>
+                <a class="col-8 ellipsis">{{ fileData.path }}</a>
+                <q-tooltip class="text-body1">
+                  {{ fileData.path }}
+                </q-tooltip>
               </div>
               <div class="text-h6 text-left row q-mt-md">
                 <a class="text-weight-bolder col">Owner:</a>
                 <a
-                  class="text-blue col-8"
+                  class="text-blue col-8 ellipsis"
                   :href="'https://www.kurtn3x.xyz/user/' + fileData.owner"
                 >
                   {{ fileData.owner }}</a
@@ -55,30 +63,31 @@
               </div>
               <div class="text-h6 text-left row q-mt-md">
                 <a class="text-weight-bolder col">Modified:</a>
-                <a class="col-8">{{ fileData.modified }}</a>
+                <a class="col-8 ellipsis">{{ fileData.modified }}</a>
               </div>
               <div class="text-h6 text-left row q-mt-md">
                 <a class="text-weight-bolder col">Created:</a>
-                <a class="col-8">{{ fileData.created }}</a>
+                <a class="col-8 ellipsis">{{ fileData.created }}</a>
               </div>
-            </q-card-section>
-          </q-expansion-item>
-        </q-card>
-      </div>
+              <div class="text-h6 text-left row q-mt-md">
+                <a class="text-weight-bolder col">Mime:</a>
+                <a class="col-8 ellipsis">{{ fileData.mime }}</a>
+              </div>
+            </div>
+          </q-card>
+        </q-expansion-item></q-list
+      >
     </div>
     <div class="row justify-center">
       <q-btn
-        label="Download"
+        :label="'Download (' + fileData.size + ')'"
         icon="file_download"
         class="cursor-pointer bg-green text-white q-mt-lg"
-        flat
+        push
         @click="openInNewTab(fileData.id)"
         size="xl"
-        style="min-width: 350px"
+        style="min-width: 330px"
       />
-    </div>
-    <div class="text-h6 text-center q-mt-md">
-      <a class="text-weight-bolder">Size:</a> {{ fileData.size }}
     </div>
   </div>
 </template>
@@ -91,20 +100,6 @@ import { api } from 'boot/axios';
 import { FileItemExtendedType } from 'src/types/index';
 import type { Ref } from 'vue';
 
-const filedata: FileItemExtendedType = {
-  id: 'ca9c1719-82ff-4bb6-90f0-2e35251bcac6',
-  name: '1_1_1.pdf',
-  modified: '2023-09-14, 06:37:04',
-  created: '2023-08-16, 10:42:01',
-  size: '137.8KB',
-  permissions: 'owner',
-  owner: 'kurt',
-  ownerid: 'abeb69f0-a469-4511-bc88-fd3d8635c194',
-  path: 'Home',
-  type: 'file',
-  mime: 'application/pdf',
-};
-
 export default defineComponent({
   name: 'IndexPage',
   setup() {
@@ -113,41 +108,26 @@ export default defineComponent({
     return {
       localStore,
       q,
-      text_animation: ref(true),
       loading: ref(true),
       allowed: ref(false),
-      fileData: ref(filedata) as Ref<FileItemExtendedType>,
-      // fileData: ref({
-      //   name: '',
-      //   owner: '',
-      //   ownerid: '',
-      //   modified: '',
-      //   created: '',
-      //   path: '',
-      //   size: '0',
-      //   id: '',
-      //   permissions: '',
-      // }),
+      fileData: ref({}) as Ref<FileItemExtendedType>,
     };
   },
   computed: {
-    mobile() {
-      if (this.q.screen.width < 600) {
-        return true;
-      } else {
-        return false;
-      }
+    darkmode() {
+      return this.localStore.darkmode;
     },
   },
   created() {
-    this.getInitialFile();
+    this.getFile();
   },
   methods: {
     openInNewTab(id: string) {
       window
-        ?.open('https://api.kurtn3x.xyz/files/content/file/' + id, '_blank')
+        ?.open('https://api.kurtn3x.xyz/files/download/file/' + id, '_blank')
         ?.focus();
     },
+
     notify(type: string, message: string) {
       this.q.notify({
         type: type,
@@ -156,7 +136,8 @@ export default defineComponent({
         multiLine: true,
       });
     },
-    getInitialFile() {
+
+    getFile() {
       var id = this.$route.params.id;
       const axiosConfig = {
         withCredentials: true,

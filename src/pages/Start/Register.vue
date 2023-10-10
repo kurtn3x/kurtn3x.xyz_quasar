@@ -515,6 +515,7 @@ export default {
     },
 
     getCaptcha() {
+      this.captchaData.value = '';
       this.captchaData.loading = true;
       api
         .get('/auth/captcha', this.axiosConfig)
@@ -567,6 +568,7 @@ export default {
               this.$nextTick(() => {
                 (this.$refs.errorText as HTMLElement).classList.add('shake');
               });
+              this.getCaptcha();
             }
           })
           .catch((error) => {

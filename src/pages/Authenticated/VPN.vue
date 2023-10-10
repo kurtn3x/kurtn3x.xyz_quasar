@@ -2,10 +2,10 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="initialFetch && !initialFetchSuccessful">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="initialFetch && initialFetchSuccessful">
     <q-dialog v-model="setupVPNDialog">
       <q-card bordered style="max-width: 400px">
         <q-toolbar class="bg-layout-bg text-layout-text text-center">

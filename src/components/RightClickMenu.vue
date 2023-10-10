@@ -23,7 +23,7 @@
       <q-item-section side>
         <q-icon name="keyboard_arrow_right" />
       </q-item-section>
-      <q-menu anchor="top end" self="top start">
+      <q-menu anchor="bottom middle" self="top middle">
         <q-list bordered separator>
           <q-item>
             <q-checkbox
