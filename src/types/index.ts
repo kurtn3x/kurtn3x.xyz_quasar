@@ -133,7 +133,6 @@ export interface UserProfileType {
   role: string;
   username: string;
   name: string;
-  id: string;
   date_joined: string;
   description: string;
   location: string;

@@ -84,7 +84,7 @@
         icon="file_download"
         class="cursor-pointer bg-green text-white q-mt-lg"
         push
-        @click="openInNewTab(fileData.id)"
+        @click="downloadFile(fileData.id)"
         size="xl"
         style="min-width: 330px"
       />
@@ -122,9 +122,14 @@ export default defineComponent({
     this.getFile();
   },
   methods: {
-    openInNewTab(id: string) {
+    downloadFile(id: string) {
       window
-        ?.open('https://api.kurtn3x.xyz/files/download/file/' + id, '_blank')
+        ?.open(
+          'https://api.kurtn3x.xyz/files/download/file/' +
+            id +
+            '?password=test1234',
+          '_blank'
+        )
         ?.focus();
     },
 

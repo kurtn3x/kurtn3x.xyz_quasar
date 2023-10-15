@@ -2323,7 +2323,11 @@ export default defineComponent({
               folderProgress.status = 'error';
               folderProgress.color = 'bg-red';
               folderProgress.transferred_percent_num = 0.0;
-              folderProgress.error = error;
+              if (error.response) {
+                folderProgress.error = error.response.data.error;
+              } else {
+                folderProgress.error = error;
+              }
             });
           if (response !== undefined) {
             folderProgress.status = 'ok';
@@ -2382,7 +2386,11 @@ export default defineComponent({
               fileProgress.status = 'error';
               fileProgress.color = 'bg-red';
               fileProgress.transferred_percent_num = 0.0;
-              fileProgress.error = error;
+              if (error.response) {
+                fileProgress.error = error;
+              } else {
+                fileProgress.error = error;
+              }
             });
           if (response !== undefined) {
             fileProgress.status = 'ok';

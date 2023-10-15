@@ -5,7 +5,6 @@ export function defaultUser() {
     role: 'User',
     username: 'WWWWWWWWWWWWWWWW',
     name: 'Lorem ipsum dolor sit amet, consetetur',
-    id: 'dwadsaiuodhnsad',
     status: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr',
     description:
       'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore',
@@ -24,4 +23,27 @@ export function defaultHeaderInformation() {
     avatar: 'https://media.kurtn3x.xyz/default.png',
   };
   return info;
+}
+
+export function defaultAccountSettings() {
+  const user: types.AccountSettingsType = {
+    profile: {
+      username: '',
+      name: '',
+      status: '',
+      location: '',
+      description: '',
+      avatar: 'https://media.kurtn3x.xyz/default.png',
+      role: '',
+      date_joined: '',
+    },
+    account: {
+      id: '',
+      username: '',
+      is_admin: false,
+      email: '',
+    },
+  };
+
+  return user;
 }

@@ -385,16 +385,18 @@
 
             <q-card-section class="full-width">
               <q-item>
-                <q-item-section side> Id: </q-item-section>
-                <q-item-section>
+                <q-item-section side style="width: 100px"> Id: </q-item-section>
+                <q-item-section style="line-break: anywhere">
                   {{ accountData.account.id }}
                 </q-item-section>
               </q-item>
               <q-separator />
 
               <q-item>
-                <q-item-section side> Username: </q-item-section>
-                <q-item-section>
+                <q-item-section side style="width: 100px">
+                  Username:
+                </q-item-section>
+                <q-item-section style="line-break: anywhere">
                   {{ accountData.account.username }}
                 </q-item-section>
               </q-item>
@@ -402,8 +404,10 @@
               <q-separator />
 
               <q-item>
-                <q-item-section side> Email: </q-item-section>
-                <q-item-section>
+                <q-item-section side style="width: 100px">
+                  Email:
+                </q-item-section>
+                <q-item-section style="line-break: anywhere">
                   {{ accountData.account.email }}
                 </q-item-section>
               </q-item>
@@ -411,8 +415,10 @@
               <q-separator />
 
               <q-item>
-                <q-item-section side> Admin: </q-item-section>
-                <q-item-section>
+                <q-item-section side style="width: 100px">
+                  Admin:
+                </q-item-section>
+                <q-item-section style="line-break: anywhere">
                   {{ accountData.account.is_admin }}
                 </q-item-section>
               </q-item>
@@ -420,8 +426,10 @@
               <q-separator />
 
               <q-item>
-                <q-item-section side> Joined: </q-item-section>
-                <q-item-section>
+                <q-item-section side style="width: 100px">
+                  Joined:
+                </q-item-section>
+                <q-item-section style="line-break: anywhere">
                   {{ accountData.profile.date_joined }}
                 </q-item-section>
               </q-item>
@@ -429,8 +437,10 @@
               <q-separator />
 
               <q-item>
-                <q-item-section side> Name: </q-item-section>
-                <q-item-section>
+                <q-item-section side style="width: 100px">
+                  Name:
+                </q-item-section>
+                <q-item-section style="line-break: anywhere">
                   {{ accountData.profile.name }}
                 </q-item-section>
               </q-item>
@@ -438,8 +448,10 @@
               <q-separator />
 
               <q-item>
-                <q-item-section side> Location: </q-item-section>
-                <q-item-section>
+                <q-item-section side style="width: 100px">
+                  Location:
+                </q-item-section>
+                <q-item-section style="line-break: anywhere">
                   {{ accountData.profile.location }}
                 </q-item-section>
               </q-item>
@@ -447,8 +459,10 @@
               <q-separator />
 
               <q-item>
-                <q-item-section side> Status: </q-item-section>
-                <q-item-section>
+                <q-item-section side style="width: 100px">
+                  Status:
+                </q-item-section>
+                <q-item-section style="line-break: anywhere">
                   {{ accountData.profile.status }}
                 </q-item-section>
               </q-item>
@@ -724,6 +738,7 @@ import { api } from 'boot/axios';
 import { useLocalStore } from 'stores/localStore';
 import { defaultHeaderInformation } from 'src/types/defaults';
 import { AccountSettingsType, HeaderInformationType } from 'src/types/index';
+import { defaultAccountSettings } from '../../types/defaults';
 
 export default {
   name: 'SettingsView',
@@ -1034,7 +1049,8 @@ export default {
         .then((response) => {
           if (response.status == 200) {
             this.accountData = response.data;
-            this.avatarPreview = response.data.profile.avatar;
+            this.avatarPreview =
+              response.data.profile.avatar + '?' + Math.random();
 
             this.initialFetch = true;
             this.initialFetchSuccessful = true;
@@ -1042,11 +1058,13 @@ export default {
             this.notify('negative', response.data.error);
             this.initialFetch = true;
             this.initialFetchSuccessful = false;
+            this.accountData = defaultAccountSettings();
           }
         })
         .catch((error) => {
           this.initialFetch = true;
           this.initialFetchSuccessful = false;
+          this.accountData = defaultAccountSettings();
           if (error.response) {
             this.notify('negative', error.response.data.error);
           } else {
