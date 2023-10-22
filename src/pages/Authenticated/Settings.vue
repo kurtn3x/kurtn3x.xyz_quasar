@@ -50,14 +50,14 @@
         <q-card-actions align="center" class="q-mt-sm q-mb-sm">
           <q-btn
             v-close-popup
-            flat
+            push
             icon="close"
             label="Cancel"
             class="bg-red text-white"
             style="width: 130px"
           />
           <q-btn
-            flat
+            push
             class="bg-green text-white"
             icon="done"
             size="md"
@@ -264,7 +264,7 @@
                     color="green"
                     label="Save"
                     type="submit"
-                    unelevated
+                    push
                     :loading="loading"
                     style="width: 300px"
                   />
@@ -365,7 +365,7 @@
                     color="green"
                     label="Save"
                     type="submit"
-                    unelevated
+                    push
                     :loading="loading"
                     style="width: 300px"
                   />
@@ -530,7 +530,7 @@
                       label="Change Username"
                       size="lg"
                       color="green"
-                      unelevated
+                      push
                       type="submit"
                       :loading="loading"
                     />
@@ -601,7 +601,7 @@
                       label="Change E-Mail"
                       size="lg"
                       color="green"
-                      unelevated
+                      push
                       type="submit"
                       :loading="loading"
                     />
@@ -705,7 +705,7 @@
                       label="Change Password"
                       size="lg"
                       color="green"
-                      unelevated
+                      push
                       type="submit"
                       :loading="loading"
                     />

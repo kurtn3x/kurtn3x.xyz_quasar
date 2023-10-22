@@ -22,7 +22,7 @@
           class="text-h5 text-center"
         >
           <q-separator />
-          <q-card flat>
+          <q-card flat class="bg-transparent">
             <div class="q-ma-sm">
               <div class="text-h6 text-left row">
                 <a class="text-weight-bolder col">Name:</a>

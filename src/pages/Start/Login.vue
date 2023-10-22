@@ -66,7 +66,6 @@
                 class="full-width q-mt-lg layout-btn bg-green text-white"
                 label="Sign In"
                 :loading="loading"
-                unelevated
                 type="submit"
               />
             </q-form>

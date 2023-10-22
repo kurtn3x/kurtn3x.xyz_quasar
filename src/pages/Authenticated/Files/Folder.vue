@@ -33,6 +33,7 @@
                     />
                     <a class="q-ml-sm"> {{ item.name }} </a>
                   </div>
+                  <q-separator />
                 </template>
               </q-card>
             </q-menu>
@@ -42,14 +43,14 @@
         <q-card-actions align="center" class="row q-mt-sm q-mb-sm">
           <q-btn
             v-close-popup
-            flat
+            push
             icon="close"
             label="Cancel"
             class="bg-red text-white col"
           />
           <q-btn
             v-close-popup
-            flat
+            push
             class="bg-green text-white col"
             icon="done"
             size="md"
@@ -70,7 +71,7 @@
         moveItemsSelectedId = '';
       "
     >
-      <q-card bordered style="width: 350px">
+      <q-card bordered style="min-width: 350px">
         <q-toolbar class="bg-layout-bg text-layout-text text-center">
           <q-toolbar-title class="q-ma-sm"
             >Move Items to new Folder</q-toolbar-title
@@ -83,7 +84,7 @@
         >
           <q-spinner size="10em" />
         </div>
-        <div class="q-ma-md" v-if="allAvailableFolders.length != 0">
+        <div class="q-ma-sm" v-if="allAvailableFolders.length != 0">
           <div class="row">
             <q-input
               :color="darkmode ? 'white' : 'black'"
@@ -92,7 +93,7 @@
               outlined
               label="Search"
               class="text-primary text-body1 col"
-              style="height: 50px; max-width: 300px"
+              style="height: 45px; max-width: 300px"
             />
             <q-btn
               icon="expand_more"
@@ -121,12 +122,14 @@
                       />
                       <a class="q-ml-sm"> {{ item.name }} </a>
                     </div>
+                    <q-separator />
                   </template>
                 </q-card>
               </q-menu>
             </q-btn>
           </div>
-          <q-scroll-area style="height: 325px">
+          <q-separator />
+          <q-scroll-area style="height: 350px">
             <q-tree
               :nodes="allAvailableFolders"
               v-model:selected="moveItemsSelectedId"
@@ -140,32 +143,83 @@
               no-selection-unset
               no-results-label="No folder found"
               @update:selected="moveItemsUpdateSelectedLabel"
-            />
+            >
+              <template v-slot:default-body="prop">
+                <q-btn
+                  icon="add"
+                  v-if="(prop as any).node.temporary_show_input != true"
+                  @click="
+                    (prop as any).node.temporary_show_input = true;
+                    (prop as any).node.temporary_label = '';
+                  "
+                  push
+                  dense
+                  size="sm"
+                  color="green"
+                />
+                <q-input
+                  v-if="(prop as any).node.temporary_show_input==true"
+                  v-model="(prop as any).node.temporary_label"
+                  :rules="[
+                    (val) => !/\/|\x00/.test(val) || 'No slash or null char',
+                  ]"
+                  dense
+                  color="primary"
+                  filled
+                  autofocus
+                  hide-bottom-space
+                  @keyup.enter="createFolderMoveDialog(prop.node)"
+                  placeholder="Folder Name"
+                >
+                  <template v-slot:after>
+                    <q-btn
+                      icon="done"
+                      class="bg-green text-white"
+                      push
+                      size="sm"
+                      round
+                      @click="createFolderMoveDialog(prop.node)"
+                    />
+                    <q-btn
+                      icon="close"
+                      class="bg-red text-white"
+                      push
+                      size="sm"
+                      round
+                      @click="
+                        (prop as any).node.temporary_show_input = false;
+                        (prop as any).node.temporary_label = '';
+                      "
+                    />
+                  </template>
+                </q-input>
+              </template>
+            </q-tree>
           </q-scroll-area>
-          <div class="q-mt-md">
+        </div>
+        <q-separator />
+
+        <q-card-actions class="q-mb-sm column">
+          <div class="full-width">
             <a class="text-weight-bolder">New Folder: </a>
             {{ moveItemsSelectedPath }}
           </div>
-        </div>
-        <q-separator class="q-mt-sm" />
-
-        <q-card-actions align="center" class="row q-mt-sm q-mb-sm">
-          <q-btn
-            v-close-popup
-            flat
-            icon="close"
-            label="Cancel"
-            class="bg-red text-white col"
-          />
-          <q-btn
-            v-close-popup
-            flat
-            class="bg-green text-white col"
-            icon="done"
-            size="md"
-            label="Move"
-            @click="moveSelection"
-          />
+          <div class="row full-width q-mt-sm">
+            <q-btn
+              v-close-popup
+              push
+              icon="close"
+              label="Cancel"
+              class="bg-red text-white col q-mr-xs"
+            />
+            <q-btn
+              push
+              class="bg-green text-white col q-ml-xs"
+              icon="done"
+              label="Move"
+              @click="moveSelection"
+            />
+          </div>
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -315,7 +369,7 @@
         <q-card-actions align="center" class="q-mt-sm q-mb-sm">
           <q-btn
             v-close-popup
-            flat
+            push
             class="bg-green text-white col"
             icon="done"
             size="md"
@@ -413,6 +467,7 @@
                           icon="delete"
                           round
                           unelevated
+                          outline
                           class="bg-red text-white q-ml-sm"
                           @click="
                             uploadFilesDialogUploadMap =
@@ -439,21 +494,10 @@
                       >
                         <template v-slot:append>
                           <q-btn
-                            icon="close"
-                            class="bg-red text-white"
-                            unelevated
-                            size="xs"
-                            round
-                            @click="
-                              file.edit = false;
-                              file.temp = '';
-                            "
-                          />
-
-                          <q-btn
                             icon="done"
                             class="bg-green text-white"
                             unelevated
+                            outline
                             size="xs"
                             round
                             @click="
@@ -474,6 +518,18 @@
                                   notify('negative', 'Name already exists');
                                 }
                               }
+                            "
+                          />
+                          <q-btn
+                            icon="close"
+                            class="bg-red text-white"
+                            unelevated
+                            outline
+                            size="xs"
+                            round
+                            @click="
+                              file.edit = false;
+                              file.temp = '';
                             "
                           />
                         </template>
@@ -512,7 +568,7 @@
                 icon="delete"
                 size="xs"
                 class="bg-red text-white"
-                unelevated
+                push
                 v-if="uploadFilesDialogUploadMap.length > 0"
               />
             </div>
@@ -524,7 +580,7 @@
         <q-card-actions align="evenly" class="q-mt-sm q-mb-sm row">
           <q-btn
             v-close-popup
-            flat
+            push
             icon="close"
             label="Close"
             class="bg-red text-white col-4"
@@ -533,7 +589,7 @@
           />
           <q-btn
             v-close-popup
-            flat
+            push
             class="bg-green text-white col"
             icon="done"
             size="md"
@@ -670,48 +726,30 @@
 
           <div class="row gt-xs full-width">
             <q-fab
-              unelevated
+              push
               icon="add"
               direction="down"
               class="q-ml-md"
               color="light-green"
-              square
-              padding="none"
+              padding="sm"
               style="height: 40px; width: 50px; z-index: 1"
             >
               <q-fab-action
+                outline
                 class="text-body1 bg-light-green"
                 text-color="white"
-                outline
                 icon="create_new_folder"
                 label="New Folder"
-                @click="
-                  newObjShow = true;
-                  newObj.type = 'folder';
-                "
-                square
+                @click="newFolder.show = true"
                 style="width: 180px"
               />
               <q-fab-action
-                @click="
-                  newObjShow = true;
-                  newObj.type = 'file';
-                "
-                icon="note_add"
-                label="New File"
-                class="text-body1 bg-light-green"
-                text-color="white"
-                outline
-                square
-                style="width: 180px"
-              />
-              <q-fab-action
+                push
                 @click="uploadFilesDialog = true"
                 icon="file_upload"
                 label="Upload Files"
                 class="text-body1 bg-light-green"
                 text-color="white"
-                square
                 style="width: 180px"
                 outline
               />
@@ -740,9 +778,9 @@
               </template>
               <template v-slot:after>
                 <q-btn
-                  unelevated
+                  push
                   dense
-                  icon="search add"
+                  icon="search"
                   class="bg-primary text-white"
                   @click="filterDialog = !filterDialog"
                   style="height: 40px; width: 65px"
@@ -753,12 +791,11 @@
             <q-space />
             <div style="width: 130px" class="q-ml-md q-mr-sm">
               <q-fab
-                unelevated
+                push
                 icon="check_box"
                 active-icon="expand_more"
                 direction="down"
                 color="cyan-14"
-                square
                 :label="
                   selectedItems.length +
                   ' Item' +
@@ -778,7 +815,6 @@
                     moveSelectedItemsDialog = true;
                     fetchAllAvailableFolders();
                   "
-                  square
                   style="width: 150px"
                 />
                 <q-fab-action
@@ -788,7 +824,6 @@
                   icon="close"
                   label="Delete"
                   @click="deleteItemsDialog = true"
-                  square
                   style="width: 150px"
                 />
               </q-fab>
@@ -818,9 +853,9 @@
               </template>
               <template v-slot:after>
                 <q-btn
-                  unelevated
+                  push
                   dense
-                  icon="search add"
+                  icon="search"
                   class="bg-primary text-white"
                   @click="filterDialog = !filterDialog"
                   style="height: 40px; width: 65px"
@@ -829,13 +864,12 @@
             </q-input>
             <div class="q-ml-md q-mr-sm" style="width: 80px">
               <q-fab
-                unelevated
+                push
                 icon="check_box"
                 :label="selectedItems.length"
                 active-icon=" expand_more"
                 direction="down"
                 color="cyan-14"
-                square
                 v-if="selectedItems.length > 0"
                 padding="none"
                 style="height: 40px; width: 80px; z-index: 1"
@@ -850,7 +884,6 @@
                     moveSelectedItemsDialog = true;
                     fetchAllAvailableFolders();
                   "
-                  square
                   style="width: 110px"
                 />
                 <q-fab-action
@@ -860,7 +893,6 @@
                   icon="close"
                   label="Delete"
                   @click="deleteItemsDialog = true"
-                  square
                   style="width: 110px"
                 />
               </q-fab>
@@ -947,7 +979,7 @@
             </q-btn>
           </q-item-section>
 
-          <q-item-section side class="q-mr-lg">
+          <q-item-section side class="q-mr-md">
             <div style="width: 50px" />
           </q-item-section>
         </div>
@@ -997,11 +1029,14 @@
             }
           "
         >
-          <div v-if="newObjShow">
-            <q-item class="full-width rounded-borders bg-light-green-6">
+          <div v-if="newFolder.show">
+            <q-item
+              class="full-width rounded-borders"
+              style="background-color: rgba(60, 177, 60, 0.801)"
+            >
               <q-item-section avatar top class="no-pointer-events">
                 <q-avatar
-                  :icon="newObj.type == 'folder' ? 'folder' : 'file_present'"
+                  icon="folder"
                   color="transparent"
                   text-color="primary"
                   size="4.5em"
@@ -1015,12 +1050,12 @@
                   outlined
                   dense
                   color="white"
-                  v-model="newObj.name"
-                  :label="'New ' + newObj.type + ' Name'"
+                  v-model="newFolder.name"
+                  label="New Folder Name"
                   class="text-body1 q-ml-md"
                   input-class="text-body2"
                   clearable
-                  @keyup.enter="createObj"
+                  @keyup.enter="createFolder"
                   ref="newItemInput"
                   hide-bottom-space
                   autofocus
@@ -1034,7 +1069,7 @@
                     class="q-ml-md bg-green text-white"
                     round
                     flat
-                    @click="createObj"
+                    @click="createFolder"
                   />
                   <q-btn
                     icon="close"
@@ -1042,9 +1077,8 @@
                     round
                     flat
                     @click="
-                      newObjShow = false;
-                      newObj.name = '';
-                      newObj.type = '';
+                      newFolder.show = false;
+                      newFolder.name = '';
                     "
                   />
                 </div>
@@ -1185,7 +1219,7 @@
                     class="row"
                   >
                     <q-item-label
-                      class="item_text ellipsis text-white"
+                      class="item_text ellipsis"
                       :style="'--max-width: ' + itemTextWidth + 'px;'"
                     >
                       <q-icon name="share" v-if="item.shared" />
@@ -1196,7 +1230,8 @@
                   <q-item-section
                     class="text-caption gt-xs"
                     style="pointer-events: none"
-                  ></q-item-section>
+                    >-</q-item-section
+                  >
 
                   <q-item-section
                     class="text-caption gt-xs"
@@ -1208,11 +1243,10 @@
                   <q-item-section side>
                     <q-btn
                       icon="more_vert"
-                      class="cursor-pointer full-width"
                       flat
                       :loading="loading"
-                      stretch
                       @click.prevent.stop
+                      round
                     >
                       <q-menu>
                         <RightClickMenu
@@ -1306,7 +1340,7 @@
 
                   <q-item-section :style="'min-width:' + itemTextWidth + 'px;'">
                     <q-item-label
-                      class="item_text ellipsis text-white"
+                      class="item_text ellipsis"
                       :style="'width: ' + itemTextWidth + 'px;'"
                     >
                       <q-icon name="share" v-if="item.shared" />
@@ -1329,10 +1363,9 @@
                   <q-item-section side>
                     <q-btn
                       icon="more_vert"
-                      class="full-width"
                       flat
+                      round
                       :loading="loading"
-                      stretch
                       @click.prevent.stop
                     >
                       <q-menu>
@@ -1381,7 +1414,7 @@
         style="z-index: 101"
       >
         <q-fab
-          unelevated
+          push
           icon="add"
           direction="up"
           class="q-mr-md"
@@ -1395,35 +1428,20 @@
             outline
             icon="create_new_folder"
             label="New Folder"
-            @click="
-              newObjShow = true;
-              newObj.type = 'folder';
-            "
-            square
+            @click="newFolder.show = true"
             style="width: 180px"
+            padding="md"
           />
-          <q-fab-action
-            @click="
-              newObjShow = true;
-              newObj.type = 'file';
-            "
-            icon="note_add"
-            label="New File"
-            class="text-body1 bg-light-green"
-            text-color="white"
-            outline
-            square
-            style="width: 180px"
-          />
+
           <q-fab-action
             @click="uploadFilesDialog = true"
             icon="file_upload"
             label="Upload Files"
             class="text-body1 bg-light-green"
             text-color="white"
-            square
             style="width: 180px"
             outline
+            padding="md"
           />
         </q-fab>
       </q-page-sticky>
@@ -1668,7 +1686,6 @@ import { draggable, selected } from 'components/draggable.js';
 import { droppable } from 'components/droppable.js';
 import RightClickMenu from 'components/RightClickMenu.vue';
 import { FOLDER } from './testdata/folder.js';
-import { minFolder } from './testdata/all_available_folders.js';
 
 import type { Ref } from 'vue';
 import {
@@ -1802,7 +1819,7 @@ export default defineComponent({
       scrollAreaDragover: ref(false),
 
       // move items
-      allAvailableFolders: ref(minFolder) as Ref<AllAvailableFoldersType[]>,
+      allAvailableFolders: ref([]) as Ref<AllAvailableFoldersType[]>,
 
       // dialog for moving selections
       moveSelectedItemsDialog: ref(false),
@@ -1820,12 +1837,11 @@ export default defineComponent({
       folderToDeleteUUID: ref(''),
       folderDeleteDialog: ref(false),
 
-      // new doc/folder handlers
-      newObj: ref({
+      // new folder handler
+      newFolder: ref({
+        show: false,
         name: '',
-        type: '',
       }),
-      newObjShow: ref(false),
     };
   },
 
@@ -1920,6 +1936,10 @@ export default defineComponent({
   },
 
   methods: {
+    log(something: any) {
+      console.log(something);
+    },
+
     // get Home folder content on initial page load
     getHomeFolder() {
       this.loading = true;
@@ -2644,7 +2664,9 @@ export default defineComponent({
     },
 
     // universal function to refetch the current folder when any change is made
-    refreshFolder() {
+    // contentOnly → if false, also clears anything else that might get bugged (100% clean refresh)
+    // if true actually only refreshes the content of the folder
+    refreshFolder(contentOnly = false) {
       this.loading = true;
       api
         .get('/files/folder/' + this.rawFolderContent.id, this.axiosConfig)
@@ -2652,10 +2674,12 @@ export default defineComponent({
           if (response.status == 200) {
             this.rawFolderContent = response.data;
             this.loading = false;
-            this.allAvailableFolders = [];
-            this.selectedItems = [];
-            this.allSelected = false;
-            this.resetFilterState();
+            if (contentOnly == false) {
+              this.allAvailableFolders = [];
+              this.selectedItems = [];
+              this.allSelected = false;
+              this.resetFilterState();
+            }
           } else {
             this.notify('negative', response.data.error);
             this.loading = false;
@@ -2723,20 +2747,76 @@ export default defineComponent({
     /////////// ADD / REMOVE OBJECTS //////////////////
     ///////////////////////////////////////////////////
 
-    // create files / folders from add button
-    createObj() {
-      if (this.newObj.name.length < 1) {
+    // create Folder in move dialog, for better use this doesn't refetch
+    // allAvailableFolders, but instead appends to the existing object
+    createFolderMoveDialog(propNode: any) {
+      if (propNode.temporary_label.length < 1) {
         this.notify('negative', 'Please type something.');
         return;
       }
-      if (/\/|\x00/.test(this.newObj.name)) {
+      if (/\/|\x00/.test(propNode.temporary_label)) {
+        this.notify('negative', 'No slash or null char.');
+        return;
+      }
+
+      this.loading = true;
+
+      var parentId = propNode.id;
+
+      var data = {
+        parent_id: parentId,
+        name: propNode.temporary_label,
+      };
+
+      api
+        .post('/files/create/folder', data, this.axiosConfig)
+        .then((response) => {
+          if (response.status == 200) {
+            propNode.temporary_show_input = false;
+            propNode.temporary_label = '';
+            this.notify('positive', 'Created');
+            this.loading = false;
+            this.fetchAllAvailableFolders();
+            this.refreshFolder(true);
+
+            this.resetFilterState();
+            // if (this.allAvailableFolders[0].id == parentId ){
+            //   this.allAvailableFolders[0].children.push({
+
+            //   })
+            // }
+
+            // function findNode() {
+            //   return;
+            // }
+          } else {
+            this.notify('negative', response.data.error);
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          if (error.response) {
+            this.notify('negative', error.response.data.error);
+          } else {
+            console.log(error);
+          }
+          this.loading = false;
+        });
+    },
+
+    // create folder
+    createFolder() {
+      if (this.newFolder.name.length < 1) {
+        this.notify('negative', 'Please type something.');
+        return;
+      }
+      if (/\/|\x00/.test(this.newFolder.name)) {
         this.notify('negative', 'No slash or null char.');
         return;
       }
 
       if (
-        this.checkNameExistFolderContext(this.newObj.name, this.newObj.type) ==
-        true
+        this.checkNameExistFolderContext(this.newFolder.name, 'folder') == true
       ) {
         this.notify('negative', 'Name already exists.');
         return;
@@ -2746,15 +2826,15 @@ export default defineComponent({
 
       var data = {
         parent_id: this.rawFolderContent.id,
-        name: this.newObj.name,
+        name: this.newFolder.name,
       };
 
       api
-        .post('/files/create/' + this.newObj.type, data, this.axiosConfig)
+        .post('/files/create/folder', data, this.axiosConfig)
         .then((response) => {
           if (response.status == 200) {
-            this.newObj.name = '';
-            this.newObjShow = false;
+            this.newFolder.name = '';
+            this.newFolder.show = false;
             this.notify('positive', 'Created');
             this.loading = false;
             this.refreshFolder();
@@ -2981,7 +3061,7 @@ export default defineComponent({
     /////////// SCROLLBAR METHODS /////////////////////
     ///////////////////////////////////////////////////
 
-    // used to focus input when newObjShow
+    // used to focus input when newfolder.show
     focusInput() {
       (this.$refs.newItemInput as InstanceType<typeof QInput>).focus();
     },

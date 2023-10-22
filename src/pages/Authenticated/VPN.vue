@@ -6,18 +6,187 @@
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
   <div v-if="initialFetch && initialFetchSuccessful">
+    <q-dialog v-model="helpVPNDialog">
+      <q-card bordered class="full-width">
+        <q-toolbar class="bg-layout-bg text-layout-text text-center">
+          <q-toolbar-title class="q-ma-sm">VPN Setup Help</q-toolbar-title>
+        </q-toolbar>
+        <q-separator color="layout-text" />
+        <q-tabs
+          inline-label
+          v-model="helpVPNDialogTabs"
+          style="height: 50px"
+          align="justify"
+          indicator-color="transparent"
+          active-color="layout-text"
+          active-bg-color="layout-bg"
+        >
+          <q-tab name="windows" :icon="mdiMicrosoftWindows" label="Windows" />
+          <q-tab name="linux" :icon="mdiLinux" label="Linux" />
+          <q-tab name="android" :icon="mdiAndroid" label="Android" />
+        </q-tabs>
+        <q-separator size="2px" color="primary" />
+        <q-tab-panels
+          v-model="helpVPNDialogTabs"
+          animated
+          class="bg-transparent"
+          style="height: 270px"
+        >
+          <q-tab-panel name="windows">
+            <ol>
+              <li class="text-body1">
+                <a
+                  href="https://download.wireguard.com/windows-client/wireguard-installer.exe"
+                  target="_blank"
+                  class="text-blue"
+                  >Download and Install the Wireguard Installer.
+                </a>
+              </li>
+              <li class="text-body1 q-mt-sm">
+                Start Wireguard. Add Tunnel → Add empty Tunnel...
+              </li>
+              <li class="text-body1 q-mt-sm">
+                Add a Name to the configuration. Copy the Public-Key under the
+                name input.
+              </li>
+              <li class="text-body1 q-mt-sm">
+                Add a name to the configuration on this website. Input the
+                copied Public-Key in the Public-Key Input. Click Generate.
+              </li>
+              <li class="text-body1 q-mt-sm">
+                Append the result under the windows Tab to the existing
+                Configuration.
+              </li>
+              <li class="text-body1 q-mt-sm">Activate the connection.</li>
+            </ol>
+          </q-tab-panel>
+          <q-tab-panel name="linux">
+            <ol>
+              <li class="text-body1">
+                <a
+                  href="https://www.wireguard.com/install/"
+                  target="_blank"
+                  class="text-blue"
+                  >Install Wireguard depending on Operating System.
+                </a>
+              </li>
+              <li class="text-body1 q-mt-sm">
+                Generate a Public and Private-Keypair.
+                <q-btn
+                  push
+                  class="bg-blue text-white"
+                  label="Command"
+                  icon="content_copy"
+                  size="sm"
+                  @click="copyToClipboard(linuxCommand)"
+                >
+                  <q-tooltip
+                    :class="
+                      darkmode ? 'bg-dark text-white' : 'bg-white text-dark'
+                    "
+                    style="
+                      font-family: 'Courier New';
+                      resize: none;
+                      font-size: 10pt;
+                    "
+                  >
+                    {{ linuxCommand }}
+                  </q-tooltip>
+                </q-btn>
+              </li>
+              <li class="text-body1 q-mt-sm">
+                Copy the resulting Public-Key (File peer_A.pub) to the
+                Public-Key Input on this Website. Choose a name for the
+                Connection. Click Generate.
+              </li>
+              <li class="text-body1 q-mt-sm">
+                Under the Config-Tab input your Private-Key (File peer_A.key)
+                and download the Configuration. This is handled Client-Side.
+              </li>
+              <li class="text-body1 q-mt-sm">
+                Either use a GUI-Application to import the Config (e.g.
+                Wireguird) or copy the Configuration (wg0.conf) to
+                /etc/wireguard/.
+              </li>
+              <li class="text-body1 q-mt-sm">
+                Activate the connection. If you copied it to /etc/wireguard/
+                activate it with
+                <div
+                  style="font-family: 'Courier New'"
+                  class="bg-grey-8 text-white"
+                >
+                  sudo wg-quick up wg0
+                </div>
+              </li>
+            </ol>
+          </q-tab-panel>
+          <q-tab-panel name="android">
+            <ol>
+              <li class="text-body1">
+                <a
+                  href="https://play.google.com/store/apps/details?id=com.wireguard.android"
+                  target="_blank"
+                  class="text-blue"
+                  >Install Wireguard from Play Store.
+                </a>
+              </li>
+              <li class="text-body1 q-mt-sm">
+                Click the +. Create from Scratch. Generate a Private- and
+                Public-Keypair.
+              </li>
+              <li class="text-body1 q-mt-sm">
+                Copy the Public-Key to the Public Key Input on this Website.
+                Choose a name. Click Generate.
+              </li>
+              <li class="text-body1 q-mt-sm">
+                Under the Config-Tab input your Private-Key and download the
+                Configuration. This is handled Client-Side.
+              </li>
+              <li class="text-body1 q-mt-sm">
+                Go back, click the + again and choose Import from file or
+                archive. Select the downloaded Configuration (wg0.conf).
+              </li>
+              <li class="text-body1 q-mt-sm">Activate the connection.</li>
+            </ol>
+          </q-tab-panel>
+        </q-tab-panels>
+
+        <q-separator class="q-mt-sm" />
+        <q-card-actions align="center" class="q-mt-sm q-mb-sm" vertical>
+          <q-btn
+            v-close-popup
+            push
+            class="bg-green text-white q-mt-md"
+            icon="done"
+            size="md"
+            label="Ok"
+            style="width: 175px"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
     <q-dialog v-model="setupVPNDialog">
       <q-card bordered style="max-width: 400px">
         <q-toolbar class="bg-layout-bg text-layout-text text-center">
           <q-toolbar-title class="q-ma-sm"
             >Setup VPN Connection</q-toolbar-title
           >
+          <q-btn
+            icon="help"
+            push
+            class="bg-blue text-white absolute-right q-mt-xs q-mr-xs"
+            round
+            style="height: 15px; width: 15px"
+            @click="helpVPNDialog = true"
+          />
         </q-toolbar>
         <div class="text-body1 q-ma-md">
           <div class="text-center text-body2">
-            Generate a private & public-keypair. Input a name & the public key
-            below.
+            Generate a private & public-keypair. Input a name for the connection
+            & the public key below.
           </div>
+
           <q-input
             v-model="vpnSetupInput.name"
             outlined
@@ -49,29 +218,39 @@
           </div>
         </div>
         <q-separator class="q-mt-sm" />
-        <q-card-actions align="center" class="q-mt-sm q-mb-sm">
+        <q-card-actions align="center" class="q-mt-sm q-mb-sm row">
           <q-btn
             v-close-popup
-            flat
+            push
             icon="close"
             label="Cancel"
-            class="bg-red text-white"
-            style="width: 130px"
+            class="bg-red text-white col"
           />
           <q-btn
-            flat
-            class="bg-green text-white"
+            push
+            class="bg-green text-white col"
             icon="done"
             size="md"
-            label="Continue"
+            label="Generate"
             @click="createVPNClient"
-            style="width: 130px"
           />
         </q-card-actions>
       </q-card>
     </q-dialog>
     <q-dialog v-model="setupVPNDialogSuccessful" persistent>
       <q-card bordered class="full-width">
+        <q-toolbar class="bg-layout-bg text-layout-text text-center">
+          <q-toolbar-title class="q-ma-sm">VPN Connection Data</q-toolbar-title>
+          <q-btn
+            icon="help"
+            push
+            class="bg-blue text-white absolute-right q-mt-xs q-mr-xs"
+            round
+            style="height: 15px; width: 15px"
+            @click="helpVPNDialog = true"
+          />
+        </q-toolbar>
+        <q-separator color="layout-text" />
         <q-tabs
           inline-label
           v-model="setupVPNDialogTabs"
@@ -82,7 +261,7 @@
           active-bg-color="layout-bg"
         >
           <q-tab name="windows" :icon="mdiMicrosoftWindows" label="Windows" />
-          <q-tab name="android" :icon="mdiAndroid" label="Mobile" />
+          <q-tab name="config" icon="settings" label="Config" />
           <q-tab name="info" icon="info" label="Info" />
         </q-tabs>
         <q-separator size="2px" color="primary" />
@@ -122,12 +301,12 @@
               />
             </q-input>
           </q-tab-panel>
-          <q-tab-panel name="android">
-            <div class="text-center text-body1 q-mt-lg">
-              Copy your hidden private key and input it below. <br />
-              You can than download the configuration and import the file.
-            </div>
-            <div class="row justify-center">
+          <q-tab-panel name="config">
+            <div class="row justify-center q-mt-xl">
+              <div class="text-center text-body1">
+                Copy your hidden private key and input it below. <br />
+                This will generate a valid Wireguard-Config
+              </div>
               <q-input
                 v-model="vpnSetupConnection.privateKey"
                 outlined
@@ -142,7 +321,7 @@
               />
               <q-btn
                 label="Download Configuration"
-                unelevated
+                push
                 class="bg-green text-white q-mt-md"
                 @click="downloadConfiguration"
               />
@@ -319,17 +498,17 @@
 
         <q-separator class="q-mt-sm" />
         <q-card-actions align="center" class="q-mt-sm q-mb-sm" vertical>
-          <div class="text-body2 text-center text-red" style="font-size: 10pt">
+          <div class="text-body2 text-center text-red">
             You won't be able to recover this information.
           </div>
           <q-btn
             v-close-popup
-            flat
-            class="bg-primary text-white q-mt-md"
+            push
+            class="bg-green text-white q-mt-md"
             icon="done"
             size="md"
             label="Ok"
-            style="width: 130px"
+            style="width: 175px"
           />
         </q-card-actions>
       </q-card>
@@ -390,7 +569,7 @@
 
       <q-page-sticky position="bottom" :offset="[0, 20]">
         <q-btn
-          unelevated
+          push
           icon="add"
           active-icon="add"
           direction="up"
@@ -415,8 +594,8 @@
                 <q-btn
                   size="sm"
                   icon="info"
-                  class="q-ml-md bg-grey text-white"
-                  unelevated
+                  class="q-ml-md bg-blue text-white"
+                  push
                   round
                   @click="
                     vpnInfoDialog = true;
@@ -427,7 +606,7 @@
                   size="sm"
                   icon="close"
                   class="q-ml-md bg-red text-white"
-                  unelevated
+                  push
                   round
                   @click="deleteVPNConnection(item)"
                 />
@@ -445,8 +624,11 @@ import { defineComponent, ref, Ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { useLocalStore } from 'stores/localStore';
-import { mdiAndroid } from '@quasar/extras/mdi-v6';
-import { mdiMicrosoftWindows } from '@quasar/extras/mdi-v6';
+import {
+  mdiLinux,
+  mdiMicrosoftWindows,
+  mdiAndroid,
+} from '@quasar/extras/mdi-v6';
 import {
   VPNSetupInputType,
   VPNSetupConnectionType,
@@ -467,6 +649,7 @@ export default defineComponent({
     };
 
     return {
+      mdiLinux,
       mdiAndroid,
       mdiMicrosoftWindows,
       axios_config,
@@ -477,13 +660,19 @@ export default defineComponent({
       loading: ref(false),
       setupVPNDialog: ref(false),
       vpnInfoDialog: ref(false),
+      linuxCommand: ref(
+        'wg genkey | (umask 0077 && tee peer_A.key) | wg pubkey > peer_A.pub'
+      ),
+
+      helpVPNDialog: ref(false),
+      helpVPNDialogTabs: ref('windows'),
 
       setupVPNDialogSuccessful: ref(false),
       setupVPNDialogTabs: ref('windows'),
 
       vpnConnections: ref([]) as Ref<VPNClientInfoType[]>,
       vpnSetupInput: ref({ publicKey: '', name: '' }) as Ref<VPNSetupInputType>,
-      vpnSetupConnection: ref() as Ref<VPNSetupConnectionType>,
+      vpnSetupConnection: ref({}) as Ref<VPNSetupConnectionType>,
       vpnClientInfo: ref({}) as Ref<VPNClientInfoType>,
     };
   },
