@@ -127,7 +127,7 @@ export default defineComponent({
         ?.open(
           'https://api.kurtn3x.xyz/files/download/file/' +
             id +
-            '?password=test1234',
+            '/?password=test1234',
           '_blank'
         )
         ?.focus();
