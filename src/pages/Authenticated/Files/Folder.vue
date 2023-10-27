@@ -2,10 +2,10 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="initialFetch && initialFetchSuccessful">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="initialFetch && !initialFetchSuccessful">
     <!-- delteSelectedItemsDialog (Confirmation) -->
     <q-dialog v-model="deleteItemsDialog">
       <q-card bordered style="width: 350px">
@@ -297,70 +297,82 @@
         <div class="q-ma-md">
           <div>
             <div class="text-body1 q-mt-md row">
-              <div class="text-weight-bolder q-mr-sm">Type:</div>
-              {{ itemInformationData.type }}
+              <div class="text-weight-bolder col-3">Type</div>
+              <div class="col q-ml-xs">{{ itemInformationData.type }}</div>
             </div>
 
-            <div
-              class="text-body1 q-mt-md row"
-              v-if="itemInformationData.type == 'file'"
-            >
-              <div class="text-weight-bolder q-mr-sm">Mime:</div>
-              <div class="ellipsis">
-                {{ (itemInformationData as FolderEntryType).mime }}
-                <q-tooltip
-                  class="text-body1"
-                  :class="
-                    darkmode ? 'bg-dark text-white' : 'bg-white text-dark'
-                  "
-                >
-                  {{ (itemInformationData as FolderEntryType).mime }}
-                </q-tooltip>
+            <div v-if="itemInformationData.type != 'folder'">
+              <div class="text-body1 q-mt-md row">
+                <div class="text-weight-bolder col-3">Mime</div>
+                <div class="col q-ml-xs" style="line-break: anywhere">
+                  {{ itemInformationData.mime }}
+                </div>
+              </div>
+              <div class="text-body1 q-mt-md row">
+                <div class="text-weight-bolder col-3">Size</div>
+                <div class="col q-ml-xs">
+                  {{ itemInformationData.size }}
+                </div>
               </div>
             </div>
-            <div
-              class="text-body1 q-mt-md row"
-              v-if="itemInformationData.type == 'file'"
-            >
-              <div class="text-weight-bolder q-mr-sm">Size:</div>
-              <div>{{ (itemInformationData as FolderEntryType).size }}</div>
+            <div class="text-body1 q-mt-md row">
+              <div class="text-weight-bolder col-3">Created</div>
+              <div class="col q-ml-xs">{{ itemInformationData.created }}</div>
             </div>
             <div class="text-body1 q-mt-md row">
-              <div class="text-weight-bolder q-mr-sm">Created:</div>
-              <div>{{ itemInformationData.created }}</div>
+              <div class="text-weight-bolder col-3">Modified</div>
+              <div class="col q-ml-xs">{{ itemInformationData.modified }}</div>
             </div>
             <div class="text-body1 q-mt-md row">
-              <div class="text-weight-bolder q-mr-sm">Modified:</div>
-              <div>{{ itemInformationData.modified }}</div>
-            </div>
-            <div class="text-body1 q-mt-md row">
-              <div class="text-weight-bolder q-mr-sm">Folder:</div>
-              <div class="ellipsis">
+              <div class="text-weight-bolder col-3">Folder</div>
+              <div class="col q-ml-xs" style="line-break: anywhere">
                 {{ itemInformationData.path }}
-                <q-tooltip
-                  class="text-body1"
-                  :class="
-                    darkmode ? 'bg-dark text-white' : 'bg-white text-dark'
-                  "
-                >
-                  {{ itemInformationData.path }}
-                </q-tooltip>
               </div>
             </div>
-            <div class="text-body1 q-mt-md row">
-              <div class="text-weight-bolder q-mr-sm">Sharing Enabled:</div>
-              <div>{{ itemInformationData.shared }}</div>
+            <div
+              class="text-body1 q-mt-md row"
+              v-if="itemInformationData.shared == false"
+            >
+              <div class="text-weight-bolder col-3">Shared</div>
+              <div class="col q-ml-xs">{{ itemInformationData.shared }}</div>
             </div>
-            <div class="text-body1 q-mt-md row">
-              <div class="text-weight-bolder q-mr-sm">Sharing Allow Read:</div>
-              <div>{{ itemInformationData.shared_allow_all_read }}</div>
-            </div>
-            <div class="text-body1 q-mt-md row">
-              <div class="text-weight-bolder q-mr-sm">Sharing Allow Write:</div>
-              <div>
-                {{ itemInformationData.shared_allow_all_write }}
-              </div>
-            </div>
+            <q-card
+              class="q-mt-md"
+              bordered
+              flat
+              v-if="itemInformationData.shared == true"
+            >
+              <q-expansion-item
+                icon="shared"
+                label="Shared"
+                header-class="text-weight-bolder text-body1 bg-blue text-white"
+                expand-icon-class="text-white"
+              >
+                <q-separator />
+                <div class="text-body1 q-mt-md row q-ml-sm">
+                  <div class="text-weight-bolder">Can Read</div>
+                  <div class="q-ml-md">
+                    {{ itemInformationData.shared_allow_all_read }}
+                  </div>
+                </div>
+                <div class="text-body1 q-mt-md row q-ml-sm">
+                  <div class="text-weight-bolder text-weight-bolder">
+                    Can Write
+                  </div>
+                  <div class="q-ml-md">
+                    {{ itemInformationData.shared_allow_all_write }}
+                  </div>
+                </div>
+                <div class="text-body1 q-mt-md row q-ml-sm q-mb-sm">
+                  <div class="text-weight-bolder text-weight-bolder">
+                    Password
+                  </div>
+                  <div class="q-ml-md">
+                    {{ itemInformationData.shared_password_protected }}
+                  </div>
+                </div>
+              </q-expansion-item>
+            </q-card>
           </div>
         </div>
 
@@ -1940,7 +1952,7 @@ export default defineComponent({
       console.log(something);
     },
 
-    // get Home folder content on initial page load
+    // get Home folder
     getHomeFolder() {
       this.loading = true;
       api
@@ -1952,6 +1964,8 @@ export default defineComponent({
             this.initialFetch = true;
             this.initialFetchSuccessful = true;
             this.loading = false;
+            this.selectedItems = [];
+            this.allSelected = false;
             this.resetFilterState();
           } else {
             this.initialFetch = true;
@@ -3077,7 +3091,7 @@ export default defineComponent({
     // used when clicking on a folder in the scrollarea
     getFolderId(folderid: string, navbarAdd: boolean) {
       this.loading = true;
-
+      console.log(this.selectedItems);
       api
         .get('/files/folder/' + folderid, this.axiosConfig)
         .then((response) => {

@@ -1,4 +1,5 @@
 <template>
+  <q-dialog v-model="test"> djsaoidjaoisfoiaf </q-dialog>
   <q-list separator bordered>
     <q-item
       clickable
@@ -50,6 +51,15 @@
               color="green"
               label="Allow everyone to write"
               @click="updateSharing(3)"
+            />
+          </q-item>
+          <q-item>
+            <q-btn
+              icon="lock"
+              label="Set Password"
+              flat
+              class="full-width full-height"
+              @click="this.test = true"
             />
           </q-item>
           <q-item v-if="item.shared">
@@ -187,6 +197,7 @@ export default defineComponent({
     const newName = ref(item.value.name);
 
     return {
+      test: ref(false),
       q,
       axiosConfig,
       item,

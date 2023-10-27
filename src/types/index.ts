@@ -31,6 +31,7 @@ export interface FolderEntryType {
   shared: boolean;
   shared_allow_all_read: boolean;
   shared_allow_all_write: boolean;
+  shared_password_protected: boolean;
   path: string;
   type: string;
   size: number;
@@ -108,6 +109,7 @@ export interface RawFolderContentType {
   created: string;
   shared_allow_all_read: boolean;
   shared_allow_all_write: boolean;
+  shared_password_protected: boolean;
   shared: boolean;
   parentid: string;
   path: string;
