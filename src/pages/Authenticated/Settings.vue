@@ -853,7 +853,7 @@ export default {
           if (error.response) {
             this.notify('negative', error.response.data.error);
           } else {
-            console.log(error);
+            this.notify('negative', error.message);
           }
         });
     },
@@ -897,9 +897,8 @@ export default {
           if (error.response) {
             this.notify('negative', error.response.data.error);
           } else {
-            console.log(error);
+            this.notify('negative', error.message);
           }
-          console.log(error);
         });
     },
 
@@ -923,7 +922,7 @@ export default {
           if (error.response) {
             this.notify('negative', error.response.data.error);
           } else {
-            console.log(error);
+            this.notify('negative', error.message);
           }
         });
     },
@@ -946,7 +945,7 @@ export default {
           if (error.response) {
             this.notify('negative', error.response.data.error);
           } else {
-            console.log(error);
+            this.notify('negative', error.message);
           }
         });
     },
@@ -970,7 +969,7 @@ export default {
           if (error.response) {
             this.notify('negative', error.response.data.error);
           } else {
-            console.log(error);
+            this.notify('negative', error.message);
           }
         });
     },
@@ -1037,7 +1036,7 @@ export default {
           if (error.response) {
             this.notify('negative', error.response.data.error);
           } else {
-            console.log(error);
+            this.notify('negative', error.message);
           }
         });
     },
@@ -1068,7 +1067,7 @@ export default {
           if (error.response) {
             this.notify('negative', error.response.data.error);
           } else {
-            console.log(error);
+            this.notify('negative', error.message);
           }
         });
     },

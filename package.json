@@ -46,7 +46,7 @@
     "babel-eslint": "^10.1.0",
     "eslint": "^8.52.0",
     "eslint-config-prettier": "^8.10.0",
-    "eslint-plugin-vue": "^9.18.0",
+    "eslint-plugin-vue": "^9.18.1",
     "prettier": "^2.8.8",
     "typescript": "^4.9.5",
     "vue3-markdown-it": "^1.0.10"

@@ -534,7 +534,7 @@ export default {
           if (error.response) {
             this.errorMessage = error.response.data.error;
           } else {
-            this.errorMessage = error;
+            this.errorMessage = error.message;
           }
         });
     },
@@ -576,7 +576,7 @@ export default {
             if (error.response) {
               this.errorMessage = error.response.data.error;
             } else {
-              this.errorMessage = error;
+              this.errorMessage = error.message;
             }
             this.getCaptcha();
             this.serverError = true;

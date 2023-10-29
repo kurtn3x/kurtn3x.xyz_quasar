@@ -725,7 +725,7 @@ export default defineComponent({
           if (error.response) {
             this.notify('negative', error.response.data.error);
           } else {
-            console.log(error);
+            this.notify('negative', error.message);
           }
         });
     },
@@ -806,7 +806,7 @@ export default defineComponent({
           if (error.response) {
             this.notify('negative', error.response.data.error);
           } else {
-            console.log(error);
+            this.notify('negative', error.message);
           }
           this.loading = false;
         });
@@ -840,7 +840,7 @@ export default defineComponent({
           if (error.response) {
             this.notify('negative', error.response.data.error);
           } else {
-            console.log(error);
+            this.notify('negative', error.message);
           }
           this.loading = false;
         });

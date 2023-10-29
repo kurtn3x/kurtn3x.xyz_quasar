@@ -2,10 +2,10 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="initialFetch && !initialFetchSuccessful">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="initialFetch && initialFetchSuccessful">
     <!-- delteSelectedItemsDialog (Confirmation) -->
     <q-dialog v-model="deleteItemsDialog">
       <q-card bordered style="width: 350px">
@@ -1710,7 +1710,6 @@ import {
   AllAvailableFoldersType,
   RawFolderContentType,
 } from 'src/types/index';
-
 export default defineComponent({
   name: 'FilesView',
   directives: {
@@ -1978,7 +1977,7 @@ export default defineComponent({
           if (error.response) {
             this.notify('negative', error.response.data.error);
           } else {
-            console.log(error);
+            this.notify('negative', error.message);
           }
           this.loading = false;
         });
@@ -2360,7 +2359,7 @@ export default defineComponent({
               if (error.response) {
                 folderProgress.error = error.response.data.error;
               } else {
-                folderProgress.error = error;
+                folderProgress.error = error.message;
               }
             });
           if (response !== undefined) {
@@ -2423,7 +2422,7 @@ export default defineComponent({
               if (error.response) {
                 fileProgress.error = error;
               } else {
-                fileProgress.error = error;
+                fileProgress.error = error.message;
               }
             });
           if (response !== undefined) {
@@ -2703,7 +2702,7 @@ export default defineComponent({
           if (error.response) {
             this.notify('negative', error.response.data.error);
           } else {
-            console.log(error);
+            this.notify('negative', error.message);
           }
           this.loading = false;
         });
@@ -2812,7 +2811,7 @@ export default defineComponent({
           if (error.response) {
             this.notify('negative', error.response.data.error);
           } else {
-            console.log(error);
+            this.notify('negative', error.message);
           }
           this.loading = false;
         });
@@ -2862,7 +2861,7 @@ export default defineComponent({
           if (error.response) {
             this.notify('negative', error.response.data.error);
           } else {
-            console.log(error);
+            this.notify('negative', error.message);
           }
           this.loading = false;
         });
@@ -2931,7 +2930,7 @@ export default defineComponent({
           if (error.response) {
             this.notify('negative', error.response.data.error);
           } else {
-            console.log(error);
+            this.notify('negative', error.message);
           }
         });
     },
@@ -3001,7 +3000,7 @@ export default defineComponent({
           if (error.response) {
             this.notify('negative', error.response.data.error);
           } else {
-            console.log(error);
+            this.notify('negative', error.message);
           }
           this.loading = false;
         });
@@ -3065,7 +3064,7 @@ export default defineComponent({
           if (error.response) {
             this.notify('negative', error.response.data.error);
           } else {
-            console.log(error);
+            this.notify('negative', error.message);
           }
           this.loading = false;
         });
@@ -3119,7 +3118,7 @@ export default defineComponent({
           if (error.response) {
             this.notify('negative', error.response.data.error);
           } else {
-            console.log(error);
+            this.notify('negative', error.message);
           }
           this.loading = false;
         });
@@ -3152,7 +3151,7 @@ export default defineComponent({
           if (error.response) {
             this.notify('negative', error.response.data.error);
           } else {
-            console.log(error);
+            this.notify('negative', error.message);
           }
           this.loading = false;
         });
@@ -3193,7 +3192,7 @@ export default defineComponent({
             if (error.response) {
               this.notify('negative', error.response.data.error);
             } else {
-              console.log(error);
+              this.notify('negative', error.message);
             }
             this.loading = false;
           });

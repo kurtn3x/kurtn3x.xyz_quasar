@@ -225,7 +225,7 @@ export default defineComponent({
           if (error.response) {
             this.loginErrorMessage = error.response.data.error;
           } else {
-            this.loginErrorMessage = error;
+            this.loginErrorMessage = error.message;
           }
           this.loading = false;
           this.localStore.setAuthState(false);

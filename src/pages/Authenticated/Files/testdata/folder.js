@@ -62,6 +62,7 @@ var FOLDER = {
       shared_allow_all_read: true,
       shared_allow_all_write: false,
       shared: true,
+      shared_password_protected: false,
       size: '137.8KB',
       path: 'Home',
       type: 'file',

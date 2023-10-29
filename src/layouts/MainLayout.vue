@@ -21,10 +21,17 @@
           <q-avatar class="q-mr-sm" size="26px" rounded>
             <img :src="headerInfo.avatar" />
           </q-avatar>
-          <a class="text-body2 q-mr-sm">{{ headerInfo.username }}</a>
+          <a class="text-body2 q-mr-sm text-weight-bold">{{
+            headerInfo.username
+          }}</a>
           <q-icon name="arrow_drop_down" size="sm" />
-          <q-menu class="q-mr-xs">
-            <q-card class="q-pa-sm" bordered style="max-width: 280px">
+          <q-menu class="q-mr-xs" dark>
+            <q-card
+              class="q-pa-sm bg-layout-bg"
+              bordered
+              dark
+              style="max-width: 280px"
+            >
               <div class="no-wrap">
                 <q-btn
                   push
@@ -59,10 +66,7 @@
                   align="left"
                 />
               </div>
-              <q-separator
-                :color="darkmode ? 'white' : 'dark'"
-                class="q-mb-sm q-mt-xs"
-              />
+              <q-separator color="layout-text" class="q-mb-sm q-mt-xs" />
               <div class="row">
                 <q-btn
                   style="background: #3b4fb5 !important"
@@ -107,10 +111,7 @@
                   class="q-mr-xs"
                 />
               </div>
-              <q-separator
-                :color="darkmode ? 'white' : 'dark'"
-                class="q-mb-sm q-mt-sm"
-              />
+              <q-separator color="layout-text" class="q-mb-sm q-mt-sm" />
               <div class="row justify-between">
                 <q-btn
                   @click="darkmodeChanged"

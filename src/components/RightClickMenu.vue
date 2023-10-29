@@ -1,5 +1,93 @@
 <template>
-  <q-dialog v-model="test"> djsaoidjaoisfoiaf </q-dialog>
+  <q-dialog v-model="sharingPasswordDialog">
+    <q-card bordered style="width: 350px">
+      <q-toolbar class="bg-layout-bg text-layout-text text-center">
+        <q-toolbar-title class="q-ma-sm">Set new Password</q-toolbar-title>
+        <q-btn
+          icon="help"
+          push
+          class="bg-blue text-white absolute-right q-mt-xs q-mr-xs"
+          round
+          style="height: 15px; width: 15px"
+        >
+          <q-tooltip
+            class="text-body2"
+            style="width: 250px"
+            anchor="bottom left"
+            self="top middle"
+          >
+            Passwords set for files are handled unsecurely. Don't use e.g.
+            personal Passwords here.
+          </q-tooltip>
+        </q-btn>
+      </q-toolbar>
+      <div class="text-body1 text-center q-ma-md">
+        <q-input
+          v-model="sharingPasswordOptions.shared_password"
+          class="q-mt-sm full-width"
+          style="max-width: 400px"
+          label="Password"
+          input-class="text-body1"
+          outlined
+          :type="sharingPasswordOptions.isPwd ? 'password' : 'text'"
+          :color="darkmode ? 'white' : 'black'"
+        >
+          <template v-slot:prepend>
+            <q-icon name="lock" />
+          </template>
+          <template v-slot:append>
+            <q-icon
+              class="pw_icon"
+              :name="
+                sharingPasswordOptions.isPwd ? 'visibility' : 'visibility_off'
+              "
+              @click="
+                sharingPasswordOptions.isPwd = !sharingPasswordOptions.isPwd
+              "
+            />
+          </template>
+        </q-input>
+        <div class="row q-mt-md">
+          <q-btn
+            label="Generate"
+            icon="refresh"
+            push
+            class="bg-blue text-white col q-mr-xs"
+            @click="generatePassword()"
+          />
+          <q-btn
+            icon="content_copy"
+            label="Copy"
+            push
+            class="bg-blue text-white col q-ml-xs"
+            @click="copyToClipboard(sharingPasswordOptions.shared_password)"
+          />
+        </div>
+      </div>
+      <q-separator />
+      <q-card-actions align="center" class="row q-mt-sm q-mb-sm">
+        <q-btn
+          v-close-popup
+          push
+          icon="close"
+          label="Cancel"
+          class="bg-red text-white col"
+          @click="sharingPasswordOptions.shared_password = ''"
+        />
+        <q-btn
+          push
+          class="bg-green text-white col"
+          icon="done"
+          size="md"
+          label="Set"
+          @click="
+            sharingPasswordOptions.shared_password_protected = true;
+            updateSharingPassword();
+          "
+        />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
   <q-list separator bordered>
     <q-item
       clickable
@@ -22,44 +110,74 @@
         <q-item-label>Share</q-item-label>
       </q-item-section>
       <q-item-section side>
-        <q-icon name="keyboard_arrow_right" />
+        <q-icon name="keyboard_arrow_down" />
       </q-item-section>
-      <q-menu anchor="bottom middle" self="top middle">
+      <q-menu anchor="bottom middle" self="top middle" style="width: 250px">
         <q-list bordered separator>
           <q-item>
             <q-checkbox
               dense
-              v-model="item.shared"
+              v-model="sharingOptions.shared"
               color="green"
               label="Enable Sharing"
-              @click="updateSharing(1)"
+              @click="updateSharing"
             />
           </q-item>
-          <q-item>
+          <q-item v-if="item.shared == true">
             <q-checkbox
               dense
-              v-model="item.shared_allow_all_read"
+              v-model="sharingOptions.shared_allow_all_read"
               color="green"
               label="Allow everyone to read"
-              @click="updateSharing(2)"
+              @click="updateSharing"
             />
           </q-item>
-          <q-item>
+          <q-item v-if="item.shared == true">
             <q-checkbox
               dense
-              v-model="item.shared_allow_all_write"
+              v-model="sharingOptions.shared_allow_all_write"
               color="green"
               label="Allow everyone to write"
-              @click="updateSharing(3)"
+              @click="updateSharing"
             />
           </q-item>
-          <q-item>
+          <q-item
+            v-if="item.shared == true && item.shared_password_protected == true"
+          >
+            <q-item-section>
+              <q-item-label class="text-center text-green" overline
+                >Password set</q-item-label
+              >
+              <div class="row full-width q-mt-xs">
+                <q-btn
+                  outline
+                  icon="lock edit"
+                  class="col q-mr-xs"
+                  @click="sharingPasswordDialog = true"
+                />
+                <q-btn
+                  outline
+                  icon="lock close"
+                  class="col q-ml-xs"
+                  @click="
+                    sharingPasswordOptions.shared_password_protected = false;
+                    updateSharingPassword();
+                  "
+                />
+              </div>
+            </q-item-section>
+          </q-item>
+          <q-item
+            v-if="
+              item.shared == true && item.shared_password_protected == false
+            "
+          >
             <q-btn
+              outline
               icon="lock"
               label="Set Password"
-              flat
               class="full-width full-height"
-              @click="this.test = true"
+              @click="sharingPasswordDialog = true"
             />
           </q-item>
           <q-item v-if="item.shared">
@@ -167,25 +285,21 @@
   </q-list>
 </template>
 
-<script lang="js">
-import { defineComponent, ref } from 'vue';
+<script lang="ts">
+import { defineComponent, ref, Ref } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
+import { FolderEntryType } from 'src/types/index';
 
 export default defineComponent({
   name: 'RightClickMenu',
   props: {
-    propItem: Object
+    propItem: Object,
   },
-  emits:[
-    'moveItem',
-    'deleteItem',
-    'showInformation'
-],
+  emits: ['moveItem', 'deleteItem', 'showInformation'],
   setup(props) {
     const localStore = useLocalStore();
-    var item = ref(props.propItem);
     const q = useQuasar();
     const axiosConfig = {
       withCredentials: true,
@@ -194,16 +308,35 @@ export default defineComponent({
       },
     };
 
+    var item = ref(props.propItem) as Ref<FolderEntryType>;
+
+    var sharingOptions = ref({
+      item_id: item.value.id,
+      shared_recursive: true,
+      shared: item.value.shared,
+      shared_allow_all_read: item.value.shared_allow_all_read,
+      shared_allow_all_write: item.value.shared_allow_all_write,
+    });
+
+    var sharingPasswordOptions = ref({
+      item_id: item.value.id,
+      shared_password_protected: item.value.shared_password_protected,
+      shared_password: '',
+      isPwd: true,
+    });
+
     const newName = ref(item.value.name);
 
     return {
-      test: ref(false),
       q,
       axiosConfig,
       item,
       localStore,
       itemInformationDialog: ref(false),
       newName,
+      sharingOptions,
+      sharingPasswordDialog: ref(false),
+      sharingPasswordOptions,
     };
   },
 
@@ -213,25 +346,13 @@ export default defineComponent({
     },
     itemShareLink() {
       return (
-        'https://kurtn3x.xyz/public/' +
-        this.item.type +
-        '/' +
-        this.item.id
+        'https://kurtn3x.xyz/public/' + this.item.type + '/' + this.item.id
       );
     },
   },
 
   methods: {
-
-    validateName(val){
-      if (val.length < 1 && /\/|\x00/.test(val) ){
-        return false
-      } else {
-        return true
-      }
-    },
-
-    notify(type, message) {
+    notify(type: string, message: string) {
       this.q.notify({
         type: type,
         message: message,
@@ -240,13 +361,24 @@ export default defineComponent({
       });
     },
 
-    copyToClipboard(text) {
+    generatePassword() {
+      var length = 10,
+        charset =
+          'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
+        retVal = '';
+      for (var i = 0, n = charset.length; i < length; ++i) {
+        retVal += charset.charAt(Math.floor(Math.random() * n));
+      }
+      this.sharingPasswordOptions.shared_password = retVal;
+    },
+
+    copyToClipboard(text: string) {
       navigator.clipboard.writeText(text);
       this.notify('positive', 'Copied to clipboard.');
     },
 
-    updateName(){
-      this.$refs.inputMenu.hide()
+    updateName() {
+      (this.$refs as any).inputMenu.hide();
       var data = {
         item_id: this.item.id,
         name: this.newName,
@@ -255,40 +387,8 @@ export default defineComponent({
         .put('/files/update/' + this.item.type, data, this.axiosConfig)
         .then((response) => {
           if (response.status == 200) {
-            this.item.name = this.newName
-          } else {
-            this.notify('negative', response.data.error)
-          }
-        })
-        .catch((error) => {
-          if (error.response) {
-            this.notify('negative', error.response.data.error)
-          } else {
-            this.notify('negative', error.message)
-          }
-        });
-    },
-
-    updateSharing(type) {
-      var data = {
-        item_id: this.item.id,
-        shared_recursive: true,
-      };
-      if (type == 1) {
-        data.shared = this.item.shared;
-      } else if (type == 2) {
-        data.shared_allow_all_read = this.item.shared_allow_all_read;
-      } else if (type == 3) {
-        data.shared_allow_all_write = this.item.shared_allow_all_write;
-      }
-      api
-        .put(
-          '/files/update/' + this.item.type,
-          data,
-          this.axiosConfig
-        )
-        .then((response) => {
-          if (response.status == 200) {
+            this.item.name = this.newName;
+            this.notify('positive', 'Updated');
           } else {
             this.notify('negative', response.data.error);
           }
@@ -302,24 +402,87 @@ export default defineComponent({
         });
     },
 
-    moveItem(){
-      this.$emit('moveItem', true)
+    updateSharing() {
+      api
+        .put(
+          '/files/update/' + this.item.type,
+          this.sharingOptions,
+          this.axiosConfig
+        )
+        .then((response) => {
+          if (response.status == 200) {
+            // set item to sharingOptions values
+            Object.assign(this.item, this.sharingOptions);
+            this.notify('positive', 'Updated');
+          } else {
+            this.notify('negative', response.data.error);
+          }
+        })
+        .catch((error) => {
+          // reset sharingOptions to before values
+          if (error.response) {
+            this.notify('negative', error.response.data.error);
+            Object.assign(this.sharingOptions, this.item);
+          } else {
+            this.notify('negative', error.message);
+            Object.assign(this.sharingOptions, this.item);
+          }
+        });
     },
 
-    deleteItem(){
-      this.$emit('deleteItem', true)
+    updateSharingPassword() {
+      api
+        .put(
+          '/files/update/' + this.item.type,
+          this.sharingPasswordOptions,
+          this.axiosConfig
+        )
+        .then((response) => {
+          if (response.status == 200) {
+            // set item to sharingOptions values
+            Object.assign(this.item, this.sharingPasswordOptions);
+            this.notify('positive', 'Updated');
+            this.sharingPasswordOptions.shared_password = '';
+            this.sharingPasswordDialog = false;
+          } else {
+            this.notify('negative', response.data.error);
+          }
+        })
+        .catch((error) => {
+          // reset sharingOptions to before values
+          if (error.response) {
+            this.notify('negative', error.response.data.error);
+            Object.assign(this.sharingPasswordOptions, this.item);
+          } else {
+            this.notify('negative', error.message);
+            Object.assign(this.sharingPasswordOptions, this.item);
+          }
+        });
     },
 
-    showInformation(){
-      this.$emit('showInformation', true)
+    moveItem() {
+      this.$emit('moveItem', true);
     },
 
-    downloadItem(){
-        window
-        .open('https://api.kurtn3x.xyz/files/download/' + this.item.type + '/' + this.item.id, '_blank')
-        .focus();
+    deleteItem() {
+      this.$emit('deleteItem', true);
+    },
 
-    }
+    showInformation() {
+      this.$emit('showInformation', true);
+    },
+
+    downloadItem() {
+      (
+        window.open(
+          'https://api.kurtn3x.xyz/files/download/' +
+            this.item.type +
+            '/' +
+            this.item.id,
+          '_blank'
+        ) as Window
+      ).focus();
+    },
   },
 });
 </script>

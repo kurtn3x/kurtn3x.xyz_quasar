@@ -1,16 +1,61 @@
 <template>
-  <div v-if="loading" class="absolute-center">
+  <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="!allowed && !loading">
+  <div v-if="initialFetch && !initialFetchSuccessful">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="allowed && !loading" class="q-ma-sm">
-    <div class="text-primary text-h4 text-center q-ma-md ellipsis">
+  <div
+    v-if="initialFetch && initialFetchSuccessful && passwordSet && !passwordOk"
+  >
+    <div class="text-h6 text-center text-weight-bolder q-mt-lg">
+      Password required
+    </div>
+    <div class="row justify-center">
+      <q-input
+        autofocus
+        v-model="password"
+        :color="darkmode ? 'white' : 'dark'"
+        label="Password"
+        :type="isPwd ? 'password' : 'text'"
+        outlined
+        class="q-mt-md"
+        input-class="text-body1"
+      >
+        <template v-slot:prepend>
+          <q-icon name="lock" />
+        </template>
+        <template v-slot:append>
+          <q-icon
+            class="pw_icon"
+            :name="isPwd ? 'visibility' : 'visibility_off'"
+            @click="isPwd = !isPwd"
+          />
+        </template>
+      </q-input>
+    </div>
+    <div class="row justify-center q-mt-lg">
+      <q-btn
+        push
+        class="bg-green text-white"
+        label="OK"
+        icon="done"
+        size="lg"
+        style="width: 250px"
+        @click="getFile"
+      />
+    </div>
+  </div>
+  <div
+    v-if="
+      initialFetch && initialFetchSuccessful && (!passwordSet || passwordOk)
+    "
+  >
+    <div class="text-primary text-h4 text-center q-mt-lg ellipsis">
       <q-icon name="file_present" class="q-mr-sm" />
       {{ fileData.name }}
     </div>
-    <div class="row justify-center items-center full-width">
+    <div class="row justify-center items-center full-width q-mt-lg">
       <q-list
         bordered
         class="rounded-borders full-width"
@@ -108,8 +153,13 @@ export default defineComponent({
     return {
       localStore,
       q,
-      loading: ref(true),
-      allowed: ref(false),
+      fileId: ref(''),
+      initialFetch: ref(true),
+      initialFetchSuccessful: ref(false),
+      passwordSet: ref(false),
+      passwordOk: ref(false),
+      password: ref(''),
+      isPwd: ref(true),
       fileData: ref({}) as Ref<FileItemExtendedType>,
     };
   },
@@ -123,14 +173,11 @@ export default defineComponent({
   },
   methods: {
     downloadFile(id: string) {
-      window
-        ?.open(
-          'https://api.kurtn3x.xyz/files/download/file/' +
-            id +
-            '/?password=test1234',
-          '_blank'
-        )
-        ?.focus();
+      var url = 'https://api.kurtn3x.xyz/files/download/file/' + id;
+      if (this.passwordSet == true) {
+        url += '?password=' + this.password;
+      }
+      window?.open(url, '_blank')?.focus();
     },
 
     notify(type: string, message: string) {
@@ -143,34 +190,60 @@ export default defineComponent({
     },
 
     getFile() {
-      var id = this.$route.params.id;
+      if (this.fileId == '') {
+        this.fileId = this.$route.params.id as string;
+      }
+
       const axiosConfig = {
         withCredentials: true,
         headers: {
           'X-CSRFToken': this.q.cookies.get('csrftoken'),
         },
       };
+
+      var url = '/files/file/' + this.fileId;
+      if (this.passwordSet == true) {
+        url += '?password=' + this.password;
+      }
+
       api
-        .get('/files/file/' + id, axiosConfig)
+        .get(url, axiosConfig)
         .then((response) => {
+          console.log(response);
           if (response.status == 200) {
-            this.allowed = true;
-            this.loading = false;
+            this.initialFetchSuccessful = true;
+            this.initialFetch = true;
+            this.passwordOk = true;
             this.fileData = response.data;
-            console.log(this.fileData);
+          } else if (response.status == 290) {
+            // file is password protected but no password has been given → Prompt password input
+            this.initialFetchSuccessful = true;
+            this.initialFetch = true;
+            this.passwordSet = true;
+            this.passwordOk = false;
+          } else if (response.status == 291) {
+            // wrong password
+            this.initialFetchSuccessful = true;
+            this.initialFetch = true;
+            this.passwordSet = true;
+            this.passwordOk = false;
+            this.notify('negative', response.data.error);
           } else {
-            this.loading = false;
-            this.allowed = false;
+            this.initialFetch = true;
+            this.initialFetchSuccessful = false;
           }
         })
         .catch((error) => {
+          console.log('Error');
+          console.log(error);
+
           if (error.response) {
             this.notify('negative', error.response.data.error);
           } else {
-            console.log(error);
+            this.notify('negative', error.message);
           }
-          this.loading = false;
-          this.allowed = false;
+          this.initialFetch = true;
+          this.initialFetchSuccessful = false;
         });
     },
   },
