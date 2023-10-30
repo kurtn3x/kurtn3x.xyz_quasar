@@ -36,25 +36,16 @@ const routes: RouteRecordRaw[] = [
 
   // public file views, these are used for file sharing
   {
-    path: '/public',
+    path: '/files',
     component: () => import('layouts/MainLayout.vue'),
     children: [
       {
-        path: 'document/:id',
-        component: () => import('pages/public/PublicDocumentView.vue'),
-      },
-      {
         path: 'file/:id',
-        component: () => import('pages/public/PublicFileView.vue'),
-      },
-
-      {
-        path: 'code/:id',
-        component: () => import('pages/public/PublicCodeEditor/CodeView.vue'),
+        component: () => import('pages/Files/File.vue'),
       },
       {
         path: 'p/:id',
-        component: () => import('pages/public/Permalink.vue'),
+        component: () => import('pages/Files/Permalink.vue'),
       },
     ],
   },
@@ -80,20 +71,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: 'files',
-        component: () => import('pages/Authenticated/Files/Folder.vue'),
-      },
-      {
-        path: 'video/:id',
-        component: () => import('pages/Authenticated/Files/Video.vue'),
-      },
-      {
-        path: 'doc/:id',
-        component: () => import('src/pages/Authenticated/DocumentEdit.vue'),
-      },
-      {
-        path: 'code/:id',
-        component: () =>
-          import('src/pages/Authenticated/CodeEditor/CodeView.vue'),
+        component: () => import('pages/Authenticated/DashboardFolder.vue'),
       },
       {
         path: 'vpn',
@@ -130,7 +108,7 @@ const routes: RouteRecordRaw[] = [
   // but you can also remove it
   {
     path: '/:catchAll(.*)*',
-    component: () => import('pages/ErrorNotFound.vue'),
+    component: () => import('pages/NotFound.vue'),
   },
 ];
 

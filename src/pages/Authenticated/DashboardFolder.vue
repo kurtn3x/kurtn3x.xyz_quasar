@@ -2,10 +2,10 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="initialFetch && initialFetchSuccessful">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="initialFetch && !initialFetchSuccessful">
     <!-- delteSelectedItemsDialog (Confirmation) -->
     <q-dialog v-model="deleteItemsDialog">
       <q-card bordered style="width: 350px">
@@ -911,6 +911,8 @@
             </div>
           </div>
         </q-toolbar>
+
+        <!-- column descriptions/sorting on large screens only -->
         <div class="row gt-xs">
           <q-item-section avatar class="q-ml-lg" />
           <q-item-section avatar>
@@ -1342,7 +1344,7 @@
                   </q-item-section>
                   <q-item-section avatar top>
                     <q-avatar
-                      :icon="getIcon((item as FolderEntryType).mime as string)"
+                      :icon="getIcon(item.mime)"
                       color="transparent"
                       text-color="primary"
                       size="4.5em"
@@ -1694,10 +1696,10 @@ import { defineComponent, ref, reactive, computed } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { useQuasar, scroll, QInput } from 'quasar';
 import { api } from 'boot/axios';
-import { draggable, selected } from 'components/draggable.js';
-import { droppable } from 'components/droppable.js';
-import RightClickMenu from 'components/RightClickMenu.vue';
-import { FOLDER } from './testdata/folder.js';
+import { draggable, selected } from 'components/Files/draggable.js';
+import { droppable } from 'components/Files/droppable.js';
+import RightClickMenu from 'components/Files/RightClickMenu.vue';
+import { FOLDER } from 'src/testdata/folder';
 
 import type { Ref } from 'vue';
 import {

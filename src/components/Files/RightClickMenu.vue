@@ -345,9 +345,7 @@ export default defineComponent({
       return this.localStore.darkmode;
     },
     itemShareLink() {
-      return (
-        'https://kurtn3x.xyz/public/' + this.item.type + '/' + this.item.id
-      );
+      return 'https://kurtn3x.xyz/files/' + this.item.type + '/' + this.item.id;
     },
   },
 

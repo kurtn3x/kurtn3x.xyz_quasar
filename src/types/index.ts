@@ -20,6 +20,15 @@ export function getIcon(mime: string) {
   }
 }
 
+export function getLink(mime: string) {
+  const t = mimeMap.get(mime);
+  if (t == undefined) {
+    return 'file';
+  } else {
+    return t.link;
+  }
+}
+
 export { mimeMap };
 
 // Types for Files/ Folders

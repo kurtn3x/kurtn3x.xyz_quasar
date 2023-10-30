@@ -146,7 +146,7 @@ import { FileItemExtendedType } from 'src/types/index';
 import type { Ref } from 'vue';
 
 export default defineComponent({
-  name: 'IndexPage',
+  name: 'FileView',
   setup() {
     const localStore = useLocalStore();
     const q = useQuasar();
