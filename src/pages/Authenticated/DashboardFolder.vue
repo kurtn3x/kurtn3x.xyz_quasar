@@ -1700,7 +1700,6 @@ import { draggable, selected } from 'components/Files/draggable.js';
 import { droppable } from 'components/Files/droppable.js';
 import RightClickMenu from 'components/Files/RightClickMenu.vue';
 import { FOLDER } from 'src/testdata/folder';
-
 import type { Ref } from 'vue';
 import {
   TraverseFolderMapType,
@@ -1712,6 +1711,7 @@ import {
   AllAvailableFoldersType,
   RawFolderContentType,
 } from 'src/types/index';
+
 export default defineComponent({
   name: 'FilesView',
   directives: {
