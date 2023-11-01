@@ -2,10 +2,10 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="initialFetch && !initialFetchSuccessful">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="initialFetch && initialFetchSuccessful">
     <!-- delteSelectedItemsDialog (Confirmation) -->
     <q-dialog v-model="deleteItemsDialog">
       <q-card bordered style="width: 350px">
@@ -282,115 +282,6 @@
         </div>
       </q-card>
     </q-page-sticky>
-
-    <!-- itemInformationDialog -->
-    <q-dialog v-model="itemInformationDialog">
-      <q-card bordered style="width: 350px">
-        <q-toolbar class="bg-layout-bg text-layout-text text-center">
-          <q-toolbar-title class="q-ma-sm">{{
-            itemInformationData.name
-          }}</q-toolbar-title>
-          <q-tooltip class="text-body1 bg-layout-bg text-layout-text">
-            {{ itemInformationData.name }}
-          </q-tooltip>
-        </q-toolbar>
-        <div class="q-ma-md">
-          <div>
-            <div class="text-body1 q-mt-md row">
-              <div class="text-weight-bolder col-3">Type</div>
-              <div class="col q-ml-xs">{{ itemInformationData.type }}</div>
-            </div>
-
-            <div v-if="itemInformationData.type != 'folder'">
-              <div class="text-body1 q-mt-md row">
-                <div class="text-weight-bolder col-3">Mime</div>
-                <div class="col q-ml-xs" style="line-break: anywhere">
-                  {{ itemInformationData.mime }}
-                </div>
-              </div>
-              <div class="text-body1 q-mt-md row">
-                <div class="text-weight-bolder col-3">Size</div>
-                <div class="col q-ml-xs">
-                  {{ itemInformationData.size }}
-                </div>
-              </div>
-            </div>
-            <div class="text-body1 q-mt-md row">
-              <div class="text-weight-bolder col-3">Created</div>
-              <div class="col q-ml-xs">{{ itemInformationData.created }}</div>
-            </div>
-            <div class="text-body1 q-mt-md row">
-              <div class="text-weight-bolder col-3">Modified</div>
-              <div class="col q-ml-xs">{{ itemInformationData.modified }}</div>
-            </div>
-            <div class="text-body1 q-mt-md row">
-              <div class="text-weight-bolder col-3">Folder</div>
-              <div class="col q-ml-xs" style="line-break: anywhere">
-                {{ itemInformationData.path }}
-              </div>
-            </div>
-            <div
-              class="text-body1 q-mt-md row"
-              v-if="itemInformationData.shared == false"
-            >
-              <div class="text-weight-bolder col-3">Shared</div>
-              <div class="col q-ml-xs">{{ itemInformationData.shared }}</div>
-            </div>
-            <q-card
-              class="q-mt-md"
-              bordered
-              flat
-              v-if="itemInformationData.shared == true"
-            >
-              <q-expansion-item
-                icon="shared"
-                label="Shared"
-                header-class="text-weight-bolder text-body1 bg-blue text-white"
-                expand-icon-class="text-white"
-              >
-                <q-separator />
-                <div class="text-body1 q-mt-md row q-ml-sm">
-                  <div class="text-weight-bolder">Can Read</div>
-                  <div class="q-ml-md">
-                    {{ itemInformationData.shared_allow_all_read }}
-                  </div>
-                </div>
-                <div class="text-body1 q-mt-md row q-ml-sm">
-                  <div class="text-weight-bolder text-weight-bolder">
-                    Can Write
-                  </div>
-                  <div class="q-ml-md">
-                    {{ itemInformationData.shared_allow_all_write }}
-                  </div>
-                </div>
-                <div class="text-body1 q-mt-md row q-ml-sm q-mb-sm">
-                  <div class="text-weight-bolder text-weight-bolder">
-                    Password
-                  </div>
-                  <div class="q-ml-md">
-                    {{ itemInformationData.shared_password_protected }}
-                  </div>
-                </div>
-              </q-expansion-item>
-            </q-card>
-          </div>
-        </div>
-
-        <q-separator class="q-mt-sm" />
-
-        <q-card-actions align="center" class="q-mt-sm q-mb-sm">
-          <q-btn
-            v-close-popup
-            push
-            class="bg-green text-white col"
-            icon="done"
-            size="md"
-            label="OK"
-            style="max-width: 130px"
-          />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
 
     <q-dialog v-model="uploadFilesDialog" persistent>
       <q-card bordered style="width: 350px; height: 500px">
@@ -1200,10 +1091,6 @@
                           deleteObj(item.id, item.type);
                         }
                       "
-                      @showInformation="
-                        itemInformationDialog = true;
-                        itemInformationData = item;
-                      "
                     />
                   </q-popup-proxy>
 
@@ -1279,10 +1166,6 @@
                               deleteObj(item.id, item.type);
                             }
                           "
-                          @showInformation="
-                            itemInformationDialog = true;
-                            itemInformationData = item;
-                          "
                         />
                       </q-menu>
                     </q-btn>
@@ -1324,10 +1207,6 @@
                         () => {
                           deleteObj(item.id, item.type);
                         }
-                      "
-                      @showInformation="
-                        itemInformationDialog = true;
-                        itemInformationData = item;
                       "
                     />
                   </q-popup-proxy>
@@ -1398,10 +1277,6 @@
                             () => {
                               deleteObj(item.id, item.type);
                             }
-                          "
-                          @showInformation="
-                            itemInformationDialog = true;
-                            itemInformationData = item;
                           "
                         />
                       </q-menu>
@@ -1821,9 +1696,6 @@ export default defineComponent({
         created: 0,
         shared: 0,
       }),
-
-      itemInformationDialog: ref(false),
-      itemInformationData: ref({}) as Ref<FolderEntryType>,
 
       // selection handlers
       selectedItems: ref([]) as Ref<FolderEntryType[]>,

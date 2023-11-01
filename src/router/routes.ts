@@ -44,6 +44,10 @@ const routes: RouteRecordRaw[] = [
         component: () => import('pages/Files/File.vue'),
       },
       {
+        path: 'video/:id',
+        component: () => import('pages/Files/Video.vue'),
+      },
+      {
         path: 'p/:id',
         component: () => import('pages/Files/Permalink.vue'),
       },
@@ -88,7 +92,6 @@ const routes: RouteRecordRaw[] = [
     path: '/api',
     component: () => import('layouts/APIReferrersLayout.vue'),
     children: [
-      { path: '/', component: () => import('pages/ErrorNotFound.vue') },
       {
         path: 'reset_password',
         component: () => import('pages/APIReferrers/ResetPassword.vue'),
