@@ -1000,10 +1000,11 @@
 
         <q-separator size="2px" color="primary" />
       </div>
-      <q-scroll-area class="col">
+      <q-scroll-area
+        class="col"
+        :class="scrollAreaDragover ? 'bg-cyan-14' : ''"
+      >
         <div
-          :style="scrollAreaHeight"
-          :class="scrollAreaDragover ? 'bg-cyan-14' : ''"
           @drop.prevent.stop="
             (ev: DragEvent) => {
               if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
@@ -1933,7 +1934,7 @@ export default defineComponent({
     },
 
     scrollAreaHeight() {
-      var height = this.q.screen.height - 230;
+      var height = this.q.screen.height - 200;
       return { height: height + 'px' };
     },
 

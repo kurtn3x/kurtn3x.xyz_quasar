@@ -1696,8 +1696,8 @@ import { defineComponent, ref, reactive, computed } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { useQuasar, scroll, QInput } from 'quasar';
 import { api } from 'boot/axios';
-import { draggable, selected } from 'components/draggable.js';
-import { droppable } from 'components/droppable.js';
+import { draggable, selected } from 'components/Files/draggable.js';
+import { droppable } from 'components/Files/droppable.js';
 import RightClickMenu from 'components/RightClickMenu.vue';
 import { FOLDER } from './testdata/folder.js';
 
