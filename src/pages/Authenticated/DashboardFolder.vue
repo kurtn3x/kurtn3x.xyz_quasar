@@ -359,7 +359,7 @@
                         />
                       </q-item-section>
                       <q-item-section class="q-pa-none">
-                        <q-item-label class="ellipsis" style="width: 170px">
+                        <q-item-label class="ellipsis" style="width: 165px">
                           {{ file.name }}
                         </q-item-label>
                       </q-item-section>
@@ -1292,7 +1292,7 @@
         </template>
       </q-scroll-area>
 
-      <!-- Bottom Right Upload Progress -->
+      <!-- Mobile Button for add files -->
 
       <q-page-sticky
         class="lt-sm"
@@ -1332,6 +1332,8 @@
           />
         </q-fab>
       </q-page-sticky>
+
+      <!-- Bottom Right Upload Progress -->
 
       <q-page-sticky position="bottom-right" style="z-index: 100">
         <q-btn
@@ -1378,48 +1380,48 @@
               />
             </div>
           </q-item>
+          <div class="row text-body1 q-ma-sm">
+            <div class="text-blue">
+              {{
+                progressPanelProgressMap.filter(
+                  (obj) => obj.status == 'loading'
+                ).length
+              }}
+              <q-icon name="hourglass_bottom" size="18px" class="q-ml-xs" />
+            </div>
+            <div class="q-ml-md text-red">
+              {{
+                progressPanelProgressMap.filter((obj) => obj.status == 'error')
+                  .length
+              }}
+              <q-icon name="warning" size="18px" class="q-ml-xs" />
+            </div>
+            <div class="q-ml-md text-green">
+              {{
+                progressPanelProgressMap.filter((obj) => obj.status == 'ok')
+                  .length
+              }}
+              <q-icon name="done" size="18px" class="q-ml-xs" />
+            </div>
+            <q-space />
+            <q-btn
+              v-if="progressPanel == true"
+              icon="delete"
+              size="sm"
+              unelevated
+              class="bg-red text-white"
+              @click="
+                progressPanelProgressMap = progressPanelProgressMap.filter(
+                  (obj) => obj.status == 'loading'
+                )
+              "
+            />
+          </div>
           <q-card
-            style="height: 350px"
+            style="height: 300px"
             class="q-pa-none q-ma-none"
             v-if="progressPanel"
           >
-            <div class="row text-body1 q-ma-sm">
-              <div class="text-blue">
-                {{
-                  progressPanelProgressMap.filter(
-                    (obj) => obj.status == 'loading'
-                  ).length
-                }}
-                <q-icon name="hourglass_bottom" size="18px" class="q-ml-xs" />
-              </div>
-              <div class="q-ml-md text-red">
-                {{
-                  progressPanelProgressMap.filter(
-                    (obj) => obj.status == 'error'
-                  ).length
-                }}
-                <q-icon name="warning" size="18px" class="q-ml-xs" />
-              </div>
-              <div class="q-ml-md text-green">
-                {{
-                  progressPanelProgressMap.filter((obj) => obj.status == 'ok')
-                    .length
-                }}
-                <q-icon name="done" size="18px" class="q-ml-xs" />
-              </div>
-              <q-space />
-              <q-btn
-                icon="delete"
-                size="sm"
-                unelevated
-                class="bg-red text-white"
-                @click="
-                  progressPanelProgressMap = progressPanelProgressMap.filter(
-                    (obj) => obj.status == 'loading'
-                  )
-                "
-              />
-            </div>
             <q-separator size="2px" color="layout-bg" />
             <div class="q-ma-sm">
               <q-scroll-area class="row" style="height: 305px">

@@ -149,6 +149,7 @@ export interface UserProfileType {
   location: string;
   status: string;
   avatar: string;
+  id: string;
 }
 
 export interface HeaderInformationType {

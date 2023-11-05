@@ -5,279 +5,287 @@
   <div
     v-if="initialFetch && !initialFetchSuccessful"
     class="text-center q-pa-md flex flex-center"
-    :key="user.id"
   >
     <div>
       <div class="text-h5 q-mt-md">User not found.</div>
     </div>
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful" :key="user.id">
+  <div v-if="initialFetch && initialFetchSuccessful">
     <div class="q-ma-md gt-sm">
-      <div class="row">
-        <div class="col-3">
+      <q-card
+        bordered
+        flat
+        style="height: 200px"
+        class="bg-layout-bg text-layout-text"
+      >
+        <q-avatar
+          rounded
+          size="170px"
+          class="absolute-left q-ml-lg bg-transparent"
+          style="top: 15px"
+        >
           <q-card
+            class="bg-transparent"
             bordered
             flat
-            class="bg-layout-bg text-layout-text full-height q-mr-md"
+            dark
+            style="height: 170px; width: 170px"
           >
-            <q-card-section style="height: 200px" class="items-center">
-              <div class="row justify-center">
-                <q-avatar rounded size="150px">
-                  <q-img
-                    :src="user.avatar"
-                    style="border-radius: 10%; height: 150px"
-                  >
-                    <q-icon
-                      class="bg-white absolute-bottom-right all-pointer-events q-mt-sm q-ml-sm"
-                      :name="user.role == 'Admin' ? 'shield' : 'account_circle'"
-                      :color="user.role == 'Admin' ? 'red' : 'blue'"
-                      size="30px"
-                      style="border-radius: 30%"
-                    >
-                      <q-tooltip
-                        :class="user.role == 'Admin' ? 'bg-red' : 'bg-blue'"
-                        class="text-white text-body1"
-                      >
-                        {{ user.role }}
-                      </q-tooltip>
-                    </q-icon>
-                  </q-img>
-                </q-avatar>
-              </div>
-
-              <div
-                class="ellipsis text-h6 text-weight-bolder q-mt-sm text-center"
-              >
-                {{ user.username }}
-
-                <q-tooltip
-                  class="text-h6"
-                  :class="
-                    darkmode ? 'bg-dark text-white' : 'bg-white text-dark'
-                  "
-                  >{{ user.username }}</q-tooltip
-                >
-              </div>
-            </q-card-section>
-            <q-separator
-              color="layout-text"
-              size="2px"
-              class="q-mt-md q-ml-xs q-mr-xs"
-            />
-
-            <q-card-actions vertical>
-              <q-btn
-                size="xl"
-                outline
-                stretch
-                color="layout-text"
-                icon="chat"
-                style="height: 60px"
-                class="q-mt-md"
-                unelevated
-              >
-                <q-tooltip
-                  class="text-body2"
-                  anchor="bottom middle"
-                  self="center middle"
-                >
-                  Start a Conversation
-                </q-tooltip>
-              </q-btn>
-              <q-separator />
-              <q-btn
-                size="xl"
-                outline
-                stretch
-                color="layout-text"
-                icon="person_add"
-                style="height: 60px"
-                class="q-mt-md"
-              >
-                <q-tooltip
-                  class="text-body2"
-                  anchor="bottom middle"
-                  self="center middle"
-                >
-                  Add as Friend
-                </q-tooltip>
-              </q-btn>
-              <q-separator />
-              <q-btn
-                size="xl"
-                outline
-                stretch
-                color="layout-text"
-                icon="share"
-                style="height: 60px"
-                class="q-mt-md"
-              >
-                <q-tooltip
-                  anchor="bottom middle"
-                  self="center middle"
-                  class="text-body2"
-                >
-                  Copy the profile link
-                </q-tooltip>
-                <q-menu>
-                  <q-list style="min-width: 200px">
-                    <q-input filled square v-model="userlink" readonly />
-                    <q-item
-                      clickable
-                      @click="copyToClipboard(userlink)"
-                      class="justify-center text-body1"
-                    >
-                      Copy the link</q-item
-                    >
-                  </q-list>
-                </q-menu>
-              </q-btn>
-              <q-separator />
-            </q-card-actions>
-          </q-card>
-        </div>
-
-        <div class="col">
-          <q-card flat bordered class="full-height bg-transparent">
-            <q-separator color="primary" size="2px" />
-            <q-tabs
-              v-model="profile_tab"
-              align="justify"
-              inline-label
-              indicator-color="transparent"
-              active-color="layout-text"
-              active-bg-color="layout-bg"
+            <q-img
+              :src="user.avatar"
+              style="border-radius: 10%; height: 160px; width: 160px"
+              class="q-ma-xs"
             >
-              <q-separator vertical color="primary" size="2px" />
-
-              <q-tab name="about" icon="person" label="About" />
-              <q-tab name="placeholder" icon="block" label="Placeholder" />
-              <q-separator vertical color="primary" size="2px" />
-            </q-tabs>
-            <q-separator size="2px" color="primary" />
-            <q-tab-panels v-model="profile_tab" animated class="bg-transparent">
-              <q-tab-panel name="about">
-                <q-card flat class="full-width full-height bg-transparent">
-                  <div class="text-h5">About</div>
-                  <q-separator />
-                  <q-card-section horizontal>
-                    <q-card-section class="q-mr-sm q-ml-md bg-transparent">
-                      <div
-                        class="text-h6 text-weight-bolder items-center flex"
-                        style="height: 45px"
-                      >
-                        Name
-                      </div>
-
-                      <div
-                        class="text-h6 q-mt-sm text-weight-bolder items-center flex"
-                        style="height: 45px"
-                      >
-                        Location
-                      </div>
-                      <div
-                        class="text-h6 q-mt-sm text-weight-bolder items-center flex"
-                        style="height: 45px"
-                      >
-                        Joined
-                      </div>
-                      <div
-                        class="text-h6 q-mt-sm text-weight-bolder items-center flex"
-                        style="height: 45px"
-                      >
-                        Status
-                      </div>
-                      <div
-                        class="text-h6 q-mt-sm text-weight-bolder items-center flex"
-                        style="height: 45px"
-                      >
-                        Role
-                      </div>
-                    </q-card-section>
-
-                    <q-separator vertical />
-
-                    <q-card-section class="q-ml-sm">
-                      <div
-                        class="text-body1 items-center flex"
-                        style="height: 45px"
-                      >
-                        {{ user.name }}
-                      </div>
-                      <div
-                        class="text-body1 items-center flex q-mt-sm"
-                        style="height: 45px"
-                      >
-                        {{ user.location }}
-                      </div>
-                      <div
-                        class="text-body1 items-center flex q-mt-sm"
-                        style="height: 45px"
-                      >
-                        {{ user.date_joined }}
-                      </div>
-                      <div
-                        class="text-body1 items-center flex q-mt-sm"
-                        style="height: 45px"
-                      >
-                        {{ user.status }}
-                      </div>
-                      <div
-                        class="text-body1 items-center flex q-mt-sm"
-                        style="height: 45px"
-                      >
-                        {{ user.role }}
-                      </div>
-                    </q-card-section>
-                  </q-card-section>
-                  <div class="text-h5 q-mt-md">Description</div>
-                  <q-separator />
-
-                  <q-card-section>
-                    <div class="text-body1 q-mt-sm q-ml-lg">
-                      {{ user.description }}
-                    </div>
-                  </q-card-section>
-                </q-card>
-              </q-tab-panel>
-            </q-tab-panels>
+              <q-icon
+                class="bg-white absolute-bottom-right all-pointer-events q-mt-sm q-ml-sm"
+                :name="user.role == 'Admin' ? 'shield' : 'account_circle'"
+                :color="user.role == 'Admin' ? 'red' : 'blue'"
+                size="30px"
+                style="border-radius: 30%"
+              >
+                <q-tooltip
+                  :class="user.role == 'Admin' ? 'bg-red' : 'bg-blue'"
+                  class="text-white text-body1"
+                >
+                  {{ user.role }}
+                </q-tooltip>
+              </q-icon>
+            </q-img>
           </q-card>
+        </q-avatar>
+        <div class="absolute-bottom q-mb-lg" style="left: 240px">
+          <div
+            class="text-h4 text-weight-bolder text-layout-text text3d-primary non-selectable"
+          >
+            {{ user.username }}
+          </div>
+          <div class="text-body2 q-mt-sm">
+            {{ user.role }}
+          </div>
         </div>
-      </div>
+        <q-card-actions
+          class="absolute-right q-pa-none q-mr-xs"
+          style="width: 150px; height: 200px"
+          vertical
+        >
+          <q-btn
+            size="lg"
+            outline
+            color="layout-text"
+            icon="chat"
+            style="height: 60px; width: 150px; top: 5px"
+          >
+            <q-tooltip
+              class="text-body2"
+              anchor="bottom middle"
+              self="center middle"
+            >
+              Start a Conversation
+            </q-tooltip>
+          </q-btn>
+
+          <q-btn
+            size="lg"
+            outline
+            color="layout-text"
+            icon="person_add"
+            style="height: 60px; width: 150px; top: 5px"
+          >
+            <q-tooltip
+              class="text-body2"
+              anchor="bottom middle"
+              self="center middle"
+            >
+              Add as Friend
+            </q-tooltip>
+          </q-btn>
+          <q-btn
+            size="lg"
+            outline
+            stretch
+            color="layout-text"
+            icon="share"
+            style="height: 60px; width: 150px; top: 5px; bottom: 5px"
+          >
+            <q-tooltip
+              anchor="bottom middle"
+              self="center middle"
+              class="text-body2"
+            >
+              Copy the profile link
+            </q-tooltip>
+            <q-menu>
+              <q-input filled square v-model="userlink" readonly />
+              <q-item
+                clickable
+                @click="copyToClipboard(userlink)"
+                class="justify-center text-body1"
+              >
+                Copy the link</q-item
+              >
+            </q-menu>
+          </q-btn>
+        </q-card-actions>
+      </q-card>
+
+      <q-separator size="2px" color="layout-text" />
+      <q-card
+        flat
+        bordered
+        class="bg-transparent"
+        :style="'min-height:' + screenHeight + 'px;'"
+      >
+        <q-separator color="primary" size="2px" />
+        <q-tabs
+          v-model="profile_tab"
+          align="justify"
+          inline-label
+          indicator-color="transparent"
+          active-color="layout-text"
+          active-bg-color="layout-bg"
+        >
+          <q-separator vertical color="primary" size="2px" />
+
+          <q-tab name="about" icon="person" label="About" />
+          <q-tab name="placeholder" icon="block" label="Placeholder" />
+          <q-separator vertical color="primary" size="2px" />
+        </q-tabs>
+        <q-separator size="2px" color="primary" />
+        <q-tab-panels v-model="profile_tab" animated class="bg-transparent">
+          <q-tab-panel name="about">
+            <q-card flat class="full-width full-height bg-transparent">
+              <div class="text-h5 text-weight-bold">About</div>
+              <q-separator class="q-mt-sm" />
+              <q-card-section horizontal>
+                <q-card-section class="q-mr-sm q-ml-md bg-transparent">
+                  <div
+                    class="text-h6 text-weight-bolder items-center flex"
+                    style="height: 45px"
+                  >
+                    Name
+                  </div>
+
+                  <div
+                    class="text-h6 q-mt-sm text-weight-bolder items-center flex"
+                    style="height: 45px"
+                  >
+                    Location
+                  </div>
+                  <div
+                    class="text-h6 q-mt-sm text-weight-bolder items-center flex"
+                    style="height: 45px"
+                  >
+                    Joined
+                  </div>
+                  <div
+                    class="text-h6 q-mt-sm text-weight-bolder items-center flex"
+                    style="height: 45px"
+                  >
+                    Status
+                  </div>
+                  <div
+                    class="text-h6 q-mt-sm text-weight-bolder items-center flex"
+                    style="height: 45px"
+                  >
+                    Role
+                  </div>
+                </q-card-section>
+
+                <q-separator vertical />
+
+                <q-card-section class="q-ml-sm">
+                  <div
+                    class="text-body1 items-center flex"
+                    style="height: 45px"
+                  >
+                    {{ user.name }}
+                  </div>
+                  <div
+                    class="text-body1 items-center flex q-mt-sm"
+                    style="height: 45px"
+                  >
+                    {{ user.location }}
+                  </div>
+                  <div
+                    class="text-body1 items-center flex q-mt-sm"
+                    style="height: 45px"
+                  >
+                    {{ user.date_joined }}
+                  </div>
+                  <div
+                    class="text-body1 items-center flex q-mt-sm"
+                    style="height: 45px"
+                  >
+                    {{ user.status }}
+                  </div>
+                  <div
+                    class="text-body1 items-center flex q-mt-sm"
+                    style="height: 45px"
+                  >
+                    {{ user.role }}
+                  </div>
+                </q-card-section>
+              </q-card-section>
+              <div class="text-h5 q-mt-lg text-weight-bold">Description</div>
+              <q-separator class="q-mt-sm" />
+
+              <q-card-section>
+                <div class="text-body1 q-mt-sm q-ml-lg">
+                  {{ user.description }}
+                </div>
+              </q-card-section>
+            </q-card>
+          </q-tab-panel>
+        </q-tab-panels>
+      </q-card>
     </div>
     <div class="lt-md">
       <q-card flat bordered class="bg-transparent q-ma-sm">
         <div style="height: 225px" class="bg-layout-bg">
           <div class="row justify-center items-center">
             <q-avatar
-              size="140px"
-              text-color="white"
+              size="150px"
               style="z-index: 99; border-radius: 10%"
               square
-              class="q-mt-lg"
+              class="q-mt-md"
             >
-              <q-img :src="user.avatar" style="height: 150px" />
+              <q-card
+                class="bg-transparent"
+                bordered
+                flat
+                style="height: 150px; width: 150px"
+                dark
+              >
+                <q-img
+                  :src="user.avatar"
+                  style="height: 140px; width: 140px"
+                  class="q-ma-xs"
+                >
+                  <q-icon
+                    class="bg-white absolute-bottom-right all-pointer-events q-mt-sm q-ml-sm"
+                    :name="user.role == 'Admin' ? 'shield' : 'account_circle'"
+                    :color="user.role == 'Admin' ? 'red' : 'blue'"
+                    size="30px"
+                    style="border-radius: 30%"
+                  >
+                    <q-tooltip
+                      :class="user.role == 'Admin' ? 'bg-red' : 'bg-blue'"
+                      class="text-white text-body1"
+                    >
+                      {{ user.role }}
+                    </q-tooltip>
+                  </q-icon>
+                </q-img>
+              </q-card>
             </q-avatar>
           </div>
           <div
-            class="text-h5 text-center text-weight-bolder q-mt-md text-layout-text"
+            class="text-h5 text-center text-weight-bolder q-mt-md text-layout-text text3d-primary non-selectable"
           >
             {{ user.username }}
           </div>
         </div>
-        <div class="text-center text-body1">
-          <div class="q-mt-md">
-            <div v-if="user.role == 'Admin'" class="text-red">
-              Administrator
-              <q-icon name="shield" />
-            </div>
-            <div v-else class="text-light-blue">
-              User
-              <q-icon name="account_circle" />
-            </div>
-          </div>
-        </div>
-        <q-separator size="2px" color="primary" class="q-mt-md" />
+        <q-separator color="layout-text" size="2px" />
 
         <q-tabs
           v-model="profile_tab"
@@ -301,7 +309,7 @@
             <q-card flat class="bg-transparent">
               <q-card-section horizontal class="full-width bg-transparent">
                 <q-card-section class="full-width bg-transparent">
-                  <div class="text-body1 q-mt-sm">
+                  <div class="text-body1">
                     <a class="text-weight-bolder">Name</a>
                     <div style="line-break: anywhere" class="q-mb-sm">
                       {{ user.name }}
@@ -351,24 +359,6 @@
             </q-card>
           </q-tab-panel>
         </q-tab-panels>
-        <q-card-actions class="row justify-center">
-          <q-btn size="lg" flat stretch color="primary" icon="chat" />
-          <q-btn size="lg" flat stretch color="primary" icon="person_add" />
-          <q-btn size="lg" flat stretch color="primary" icon="share">
-            <q-menu>
-              <q-list style="min-width: 300px">
-                <q-input filled square v-model="userlink" readonly />
-                <q-item
-                  clickable
-                  @click="copyToClipboard(userlink)"
-                  class="justify-center"
-                >
-                  Copy the link</q-item
-                >
-              </q-list>
-            </q-menu>
-          </q-btn>
-        </q-card-actions>
       </q-card>
     </div>
   </div>
@@ -419,12 +409,9 @@ export default {
     darkmode() {
       return this.localStore.darkmode;
     },
-    small() {
-      if (this.q.screen.width < 1024) {
-        return true;
-      } else {
-        return false;
-      }
+
+    screenHeight() {
+      return this.q.screen.height - 300;
     },
   },
 
@@ -468,6 +455,7 @@ export default {
           }
           this.initialFetch = true;
           this.initialFetchSuccessful = false;
+          this.user = defaultUser();
         });
     },
   },

@@ -47,7 +47,7 @@ export default {
         .get('/profile/id/' + id, this.axiosConfig)
         .then((response) => {
           if (response.status == 200) {
-            this.$router.push('/user/' + response.data.account.username);
+            this.$router.push('/user/' + response.data.username);
           } else {
             this.notify('negative', response.data.error);
           }

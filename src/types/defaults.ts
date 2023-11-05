@@ -10,7 +10,8 @@ export function defaultUser() {
       'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore',
     location: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr',
     date_joined: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr',
-    avatar: 'https://media.kurtn3x.xyz/default.png',
+    avatar: 'https://media.kurtn3x.xyz/Users/kurt/avatar.png',
+    id: '',
   };
 
   return user;
@@ -36,6 +37,7 @@ export function defaultAccountSettings() {
       avatar: 'https://media.kurtn3x.xyz/default.png',
       role: '',
       date_joined: '',
+      id: '',
     },
     account: {
       id: '',
