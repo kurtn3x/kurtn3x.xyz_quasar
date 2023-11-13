@@ -131,6 +131,12 @@ export default defineComponent({
     };
   },
 
+  created() {
+    if (this.localStore.isAuthenticated) {
+      this.$router.push('/dashboard/home');
+    }
+  },
+
   computed: {
     cardWidth() {
       return this.q.screen.width - 25;

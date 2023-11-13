@@ -431,6 +431,9 @@ export default {
   },
 
   created() {
+    if (this.localStore.isAuthenticated) {
+      this.$router.push('/dashboard/home');
+    }
     this.getCaptcha();
   },
 
