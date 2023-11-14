@@ -567,7 +567,11 @@
         My VPN Connections
       </div>
 
-      <q-page-sticky position="bottom" :offset="[0, 20]">
+      <q-page-sticky
+        position="bottom"
+        :offset="[0, 20]"
+        style="z-index: 999999999999999"
+      >
         <q-btn
           push
           icon="add"

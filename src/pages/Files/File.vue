@@ -48,7 +48,7 @@
   </div>
   <div
     v-if="
-      initialFetch && initialFetchSuccessful && (!passwordSet || passwordOk)
+      initialFetch && !initialFetchSuccessful && (!passwordSet || passwordOk)
     "
   >
     <div class="text-primary text-h4 text-center q-mt-lg ellipsis">
@@ -134,19 +134,35 @@
         style="min-width: 330px"
       />
     </div>
+    <div class="row justify-center q-mt-md">
+      <q-btn
+        label="Preview"
+        class="cursor-pointer bg-green text-white q-mt-lg"
+        push
+        @click="filePreview = true"
+        size="xl"
+        style="min-width: 330px"
+      />
+    </div>
+    <viewer-wrapper
+      :propItem="fileData"
+      :active="filePreview"
+      @close="filePreview = false"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, Ref } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { FileItemExtendedType } from 'src/types/index';
-import type { Ref } from 'vue';
+import ViewerWrapper from 'src/components/Files/ViewerWrapper.vue';
 
 export default defineComponent({
   name: 'FileView',
+  components: { ViewerWrapper },
   setup() {
     const localStore = useLocalStore();
     const q = useQuasar();
@@ -161,6 +177,7 @@ export default defineComponent({
       password: ref(''),
       isPwd: ref(true),
       fileData: ref({}) as Ref<FileItemExtendedType>,
+      filePreview: ref(true),
     };
   },
   computed: {
@@ -249,16 +266,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style scoped>
-.disable-select {
-  user-select: none; /* supported by Chrome and Opera */
-  -webkit-user-select: none; /* Safari */
-  -khtml-user-select: none; /* Konqueror HTML */
-  -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* Internet Explorer/Edge */
-}
-.my-custom-class {
-  outline: 5px dotted green;
-}
-</style>

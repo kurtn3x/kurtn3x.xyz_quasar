@@ -56,7 +56,7 @@ var FOLDER = {
     },
     {
       id: 'ca9c1719-82ff-4bb6-90f0-2e35251bcac6',
-      name: '1_1_1.pdf',
+      name: 'test.mp4',
       modified: '2023-09-14, 06:37:04',
       created: '2023-08-16, 10:42:01',
       shared_allow_all_read: true,
@@ -66,7 +66,7 @@ var FOLDER = {
       size: '137.8KB',
       path: 'Home',
       type: 'file',
-      mime: 'application/pdf',
+      mime: 'video/mp4',
       created_iso: '2023-08-16T10:42:01.658353Z',
       modified_iso: '2023-09-14T06:37:04.341860Z',
       size_bytes: 137780,

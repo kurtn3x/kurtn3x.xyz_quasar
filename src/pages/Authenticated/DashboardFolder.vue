@@ -2,10 +2,15 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="initialFetch && initialFetchSuccessful">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="initialFetch && !initialFetchSuccessful">
+    <viewer-wrapper
+      :propItem="mediaItem"
+      :active="mediaPreview"
+      @close="mediaPreview = false"
+    />
     <!-- delteSelectedItemsDialog (Confirmation) -->
     <q-dialog v-model="deleteItemsDialog">
       <q-card bordered style="width: 350px">
@@ -1178,7 +1183,7 @@
                 clickable
                 class="rounded-borders full-width"
                 v-draggable="['file', item.id]"
-                @click="openInNewTab(item.id)"
+                @click="openInNewTab(item)"
                 :class="item.selected ? 'bg-cyan-14 text-layout-text' : ''"
               >
                 <q-popup-proxy
@@ -1586,6 +1591,7 @@ import {
   AllAvailableFoldersType,
   RawFolderContentType,
 } from 'src/types/index';
+import ViewerWrapper from 'src/components/Files/ViewerWrapper.vue';
 
 export default defineComponent({
   name: 'FilesView',
@@ -1594,7 +1600,7 @@ export default defineComponent({
     droppable,
   },
 
-  components: { RightClickMenu },
+  components: { RightClickMenu, ViewerWrapper },
 
   setup() {
     const localStore = useLocalStore();
@@ -1727,6 +1733,10 @@ export default defineComponent({
         show: false,
         name: '',
       }),
+
+      // media preview
+      mediaPreview: ref(false),
+      mediaItem: ref({}) as Ref<FolderEntryType>,
     };
   },
 
@@ -2954,10 +2964,9 @@ export default defineComponent({
     },
 
     // download a private-storage file
-    openInNewTab(id: string) {
-      window
-        ?.open('https://api.kurtn3x.xyz/files/content/file/' + id, '_blank')
-        ?.focus();
+    openInNewTab(item: FolderEntryType) {
+      this.mediaPreview = true;
+      this.mediaItem = item;
     },
 
     // get Folder content with folderid
