@@ -35,8 +35,9 @@
           <q-tooltip>Close</q-tooltip>
         </q-btn>
       </q-toolbar>
-      <q-bar
-        class="q-pa-none"
+
+      <div
+        class="row"
         :class="darkmode ? 'bg-grey-7 text-white' : 'bg-grey-4 text-dark'"
       >
         <q-btn
@@ -44,62 +45,64 @@
           flat
           icon="download"
           :label="'Download (' + item.size + ')'"
-          class="text-weight-bold"
+          class="text-weight-bold text-caption"
           @click="downloadFile(item.id)"
         />
         <q-separator vertical size="2px" />
-      </q-bar>
+
+        <div
+          v-if="
+            !Object.values(availablePreviews).every(
+              (item) => item.available == false
+            )
+          "
+          class="row"
+        >
+          <q-btn
+            stretch
+            flat
+            label="Open with"
+            icon-right="expand_more"
+            class="text-weight-bold text-caption"
+          >
+            <q-menu>
+              <q-list separator>
+                <template
+                  v-for="(value, propertyName) in availablePreviews"
+                  v-bind:key="propertyName"
+                >
+                  <q-item
+                    v-if="value.available"
+                    clickable
+                    dense
+                    @click="setMime(propertyName, false)"
+                    v-close-popup
+                  >
+                    <q-item-section>
+                      <q-item-label>{{ value.label }}</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-list>
+            </q-menu>
+          </q-btn>
+          <q-separator vertical size="2px" />
+        </div>
+      </div>
 
       <q-card-section>
         <VideoView :prop-item="item" v-if="mimePreview.video" />
         <div v-if="mimePreview.image">
           <q-img :src="src" />
         </div>
+        <div v-if="mimePreview.code">Code Editor</div>
+        <div v-if="mimePreview.text">Text Editor</div>
+        <div v-if="mimePreview.wysiwyg">WYSIWYG</div>
+        <div v-if="mimePreview.pdf">PDF</div>
         <div v-if="Object.values(mimePreview).every((item) => item === false)">
           No Preview available.
         </div>
       </q-card-section>
-      <q-separator size="2px" class="q-ma-sm" />
-      <q-card bordered>
-        <q-expansion-item :label="item.name" class="text-h5 text-center">
-          <q-separator />
-          <q-card flat class="bg-transparent">
-            <div class="q-ma-sm">
-              <div class="text-h6 text-left row">
-                <a class="text-weight-bolder col">Name:</a>
-                <a class="col-8 ellipsis">{{ item.name }}</a>
-              </div>
-              <div class="text-h6 text-left row q-mt-md">
-                <a class="text-weight-bolder col">Size:</a>
-                <a class="col-8">{{ item.size }}</a>
-              </div>
-              <div class="text-h6 text-left row q-mt-md">
-                <a class="text-weight-bolder col">ID:</a>
-                <a class="col-8 ellipsis">{{ item.id }}</a>
-              </div>
-              <div
-                class="text-h6 text-left row q-mt-md"
-                style="overflow-wrap: break-word; line-break: anywhere"
-              >
-                <a class="text-weight-bolder col">Path:</a>
-                <a class="col-8 ellipsis">{{ item.path }}</a>
-              </div>
-              <div class="text-h6 text-left row q-mt-md">
-                <a class="text-weight-bolder col">Modified:</a>
-                <a class="col-8 ellipsis">{{ item.modified }}</a>
-              </div>
-              <div class="text-h6 text-left row q-mt-md">
-                <a class="text-weight-bolder col">Created:</a>
-                <a class="col-8 ellipsis">{{ item.created }}</a>
-              </div>
-              <div class="text-h6 text-left row q-mt-md">
-                <a class="text-weight-bolder col">Mime:</a>
-                <a class="col-8 ellipsis">{{ item.mime }}</a>
-              </div>
-            </div>
-          </q-card>
-        </q-expansion-item>
-      </q-card>
     </q-card>
   </q-dialog>
 </template>
@@ -109,6 +112,7 @@ import { defineComponent, ref, Ref, defineAsyncComponent } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
 import { FolderEntryType } from 'src/types/index';
+import { update } from 'lodash';
 
 const VIDEOMIME = [
   'video/ogg',
@@ -137,9 +141,11 @@ const IMAGEMIME = [
   'image/webp',
 ];
 
-const TEXTMIME = [''];
+const WYSIWYGMIME = ['wysiwyg'];
 
-const CODEMIME = [''];
+const TEXTMIME = ['text'];
+
+const CODEMIME = ['code'];
 
 const PDFMIME = 'application/pdf';
 
@@ -170,13 +176,33 @@ export default defineComponent({
       initialFetchSuccessful: ref(false),
       showDialog,
       maximizedToggle: ref(true),
-      mimePreview: {
+      availablePreviews: ref({
+        text: {
+          available: false,
+          label: 'Text Editor',
+        },
+        code: {
+          available: false,
+          label: 'Code Editor',
+        },
+        wysiwyg: {
+          available: false,
+          label: 'WYSIWYG (HTML) Editor',
+        },
+        markdown: {
+          available: false,
+          label: 'Markdown Preview',
+        },
+      }),
+      mimePreview: ref({
         video: false,
         image: false,
         pdf: false,
         text: false,
         code: false,
-      },
+        wysiwyg: false,
+        markdown: false,
+      }),
     };
   },
   computed: {
@@ -190,7 +216,7 @@ export default defineComponent({
     },
     propItem(newVal, oldVal) {
       this.item = newVal;
-      this.setMime(newVal.mime);
+      this.setMime(newVal.mime, true);
     },
   },
 
@@ -200,12 +226,16 @@ export default defineComponent({
       this.showDialog = false;
     },
 
-    setMime(mime: string) {
-      this.mimePreview.video = false;
-      this.mimePreview.image = false;
-      this.mimePreview.pdf = false;
-      this.mimePreview.text = false;
-      this.mimePreview.code = false;
+    setMime(mime: string, updateAvail: boolean) {
+      Object.keys(this.mimePreview).forEach(
+        (v) => ((this.mimePreview as any)[v] = false)
+      );
+      if (updateAvail) {
+        Object.keys(this.availablePreviews).forEach(
+          (v) => ((this.availablePreviews as any)[v]['available'] = false)
+        );
+      }
+
       if (VIDEOMIME.includes(mime)) {
         this.mimePreview.video = true;
       } else if (IMAGEMIME.includes(mime)) {
@@ -214,10 +244,28 @@ export default defineComponent({
         this.mimePreview.pdf = true;
       } else if (TEXTMIME.includes(mime)) {
         this.mimePreview.text = true;
+        if (updateAvail) {
+          this.availablePreviews.text.available = true;
+          this.availablePreviews.code.available = true;
+        }
       } else if (CODEMIME.includes(mime)) {
         this.mimePreview.code = true;
+        if (updateAvail) {
+          this.availablePreviews.text.available = true;
+          this.availablePreviews.code.available = true;
+        }
+      } else if (WYSIWYGMIME.includes(mime)) {
+        this.mimePreview.wysiwyg = true;
+        if (updateAvail) {
+          this.availablePreviews.wysiwyg.available = true;
+          this.availablePreviews.text.available = true;
+          this.availablePreviews.code.available = true;
+        }
+      } else if (updateAvail) {
+        this.availablePreviews.wysiwyg.available = true;
+        this.availablePreviews.text.available = true;
+        this.availablePreviews.code.available = true;
       }
-      console.log(this.mimePreview);
     },
 
     downloadFile(id: string) {

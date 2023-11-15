@@ -648,6 +648,15 @@
                 text-color="white"
                 icon="create_new_folder"
                 label="New Folder"
+                @click="createFileDialog = true"
+                style="width: 180px"
+              />
+              <q-fab-action
+                outline
+                class="text-body1 bg-light-green"
+                text-color="white"
+                icon="create_new_folder"
+                label="New Folder"
                 @click="newFolder.show = true"
                 style="width: 180px"
               />
@@ -1320,6 +1329,17 @@
             outline
             icon="create_new_folder"
             label="New Folder"
+            @click="createFileDialog = true"
+            style="width: 180px"
+            padding="md"
+          />
+
+          <q-fab-action
+            class="text-body1 bg-light-green"
+            text-color="white"
+            outline
+            icon="create_new_folder"
+            label="New Folder"
             @click="newFolder.show = true"
             style="width: 180px"
             padding="md"
@@ -1732,6 +1752,13 @@ export default defineComponent({
       newFolder: ref({
         show: false,
         name: '',
+      }),
+
+      // new file handler
+      createFileDialog: ref(false),
+      newFile: ref({
+        name: '',
+        mime: '',
       }),
 
       // media preview

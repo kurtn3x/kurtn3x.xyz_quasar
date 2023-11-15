@@ -9,6 +9,10 @@
       :fluid="true"
     />
   </div>
+  <q-separator size="2px" />
+  <div class="q-mt-md text-h6 text-weight-bold text-center">
+    Video: {{ item.name }}
+  </div>
 </template>
 
 <script setup>
@@ -37,5 +41,5 @@ var videoOptions = {
   ],
 };
 
-console.log(props.propItem);
+var item = props.propItem;
 </script>
