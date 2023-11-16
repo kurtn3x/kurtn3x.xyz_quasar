@@ -1,4 +1,7 @@
 <template>
+  <q-dialog v-model="itemInformationDialog">
+    <ItemInformation :prop-item="propItem" />
+  </q-dialog>
   <q-dialog
     v-model="showDialog"
     :maximized="maximizedToggle"
@@ -74,9 +77,9 @@
                   <q-item
                     v-if="value.available"
                     clickable
-                    dense
                     @click="setMime(propertyName, false)"
                     v-close-popup
+                    class="text-body1"
                   >
                     <q-item-section>
                       <q-item-label>{{ value.label }}</q-item-label>
@@ -88,20 +91,34 @@
           </q-btn>
           <q-separator vertical size="2px" />
         </div>
+        <q-btn
+          stretch
+          flat
+          label="Info"
+          class="text-weight-bold text-caption"
+          @click="itemInformationDialog = true"
+        />
+        <q-separator vertical size="2px" />
       </div>
 
       <q-card-section>
-        <VideoView :prop-item="item" v-if="mimePreview.video" />
-        <div v-if="mimePreview.image">
-          <q-img :src="src" />
+        <div v-if="mimePreview.video">
+          <VideoView :id="item.id" :mime="item.mime" />
         </div>
-        <div v-if="mimePreview.code">Code Editor</div>
-        <div v-if="mimePreview.text">Text Editor</div>
-        <div v-if="mimePreview.wysiwyg">WYSIWYG</div>
-        <div v-if="mimePreview.pdf">PDF</div>
-        <div v-if="Object.values(mimePreview).every((item) => item === false)">
-          No Preview available.
+        <div v-else-if="mimePreview.image">
+          <q-img
+            :src="'https://api.kurtn3x.xyz/files/content/file/' + item.id"
+          />
         </div>
+        <div v-else-if="mimePreview.code">Code Editor</div>
+        <div v-else-if="mimePreview.text"><TextView :id="item.id" /></div>
+        <div v-else-if="mimePreview.wysiwyg">
+          <WysiwygView :id="item.id" />
+        </div>
+        <div v-else-if="mimePreview.pdf">
+          <PdfView :id="item.id" />
+        </div>
+        <div v-else>No Preview available.</div>
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -112,7 +129,7 @@ import { defineComponent, ref, Ref, defineAsyncComponent } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
 import { FolderEntryType } from 'src/types/index';
-import { update } from 'lodash';
+import ItemInformation from './ItemInformation.vue';
 
 const VIDEOMIME = [
   'video/ogg',
@@ -149,32 +166,46 @@ const CODEMIME = ['code'];
 
 const PDFMIME = 'application/pdf';
 
-const VideoView = defineAsyncComponent(() => import('./VideoView.vue'));
+const VideoView = defineAsyncComponent(
+  () => import('./FilePreviews/VideoView.vue')
+);
+const WysiwygView = defineAsyncComponent(
+  () => import('./FilePreviews/WysiwygView.vue')
+);
+const TextView = defineAsyncComponent(
+  () => import('./FilePreviews/TextView.vue')
+);
+const PdfView = defineAsyncComponent(
+  () => import('./FilePreviews/PdfView.vue')
+);
 
 export default defineComponent({
-  name: 'VideoViewer',
+  name: 'ViewerWrapper',
   components: {
     VideoView,
+    ItemInformation,
+    WysiwygView,
+    TextView,
+    PdfView,
   },
 
   props: {
     propItem: Object,
     active: Boolean,
   },
+  emits: ['close'],
+
   setup(props) {
     const localStore = useLocalStore();
     const q = useQuasar();
     var item = ref(props.propItem) as Ref<FolderEntryType>;
-    var src = 'https://api.kurtn3x.xyz/files/download/file/' + item.value.id;
     var showDialog = ref(props.active) as Ref<boolean>;
     return {
-      src,
       item,
       localStore,
       q,
-      initialFetch: ref(true),
-      initialFetchSuccessful: ref(false),
       showDialog,
+      itemInformationDialog: ref(false),
       maximizedToggle: ref(true),
       availablePreviews: ref({
         text: {

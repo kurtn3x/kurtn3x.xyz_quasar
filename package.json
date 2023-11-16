@@ -23,7 +23,7 @@
     "@quasar/extras": "^1.16.7",
     "@tinymce/tinymce-vue": "^5.1.1",
     "@videojs-player/vue": "^1.0.0",
-    "axios": "^0.21.4",
+    "axios": "^1.6.2",
     "codemirror": "^6.0.1",
     "highlight.js": "^11.9.0",
     "lodash": "^4.17.21",
@@ -36,6 +36,7 @@
     "video.js": "^7.21.5",
     "vue": "^3.0.0",
     "vue-codemirror": "^6.1.1",
+    "vue-pdf-embed": "^1.2.1",
     "vue-router": "^4.2.5"
   },
   "devDependencies": {

@@ -383,7 +383,7 @@
           <q-card flat class="no-shadow q-ma-md bg-transparent">
             <div class="text-h4 text-center q-mt-lg">Account Settings</div>
 
-            <q-card-section class="full-width">
+            <q-card-section class="full-width text-body1">
               <q-item>
                 <q-item-section side style="width: 100px"> Id: </q-item-section>
                 <q-item-section style="line-break: anywhere">

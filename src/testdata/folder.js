@@ -104,6 +104,22 @@ var FOLDER = {
       modified_iso: '2023-08-16T20:48:06.089253Z',
       size_bytes: 2538486,
     },
+    {
+      id: 'abc',
+      name: 'test.pdf',
+      modified: '2023-08-16, 20:48:06',
+      created: '2023-08-16, 20:48:06',
+      shared_allow_all_read: false,
+      shared_allow_all_write: false,
+      shared: false,
+      size: '2.5MB',
+      path: 'Home',
+      type: 'file',
+      mime: 'application/pdf',
+      created_iso: '2023-08-16T20:48:06.081354Z',
+      modified_iso: '2023-08-16T20:48:06.089253Z',
+      size_bytes: 2538486,
+    },
   ],
 };
 

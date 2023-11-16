@@ -9,10 +9,6 @@
       :fluid="true"
     />
   </div>
-  <q-separator size="2px" />
-  <div class="q-mt-md text-h6 text-weight-bold text-center">
-    Video: {{ item.name }}
-  </div>
 </template>
 
 <script setup>
@@ -21,7 +17,8 @@ import 'video.js/dist/video-js.css';
 import { defineProps } from 'vue';
 
 const props = defineProps({
-  propItem: Object,
+  mime: String,
+  id: String,
 });
 
 var videoOptions = {
@@ -35,11 +32,11 @@ var videoOptions = {
   },
   sources: [
     {
-      src: 'https://api.kurtn3x.xyz/files/download/file/' + props.propItem.id,
-      type: props.propItem.mime,
+      src: 'https://api.kurtn3x.xyz/files/content/file/' + props.id,
+      type: props.mime,
     },
   ],
 };
 
-var item = props.propItem;
+console.log(props.id);
 </script>
