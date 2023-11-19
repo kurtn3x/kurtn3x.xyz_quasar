@@ -7,7 +7,7 @@
   </div>
   <div v-if="!loading && !error">
     <q-scroll-area
-      :style="'height:' + height + 'px;'"
+      :style="'height:' + ($q.screen.height - 115) + 'px;'"
       :thumb-style="thumbStyle"
       :bar-style="barStyle"
     >
@@ -50,10 +50,6 @@ var barStyle = {
   width: '9px',
   opacity: 0.2,
 };
-
-const height = computed(() => {
-  return q.screen.height - 115;
-});
 
 // var base64 = ref('data:application/pdf;base64,' + pdf);
 var base64 = ref('');

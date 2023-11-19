@@ -102,7 +102,7 @@
       }"
       :dark="darkmode"
       :height="height"
-      :content-style="'height:' + height"
+      :content-style="'height:' + ($q.screen.height - 200) + 'px;'"
       dense
       :class="darkmode ? 'text-white' : 'text-dark'"
     />
@@ -110,7 +110,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { api } from 'boot/axios';
 import { defineProps } from 'vue';
 import { useQuasar } from 'quasar';
@@ -127,10 +127,6 @@ const axiosConfig = {
   },
 };
 var darkmode = ref(localStore.darkmodeState);
-
-const height = computed(() => {
-  return q.screen.height - 200 + 'px;';
-});
 
 const props = defineProps({
   item: Object,

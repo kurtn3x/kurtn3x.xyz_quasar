@@ -8,9 +8,16 @@
     transition-show="slide-up"
     transition-hide="slide-down"
     @hide="close"
+    seamless
   >
-    <q-card style="min-width: 350px">
-      <q-toolbar class="bg-light-blue-6 text-white q-pa-none">
+    <q-card
+      :style="maximizedToggle ? '' : dialogStyle"
+      style="min-height: 300px; min-width: 300px"
+    >
+      <q-toolbar
+        class="bg-light-blue-6 text-white q-pa-none"
+        v-touch-pan.mouse="onPan"
+      >
         <a class="q-ml-md text-h6 ellipsis">Preview: {{ item.name }}</a>
         <q-space />
 
@@ -29,7 +36,11 @@
           stretch
           size="sm"
           icon="crop_square"
-          @click="maximizedToggle = true"
+          @click="
+            maximizedToggle = true;
+            dialogPos.x = 0;
+            dialogPos.y = 0;
+          "
           :disable="maximizedToggle"
         >
           <q-tooltip v-if="!maximizedToggle">Maximize</q-tooltip>
@@ -182,6 +193,10 @@ export default defineComponent({
       showDialog,
       itemInformationDialog: ref(false),
       maximizedToggle: ref(true),
+      dialogPos: ref({
+        x: 0,
+        y: 0,
+      }),
       availablePreviews: ref({
         text: {
           available: false,
@@ -219,6 +234,11 @@ export default defineComponent({
     darkmode() {
       return this.localStore.darkmode;
     },
+    dialogStyle() {
+      return {
+        transform: `translate(${this.dialogPos.x}px, ${this.dialogPos.y}px)`,
+      };
+    },
   },
   watch: {
     active(newVal, oldVal) {
@@ -234,6 +254,13 @@ export default defineComponent({
     close() {
       this.$emit('close', true);
       this.showDialog = false;
+    },
+
+    onPan(evt: any) {
+      this.dialogPos = {
+        x: this.dialogPos.x + evt.delta.x,
+        y: this.dialogPos.y + evt.delta.y,
+      };
     },
 
     // mime: mimeType to be previewed

@@ -35,7 +35,7 @@
       type="textarea"
       outlined
       autogrow
-      :input-style="'min-height:' + height"
+      :input-style="'min-height:' + ($q.screen.height - 160) + 'px;'"
       color="light-blue-6"
       :input-class="darkmode ? 'bg-dark text-white' : 'bg-white text-dark'"
       :class="darkmode ? 'bg-dark' : 'bg-white'"
@@ -45,7 +45,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { api } from 'boot/axios';
 import { defineProps } from 'vue';
 import { useQuasar } from 'quasar';
@@ -62,20 +62,11 @@ const axiosConfig = {
 };
 var darkmode = ref(localStore.darkmodeState);
 
-const height = computed(() => {
-  return q.screen.height - 160 + 'px;';
-});
-
 const props = defineProps({
   item: Object,
 });
 
 var text = ref('');
-
-function log() {
-  console.log(error.value);
-  console.log(loading.value);
-}
 
 var loading = ref(true);
 var error = ref(false);

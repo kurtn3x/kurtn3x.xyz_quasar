@@ -2,7 +2,7 @@
   <div class="q-mt-lg row justify-center" v-if="loading">
     <q-spinner color="light-blue-6" size="10em" style="height: 20em" />
   </div>
-  <div v-show="!loading" class="q-mt-sm" style="min-width: 350px">
+  <div v-show="!loading" style="height: 300px">
     <video-player
       preload="auto"
       controls
@@ -10,16 +10,11 @@
       :options="videoOptions"
       :muted="true"
       :responsive="true"
-      :fluid="true"
+      :fill="true"
       @loadedmetadata="handleMetadata"
       class="vjs-theme-forest"
       @mounted="handleMounted"
     />
-    <q-separator size="2px" class="q-mt-sm" color="light-blue-6" />
-    <div class="text-h5 q-mt-md text-center">
-      <a class="text-weight-bolder text-light-blue-6">Video:</a>
-      {{ item.name }}
-    </div>
   </div>
 </template>
 
@@ -52,7 +47,6 @@ const handleMetadata = (v) => {
 };
 
 var videoOptions = {
-  experimentalSvgIcons: true,
   autoplay: true,
   controls: true,
   enableDocumentPictureInPicture: true,
@@ -62,10 +56,10 @@ var videoOptions = {
   },
   sources: [
     {
-      // src: video,
-      // mime: 'video/mp4',
-      src: 'https://api.kurtn3x.xyz/files/content/file/' + props.item.id,
-      type: props.item.mime,
+      src: video,
+      mime: 'video/mp4',
+      // src: 'https://api.kurtn3x.xyz/files/content/file/' + props.item.id,
+      // type: props.item.mime,
     },
   ],
 };
