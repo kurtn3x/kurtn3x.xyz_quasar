@@ -2,35 +2,6 @@ import { CancelTokenSource } from 'axios';
 
 // this file includes all types used
 
-type MimeType = {
-  icon: string;
-  link: string;
-};
-
-const mimeMap: Map<string, MimeType> = new Map<string, MimeType>();
-
-mimeMap.set('video/mp4', { icon: 'movie', link: 'video' });
-
-export function getIcon(mime: string) {
-  const t = mimeMap.get(mime);
-  if (t == undefined) {
-    return 'file_present';
-  } else {
-    return t.icon;
-  }
-}
-
-export function getLink(mime: string) {
-  const t = mimeMap.get(mime);
-  if (t == undefined) {
-    return 'file';
-  } else {
-    return t.link;
-  }
-}
-
-export { mimeMap };
-
 // Types for Files/ Folders
 export interface FolderEntryType {
   id: string;

@@ -229,10 +229,9 @@
             :color="darkmode ? 'white' : 'black'"
             @keyup.enter="updateName"
             class="text-primary text-body1 q-ma-sm"
-            style="width: 230px"
+            style="max-width: 300px"
             outlined
             dense
-            clearable
             hide-bottom-space
             :rules="[
               (val) => val.length > 0 || 'Please type something',
@@ -245,13 +244,13 @@
           <q-card-actions align="center" class="row">
             <q-btn
               v-close-popup
-              flat
+              push
               icon="close"
               class="bg-red text-white q-mr-sm"
               style="width: 95px"
             />
             <q-btn
-              flat
+              push
               class="bg-green text-white q-ml-sm"
               icon="done"
               size="md"
@@ -382,6 +381,15 @@ export default defineComponent({
     },
 
     updateName() {
+      if (this.newName.length < 1) {
+        this.notify('negative', 'Please type something');
+        return;
+      }
+      if (/\/|\x00/.test(this.newName)) {
+        this.notify('negative', 'No Slash or null char');
+        return;
+      }
+
       (this.$refs as any).inputMenu.hide();
       var data = {
         item_id: this.item.id,

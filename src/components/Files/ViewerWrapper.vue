@@ -10,8 +10,8 @@
     @hide="close"
   >
     <q-card style="min-width: 350px">
-      <q-toolbar class="bg-layout-bg text-layout-text q-pa-none">
-        <q-toolbar-title class="q-ml-md">{{ item.name }}</q-toolbar-title>
+      <q-toolbar class="bg-light-blue-6 text-white q-pa-none">
+        <a class="q-ml-md text-h6 ellipsis">Preview: {{ item.name }}</a>
         <q-space />
 
         <q-btn
@@ -39,10 +39,7 @@
         </q-btn>
       </q-toolbar>
 
-      <div
-        class="row"
-        :class="darkmode ? 'bg-grey-7 text-white' : 'bg-grey-4 text-dark'"
-      >
+      <div class="row bg-light-blue-8 text-white">
         <q-btn
           stretch
           flat
@@ -68,7 +65,7 @@
             icon-right="expand_more"
             class="text-weight-bold text-caption"
           >
-            <q-menu>
+            <q-menu class="bg-light-blue-8 text-white">
               <q-list separator>
                 <template
                   v-for="(value, propertyName) in availablePreviews"
@@ -76,8 +73,9 @@
                 >
                   <q-item
                     v-if="value.available"
+                    dense
                     clickable
-                    @click="setMime(propertyName, false)"
+                    @click="setMime(value.mime, false)"
                     v-close-popup
                     class="text-body1"
                   >
@@ -101,24 +99,24 @@
         <q-separator vertical size="2px" />
       </div>
 
-      <q-card-section>
+      <q-card-section style="min-height: 200px">
         <div v-if="mimePreview.video">
-          <VideoView :id="item.id" :mime="item.mime" />
+          <VideoView :item="item" />
         </div>
         <div v-else-if="mimePreview.image">
-          <q-img
-            :src="'https://api.kurtn3x.xyz/files/content/file/' + item.id"
-          />
+          <ImageView :item="item" />
         </div>
         <div v-else-if="mimePreview.code">Code Editor</div>
-        <div v-else-if="mimePreview.text"><TextView :id="item.id" /></div>
+        <div v-else-if="mimePreview.text"><TextView :item="item" /></div>
         <div v-else-if="mimePreview.wysiwyg">
-          <WysiwygView :id="item.id" />
+          <WysiwygView :item="item" />
         </div>
         <div v-else-if="mimePreview.pdf">
-          <PdfView :id="item.id" />
+          <PdfView :item="item" />
         </div>
-        <div v-else>No Preview available.</div>
+        <div v-else>
+          <div class="text-h6 text-center q-mt-lg">No Preview available.</div>
+        </div>
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -130,41 +128,14 @@ import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
 import { FolderEntryType } from 'src/types/index';
 import ItemInformation from './ItemInformation.vue';
-
-const VIDEOMIME = [
-  'video/ogg',
-  'video/ogg',
-  'video/mp4',
-  'video/mp4',
-  'video/mp4',
-  'video/x-matroska',
-  'audio/mp4',
-  'audio/mpeg',
-  'audio/aac',
-  'audio/x-caf',
-  'audio/flac',
-  'audio/ogg',
-  'audio/wav',
-  'application/x-mpegURL',
-  'application/dash+xml',
-];
-
-const IMAGEMIME = [
-  'image/jpeg',
-  'image/jpeg',
-  'image/gif',
-  'image/png',
-  'image/svg+xml',
-  'image/webp',
-];
-
-const WYSIWYGMIME = ['wysiwyg'];
-
-const TEXTMIME = ['text'];
-
-const CODEMIME = ['code'];
-
-const PDFMIME = 'application/pdf';
+import {
+  IMAGEMIME,
+  TEXTMIME,
+  VIDEOMIME,
+  WYSIWYGMIME,
+  CODEMIME,
+  PDFMIME,
+} from 'components/Files/mimeMap';
 
 const VideoView = defineAsyncComponent(
   () => import('./FilePreviews/VideoView.vue')
@@ -178,6 +149,9 @@ const TextView = defineAsyncComponent(
 const PdfView = defineAsyncComponent(
   () => import('./FilePreviews/PdfView.vue')
 );
+const ImageView = defineAsyncComponent(
+  () => import('./FilePreviews/ImageView.vue')
+);
 
 export default defineComponent({
   name: 'ViewerWrapper',
@@ -187,6 +161,7 @@ export default defineComponent({
     WysiwygView,
     TextView,
     PdfView,
+    ImageView,
   },
 
   props: {
@@ -211,18 +186,22 @@ export default defineComponent({
         text: {
           available: false,
           label: 'Text Editor',
+          mime: 'text/text',
         },
         code: {
           available: false,
           label: 'Code Editor',
+          mime: 'text/code',
         },
         wysiwyg: {
           available: false,
-          label: 'WYSIWYG (HTML) Editor',
+          label: 'WYSIWYG (Rich-) Editor',
+          mime: 'text/wysiwyg',
         },
         markdown: {
           available: false,
           label: 'Markdown Preview',
+          mime: 'text/markdown',
         },
       }),
       mimePreview: ref({
@@ -257,7 +236,12 @@ export default defineComponent({
       this.showDialog = false;
     },
 
-    setMime(mime: string, updateAvail: boolean) {
+    // mime: mimeType to be previewed
+    // updateAvail: if the available Mimetype-Previews for the file should be updated
+    // by default an Unknown Mimetype can be opened with text, code and wysiwyg
+    // text or code can each be opened with mytype text or code
+    // wysiwyg mime can be opened with text, code & wysiwyg
+    setMime(mime: string, updateAvail = true) {
       Object.keys(this.mimePreview).forEach(
         (v) => ((this.mimePreview as any)[v] = false)
       );
@@ -274,24 +258,24 @@ export default defineComponent({
       } else if (PDFMIME == mime) {
         this.mimePreview.pdf = true;
       } else if (TEXTMIME.includes(mime)) {
+        if (updateAvail) {
+          this.availablePreviews.text.available = true;
+          this.availablePreviews.code.available = true;
+        }
         this.mimePreview.text = true;
-        if (updateAvail) {
-          this.availablePreviews.text.available = true;
-          this.availablePreviews.code.available = true;
-        }
       } else if (CODEMIME.includes(mime)) {
-        this.mimePreview.code = true;
         if (updateAvail) {
           this.availablePreviews.text.available = true;
           this.availablePreviews.code.available = true;
         }
+        this.mimePreview.code = true;
       } else if (WYSIWYGMIME.includes(mime)) {
-        this.mimePreview.wysiwyg = true;
         if (updateAvail) {
           this.availablePreviews.wysiwyg.available = true;
           this.availablePreviews.text.available = true;
           this.availablePreviews.code.available = true;
         }
+        this.mimePreview.wysiwyg = true;
       } else if (updateAvail) {
         this.availablePreviews.wysiwyg.available = true;
         this.availablePreviews.text.available = true;

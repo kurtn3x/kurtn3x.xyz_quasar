@@ -11,6 +11,59 @@
       :active="mediaPreview"
       @close="mediaPreview = false"
     />
+    <!-- createFileDialog -->
+    <q-dialog
+      v-model="createFileDialog"
+      @hide="
+        newFile.name = '';
+        newFile.mime = 'Unknown';
+      "
+    >
+      <q-card bordered style="width: 350px">
+        <q-toolbar class="bg-layout-bg text-layout-text text-center">
+          <q-toolbar-title class="q-ma-sm">Create new File</q-toolbar-title>
+        </q-toolbar>
+        <div class="text-body1 text-center q-ma-md">
+          <q-input
+            :color="darkmode ? 'white' : 'black'"
+            v-model="newFile.name"
+            dense
+            outlined
+            label="Name"
+            class="text-primary text-body1 col"
+            style="height: 45px"
+          />
+        </div>
+        <div class="q-ml-md">
+          <a class="text-h6"> Type:</a>
+          <q-option-group
+            v-model="newFile.mime"
+            :options="mimeOptions"
+            color="primary"
+            class="q-mt-xs text-body1"
+          />
+        </div>
+        <q-separator class="q-mt-md" />
+        <q-card-actions align="center" class="row q-mt-sm q-mb-sm">
+          <q-btn
+            v-close-popup
+            push
+            icon="close"
+            label="Cancel"
+            class="bg-red text-white col"
+          />
+          <q-btn
+            push
+            class="bg-green text-white col"
+            icon="done"
+            size="md"
+            label="Create"
+            @click="createFile"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
     <!-- delteSelectedItemsDialog (Confirmation) -->
     <q-dialog v-model="deleteItemsDialog">
       <q-card bordered style="width: 350px">
@@ -646,8 +699,8 @@
                 outline
                 class="text-body1 bg-light-green"
                 text-color="white"
-                icon="create_new_folder"
-                label="New Folder"
+                icon="note_add"
+                label="New File"
                 @click="createFileDialog = true"
                 style="width: 180px"
               />
@@ -1327,8 +1380,8 @@
             class="text-body1 bg-light-green"
             text-color="white"
             outline
-            icon="create_new_folder"
-            label="New Folder"
+            icon="note_add"
+            label="New File"
             @click="createFileDialog = true"
             style="width: 180px"
             padding="md"
@@ -1405,7 +1458,7 @@
               />
             </div>
           </q-item>
-          <div class="row text-body1 q-ma-sm">
+          <div class="row text-body1 q-ma-sm items-center">
             <div class="text-blue">
               {{
                 progressPanelProgressMap.filter(
@@ -1414,19 +1467,19 @@
               }}
               <q-icon name="hourglass_bottom" size="18px" class="q-ml-xs" />
             </div>
-            <div class="q-ml-md text-red">
-              {{
-                progressPanelProgressMap.filter((obj) => obj.status == 'error')
-                  .length
-              }}
-              <q-icon name="warning" size="18px" class="q-ml-xs" />
-            </div>
             <div class="q-ml-md text-green">
               {{
                 progressPanelProgressMap.filter((obj) => obj.status == 'ok')
                   .length
               }}
               <q-icon name="done" size="18px" class="q-ml-xs" />
+            </div>
+            <div class="q-ml-md text-red">
+              {{
+                progressPanelProgressMap.filter((obj) => obj.status == 'error')
+                  .length
+              }}
+              <q-icon name="warning" size="18px" class="q-ml-xs" />
             </div>
             <q-space />
             <q-btn
@@ -1600,18 +1653,19 @@ import { draggable, selected } from 'components/Files/draggable.js';
 import { droppable } from 'components/Files/droppable.js';
 import RightClickMenu from 'components/Files/RightClickMenu.vue';
 import { FOLDER } from 'src/testdata/folder';
+import ViewerWrapper from 'src/components/Files/ViewerWrapper.vue';
+import { getIcon } from 'src/components/Files/mimeMap';
+
 import type { Ref } from 'vue';
-import {
+import type {
   TraverseFolderMapType,
   UploadProgressEntryType,
-  getIcon,
   FolderEntryType,
   UploadDialogEntryType,
   NavbarIndexType,
   AllAvailableFoldersType,
   RawFolderContentType,
 } from 'src/types/index';
-import ViewerWrapper from 'src/components/Files/ViewerWrapper.vue';
 
 export default defineComponent({
   name: 'FilesView',
@@ -1758,8 +1812,26 @@ export default defineComponent({
       createFileDialog: ref(false),
       newFile: ref({
         name: '',
-        mime: '',
+        mime: 'Unknown',
       }),
+      mimeOptions: [
+        {
+          label: 'Text',
+          value: 'text/text',
+        },
+        {
+          label: 'WYSIWYG (Rich Text Editor)',
+          value: 'text/wysiwyg',
+        },
+        {
+          label: 'Code',
+          value: 'text/code',
+        },
+        {
+          label: 'Unknown',
+          value: 'Unknown',
+        },
+      ],
 
       // media preview
       mediaPreview: ref(false),
@@ -2238,7 +2310,6 @@ export default defineComponent({
                 thing.id + '_parentid',
                 thing.parent_id.toString()
               );
-              form_data.append(thing.id + '_mime', file.type);
               folderSizeByte += file.size;
             }
           }
@@ -2262,7 +2333,7 @@ export default defineComponent({
           };
 
           var response = await api
-            .post('/files/upload/folder', form_data, config)
+            .post('/files/upload/folder', form_data, config as any)
             .catch((error) => {
               folderProgress.status = 'error';
               folderProgress.color = 'bg-red';
@@ -2288,7 +2359,6 @@ export default defineComponent({
           form_data.append('parent_id', parentFolderId);
           form_data.append('file', file);
           form_data.append('size', itemSize.toString());
-          form_data.append('mime', file.type);
 
           let source = this.$axios.CancelToken.source();
 
@@ -2325,7 +2395,7 @@ export default defineComponent({
             },
           };
           var response = await api
-            .post('/files/upload/file', form_data, config)
+            .post('/files/upload/file', form_data, config as any)
             .catch((error) => {
               fileProgress.status = 'error';
               fileProgress.color = 'bg-red';
@@ -2759,6 +2829,55 @@ export default defineComponent({
           if (response.status == 200) {
             this.newFolder.name = '';
             this.newFolder.show = false;
+            this.notify('positive', 'Created');
+            this.loading = false;
+            this.refreshFolder();
+            this.resetFilterState();
+          } else {
+            this.notify('negative', response.data.error);
+            this.loading = false;
+          }
+        })
+        .catch((error) => {
+          if (error.response) {
+            this.notify('negative', error.response.data.error);
+          } else {
+            this.notify('negative', error.message);
+          }
+          this.loading = false;
+        });
+    },
+
+    createFile() {
+      if (this.newFile.name.length < 1) {
+        this.notify('negative', 'Please type something.');
+        return;
+      }
+      if (/\/|\x00/.test(this.newFile.name)) {
+        this.notify('negative', 'No slash or null char.');
+        return;
+      }
+
+      if (this.checkNameExistFolderContext(this.newFile.name, 'file') == true) {
+        this.notify('negative', 'Name already exists.');
+        return;
+      }
+
+      this.loading = true;
+
+      var data = {
+        file: new File([''], this.newFile.name),
+        parent_id: this.rawFolderContent.id,
+        name: this.newFile.name,
+        mime: this.newFile.mime,
+        size: 0,
+      };
+
+      api
+        .post('/files/create/file', data, this.axiosConfig)
+        .then((response) => {
+          if (response.status == 200) {
+            this.createFileDialog = false;
             this.notify('positive', 'Created');
             this.loading = false;
             this.refreshFolder();

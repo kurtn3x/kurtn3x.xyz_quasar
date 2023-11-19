@@ -23,8 +23,6 @@ export default defineComponent({
     const q = useQuasar();
     const localStore = useLocalStore();
 
-    q.cookies.set('dummy', 'dummy');
-
     // setup localStore
     if (localStore.darkmodeState == null) {
       localStore.darkmode = true;
