@@ -2,7 +2,7 @@
   <div class="q-mt-lg row justify-center" v-if="loading">
     <q-spinner color="light-blue-6" size="10em" style="height: 20em" />
   </div>
-  <div v-show="!loading" style="height: 300px">
+  <div v-show="!loading">
     <video-player
       preload="auto"
       controls
@@ -10,7 +10,7 @@
       :options="videoOptions"
       :muted="true"
       :responsive="true"
-      :fill="true"
+      :fluid="true"
       @loadedmetadata="handleMetadata"
       class="vjs-theme-forest"
       @mounted="handleMounted"

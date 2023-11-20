@@ -11,11 +11,19 @@
     seamless
   >
     <q-card
-      :style="maximizedToggle ? '' : dialogStyle"
-      style="min-height: 300px; min-width: 300px"
+      :style="
+        maximizedToggle
+          ? 'width: 100%; height: 100%;'
+          : dialogStyle +
+            ';' +
+            'max-width:' +
+            ($q.screen.width - 100) +
+            'px; resize: both'
+      "
+      style="min-height: 300px; min-width: 350px"
     >
       <q-toolbar
-        class="bg-light-blue-6 text-white q-pa-none"
+        class="bg-light-blue-6 text-white q-pa-none cursor-pointer"
         v-touch-pan.mouse="onPan"
       >
         <a class="q-ml-md text-h6 ellipsis">Preview: {{ item.name }}</a>
@@ -55,11 +63,11 @@
           stretch
           flat
           icon="download"
-          :label="'Download (' + item.size + ')'"
+          :label="'(' + item.size + ')'"
           class="text-weight-bold text-caption"
           @click="downloadFile(item.id)"
         />
-        <q-separator vertical size="2px" />
+        <q-separator vertical size="1px" color="white" />
 
         <div
           v-if="
@@ -77,7 +85,7 @@
             class="text-weight-bold text-caption"
           >
             <q-menu class="bg-light-blue-8 text-white">
-              <q-list separator>
+              <q-list separator dark bordered>
                 <template
                   v-for="(value, propertyName) in availablePreviews"
                   v-bind:key="propertyName"
@@ -98,19 +106,22 @@
               </q-list>
             </q-menu>
           </q-btn>
-          <q-separator vertical size="2px" />
+          <q-separator vertical size="1px" color="white" />
         </div>
+        <q-space />
+        <q-separator vertical size="1px" color="white" />
         <q-btn
           stretch
           flat
-          label="Info"
+          icon="question_mark"
           class="text-weight-bold text-caption"
           @click="itemInformationDialog = true"
         />
         <q-separator vertical size="2px" />
       </div>
+      <q-resize-observer @resize="onResize" />
 
-      <q-card-section style="min-height: 200px">
+      <q-card-section>
         <div v-if="mimePreview.video">
           <VideoView :item="item" />
         </div>
@@ -123,12 +134,23 @@
           <WysiwygView :item="item" />
         </div>
         <div v-else-if="mimePreview.pdf">
-          <PdfView :item="item" />
+          <PdfView :item="item" :initial-height="initialHeight" />
         </div>
         <div v-else>
           <div class="text-h6 text-center q-mt-lg">No Preview available.</div>
         </div>
       </q-card-section>
+      <div
+        class="absolute-bottom-right row items-end"
+        v-if="!maximizedToggle"
+        style="
+          overflow: hidden;
+          background: #a8e3ff;
+          width: 15px;
+          height: 15px;
+          bottom: 0px;
+        "
+      />
     </q-card>
   </q-dialog>
 </template>
@@ -187,6 +209,7 @@ export default defineComponent({
     var item = ref(props.propItem) as Ref<FolderEntryType>;
     var showDialog = ref(props.active) as Ref<boolean>;
     return {
+      initialHeight: ref(0),
       item,
       localStore,
       q,
@@ -197,6 +220,8 @@ export default defineComponent({
         x: 0,
         y: 0,
       }),
+      dialogWidth: ref(0),
+      initialDialogWidth: ref(0),
       availablePreviews: ref({
         text: {
           available: false,
@@ -235,9 +260,13 @@ export default defineComponent({
       return this.localStore.darkmode;
     },
     dialogStyle() {
-      return {
-        transform: `translate(${this.dialogPos.x}px, ${this.dialogPos.y}px)`,
-      };
+      return (
+        'transform: translate(' +
+        this.dialogPos.x +
+        'px,' +
+        this.dialogPos.y +
+        'px)'
+      );
     },
   },
   watch: {
@@ -248,9 +277,16 @@ export default defineComponent({
       this.item = newVal;
       this.setMime(newVal.mime, true);
     },
+    height(newVal) {
+      console.log(newVal);
+    },
   },
 
   methods: {
+    onResize(size: any) {
+      this.initialHeight = size.height - 120;
+    },
+
     close() {
       this.$emit('close', true);
       this.showDialog = false;

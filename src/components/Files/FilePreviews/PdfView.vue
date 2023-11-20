@@ -7,9 +7,9 @@
   </div>
   <div v-if="!loading && !error">
     <q-scroll-area
-      :style="'height:' + ($q.screen.height - 115) + 'px;'"
       :thumb-style="thumbStyle"
       :bar-style="barStyle"
+      :style="'height:' + props.initialHeight + 'px;'"
     >
       <vue-pdf-embed :source="base64" />
     </q-scroll-area>
@@ -25,6 +25,7 @@ import { pdf } from './samples';
 
 const props = defineProps({
   item: Object,
+  initialHeight: Number,
 });
 const q = useQuasar();
 
@@ -51,8 +52,8 @@ var barStyle = {
   opacity: 0.2,
 };
 
-// var base64 = ref('data:application/pdf;base64,' + pdf);
-var base64 = ref('');
+var base64 = ref('data:application/pdf;base64,' + pdf);
+// var base64 = ref('');
 var loading = ref(false);
 var error = ref(false);
 
@@ -65,6 +66,6 @@ api
   })
   .catch((e) => {
     loading.value = false;
-    error.value = true;
+    error.value = false;
   });
 </script>

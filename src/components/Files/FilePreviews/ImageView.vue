@@ -1,5 +1,5 @@
 <template>
-  <q-img :src="src" fit="scale-down" :height="$q.screen.height - 115 + 'px'">
+  <q-img :src="src" fit="scale-down">
     <template v-slot:error>
       <div
         class="absolute-full flex flex-center text-h6 bg-transparent text-red"
@@ -11,10 +11,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
 import { defineProps } from 'vue';
 import { image } from './samples';
-import { api } from 'boot/axios';
 
 const props = defineProps({
   item: Object,
