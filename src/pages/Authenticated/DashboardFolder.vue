@@ -1817,7 +1817,7 @@ export default defineComponent({
       mimeOptions: [
         {
           label: 'Text',
-          value: 'text/text',
+          value: 'text/plain',
         },
         {
           label: 'WYSIWYG (Rich Text Editor)',

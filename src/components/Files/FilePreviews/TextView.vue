@@ -35,7 +35,7 @@
       type="textarea"
       outlined
       autogrow
-      :input-style="'min-height:' + ($q.screen.height - 160) + 'px;'"
+      :input-style="'min-height:' + props.initialHeight + 'px;'"
       color="light-blue-6"
       :input-class="darkmode ? 'bg-dark text-white' : 'bg-white text-dark'"
       :class="darkmode ? 'bg-dark' : 'bg-white'"
@@ -64,10 +64,11 @@ var darkmode = ref(localStore.darkmodeState);
 
 const props = defineProps({
   item: Object,
+  initialHeight: Number,
+  initialWidth: Number,
 });
 
 var text = ref('');
-
 var loading = ref(true);
 var error = ref(false);
 
@@ -85,7 +86,7 @@ api
   })
   .catch((e) => {
     loading.value = false;
-    error.value = true;
+    error.value = false;
   });
 
 function save() {

@@ -23,9 +23,24 @@ const IMAGEMIME = [
 
 const WYSIWYGMIME = ['text/wysiwyg'];
 
-const TEXTMIME = ['text/text', 'text/plain'];
+const TEXTMIME = ['text/plain', 'text/text'];
 
-const CODEMIME = ['text/code', 'application/x-javascript'];
+const CODEMIME = [
+  'text/code',
+  'application/x-javascript',
+  'text/x-python',
+  'application/javascript',
+  'text/html',
+  'text/css',
+  'text/csv',
+  'application/xml',
+  'application/json',
+  'application/yaml',
+  'text/xml',
+  'application/x-sh',
+  // markdown
+  'text/markdown',
+];
 
 const PDFMIME = 'application/pdf';
 

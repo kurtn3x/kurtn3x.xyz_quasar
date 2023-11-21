@@ -5,13 +5,15 @@
   <div class="row justify-center q-mt-lg text-red text-h6" v-if="error">
     Error loading pdf
   </div>
-  <div v-if="!loading && !error">
+  <div v-if="!loading && !error" class="full-height full-width column">
+    <q-resize-observer @resize="onResize" />
     <q-scroll-area
       :thumb-style="thumbStyle"
       :bar-style="barStyle"
-      :style="'height:' + props.initialHeight + 'px;'"
+      class="col"
+      style="min-height: 300px"
     >
-      <vue-pdf-embed :source="base64" />
+      <vue-pdf-embed :source="base64" :width="width" />
     </q-scroll-area>
   </div>
 </template>
@@ -26,8 +28,22 @@ import { pdf } from './samples';
 const props = defineProps({
   item: Object,
   initialHeight: Number,
+  initialWidth: Number,
 });
 const q = useQuasar();
+
+var height = ref(0);
+var width = ref(0);
+function onResize(size) {
+  if (size.height == 0) {
+    height.value = 300;
+  } else {
+    height.value = size.height - 150;
+  }
+  width.value = size.width - 35;
+  console.log(size);
+  console.log(height.value);
+}
 
 const axiosConfig = {
   withCredentials: true,

@@ -20,7 +20,7 @@
             ($q.screen.width - 100) +
             'px; resize: both'
       "
-      style="min-height: 300px; min-width: 350px"
+      style="min-height: 300px; min-width: 350px; overflow: hidden"
     >
       <q-toolbar
         class="bg-light-blue-6 text-white q-pa-none cursor-pointer"
@@ -34,7 +34,10 @@
           stretch
           size="sm"
           icon="minimize"
-          @click="maximizedToggle = false"
+          @click="
+            maximizedToggle = false;
+            initialHeightMinimized = true;
+          "
           :disable="!maximizedToggle"
         >
           <q-tooltip v-if="maximizedToggle">Minimize</q-tooltip>
@@ -57,6 +60,7 @@
           <q-tooltip>Close</q-tooltip>
         </q-btn>
       </q-toolbar>
+      <q-separator color="white" />
 
       <div class="row bg-light-blue-8 text-white">
         <q-btn
@@ -67,7 +71,7 @@
           class="text-weight-bold text-caption"
           @click="downloadFile(item.id)"
         />
-        <q-separator vertical size="1px" color="white" />
+        <q-separator vertical size="2px" color="white" />
 
         <div
           v-if="
@@ -85,31 +89,30 @@
             class="text-weight-bold text-caption"
           >
             <q-menu class="bg-light-blue-8 text-white">
-              <q-list separator dark bordered>
-                <template
-                  v-for="(value, propertyName) in availablePreviews"
-                  v-bind:key="propertyName"
-                >
-                  <q-item
-                    v-if="value.available"
-                    dense
-                    clickable
-                    @click="setMime(value.mime, false)"
-                    v-close-popup
-                    class="text-body1"
-                  >
-                    <q-item-section>
-                      <q-item-label>{{ value.label }}</q-item-label>
-                    </q-item-section>
-                  </q-item>
+              <q-list dark bordered>
+                <template v-for="value in availablePreviews" v-bind:key="value">
+                  <div v-if="value.available">
+                    <q-item
+                      dense
+                      clickable
+                      @click="setMime(value.mime, false)"
+                      v-close-popup
+                      class="text-body1"
+                    >
+                      <q-item-section>
+                        <q-item-label>{{ value.label }}</q-item-label>
+                      </q-item-section>
+                    </q-item>
+                    <q-separator color="white" />
+                  </div>
                 </template>
               </q-list>
             </q-menu>
           </q-btn>
-          <q-separator vertical size="1px" color="white" />
+          <q-separator vertical size="2px" color="white" />
         </div>
         <q-space />
-        <q-separator vertical size="1px" color="white" />
+        <q-separator vertical size="2px" color="white" />
         <q-btn
           stretch
           flat
@@ -117,11 +120,11 @@
           class="text-weight-bold text-caption"
           @click="itemInformationDialog = true"
         />
-        <q-separator vertical size="2px" />
       </div>
+      <q-separator color="white" size="1px" />
       <q-resize-observer @resize="onResize" />
 
-      <q-card-section>
+      <q-card-section class="full-height full-width">
         <div v-if="mimePreview.video">
           <VideoView :item="item" />
         </div>
@@ -129,12 +132,22 @@
           <ImageView :item="item" />
         </div>
         <div v-else-if="mimePreview.code">Code Editor</div>
-        <div v-else-if="mimePreview.text"><TextView :item="item" /></div>
+        <div v-else-if="mimePreview.text">
+          <TextView
+            :item="item"
+            :initial-height="initialHeight"
+            :initial-width="initialWidth"
+          />
+        </div>
         <div v-else-if="mimePreview.wysiwyg">
           <WysiwygView :item="item" />
         </div>
-        <div v-else-if="mimePreview.pdf">
-          <PdfView :item="item" :initial-height="initialHeight" />
+        <div v-else-if="mimePreview.pdf" class="full-height full-width">
+          <PdfView
+            :item="item"
+            :initial-height="initialHeight"
+            :initial-width="initialWidth"
+          />
         </div>
         <div v-else>
           <div class="text-h6 text-center q-mt-lg">No Preview available.</div>
@@ -210,6 +223,8 @@ export default defineComponent({
     var showDialog = ref(props.active) as Ref<boolean>;
     return {
       initialHeight: ref(0),
+      initialWidth: ref(0),
+      initialHeightMinimized: ref(false),
       item,
       localStore,
       q,
@@ -284,7 +299,8 @@ export default defineComponent({
 
   methods: {
     onResize(size: any) {
-      this.initialHeight = size.height - 120;
+      this.initialHeight = size.height - 150;
+      this.initialWidth = size.width - 35;
     },
 
     close() {
