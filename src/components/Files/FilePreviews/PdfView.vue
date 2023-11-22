@@ -1,6 +1,13 @@
 <template>
-  <div class="absolute-full flex flex-center bg-transparent" v-if="loading">
+  <div
+    class="absolute-full flex flex-center bg-transparent column"
+    v-if="loading"
+  >
     <q-spinner color="primary" size="10em" />
+    <div class="text-center text-red text-body1 q-ma-sm" v-if="longload">
+      It seems like loading is taking long. There might be something wrong with
+      the PDF and it cannot be previewed.
+    </div>
   </div>
   <div
     class="row justify-center q-mt-lg text-red text-h6"
@@ -23,6 +30,7 @@
         ref="pdfRef"
         @rendered="getPdfInfo"
         @rendering-failed="pdfLoadError"
+        @loading-failed="pdfLoadError"
       />
     </q-scroll-area>
     <div class="bg-light-blue-8 row items-center" style="height: 50px">
@@ -85,6 +93,7 @@ import VuePdfEmbed from 'vue-pdf-embed';
 import { defineProps, ref, computed } from 'vue';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
+// import { pdf } from './samples';
 
 const props = defineProps({
   item: Object,
@@ -96,6 +105,9 @@ const axiosConfig = {
     'X-CSRFToken': q.cookies.get('csrftoken'),
   },
 };
+var loading = ref(true);
+var error = ref(false);
+var longload = ref(false);
 
 // options / values
 var pdfRef = ref(null);
@@ -107,6 +119,8 @@ var defWidth = ref(0);
 var width = computed(() => {
   return defWidth.value * pdfZoom.value;
 });
+// var base64 = 'data:application/pdf;base64,' + pdf;
+var base64 = ref('');
 
 // styling
 var thumbStyle = {
@@ -125,9 +139,10 @@ var barStyle = {
   opacity: 0.2,
 };
 
-var base64 = ref('');
-var loading = ref(false);
-var error = ref(false);
+setTimeout(longLoadingTime, 5000);
+function longLoadingTime() {
+  longload.value = true;
+}
 
 // functions
 api
@@ -138,10 +153,11 @@ api
   })
   .catch((e) => {
     error.value = true;
+    loading.value = false;
   });
 
 function onResize(size) {
-  defWidth.value = size.defWidth;
+  defWidth.value = size.width;
 }
 
 function getPdfInfo() {
@@ -149,7 +165,8 @@ function getPdfInfo() {
   loading.value = false;
 }
 
-function pdfLoadError() {
+function pdfLoadError(e) {
   error.value = true;
+  loading.value = false;
 }
 </script>

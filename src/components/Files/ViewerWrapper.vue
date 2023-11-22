@@ -151,6 +151,9 @@
         <div v-else-if="mimePreview.pdf" class="col column">
           <PdfView :item="item" />
         </div>
+        <div v-else-if="mimePreview.markdown" class="col column">
+          <CodeView :item="item" />
+        </div>
         <div v-else>
           <div class="text-h6 text-center q-mt-lg">No Preview available.</div>
         </div>

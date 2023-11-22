@@ -60,7 +60,7 @@ for (const mime of CODEMIME) {
 }
 
 mimeMap.set(PDFMIME, 'picture_as_pdf');
-mimeMap.set(MARKDOWNMIME, 'markdown');
+mimeMap.set(MARKDOWNMIME, 'code');
 
 export function getIcon(mime: string) {
   const t = mimeMap.get(mime);
