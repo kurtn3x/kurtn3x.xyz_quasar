@@ -1,8 +1,18 @@
 <template>
   <div class="q-mt-lg row justify-center" v-if="loading">
-    <q-spinner color="light-blue-6" size="10em" style="height: 20em" />
+    <q-spinner
+      color="light-blue-6"
+      size="10em"
+      style="height: 200px; width: 200px"
+    />
   </div>
-  <div v-show="!loading">
+  <div
+    class="row justify-center q-mt-lg text-red text-h6"
+    v-if="error && !loading"
+  >
+    Error loading video
+  </div>
+  <div v-show="!loading && !error">
     <video-player
       preload="auto"
       controls
@@ -14,6 +24,7 @@
       @loadedmetadata="handleMetadata"
       class="vjs-theme-forest"
       @mounted="handleMounted"
+      @error="errorPlayer"
     />
   </div>
 </template>
@@ -22,29 +33,12 @@
 import { VideoPlayer } from '@videojs-player/vue';
 import 'video.js/dist/video-js.css';
 import { defineProps, ref } from 'vue';
-import { video } from './samples';
 
 const props = defineProps({
   item: Object,
 });
-
 var loading = ref(true);
-const videoplayer = ref(null);
-var videoData = ref({
-  duration: 0,
-});
-
-const handleMounted = (v) => {
-  videoplayer.value = v;
-};
-
-const handleMetadata = (v) => {
-  loading.value = false;
-
-  videoData.value.duration = new Date(videoplayer.value.video.duration * 1000)
-    .toISOString()
-    .slice(11, 19);
-};
+var error = ref(false);
 
 var videoOptions = {
   autoplay: true,
@@ -56,13 +50,22 @@ var videoOptions = {
   },
   sources: [
     {
-      src: video,
-      mime: 'video/mp4',
-      // src: 'https://api.kurtn3x.xyz/files/content/file/' + props.item.id,
-      // type: props.item.mime,
+      src: 'https://api.kurtn3x.xyz/files/content/file/' + props.item.id,
+      type: props.item.mime,
     },
   ],
 };
+
+// functions
+const handleMetadata = (v) => {
+  // go out of loading if metadata has been loaded
+  loading.value = false;
+};
+
+function errorPlayer() {
+  loading.value = false;
+  error.value = true;
+}
 </script>
 
 <style>

@@ -9,8 +9,11 @@
     Couldn't load Text from File.
   </div>
 
-  <div v-if="!loading && !error">
-    <div class="bg-light-blue-8 row text-white">
+  <div v-if="!loading && !error" class="col column">
+    <div
+      class="bg-light-blue-8 row text-white q-mt-sm full-width"
+      style="height: 40px"
+    >
       <q-btn
         icon="save"
         label="Save"
@@ -21,8 +24,47 @@
       />
       <q-separator vertical color="white" />
       <q-space />
-      <div class="text-h6">Text-Editor</div>
-      <q-space />
+      <q-separator vertical color="white" />
+      <q-separator vertical color="white" />
+      <q-btn icon="settings" flat stretch>
+        <q-menu class="no-shadow" anchor="bottom middle" self="top middle">
+          <q-card bordered>
+            <q-item>
+              <q-item-section side>
+                <q-icon name="text_decrease" size="sm" color="blue-5" />
+              </q-item-section>
+              <q-item-section>
+                <q-slider
+                  v-model="textScale"
+                  :min="0.5"
+                  :max="3"
+                  :step="0.25"
+                  snap
+                  label
+                  switch-label-side
+                  :label-value="textScale + 'x'"
+                  color="blue-5"
+                  label-color="blue-5"
+                />
+              </q-item-section>
+              <q-item-section side>
+                <q-icon name="text_increase" size="sm" color="blue-5" />
+              </q-item-section>
+            </q-item>
+            <q-separator color="blue-5" />
+            <q-item
+              ><q-item-section>
+                <q-checkbox
+                  class="text-blue-5 text-body1"
+                  v-model="mono"
+                  label="Monospace Font"
+                  color="green"
+                />
+              </q-item-section>
+            </q-item>
+          </q-card>
+        </q-menu>
+      </q-btn>
       <q-separator vertical color="white" />
       <q-btn
         :icon="darkmode ? 'dark_mode' : 'light_mode'"
@@ -30,47 +72,61 @@
         @click="darkmode = !darkmode"
       />
     </div>
-    <q-input
-      v-model="text"
-      type="textarea"
-      outlined
-      autogrow
-      :input-style="'min-height:' + props.initialHeight + 'px;'"
-      color="light-blue-6"
-      :input-class="darkmode ? 'bg-dark text-white' : 'bg-white text-dark'"
-      :class="darkmode ? 'bg-dark' : 'bg-white'"
-      :dark="darkmode"
-    />
+    <q-card
+      class="col column q-mt-xs"
+      bordered
+      :class="darkmode ? 'bg-dark text-white' : 'bg-white text-dark'"
+    >
+      <textarea
+        :style="'font-size:' + textSize + 'px;'"
+        style="resize: none"
+        v-model="text"
+        class="col full-width rounded-borders textarea"
+        :class="[
+          darkmode ? 'bg-dark text-white' : 'bg-white text-dark',
+          mono ? 'mono' : '',
+        ]"
+      />
+    </q-card>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
 import { api } from 'boot/axios';
-import { defineProps } from 'vue';
+import { defineProps, computed } from 'vue';
 import { useQuasar } from 'quasar';
 import { useLocalStore } from 'stores/localStore';
 
+const props = defineProps({
+  item: Object,
+});
+
 const q = useQuasar();
 const localStore = useLocalStore();
-
 const axiosConfig = {
   withCredentials: true,
   headers: {
     'X-CSRFToken': q.cookies.get('csrftoken'),
   },
 };
-var darkmode = ref(localStore.darkmodeState);
-
-const props = defineProps({
-  item: Object,
-  initialHeight: Number,
-  initialWidth: Number,
-});
-
-var text = ref('');
 var loading = ref(true);
 var error = ref(false);
+
+// styling
+var darkmode = ref(localStore.darkmodeState);
+
+// options / values
+var text = ref('');
+const defSize = 16;
+var textScale = ref(1);
+var mono = ref(false);
+
+var textSize = computed(() => {
+  return defSize * textScale.value;
+});
+
+// functions
 
 api
   .get('/files/file-content/' + props.item.id, axiosConfig)
@@ -86,7 +142,7 @@ api
   })
   .catch((e) => {
     loading.value = false;
-    error.value = false;
+    error.value = true;
   });
 
 function save() {
@@ -123,3 +179,24 @@ function save() {
     });
 }
 </script>
+
+<style>
+.textarea {
+  padding: 10px;
+  max-width: 100%;
+  line-height: 1.5;
+  border-radius: 5px;
+  border: 2px solid #31beff;
+  box-shadow: 1px 1px 1px #31beff;
+}
+
+.textarea:focus {
+  border: 2px solid #036ff4;
+  box-shadow: 1px 1px 1px #036ff4;
+  outline: none;
+}
+
+.mono {
+  font-family: 'Lucida Console', Courier, monospace;
+}
+</style>

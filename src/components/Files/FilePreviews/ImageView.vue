@@ -12,12 +12,10 @@
 
 <script setup>
 import { defineProps } from 'vue';
-import { image } from './samples';
 
 const props = defineProps({
   item: Object,
 });
 
-// var src = image;
 var src = 'https://api.kurtn3x.xyz/files/content/file/' + props.item.id;
 </script>

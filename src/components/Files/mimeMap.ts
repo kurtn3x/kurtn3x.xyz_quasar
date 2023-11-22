@@ -38,10 +38,9 @@ const CODEMIME = [
   'application/yaml',
   'text/xml',
   'application/x-sh',
-  // markdown
-  'text/markdown',
 ];
 
+const MARKDOWNMIME = 'text/markdown';
 const PDFMIME = 'application/pdf';
 
 const mimeMap: Map<string, string> = new Map<string, string>();
@@ -60,7 +59,8 @@ for (const mime of CODEMIME) {
   mimeMap.set(mime, 'code');
 }
 
-mimeMap.set('application/pdf', 'picture_as_pdf');
+mimeMap.set(PDFMIME, 'picture_as_pdf');
+mimeMap.set(MARKDOWNMIME, 'markdown');
 
 export function getIcon(mime: string) {
   const t = mimeMap.get(mime);
@@ -71,4 +71,12 @@ export function getIcon(mime: string) {
   }
 }
 
-export { VIDEOMIME, IMAGEMIME, PDFMIME, CODEMIME, WYSIWYGMIME, TEXTMIME };
+export {
+  MARKDOWNMIME,
+  VIDEOMIME,
+  IMAGEMIME,
+  PDFMIME,
+  CODEMIME,
+  WYSIWYGMIME,
+  TEXTMIME,
+};

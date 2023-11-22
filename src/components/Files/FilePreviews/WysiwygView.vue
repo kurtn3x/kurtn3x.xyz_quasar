@@ -9,8 +9,8 @@
     Couldn't load Text from File.
   </div>
 
-  <div v-if="!loading && !error">
-    <div class="bg-light-blue-8 row text-white">
+  <div v-if="!loading && !error" class="col column">
+    <div class="bg-light-blue-8 row text-white" style="height: 40px">
       <q-btn
         icon="save"
         label="Save"
@@ -30,6 +30,7 @@
         @click="darkmode = !darkmode"
       />
     </div>
+
     <q-editor
       v-model="text"
       :toolbar="[
@@ -101,10 +102,9 @@
         verdana: 'Verdana',
       }"
       :dark="darkmode"
-      :height="height"
-      :content-style="'height:' + ($q.screen.height - 200) + 'px;'"
-      dense
       :class="darkmode ? 'text-white' : 'text-dark'"
+      class="col column"
+      max-height="600px"
     />
   </div>
 </template>
@@ -127,6 +127,11 @@ const axiosConfig = {
   },
 };
 var darkmode = ref(localStore.darkmodeState);
+var height = ref(0);
+
+function onResize(size) {
+  height.value = size.height;
+}
 
 const props = defineProps({
   item: Object,

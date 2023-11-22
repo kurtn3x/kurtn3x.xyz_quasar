@@ -20,11 +20,15 @@
             ($q.screen.width - 100) +
             'px; resize: both'
       "
-      style="min-height: 300px; min-width: 350px; overflow: hidden"
+      class="column"
+      style="min-height: 400px; min-width: 350px"
+      ref="viewerWrapper"
+      id="viewerWrapper"
     >
       <q-toolbar
-        class="bg-light-blue-6 text-white q-pa-none cursor-pointer"
+        class="bg-layout-bg text-layout-text q-pa-none cursor-pointer"
         v-touch-pan.mouse="onPan"
+        style="height: 50px"
       >
         <a class="q-ml-md text-h6 ellipsis">Preview: {{ item.name }}</a>
         <q-space />
@@ -60,9 +64,9 @@
           <q-tooltip>Close</q-tooltip>
         </q-btn>
       </q-toolbar>
-      <q-separator color="white" />
+      <q-separator :color="darkmode ? 'white' : 'dark'" />
 
-      <div class="row bg-light-blue-8 text-white">
+      <div class="row" style="height: 31px">
         <q-btn
           stretch
           flat
@@ -71,7 +75,7 @@
           class="text-weight-bold text-caption"
           @click="downloadFile(item.id)"
         />
-        <q-separator vertical size="2px" color="white" />
+        <q-separator vertical :color="darkmode ? 'white' : 'dark'" />
 
         <div
           v-if="
@@ -88,12 +92,12 @@
             icon-right="expand_more"
             class="text-weight-bold text-caption"
           >
-            <q-menu class="bg-light-blue-8 text-white">
-              <q-list dark bordered>
+            <q-menu class="no-shadow" style="width: 140px">
+              <q-card bordered>
+                <q-separator :color="darkmode ? 'white' : 'dark'" />
                 <template v-for="value in availablePreviews" v-bind:key="value">
                   <div v-if="value.available">
                     <q-item
-                      dense
                       clickable
                       @click="setMime(value.mime, false)"
                       v-close-popup
@@ -103,16 +107,17 @@
                         <q-item-label>{{ value.label }}</q-item-label>
                       </q-item-section>
                     </q-item>
-                    <q-separator color="white" />
+                    <q-separator :color="darkmode ? 'white' : 'dark'" />
                   </div>
                 </template>
-              </q-list>
+              </q-card>
             </q-menu>
           </q-btn>
-          <q-separator vertical size="2px" color="white" />
+          <q-separator vertical :color="darkmode ? 'white' : 'dark'" />
         </div>
         <q-space />
-        <q-separator vertical size="2px" color="white" />
+        <q-separator vertical :color="darkmode ? 'white' : 'dark'" />
+
         <q-btn
           stretch
           flat
@@ -121,33 +126,30 @@
           @click="itemInformationDialog = true"
         />
       </div>
-      <q-separator color="white" size="1px" />
-      <q-resize-observer @resize="onResize" />
+      <q-separator :color="darkmode ? 'white' : 'dark'" />
 
-      <q-card-section class="full-height full-width">
+      <q-resize-observer @resize="onResize" />
+      <q-card-section
+        class="col column q-pa-sm"
+        style="min-height: 250px; min-width: 250px"
+      >
         <div v-if="mimePreview.video">
           <VideoView :item="item" />
         </div>
-        <div v-else-if="mimePreview.image">
+        <div v-else-if="mimePreview.image" class="col column">
           <ImageView :item="item" />
         </div>
-        <div v-else-if="mimePreview.code">Code Editor</div>
-        <div v-else-if="mimePreview.text">
-          <TextView
-            :item="item"
-            :initial-height="initialHeight"
-            :initial-width="initialWidth"
-          />
+        <div v-else-if="mimePreview.code" class="col column">
+          <CodeView :item="item" />
         </div>
-        <div v-else-if="mimePreview.wysiwyg">
+        <div v-else-if="mimePreview.text" class="col column">
+          <TextView :item="item" />
+        </div>
+        <div v-else-if="mimePreview.wysiwyg" class="col column">
           <WysiwygView :item="item" />
         </div>
-        <div v-else-if="mimePreview.pdf" class="full-height full-width">
-          <PdfView
-            :item="item"
-            :initial-height="initialHeight"
-            :initial-width="initialWidth"
-          />
+        <div v-else-if="mimePreview.pdf" class="col column">
+          <PdfView :item="item" />
         </div>
         <div v-else>
           <div class="text-h6 text-center q-mt-lg">No Preview available.</div>
@@ -155,7 +157,7 @@
       </q-card-section>
       <div
         class="absolute-bottom-right row items-end"
-        v-if="!maximizedToggle"
+        v-if="!maximizedToggle && !mobile"
         style="
           overflow: hidden;
           background: #a8e3ff;
@@ -181,6 +183,7 @@ import {
   WYSIWYGMIME,
   CODEMIME,
   PDFMIME,
+  MARKDOWNMIME,
 } from 'components/Files/mimeMap';
 
 const VideoView = defineAsyncComponent(
@@ -198,6 +201,9 @@ const PdfView = defineAsyncComponent(
 const ImageView = defineAsyncComponent(
   () => import('./FilePreviews/ImageView.vue')
 );
+const CodeView = defineAsyncComponent(
+  () => import('./FilePreviews/CodeView.vue')
+);
 
 export default defineComponent({
   name: 'ViewerWrapper',
@@ -208,6 +214,7 @@ export default defineComponent({
     TextView,
     PdfView,
     ImageView,
+    CodeView,
   },
 
   props: {
@@ -221,9 +228,12 @@ export default defineComponent({
     const q = useQuasar();
     var item = ref(props.propItem) as Ref<FolderEntryType>;
     var showDialog = ref(props.active) as Ref<boolean>;
+    var mobile = q.platform.is.mobile;
+    if (mobile == undefined) {
+      mobile = false;
+    }
     return {
-      initialHeight: ref(0),
-      initialWidth: ref(0),
+      mobile,
       initialHeightMinimized: ref(false),
       item,
       localStore,
@@ -250,7 +260,7 @@ export default defineComponent({
         },
         wysiwyg: {
           available: false,
-          label: 'WYSIWYG (Rich-) Editor',
+          label: 'Rich Editor',
           mime: 'text/wysiwyg',
         },
         markdown: {
@@ -292,15 +302,17 @@ export default defineComponent({
       this.item = newVal;
       this.setMime(newVal.mime, true);
     },
-    height(newVal) {
-      console.log(newVal);
-    },
   },
 
   methods: {
+    // this sucks ass but for some reason after minimizing, the child component views have difficulty gaining
+    // the full size of the rest of the card. There has to be another rezise event to properly set the right height
     onResize(size: any) {
-      this.initialHeight = size.height - 150;
-      this.initialWidth = size.width - 35;
+      if (this.initialHeightMinimized) {
+        this.initialHeightMinimized = false;
+        var el = document.getElementById('viewerWrapper') as any;
+        el.style.height = '401px';
+      }
     },
 
     close() {
@@ -336,6 +348,13 @@ export default defineComponent({
         this.mimePreview.image = true;
       } else if (PDFMIME == mime) {
         this.mimePreview.pdf = true;
+      } else if (MARKDOWNMIME == mime) {
+        if (updateAvail) {
+          this.availablePreviews.text.available = true;
+          this.availablePreviews.code.available = true;
+          this.availablePreviews.markdown.available = true;
+        }
+        this.mimePreview.markdown = true;
       } else if (TEXTMIME.includes(mime)) {
         if (updateAvail) {
           this.availablePreviews.text.available = true;
@@ -356,7 +375,6 @@ export default defineComponent({
         }
         this.mimePreview.wysiwyg = true;
       } else if (updateAvail) {
-        this.availablePreviews.wysiwyg.available = true;
         this.availablePreviews.text.available = true;
         this.availablePreviews.code.available = true;
       }
