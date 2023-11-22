@@ -141,6 +141,7 @@ import { basicSetup } from 'codemirror';
 import { python } from '@codemirror/lang-python';
 import { json } from '@codemirror/lang-json';
 import { markdown } from '@codemirror/lang-markdown';
+import { javascript } from '@codemirror/lang-javascript';
 
 const props = defineProps({
   item: Object,
@@ -161,6 +162,7 @@ const langmap = new Map();
 langmap.set('python', python());
 langmap.set('json', json());
 langmap.set('markdown', markdown());
+langmap.set('javascript', javascript());
 
 const langOptions = [
   {
@@ -178,6 +180,10 @@ const langOptions = [
   {
     label: 'Markdown',
     value: 'markdown',
+  },
+  {
+    label: 'Javascript',
+    value: 'javascript',
   },
 ];
 // options / values
