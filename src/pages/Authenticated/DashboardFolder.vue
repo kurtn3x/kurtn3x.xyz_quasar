@@ -2,10 +2,10 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="initialFetch && !initialFetchSuccessful">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="initialFetch && initialFetchSuccessful">
     <viewer-wrapper
       :propItem="mediaItem"
       :active="mediaPreview"
@@ -465,12 +465,10 @@
                               if (!/\/|\x00/.test(file.temp as string)) {
                                 if (
                                   checkNameExistFolderContext(
-                                    file.temp as string,
-                                    'file'
+                                    file.temp as string
                                   ) == false &&
                                   checkNameExistUploadContext(
-                                    file.temp as string,
-                                    'file'
+                                    file.temp as string
                                   ) == false
                                 ) {
                                   file.name = file.temp as string;
@@ -2135,7 +2133,6 @@ export default defineComponent({
 
     // picking files via the pick files selector and adding it to the uploadMap
     appendFiles(files: File[]) {
-      console.log(files);
       for (var file of files) {
         var fileName = file.name;
 
@@ -2422,8 +2419,8 @@ export default defineComponent({
     findValidName(name: string, type: string): [number, string] {
       // check existance of name, return 0 if everything is Ok
       if (
-        this.checkNameExistFolderContext(name, type) == false &&
-        this.checkNameExistUploadContext(name, type) == false
+        this.checkNameExistFolderContext(name) == false &&
+        this.checkNameExistUploadContext(name) == false
       ) {
         return [0, name];
       }
@@ -2614,25 +2611,22 @@ export default defineComponent({
 
     // clear selected items
     clearSelectedItems() {
-      console.log('x');
       this.selectedItems.forEach(function (item) {
         item.selected = false;
       });
       this.selectedItems = [];
     },
 
-    // check if a name of type exists in current folder context (rawFoldercontent.children)
-    checkNameExistFolderContext(name: string, type: string) {
+    // check if a name exists in current folder context (rawFoldercontent.children)
+    checkNameExistFolderContext(name: string) {
       return this.rawFolderContent.children.some(
-        (el: FolderEntryType) => el.name == name && el.type == type
+        (el: FolderEntryType) => el.name == name
       );
     },
 
-    // check if a name of type exists in current upload context (uploadFilesDialogUploadMap)
-    checkNameExistUploadContext(name: string, type: string) {
-      return this.uploadFilesDialogUploadMap.some(
-        (el) => el.name == name && el.type == type
-      );
+    // check if a name exists in current upload context (uploadFilesDialogUploadMap)
+    checkNameExistUploadContext(name: string) {
+      return this.uploadFilesDialogUploadMap.some((el) => el.name == name);
     },
 
     // copy a text to clipboard
@@ -2809,9 +2803,7 @@ export default defineComponent({
         return;
       }
 
-      if (
-        this.checkNameExistFolderContext(this.newFolder.name, 'folder') == true
-      ) {
+      if (this.checkNameExistFolderContext(this.newFolder.name) == true) {
         this.notify('negative', 'Name already exists.');
         return;
       }
@@ -2858,7 +2850,7 @@ export default defineComponent({
         return;
       }
 
-      if (this.checkNameExistFolderContext(this.newFile.name, 'file') == true) {
+      if (this.checkNameExistFolderContext(this.newFile.name) == true) {
         this.notify('negative', 'Name already exists.');
         return;
       }
@@ -3119,7 +3111,6 @@ export default defineComponent({
     // used when clicking on a folder in the scrollarea
     getFolderId(folderid: string, navbarAdd: boolean) {
       this.loading = true;
-      console.log(this.selectedItems);
       api
         .get('/files/folder/' + folderid, this.axiosConfig)
         .then((response) => {

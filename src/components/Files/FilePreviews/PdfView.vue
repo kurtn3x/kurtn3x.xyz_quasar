@@ -17,12 +17,8 @@
   </div>
   <div v-if="!loading && !error" class="col column">
     <q-resize-observer @resize="onResize" />
-    <q-scroll-area
-      :thumb-style="thumbStyle"
-      :bar-style="barStyle"
-      class="col column"
-    >
-      <div :id="id" class="pdfviewer" ref="pdfviewer">
+    <q-scroll-area :thumb-style="thumbStyle" :bar-style="barStyle" class="col">
+      <div :id="id" class="pdfviewer row justify-center" ref="pdfviewer">
         <div v-for="pageNum in pageNumbersArray" :key="pageNum">
           <div :id="id && `${id}-${pageNum}`" class="pdfviewer_page col">
             <canvas />
@@ -86,7 +82,7 @@
 </template>
 
 <script setup>
-import { defineProps, ref, computed, onMounted, watch } from 'vue';
+import { defineProps, ref, computed, onMounted, watch, onUnmounted } from 'vue';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { pdfsample } from './samples';
@@ -118,23 +114,39 @@ var pdfviewer = ref(null);
 var id = 'pdfviewer';
 
 var pdfDoc = ref(null);
-var pdfRef = ref(null);
-var pdfPages = ref(0);
 var pdfSiteView = ref(false);
 var pdfZoom = ref(1);
 var defWidth = ref(0);
 var width = computed(() => {
   return defWidth.value * pdfZoom.value;
 });
-var base64 = 'data:application/pdf;base64,' + pdfsample;
-// var base64 = ref('');
+var base64 = ref('');
+// base64.value = 'data:application/pdf;base64,' + pdfsample;
 
-watch(width, async (n, o) => {
-  if (pdfDoc.value != null) {
-    console.log('i');
-    render(pdfDoc.value);
+watch(pdfSiteView, async (n, o) => {
+  if (n == true) {
+    pdfCurrentPage.value = 1;
+  } else {
+    pdfCurrentPage.value = 0;
   }
 });
+
+watch([width, pdfCurrentPage], async () => {
+  if (pdfDoc.value != null) {
+    await render(pdfDoc.value);
+  }
+});
+
+watch(
+  () => props.item.id,
+  async () => {
+    await getPdfFile();
+    const doc = await load(base64.value);
+    console.log('loading of pdf done');
+    await render(doc);
+    console.log('rendering of pdf done');
+  }
+);
 
 async function load(src) {
   const loadingTask = getDocument(src);
@@ -186,7 +198,6 @@ async function render(doc) {
           ? page.view[2] / page.view[3]
           : page.view[3] / page.view[2]
       );
-      console.log(actualWidth + ' ' + actualHeight);
 
       canvas.style.width = `${Math.floor(actualWidth)}px`;
       canvas.style.height = `${Math.floor(actualHeight)}px`;
@@ -211,10 +222,16 @@ async function releaseChildCanvases() {
   await emptyElement();
 }
 
+onUnmounted(async () => {
+  await releaseChildCanvases();
+});
+
 onMounted(async () => {
   await getPdfFile();
-  const doc = await load(base64);
+  const doc = await load(base64.value);
+  console.log('loading of pdf done');
   await render(doc);
+  console.log('rendering of pdf done');
 });
 
 // styling
@@ -243,14 +260,13 @@ async function getPdfFile() {
       error.value = false;
       loading.value = false;
     })
-    .catch((e) => {
-      error.value = false;
+    .catch(() => {
+      error.value = true;
       loading.value = false;
     });
 }
 
 function onResize(size) {
   defWidth.value = size.width;
-  console.log(defWidth.value);
 }
 </script>

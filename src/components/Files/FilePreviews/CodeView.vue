@@ -131,7 +131,7 @@
 
 <script setup>
 import { api } from 'boot/axios';
-import { defineProps, reactive, shallowRef, ref, computed } from 'vue';
+import { defineProps, reactive, shallowRef, ref, computed, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { useLocalStore } from 'stores/localStore';
 import { Codemirror } from 'vue-codemirror';
@@ -146,6 +146,12 @@ import { javascript } from '@codemirror/lang-javascript';
 const props = defineProps({
   item: Object,
 });
+watch(
+  () => props.item.id,
+  () => {
+    getFile();
+  }
+);
 const q = useQuasar();
 const localStore = useLocalStore();
 const axiosConfig = {
@@ -244,24 +250,27 @@ const handleStateUpdate = (viewUpdate) => {
   state.lines = viewUpdate.state.doc.lines;
 };
 
-// functions
+getFile();
 
-api
-  .get('/files/file-content/' + props.item.id, axiosConfig)
-  .then((response) => {
-    if (response.status == 200) {
-      text.value = response.data.content;
-      loading.value = false;
-      error.value = false;
-    } else {
+// functions
+function getFile() {
+  api
+    .get('/files/file-content/' + props.item.id, axiosConfig)
+    .then((response) => {
+      if (response.status == 200) {
+        text.value = response.data.content;
+        loading.value = false;
+        error.value = false;
+      } else {
+        loading.value = false;
+        error.value = true;
+      }
+    })
+    .catch(() => {
       loading.value = false;
       error.value = true;
-    }
-  })
-  .catch((e) => {
-    loading.value = false;
-    error.value = true;
-  });
+    });
+}
 
 function save() {
   var data = {
@@ -287,7 +296,7 @@ function save() {
         });
       }
     })
-    .catch((e) => {
+    .catch(() => {
       q.notify({
         type: 'negative',
         message: 'Something went wrong.',

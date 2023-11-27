@@ -116,6 +116,9 @@ import { defineProps } from 'vue';
 import { useQuasar } from 'quasar';
 import { useLocalStore } from 'stores/localStore';
 
+const props = defineProps({
+  item: Object,
+});
 const q = useQuasar();
 const localStore = useLocalStore();
 var loading = ref(true);
@@ -127,30 +130,29 @@ const axiosConfig = {
   },
 };
 var darkmode = ref(localStore.darkmodeState);
-var height = ref(0);
-
-function onResize(size) {
-  height.value = size.height;
-}
-
-const props = defineProps({
-  item: Object,
-});
-
 var text = ref('');
+getFile();
 
-api
-  .get('/files/file-content/' + props.item.id, axiosConfig)
-  .then((response) => {
-    text.value = response.data.content;
-    loading.value = false;
-    error.value = false;
-  })
-  .catch((e) => {
-    loading.value = false;
-    error.value = true;
-  });
+watch(
+  () => props.item.id,
+  () => {
+    getFile();
+  }
+);
 
+function getFile() {
+  api
+    .get('/files/file-content/' + props.item.id, axiosConfig)
+    .then((response) => {
+      text.value = response.data.content;
+      loading.value = false;
+      error.value = false;
+    })
+    .catch(() => {
+      loading.value = false;
+      error.value = true;
+    });
+}
 function save() {
   var data = {
     item_id: props.item.id,
@@ -175,7 +177,7 @@ function save() {
         });
       }
     })
-    .catch((e) => {
+    .catch(() => {
       q.notify({
         type: 'negative',
         message: 'Something went wrong.',

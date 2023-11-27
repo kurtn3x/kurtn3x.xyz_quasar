@@ -40,7 +40,8 @@ const props = defineProps({
 var loading = ref(true);
 var error = ref(false);
 
-var videoOptions = {
+var src = ref('https://api.kurtn3x.xyz/files/content/file/' + props.item.id);
+var videoOptions = ref({
   autoplay: true,
   controls: true,
   enableDocumentPictureInPicture: true,
@@ -50,14 +51,14 @@ var videoOptions = {
   },
   sources: [
     {
-      src: 'https://api.kurtn3x.xyz/files/content/file/' + props.item.id,
+      src: src,
       type: props.item.mime,
     },
   ],
-};
+});
 
 // functions
-const handleMetadata = (v) => {
+const handleMetadata = () => {
   // go out of loading if metadata has been loaded
   loading.value = false;
 };

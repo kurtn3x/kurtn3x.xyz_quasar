@@ -121,6 +121,7 @@ var text = ref('');
 const defSize = 16;
 var textScale = ref(1);
 var mono = ref(false);
+getFile();
 
 var textSize = computed(() => {
   return defSize * textScale.value;
@@ -128,22 +129,31 @@ var textSize = computed(() => {
 
 // functions
 
-api
-  .get('/files/file-content/' + props.item.id, axiosConfig)
-  .then((response) => {
-    if (response.status == 200) {
-      text.value = response.data.content;
-      loading.value = false;
-      error.value = false;
-    } else {
+watch(
+  () => props.item.id,
+  () => {
+    getFile();
+  }
+);
+
+function getFile() {
+  api
+    .get('/files/file-content/' + props.item.id, axiosConfig)
+    .then((response) => {
+      if (response.status == 200) {
+        text.value = response.data.content;
+        loading.value = false;
+        error.value = false;
+      } else {
+        loading.value = false;
+        error.value = true;
+      }
+    })
+    .catch(() => {
       loading.value = false;
       error.value = true;
-    }
-  })
-  .catch((e) => {
-    loading.value = false;
-    error.value = true;
-  });
+    });
+}
 
 function save() {
   var data = {
@@ -169,7 +179,7 @@ function save() {
         });
       }
     })
-    .catch((e) => {
+    .catch(() => {
       q.notify({
         type: 'negative',
         message: 'Something went wrong.',
