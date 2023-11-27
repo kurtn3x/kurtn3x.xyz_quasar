@@ -94,7 +94,7 @@
 <script setup>
 import { ref } from 'vue';
 import { api } from 'boot/axios';
-import { defineProps, computed } from 'vue';
+import { defineProps, computed, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { useLocalStore } from 'stores/localStore';
 
