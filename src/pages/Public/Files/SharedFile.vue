@@ -236,7 +236,7 @@ export default defineComponent({
             this.initialFetch = true;
             this.passwordOk = true;
             this.fileData = response.data;
-            if (this.mimeMap.get(fileData.mime) != undefined) {
+            if (this.mimeMap.get(this.fileData.mime) != undefined) {
               this.showPreviewButton = true;
             }
           } else if (response.status == 290) {
