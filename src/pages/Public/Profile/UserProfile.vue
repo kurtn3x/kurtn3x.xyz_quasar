@@ -370,7 +370,7 @@ import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { useLocalStore } from 'stores/localStore';
 import { UserProfileType } from 'src/types/index';
-import { defaultUser } from '../../types/defaults';
+import { defaultUser } from 'src/types/defaults.ts';
 
 export default {
   name: 'UserProfile',
