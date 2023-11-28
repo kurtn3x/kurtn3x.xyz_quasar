@@ -48,7 +48,7 @@
   </div>
   <div
     v-if="
-      initialFetch && !initialFetchSuccessful && (!passwordSet || passwordOk)
+      initialFetch && initialFetchSuccessful && (!passwordSet || passwordOk)
     "
   >
     <div class="text-primary text-h4 text-center q-mt-lg ellipsis">
@@ -134,8 +134,9 @@
         style="min-width: 330px"
       />
     </div>
-    <div class="row justify-center q-mt-md">
+    <div class="row justify-center q-mt-md" v-if="showPreviewButton">
       <q-btn
+        icon="visibility"
         label="Preview"
         class="cursor-pointer bg-green text-white q-mt-lg"
         push
@@ -159,6 +160,7 @@ import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { FileItemExtendedType } from 'src/types/index';
 import ViewerWrapper from 'src/components/Files/ViewerWrapper.vue';
+import { mimeMap } from 'components/Files/mimeMap';
 
 export default defineComponent({
   name: 'FileView',
@@ -167,6 +169,7 @@ export default defineComponent({
     const localStore = useLocalStore();
     const q = useQuasar();
     return {
+      mimeMap,
       localStore,
       q,
       fileId: ref(''),
@@ -177,7 +180,8 @@ export default defineComponent({
       password: ref(''),
       isPwd: ref(true),
       fileData: ref({}) as Ref<FileItemExtendedType>,
-      filePreview: ref(true),
+      filePreview: ref(false),
+      showPreviewButton: ref(false),
     };
   },
   computed: {
@@ -232,6 +236,9 @@ export default defineComponent({
             this.initialFetch = true;
             this.passwordOk = true;
             this.fileData = response.data;
+            if (this.mimeMap.get(fileData.mime) != undefined) {
+              this.showPreviewButton = true;
+            }
           } else if (response.status == 290) {
             // file is password protected but no password has been given → Prompt password input
             this.initialFetchSuccessful = true;
@@ -251,9 +258,6 @@ export default defineComponent({
           }
         })
         .catch((error) => {
-          console.log('Error');
-          console.log(error);
-
           if (error.response) {
             this.notify('negative', error.response.data.error);
           } else {

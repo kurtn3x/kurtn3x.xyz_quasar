@@ -179,15 +179,7 @@ import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
 import { FolderEntryType } from 'src/types/index';
 import ItemInformation from './ItemInformation.vue';
-import {
-  IMAGEMIME,
-  TEXTMIME,
-  VIDEOMIME,
-  WYSIWYGMIME,
-  CODEMIME,
-  PDFMIME,
-  MARKDOWNMIME,
-} from 'components/Files/mimeMap';
+import { mimeMap } from 'components/Files/mimeMap';
 
 const VideoView = defineAsyncComponent(
   () => import('./FilePreviews/VideoView.vue')
@@ -236,6 +228,7 @@ export default defineComponent({
       mobile = false;
     }
     return {
+      mimeMap,
       mobile,
       initialHeightMinimized: ref(false),
       item,
@@ -345,41 +338,20 @@ export default defineComponent({
         );
       }
 
-      if (VIDEOMIME.includes(mime)) {
-        this.mimePreview.video = true;
-      } else if (IMAGEMIME.includes(mime)) {
-        this.mimePreview.image = true;
-      } else if (PDFMIME == mime) {
-        this.mimePreview.pdf = true;
-      } else if (MARKDOWNMIME == mime) {
-        if (updateAvail) {
-          this.availablePreviews.text.available = true;
-          this.availablePreviews.code.available = true;
-          this.availablePreviews.markdown.available = true;
+      var mimeType = this.mimeMap.get(mime);
+      if (mimeType != undefined) {
+        (this.mimePreview as any)[mimeType.type] = true;
+        if (updateAvail && mimeType.availableTypes.length != 0) {
+          for (var availType of mimeType.availableTypes) {
+            (this.availablePreviews as any)[availType].available = true;
+          }
         }
-        this.mimePreview.markdown = true;
-      } else if (TEXTMIME.includes(mime)) {
+      } else {
         if (updateAvail) {
+          // always allow text & code editor for unknown mimes because why not
           this.availablePreviews.text.available = true;
           this.availablePreviews.code.available = true;
         }
-        this.mimePreview.text = true;
-      } else if (CODEMIME.includes(mime)) {
-        if (updateAvail) {
-          this.availablePreviews.text.available = true;
-          this.availablePreviews.code.available = true;
-        }
-        this.mimePreview.code = true;
-      } else if (WYSIWYGMIME.includes(mime)) {
-        if (updateAvail) {
-          this.availablePreviews.wysiwyg.available = true;
-          this.availablePreviews.text.available = true;
-          this.availablePreviews.code.available = true;
-        }
-        this.mimePreview.wysiwyg = true;
-      } else if (updateAvail) {
-        this.availablePreviews.text.available = true;
-        this.availablePreviews.code.available = true;
       }
     },
 

@@ -21,8 +21,6 @@ const IMAGEMIME = [
   'image/webp',
 ];
 
-const WYSIWYGMIME = ['text/wysiwyg'];
-
 const TEXTMIME = ['text/plain', 'text/text'];
 
 const CODEMIME = [
@@ -40,43 +38,79 @@ const CODEMIME = [
   'application/x-sh',
 ];
 
-const MARKDOWNMIME = 'text/markdown';
-const PDFMIME = 'application/pdf';
+const MARKDOWNMIME = ['text/markdown'];
+const PDFMIME = ['application/pdf'];
+const WYSIWYGMIME = ['text/wysiwyg'];
 
-const mimeMap: Map<string, string> = new Map<string, string>();
+interface mimeMapType {
+  icon: string;
+  type: string;
+  availableTypes: Array<string>;
+}
+
+const mimeMap: Map<string, mimeMapType> = new Map<string, mimeMapType>();
 
 for (const mime of VIDEOMIME) {
-  mimeMap.set(mime, 'movie');
+  mimeMap.set(mime, {
+    icon: 'movie',
+    type: 'video',
+    availableTypes: [],
+  });
 }
 for (const mime of IMAGEMIME) {
-  mimeMap.set(mime, 'image');
+  mimeMap.set(mime, {
+    icon: 'image',
+    type: 'image',
+    availableTypes: [],
+  });
 }
 for (const mime of TEXTMIME) {
-  mimeMap.set(mime, 'text_fields');
+  mimeMap.set(mime, {
+    icon: 'text_fields',
+    type: 'text',
+    availableTypes: ['text', 'code'],
+  });
 }
 
 for (const mime of CODEMIME) {
-  mimeMap.set(mime, 'code');
+  mimeMap.set(mime, {
+    icon: 'code',
+    type: 'code',
+    availableTypes: ['text', 'code'],
+  });
 }
 
-mimeMap.set(PDFMIME, 'picture_as_pdf');
-mimeMap.set(MARKDOWNMIME, 'code');
+for (const mime of PDFMIME) {
+  mimeMap.set(mime, {
+    icon: 'picture_as_pdf',
+    type: 'pdf',
+    availableTypes: [],
+  });
+}
+
+for (const mime of MARKDOWNMIME) {
+  mimeMap.set(mime, {
+    icon: 'code',
+    type: 'markdown',
+    availableTypes: ['code', 'text', 'markdown'],
+  });
+}
+
+for (const mime of WYSIWYGMIME) {
+  mimeMap.set(mime, {
+    icon: 'article',
+    type: 'wysiwyg',
+    availableTypes: ['code', 'text', 'wysiwyg'],
+  });
+}
 
 export function getIcon(mime: string) {
   const t = mimeMap.get(mime);
   if (t == undefined) {
     return 'file_present';
   } else {
-    return t;
+    return t.icon;
   }
 }
 
-export {
-  MARKDOWNMIME,
-  VIDEOMIME,
-  IMAGEMIME,
-  PDFMIME,
-  CODEMIME,
-  WYSIWYGMIME,
-  TEXTMIME,
-};
+export { mimeMap };

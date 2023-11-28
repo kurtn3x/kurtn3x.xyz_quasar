@@ -23,7 +23,6 @@
       :fluid="true"
       @loadedmetadata="handleMetadata"
       class="vjs-theme-forest"
-      @mounted="handleMounted"
       @error="errorPlayer"
     />
   </div>

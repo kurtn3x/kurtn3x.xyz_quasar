@@ -6,30 +6,34 @@ const routes: RouteRecordRaw[] = [
     component: () => import('layouts/MainLayout.vue'),
 
     children: [
-      { path: '/', component: () => import('pages/Start/Home.vue') },
-      { path: 'login', component: () => import('pages/Start/Login.vue') },
+      { path: '/', component: () => import('pages/Public/Start/Home.vue') },
+      {
+        path: 'login',
+        component: () => import('pages/Public/Start/Login.vue'),
+      },
       {
         path: 'user/:username',
-        component: () => import('pages/Profile/UserProfile.vue'),
+        component: () => import('pages/Public/Profile/UserProfile.vue'),
       },
       {
         path: 'id/:id',
-        component: () => import('pages/Profile/UserProfileIDReferrer.vue'),
+        component: () =>
+          import('pages/Public/Profile/UserProfileIDReferrer.vue'),
       },
       {
         name: 'register',
         path: 'register',
-        component: () => import('pages/Start/Register.vue'),
+        component: () => import('pages/Public/Start/Register.vue'),
       },
       {
         path: 'forgot',
-        component: () => import('pages/Start/Forgot.vue'),
+        component: () => import('pages/Public/Start/Forgot.vue'),
       },
 
       {
         name: 'privacy',
         path: 'privacy',
-        component: () => import('pages/Start/PrivacyPolicy.vue'),
+        component: () => import('pages/Public/Start/PrivacyPolicy.vue'),
       },
     ],
   },
@@ -41,15 +45,11 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: 'file/:id',
-        component: () => import('pages/Files/File.vue'),
-      },
-      {
-        path: 'video/:id',
-        component: () => import('pages/Files/Video.vue'),
+        component: () => import('pages/Public/Files/SharedFile.vue'),
       },
       {
         path: 'p/:id',
-        component: () => import('pages/Files/Permalink.vue'),
+        component: () => import('pages/Public/Files/Permalink.vue'),
       },
     ],
   },
@@ -63,7 +63,7 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: 'home',
-        component: () => import('pages/Start/Home.vue'),
+        component: () => import('pages/Public/Start/Home.vue'),
       },
       {
         path: 'settings',
@@ -75,7 +75,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: 'files',
-        component: () => import('pages/Authenticated/DashboardFolder.vue'),
+        component: () => import('pages/Authenticated/PrivateFolder.vue'),
       },
       {
         path: 'vpn',
