@@ -140,12 +140,12 @@
                   <q-item
                     clickable
                     @click="setTheme('dark')"
-                    style="background: #1d1d1d"
+                    style="background: #52616b"
                   />
                   <q-item
                     clickable
                     @click="setTheme('light')"
-                    style="background: #f8f0e3"
+                    style="background: #b7c8d4"
                   />
                 </q-list>
               </div>

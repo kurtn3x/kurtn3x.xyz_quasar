@@ -280,64 +280,6 @@ export default defineComponent({
   }
 }
 
-.bg {
-  position: relative;
-  overflow: hidden;
-  width: inherit;
-  height: 500%;
-}
-
-.bg-default {
-  background: linear-gradient(#3b4fb5 1%, rgb(255, 188, 188) 200%);
-}
-
-.bg-epic-blue {
-  background: linear-gradient(
-    0deg,
-    rgba(5, 9, 100, 1) 35%,
-    rgba(0, 143, 255, 1) 150%
-  );
-}
-
-.bg-cool-orange {
-  background: radial-gradient(
-    circle,
-    rgb(125, 16, 80) 15%,
-    rgb(135, 7, 24) 54%,
-    rgb(238, 78, 46) 100%
-  );
-}
-
-.bg-nice-green {
-  background: linear-gradient(
-    90deg,
-    rgba(10, 172, 71, 1) 0%,
-    rgba(29, 185, 146, 1) 35%,
-    rgba(21, 87, 150, 1) 100%
-  );
-}
-
-.bg-olive-green {
-  background: radial-gradient(
-    circle,
-    rgba(191, 188, 6, 1) 5%,
-    rgba(29, 89, 2, 1) 100%
-  );
-}
-
-.bg-darkp {
-  background: linear-gradient(#1d1d1d 1%, rgb(255, 188, 188, 0.6) 200%);
-}
-
-.bg-lightp {
-  background: linear-gradient(
-    0deg,
-    rgba(29, 29, 29, 1) 1%,
-    rgba(114, 114, 114, 1) 52%,
-    #f8f0e3 100%
-  );
-}
-
 .stepper-dark {
   background-color: #1d1d1d00;
 }

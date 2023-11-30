@@ -2856,17 +2856,28 @@ export default defineComponent({
       }
 
       this.loading = true;
+      var parts = [
+        new Blob(['you construct a file...'], { type: 'text/plain' }),
+        ' Same way as you do with blob',
+        new Uint16Array([33]),
+      ];
+      var file = new File([''], this.newFile.name);
 
-      var data = {
-        file: new File([''], this.newFile.name),
-        parent_id: this.rawFolderContent.id,
-        name: this.newFile.name,
-        mime: this.newFile.mime,
-        size: 0,
+      let form_data = new FormData();
+      form_data.append('file', file);
+      form_data.append('parent_id', this.rawFolderContent.id);
+      form_data.append('name', this.newFile.name);
+      form_data.append('mime', this.newFile.mime);
+      form_data.append('size', '0');
+      let config = {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': this.q.cookies.get('csrftoken'),
+          'Content-Type': 'multipart/form-data',
+        },
       };
-
       api
-        .post('/files/create/file', data, this.axiosConfig)
+        .post('/files/create/file', form_data, config)
         .then((response) => {
           if (response.status == 200) {
             this.createFileDialog = false;

@@ -51,102 +51,122 @@
       initialFetch && initialFetchSuccessful && (!passwordSet || passwordOk)
     "
   >
-    <div class="text-primary text-h4 text-center q-mt-lg ellipsis">
-      <q-icon name="file_present" class="q-mr-sm" />
-      {{ fileData.name }}
-    </div>
-    <div class="row justify-center items-center full-width q-mt-lg">
-      <q-list
-        bordered
-        class="rounded-borders full-width"
-        style="max-width: 500px"
-      >
-        <q-expansion-item
-          icon="info"
-          label="File Info"
-          class="text-h5 text-center"
-        >
-          <q-separator />
-          <q-card flat class="bg-transparent">
-            <div class="q-ma-sm">
-              <div class="text-h6 text-left row">
-                <a class="text-weight-bolder col">Name:</a>
-                <a class="col-8 ellipsis">{{ fileData.name }}</a>
-                <q-tooltip class="text-body1">
-                  {{ fileData.name }}
-                </q-tooltip>
-              </div>
-              <div class="text-h6 text-left row q-mt-md">
-                <a class="text-weight-bolder col">Size:</a>
-                <a class="col-8">{{ fileData.size }}</a>
-              </div>
-              <div class="text-h6 text-left row q-mt-md">
-                <a class="text-weight-bolder col">ID:</a>
-                <a class="col-8 ellipsis">{{ fileData.id }}</a>
-                <q-tooltip class="text-body1">
-                  {{ fileData.id }}
-                </q-tooltip>
-              </div>
-              <div
-                class="text-h6 text-left row q-mt-md"
-                style="overflow-wrap: break-word; line-break: anywhere"
+    <q-dialog v-model="itemInformationDialog">
+      <q-card bordered style="width: 350px">
+        <q-toolbar class="bg-layout-bg text-layout-text text-center">
+          <q-toolbar-title class="q-ma-sm">{{ item.name }}</q-toolbar-title>
+          <q-tooltip class="text-body1 bg-layout-bg text-layout-text">
+            {{ item.name }}
+          </q-tooltip>
+        </q-toolbar>
+        <div class="q-ma-md">
+          <div class="text-body1 q-mt-md row">
+            <div class="text-weight-bolder col-3">Owner</div>
+            <div class="col q-ml-sm">
+              <a
+                :href="'https://www.kurtn3x.xyz/user/' + item.owner"
+                class="text-blue"
               >
-                <a class="text-weight-bolder col">Path:</a>
-                <a class="col-8 ellipsis">{{ fileData.path }}</a>
-                <q-tooltip class="text-body1">
-                  {{ fileData.path }}
-                </q-tooltip>
-              </div>
-              <div class="text-h6 text-left row q-mt-md">
-                <a class="text-weight-bolder col">Owner:</a>
-                <a
-                  class="text-blue col-8 ellipsis"
-                  :href="'https://www.kurtn3x.xyz/user/' + fileData.owner"
-                >
-                  {{ fileData.owner }}</a
-                >
-              </div>
-              <div class="text-h6 text-left row q-mt-md">
-                <a class="text-weight-bolder col">Modified:</a>
-                <a class="col-8 ellipsis">{{ fileData.modified }}</a>
-              </div>
-              <div class="text-h6 text-left row q-mt-md">
-                <a class="text-weight-bolder col">Created:</a>
-                <a class="col-8 ellipsis">{{ fileData.created }}</a>
-              </div>
-              <div class="text-h6 text-left row q-mt-md">
-                <a class="text-weight-bolder col">Mime:</a>
-                <a class="col-8 ellipsis">{{ fileData.mime }}</a>
+                {{ item.owner }}
+              </a>
+            </div>
+          </div>
+          <div class="text-body1 q-mt-md row">
+            <div class="text-weight-bolder col-3">Type</div>
+            <div class="col q-ml-sm">{{ item.type }}</div>
+          </div>
+
+          <div v-if="item.type != 'folder'">
+            <div class="text-body1 q-mt-md row">
+              <div class="text-weight-bolder col-3">Mime</div>
+              <div class="col q-ml-sm" style="line-break: anywhere">
+                {{ item.mime }}
               </div>
             </div>
-          </q-card>
-        </q-expansion-item></q-list
-      >
+
+            <div class="text-body1 q-mt-md row">
+              <div class="text-weight-bolder col-3">Size</div>
+              <div class="col q-ml-sm">
+                {{ item.size }}
+              </div>
+            </div>
+          </div>
+
+          <div class="text-body1 q-mt-md row">
+            <div class="text-weight-bolder col-3">Created</div>
+            <div class="col q-ml-sm">{{ item.created }}</div>
+          </div>
+
+          <div class="text-body1 q-mt-md row">
+            <div class="text-weight-bolder col-3">Modified</div>
+            <div class="col q-ml-sm">{{ item.modified }}</div>
+          </div>
+
+          <div class="text-body1 q-mt-md row">
+            <div class="text-weight-bolder col-3">Folder</div>
+            <div class="col q-ml-sm" style="line-break: anywhere">
+              {{ item.path }}
+            </div>
+          </div>
+        </div>
+
+        <q-separator class="q-mt-sm" />
+
+        <q-card-actions align="center" class="q-mt-sm q-mb-sm">
+          <q-btn
+            v-close-popup
+            push
+            class="bg-green text-white col"
+            icon="done"
+            size="md"
+            label="OK"
+            style="max-width: 130px"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    <div
+      class="text-primary text-h4 text-center q-mt-lg ellipsis text-weight-bolder"
+    >
+      <q-icon :name="getIcon(item.mime)" class="q-mr-sm" />
+      {{ item.name }}
     </div>
-    <div class="row justify-center">
+    <div class="row justify-center q-mt-sm">
       <q-btn
-        :label="'Download (' + fileData.size + ')'"
+        :label="'Download (' + item.size + ')'"
         icon="file_download"
         class="cursor-pointer bg-green text-white q-mt-lg"
         push
-        @click="downloadFile(fileData.id)"
+        @click="downloadFile(item.id)"
         size="xl"
-        style="min-width: 330px"
+        style="width: 380px"
       />
     </div>
-    <div class="row justify-center q-mt-md" v-if="showPreviewButton">
+    <div class="row justify-center q-mt-sm">
       <q-btn
         icon="visibility"
-        label="Preview"
-        class="cursor-pointer bg-green text-white q-mt-lg"
+        label="Open in File Viewer"
+        class="cursor-pointer bg-light-blue-6 text-white q-mt-lg"
         push
         @click="filePreview = true"
         size="xl"
-        style="min-width: 330px"
+        style="width: 380px"
       />
     </div>
+    <div class="row justify-center q-mt-sm">
+      <q-btn
+        label="File Information"
+        icon="question_mark"
+        class="cursor-pointer q-mt-lg bg-blue-8"
+        push
+        @click="itemInformationDialog = true"
+        size="xl"
+        style="width: 380px"
+      />
+    </div>
+
     <viewer-wrapper
-      :propItem="fileData"
+      :propItem="item"
       :active="filePreview"
       @close="filePreview = false"
     />
@@ -160,7 +180,7 @@ import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { FileItemExtendedType } from 'src/types/index';
 import ViewerWrapper from 'src/components/Files/ViewerWrapper.vue';
-import { mimeMap } from 'components/Files/mimeMap';
+import { getIcon } from 'components/Files/mimeMap';
 
 export default defineComponent({
   name: 'FileView',
@@ -169,7 +189,6 @@ export default defineComponent({
     const localStore = useLocalStore();
     const q = useQuasar();
     return {
-      mimeMap,
       localStore,
       q,
       fileId: ref(''),
@@ -179,9 +198,10 @@ export default defineComponent({
       passwordOk: ref(false),
       password: ref(''),
       isPwd: ref(true),
-      fileData: ref({}) as Ref<FileItemExtendedType>,
+      item: ref({}) as Ref<FileItemExtendedType>,
       filePreview: ref(false),
-      showPreviewButton: ref(false),
+      itemInformationDialog: ref(false),
+      getIcon,
     };
   },
   computed: {
@@ -230,15 +250,11 @@ export default defineComponent({
       api
         .get(url, axiosConfig)
         .then((response) => {
-          console.log(response);
           if (response.status == 200) {
             this.initialFetchSuccessful = true;
             this.initialFetch = true;
             this.passwordOk = true;
-            this.fileData = response.data;
-            if (this.mimeMap.get(this.fileData.mime) != undefined) {
-              this.showPreviewButton = true;
-            }
+            this.item = response.data;
           } else if (response.status == 290) {
             // file is password protected but no password has been given → Prompt password input
             this.initialFetchSuccessful = true;

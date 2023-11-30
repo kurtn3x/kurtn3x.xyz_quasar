@@ -30,7 +30,7 @@
         v-touch-pan.mouse="onPan"
         style="height: 50px"
       >
-        <a class="q-ml-md text-h6 ellipsis">Preview: {{ item.name }}</a>
+        <a class="q-ml-md text-h6 ellipsis">File: {{ item.name }}</a>
         <q-space />
 
         <q-btn
@@ -276,6 +276,11 @@ export default defineComponent({
       }),
     };
   },
+
+  created() {
+    this.setMime(this.item.mime, true);
+  },
+
   computed: {
     darkmode() {
       return this.localStore.darkmode;

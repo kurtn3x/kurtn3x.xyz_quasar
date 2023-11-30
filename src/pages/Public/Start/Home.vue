@@ -7,46 +7,11 @@
           >Privacy Policy</router-link
         >
       </div>
-      <q-card class="row bg-transparent q-mt-sm" flat bordered>
-        <q-item
-          clickable
-          @click="setTheme('default')"
-          style="background: #3b4fb5"
-        />
-        <q-item
-          clickable
-          @click="setTheme('cool-orange')"
-          style="background: #ee4d2e"
-        />
-        <q-item
-          clickable
-          @click="setTheme('nice-green')"
-          style="background: #1db992"
-        />
-        <q-item
-          clickable
-          @click="setTheme('olive-green')"
-          style="background: #bfbc06"
-        />
-        <q-item
-          clickable
-          @click="setTheme('epic-blue')"
-          style="background: #008fff"
-        />
-        <q-item
-          clickable
-          @click="setTheme('dark')"
-          style="background: #1d1d1d"
-        />
-        <q-item
-          clickable
-          @click="setTheme('light')"
-          style="background: #f8f0e3"
-        />
-      </q-card>
     </div>
     <div class="q-mb-xl">
-      <div class="text-center non-selectable text-white text-h4 q-mb-xl">
+      <div
+        class="text-center non-selectable text-white text-h4 q-mb-xl text3d-primary"
+      >
         <a v-if="!localStore.isAuthenticated">Welcome!</a>
         <a v-if="localStore.isAuthenticated">Welcome, {{ username }}!</a>
       </div>
@@ -129,63 +94,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style scoped lang="scss">
-.bg {
-  position: relative;
-  overflow: hidden;
-  width: inherit;
-  height: 1000%;
-}
-
-.bg-default {
-  background: linear-gradient(#3b4fb5 1%, rgb(255, 188, 188) 200%);
-}
-
-.bg-cool-orange {
-  background: radial-gradient(
-    circle,
-    rgb(125, 16, 80) 15%,
-    rgb(135, 7, 24) 54%,
-    rgb(238, 78, 46) 100%
-  );
-}
-
-.bg-nice-green {
-  background: linear-gradient(
-    90deg,
-    rgba(10, 172, 71, 1) 0%,
-    rgba(29, 185, 146, 1) 35%,
-    rgba(21, 87, 150, 1) 100%
-  );
-}
-
-.bg-olive-green {
-  background: radial-gradient(
-    circle,
-    rgba(191, 188, 6, 1) 5%,
-    rgba(29, 89, 2, 1) 100%
-  );
-}
-
-.bg-epic-blue {
-  background: linear-gradient(
-    0deg,
-    rgba(5, 9, 100, 1) 35%,
-    rgba(0, 143, 255, 1) 150%
-  );
-}
-
-.bg-darkp {
-  background: linear-gradient(#1d1d1d 1%, rgb(255, 188, 188, 0.6) 200%);
-}
-
-.bg-lightp {
-  background: linear-gradient(
-    0deg,
-    rgba(29, 29, 29, 1) 1%,
-    rgba(114, 114, 114, 1) 52%,
-    #f8f0e3 100%
-  );
-}
-</style>

@@ -1,1 +1,53 @@
 @import './themes.scss';
+.bg {
+  position: relative;
+  overflow: hidden;
+  width: inherit;
+  height: 1000%;
+}
+
+.bg-default {
+  background: linear-gradient(145deg, #3b4fb5 1%, rgb(255, 188, 188) 200%);
+}
+
+.bg-cool-orange {
+  background: radial-gradient(
+    circle,
+    rgb(125, 16, 80) 15%,
+    rgb(135, 7, 24) 54%,
+    rgb(238, 78, 46) 100%
+  );
+}
+
+.bg-nice-green {
+  background: linear-gradient(
+    90deg,
+    rgba(10, 172, 71, 1) 0%,
+    rgba(29, 185, 146, 1) 35%,
+    rgba(21, 87, 150, 1) 100%
+  );
+}
+
+.bg-olive-green {
+  background: radial-gradient(
+    circle,
+    rgba(191, 188, 6, 1) 5%,
+    rgba(29, 89, 2, 1) 100%
+  );
+}
+
+.bg-epic-blue {
+  background: linear-gradient(
+    0deg,
+    rgba(5, 9, 100, 1) 35%,
+    rgba(0, 143, 255, 1) 150%
+  );
+}
+
+.bg-darkp {
+  background: linear-gradient(45deg, #1e2022 2%, #b7c8d4 250%);
+}
+
+.bg-lightp {
+  background: linear-gradient(45deg, #7cacd5 10%, #a0bdd0 52%, #f0f5f9 100%);
+}

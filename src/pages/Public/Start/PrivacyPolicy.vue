@@ -1,9 +1,10 @@
 <template>
-  <div class="q-ma-sm row justify-center">
+  <q-page class="bg row justify-center" :class="theme">
+    <ParticlesIndex />
+
     <q-card
       flat
-      bordered
-      class="full-width fade-in-text effect3dbox"
+      class="full-width fade-in-text q-mt-md text-layout-text"
       style="background-color: transparent; max-width: 600px"
     >
       <q-expansion-item
@@ -13,9 +14,14 @@
         class="full-width text-center"
         expand-icon-class="text-layout-text"
       >
-        <div class="text-center text-body1 q-mr-lg q-ml-lg q-mt-sm q-mb-md">
-          Only used for Authorization and CSRF-Prevention. No 3rd-party cookies.
-        </div>
+        <q-list bordered>
+          <div
+            class="text-center text-body1 q-mr-lg q-ml-lg q-mt-sm q-mb-sm text-layout-text"
+          >
+            Only used for Authorization and CSRF-Prevention. No 3rd-party
+            cookies.
+          </div>
+        </q-list>
       </q-expansion-item>
       <q-separator color="layout-text" />
       <q-expansion-item
@@ -25,11 +31,16 @@
         class="full-width text-center"
         expand-icon-class="text-layout-text"
       >
-        <div class="text-center text-body1 q-mr-lg q-ml-lg q-mt-sm q-mb-md">
-          No data besides Account-Data is stored. No data is shared to 3rd
-          parties. Only Username & Password are needed to access an account, any
-          other info is optional. (A correct E-Mail is recommended for recovery)
-        </div>
+        <q-list bordered>
+          <div
+            class="text-center text-body1 q-mr-lg q-ml-lg q-mt-sm q-mb-md text-layout-text"
+          >
+            No data besides Account-Data is stored. No data is shared to 3rd
+            parties. Only Username & Password are needed to access an account,
+            any other info is optional. (A correct E-Mail is recommended for
+            recovery)
+          </div>
+        </q-list>
       </q-expansion-item>
       <q-separator color="layout-text" />
       <q-expansion-item
@@ -39,19 +50,57 @@
         class="full-width text-center"
         expand-icon-class="text-layout-text"
       >
-        <div class="text-center text-body1 q-mr-lg q-ml-lg q-mt-sm q-mb-md">
-          Mail: kurtn3x@proton.me <br />
-          Discord: nex1233 <br />
-        </div>
+        <q-list bordered>
+          <div
+            class="text-center text-body1 q-mr-lg q-ml-lg q-mt-sm q-mb-md text-layout-text"
+          >
+            Mail: kurtn3x@proton.me <br />
+            Discord: nex1233 <br />
+          </div>
+        </q-list>
       </q-expansion-item>
     </q-card>
-  </div>
+  </q-page>
 </template>
 
 <script>
 import { defineComponent } from 'vue';
+import { useLocalStore } from 'stores/localStore';
+import ParticlesIndex from 'components/ParticlesIndex.vue';
+
 export default defineComponent({
   name: 'PrivacyPolicyView',
+  components: { ParticlesIndex },
+  setup() {
+    const localStore = useLocalStore();
+
+    return {
+      localStore,
+    };
+  },
+  computed: {
+    theme() {
+      if (this.localStore.theme == 'default') {
+        return 'bg-default';
+      } else if (this.localStore.theme == 'cool-orange') {
+        return 'bg-cool-orange';
+      } else if (this.localStore.theme == 'nice-green') {
+        return 'bg-nice-green';
+      } else if (this.localStore.theme == 'olive-green') {
+        return 'bg-olive-green';
+      } else if (this.localStore.theme == 'epic-blue') {
+        return 'bg-epic-blue';
+      } else if (this.localStore.theme == 'orange') {
+        return 'bg-orange';
+      } else if (this.localStore.theme == 'light') {
+        return 'bg-lightp';
+      } else if (this.localStore.theme == 'dark') {
+        return 'bg-darkp';
+      } else {
+        return 'bg-default';
+      }
+    },
+  },
 });
 </script>
 

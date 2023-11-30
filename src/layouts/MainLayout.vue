@@ -34,8 +34,8 @@
             >
               <div class="no-wrap">
                 <q-btn
-                  push
-                  class="full-width q-mt-xs bg-primary text-layout-text"
+                  outline
+                  class="full-width q-mt-xs bg-layout-bg text-layout-text"
                   :to="myprofileroute"
                   align="left"
                   style="font-size: 13px"
@@ -47,22 +47,22 @@
                 </q-btn>
 
                 <q-btn
-                  push
+                  outline
                   to="/dashboard/settings/profile"
                   icon="person"
                   label="Profile Settings"
                   style="font-size: 13px"
-                  class="full-width q-mt-sm bg-primary text-layout-text"
+                  class="full-width q-mt-sm bg-layout-bg text-layout-text"
                   align="left"
                 />
 
                 <q-btn
-                  push
+                  outline
                   to="/dashboard/settings/account"
                   icon="admin_panel_settings"
                   label="Account Settings"
                   style="font-size: 13px"
-                  class="full-width q-mt-sm q-mb-xs bg-primary text-layout-text"
+                  class="full-width q-mt-sm q-mb-xs bg-layout-bg text-layout-text"
                   align="left"
                 />
               </div>
@@ -70,43 +70,43 @@
               <div class="row">
                 <q-btn
                   style="background: #3b4fb5 !important"
-                  push
+                  outline
                   @click="setTheme('default')"
                   class="q-mr-xs"
                 />
                 <q-btn
                   style="background: #ee4d2e !important"
-                  push
+                  outline
                   @click="setTheme('cool-orange')"
                   class="q-mr-xs"
                 />
                 <q-btn
                   style="background: #1db992 !important"
-                  push
+                  outline
                   @click.="setTheme('nice-green')"
                   class="q-mr-xs"
                 />
                 <q-btn
                   style="background: #bfbc06 !important"
-                  push
+                  outline
                   @click="setTheme('olive-green')"
                   class="q-mr-xs"
                 />
                 <q-btn
                   style="background: #008fff !important"
-                  push
+                  outline
                   @click="setTheme('epic-blue')"
                   class="q-mr-xs"
                 />
                 <q-btn
-                  style="background: #1d1d1d !important"
-                  push
+                  style="background: #52616b !important"
+                  outline
                   @click="setTheme('dark')"
                   class="q-mr-xs"
                 />
                 <q-btn
-                  style="background: #f8f0e3 !important"
-                  push
+                  style="background: #b7c8d4 !important"
+                  outline
                   @click="setTheme('light')"
                   class="q-mr-xs"
                 />
@@ -115,17 +115,17 @@
               <div class="row justify-between">
                 <q-btn
                   @click="darkmodeChanged"
-                  push
+                  outline
                   round
-                  class="bg-primary text-layout-text"
+                  class="bg-layout-bg text-layout-text"
                   :icon="darkmodeToogle ? 'light_mode' : 'dark_mode'"
                   style="width: 35px; height: 35px"
                   size="sm"
                 />
                 <q-btn
-                  push
+                  outline
                   icon="logout"
-                  class="bg-primary text-layout-text"
+                  class="bg-layout-bg text-layout-text"
                   label="Logout"
                   v-close-popup
                   @click="logout"
@@ -142,7 +142,7 @@
         <q-btn unelevated stretch icon="home" size="md" to="/" />
         <q-btn
           icon="palette"
-          class="bg-layout-bg text-layout-text gt-xs"
+          class="bg-layout-bg text-layout-text"
           unelevated
           stretch
         >
@@ -188,7 +188,7 @@
                 class="q-mt-sm"
               />
               <q-btn
-                style="background: #1d1d1d !important"
+                style="background: #52616b !important"
                 outline
                 color="layout-text"
                 @click="setTheme('dark')"
@@ -196,7 +196,7 @@
               />
               <q-btn
                 color="layout-text"
-                style="background: #f8f0e3 !important"
+                style="background: #b7c8d4 !important"
                 outline
                 @click="setTheme('light')"
                 class="q-mt-sm"
@@ -204,15 +204,6 @@
             </div>
           </q-menu>
         </q-btn>
-
-        <q-btn
-          unelevated
-          @click="darkmodeChanged"
-          :icon="darkmodeToogle ? 'light_mode' : 'dark_mode'"
-          size="md"
-          class="bg-layout-bg text-layout-text gt-xs"
-          stretch
-        />
 
         <q-space />
         <q-btn
