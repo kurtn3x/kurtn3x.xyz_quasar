@@ -84,6 +84,7 @@ import { useQuasar } from 'quasar';
 import { useLocalStore } from 'stores/localStore';
 import { api } from 'boot/axios';
 import ParticlesIndex from 'components/ParticlesIndex.vue';
+import { getThemeBackground } from 'components/themes';
 
 export default defineComponent({
   name: 'ForgotView',
@@ -129,25 +130,8 @@ export default defineComponent({
     },
 
     theme() {
-      if (this.localStore.theme == 'default') {
-        return 'bg-default';
-      } else if (this.localStore.theme == 'cool-orange') {
-        return 'bg-cool-orange';
-      } else if (this.localStore.theme == 'nice-green') {
-        return 'bg-nice-green';
-      } else if (this.localStore.theme == 'olive-green') {
-        return 'bg-olive-green';
-      } else if (this.localStore.theme == 'epic-blue') {
-        return 'bg-epic-blue';
-      } else if (this.localStore.theme == 'orange') {
-        return 'bg-orange';
-      } else if (this.localStore.theme == 'light') {
-        return 'bg-lightp';
-      } else if (this.localStore.theme == 'dark') {
-        return 'bg-darkp';
-      } else {
-        return 'bg-default';
-      }
+      var t = getThemeBackground(this.localStore.theme);
+      return t;
     },
   },
 

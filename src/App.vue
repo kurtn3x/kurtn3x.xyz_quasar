@@ -56,8 +56,8 @@ export default defineComponent({
 
   async created() {
     if (this.localStore.themeState == null) {
-      document.body.setAttribute('data-theme', 'default');
-      this.localStore.theme = 'default';
+      document.body.setAttribute('data-theme', 'theme-violet');
+      this.localStore.theme = 'theme-violet';
     } else {
       document.body.setAttribute('data-theme', this.localStore.theme);
     }

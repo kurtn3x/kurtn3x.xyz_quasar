@@ -68,7 +68,7 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-    <q-card bordered flat class="q-ma-xs bg-transparent">
+    <q-card bordered flat class="q-ma-sm bg-transparent">
       <q-tabs
         inline-label
         v-model="tab"
@@ -112,41 +112,13 @@
 
               <div class="row justify-center q-mt-md">
                 <q-list bordered style="width: 300px">
-                  <q-item
-                    clickable
-                    @click="setTheme('default')"
-                    style="background: #000e5b"
-                  />
-                  <q-item
-                    clickable
-                    @click="setTheme('cool-orange')"
-                    style="background: #ee4d2e"
-                  />
-                  <q-item
-                    clickable
-                    @click="setTheme('nice-green')"
-                    style="background: #1db992"
-                  />
-                  <q-item
-                    clickable
-                    @click="setTheme('olive-green')"
-                    style="background: #bfbc06"
-                  />
-                  <q-item
-                    clickable
-                    @click="setTheme('epic-blue')"
-                    style="background: #008fff"
-                  />
-                  <q-item
-                    clickable
-                    @click="setTheme('dark')"
-                    style="background: #52616b"
-                  />
-                  <q-item
-                    clickable
-                    @click="setTheme('light')"
-                    style="background: #b7c8d4"
-                  />
+                  <template v-for="theme in themes" :key="theme.name">
+                    <q-item
+                      clickable
+                      @click="setTheme(theme.name)"
+                      :class="theme.preview"
+                    />
+                  </template>
                 </q-list>
               </div>
             </q-card-section>
@@ -739,6 +711,7 @@ import { useLocalStore } from 'stores/localStore';
 import { defaultHeaderInformation } from 'src/types/defaults';
 import { AccountSettingsType, HeaderInformationType } from 'src/types/index';
 import { defaultAccountSettings } from '../../types/defaults';
+import { themes } from 'components/themes';
 
 export default {
   name: 'SettingsView',
@@ -755,6 +728,7 @@ export default {
     const darkmodeToogle = ref(localStore.darkmodeState);
 
     return {
+      themes,
       darkmodeToogle,
       axiosConfig,
       tab: ref('site'),
@@ -814,6 +788,11 @@ export default {
       } else {
         return false;
       }
+    },
+  },
+  watch: {
+    darkmode(newVal) {
+      this.darkmodeToogle = newVal;
     },
   },
 

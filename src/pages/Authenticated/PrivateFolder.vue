@@ -690,8 +690,9 @@
               direction="down"
               class="q-ml-md"
               color="light-green"
-              padding="sm"
-              style="height: 40px; width: 50px; z-index: 1"
+              round
+              padding="none"
+              style="height: 40px; width: 40px; z-index: 1"
             >
               <q-fab-action
                 outline
@@ -1073,7 +1074,7 @@
                 v-draggable="['folder', item.id]"
                 :class="[
                     (item as FolderEntryType).drag_over ? 'bg-indigo-11' : '',
-                    item.selected ? 'bg-cyan-14 text-layout-text' : '',
+                    item.selected ? 'bg-cyan-14 text-white' : '',
                   ]"
                 @v-drag-enter="
                     (ev: string[]) => {
@@ -1244,7 +1245,7 @@
                 class="rounded-borders full-width"
                 v-draggable="['file', item.id]"
                 @click="openInNewTab(item)"
-                :class="item.selected ? 'bg-cyan-14 text-layout-text' : ''"
+                :class="item.selected ? 'bg-cyan-14 text-white' : ''"
               >
                 <q-popup-proxy
                   context-menu

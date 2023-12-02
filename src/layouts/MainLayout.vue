@@ -26,111 +26,98 @@
           }}</a>
           <q-icon name="arrow_drop_down" size="sm" />
           <q-menu class="q-mr-xs" dark>
-            <q-card
-              class="q-pa-sm bg-layout-bg"
-              bordered
-              dark
-              style="max-width: 280px"
-            >
-              <div class="no-wrap">
-                <q-btn
-                  outline
-                  class="full-width q-mt-xs bg-layout-bg text-layout-text"
-                  :to="myprofileroute"
-                  align="left"
-                  style="font-size: 13px"
+            <q-card class="bg-layout-bg" bordered dark style="width: 240px">
+              <div class="q-ma-xs q-mt-sm">
+                <div class="row justify-center">
+                  <q-btn
+                    flat
+                    class="bg-layout-bg q-mb-xs text-layout-text"
+                    :to="myprofileroute"
+                    align="center"
+                    style="font-size: 14px; width: 215px"
+                  >
+                    <q-avatar rounded size="20px">
+                      <img :src="headerInfo.avatar" />
+                    </q-avatar>
+                    <div class="q-ml-md ellipsis">My Profile</div>
+                  </q-btn>
+                </div>
+
+                <q-separator color="layout-text" inset />
+                <div class="row justify-center">
+                  <q-btn
+                    flat
+                    to="/dashboard/settings/profile"
+                    icon="person"
+                    label="Profile Settings"
+                    style="font-size: 14px; width: 215px"
+                    class="bg-layout-bg text-layout-text q-mb-xs q-mt-xs"
+                    align="center"
+                  />
+                </div>
+                <q-separator color="layout-text" inset />
+                <div class="row justify-center">
+                  <q-btn
+                    flat
+                    to="/dashboard/settings/account"
+                    icon="admin_panel_settings"
+                    label="Account Settings"
+                    style="font-size: 14px; width: 215px"
+                    class="bg-layout-bg text-layout-text q-mt-xs"
+                    align="center"
+                  />
+                </div>
+              </div>
+
+              <q-separator inset color="layout-text" />
+              <div class="row q-ma-xs q-mb-sm">
+                <q-btn-dropdown
+                  icon="settings"
+                  class="bg-transparent text-layout-text"
+                  flat
+                  content-class="bg-layout-bg no-shadow"
+                  menu-anchor="bottom middle"
+                  menu-self="top middle"
                 >
-                  <q-avatar rounded size="20px">
-                    <img :src="headerInfo.avatar" />
-                  </q-avatar>
-                  <div class="q-ml-md ellipsis">My Profile</div>
-                </q-btn>
+                  <q-card class="bg-transparent no-shadow" flat bordered dark>
+                    <div>
+                      <q-btn
+                        flat
+                        class="full-width bg-layout-bg text-layout-text"
+                        :label="darkmodeToogle ? 'Light' : 'Dark'"
+                        @click="darkmodeChanged"
+                        :icon="darkmodeToogle ? 'light_mode' : 'dark_mode'"
+                      />
+                    </div>
+                    <q-separator color="layout-text" />
 
-                <q-btn
-                  outline
-                  to="/dashboard/settings/profile"
-                  icon="person"
-                  label="Profile Settings"
-                  style="font-size: 13px"
-                  class="full-width q-mt-sm bg-layout-bg text-layout-text"
-                  align="left"
-                />
+                    <div class="row justify-evenly" style="width: 155px">
+                      <template v-for="theme in themes" :key="theme.name">
+                        <q-btn
+                          outline
+                          color="layout-text"
+                          @click="setTheme(theme.name)"
+                          :class="theme.preview"
+                          style="width: 32px"
+                          class="q-mt-xs q-mb-xs"
+                        />
+                      </template>
+                    </div>
+                  </q-card>
+                </q-btn-dropdown>
+                <q-space />
 
+                <q-separator vertical inset color="layout-text" />
+                <q-space />
                 <q-btn
-                  outline
-                  to="/dashboard/settings/account"
-                  icon="admin_panel_settings"
-                  label="Account Settings"
-                  style="font-size: 13px"
-                  class="full-width q-mt-sm q-mb-xs bg-layout-bg text-layout-text"
-                  align="left"
-                />
-              </div>
-              <q-separator color="layout-text" class="q-mb-sm q-mt-xs" />
-              <div class="row">
-                <q-btn
-                  style="background: #3b4fb5 !important"
-                  outline
-                  @click="setTheme('default')"
-                  class="q-mr-xs"
-                />
-                <q-btn
-                  style="background: #ee4d2e !important"
-                  outline
-                  @click="setTheme('cool-orange')"
-                  class="q-mr-xs"
-                />
-                <q-btn
-                  style="background: #1db992 !important"
-                  outline
-                  @click.="setTheme('nice-green')"
-                  class="q-mr-xs"
-                />
-                <q-btn
-                  style="background: #bfbc06 !important"
-                  outline
-                  @click="setTheme('olive-green')"
-                  class="q-mr-xs"
-                />
-                <q-btn
-                  style="background: #008fff !important"
-                  outline
-                  @click="setTheme('epic-blue')"
-                  class="q-mr-xs"
-                />
-                <q-btn
-                  style="background: #52616b !important"
-                  outline
-                  @click="setTheme('dark')"
-                  class="q-mr-xs"
-                />
-                <q-btn
-                  style="background: #b7c8d4 !important"
-                  outline
-                  @click="setTheme('light')"
-                  class="q-mr-xs"
-                />
-              </div>
-              <q-separator color="layout-text" class="q-mb-sm q-mt-sm" />
-              <div class="row justify-between">
-                <q-btn
-                  @click="darkmodeChanged"
-                  outline
-                  round
-                  class="bg-layout-bg text-layout-text"
-                  :icon="darkmodeToogle ? 'light_mode' : 'dark_mode'"
-                  style="width: 35px; height: 35px"
-                  size="sm"
-                />
-                <q-btn
-                  outline
+                  flat
                   icon="logout"
                   class="bg-layout-bg text-layout-text"
                   label="Logout"
                   v-close-popup
                   @click="logout"
-                  style="font-size: 13px; width: 130px"
-                  align="left"
+                  style="font-size: 14px; width: 130px"
+                  align="center"
                 />
               </div>
             </q-card>
@@ -140,70 +127,39 @@
 
       <q-toolbar class="q-pa-none q-ma-none" v-if="!localStore.isAuthenticated">
         <q-btn unelevated stretch icon="home" size="md" to="/" />
-        <q-btn
-          icon="palette"
-          class="bg-layout-bg text-layout-text"
+        <q-btn-dropdown
+          icon="settings"
+          class="bg-transparent text-layout-text"
           unelevated
           stretch
+          content-class="bg-layout-bg no-shadow"
         >
-          <q-menu
-            anchor="bottom middle"
-            self="top middle"
-            class="bg-transparent no-shadow"
-          >
-            <div class="column" style="height: 400px; width: 35px">
+          <q-card class="bg-transparent no-shadow" flat bordered dark>
+            <div>
               <q-btn
-                style="background: #3b4fb5 !important"
-                color="layout-text"
-                outline
-                @click="setTheme('default')"
-                class="q-mt-sm"
-              />
-              <q-btn
-                style="background: #ee4d2e !important"
-                outline
-                color="layout-text"
-                @click="setTheme('cool-orange')"
-                class="q-mt-sm"
-              />
-              <q-btn
-                style="background: #1db992 !important"
-                outline
-                color="layout-text"
-                @click.="setTheme('nice-green')"
-                class="q-mt-sm"
-              />
-              <q-btn
-                style="background: #bfbc06 !important"
-                outline
-                color="layout-text"
-                @click="setTheme('olive-green')"
-                class="q-mt-sm"
-              />
-              <q-btn
-                style="background: #008fff !important"
-                outline
-                color="layout-text"
-                @click="setTheme('epic-blue')"
-                class="q-mt-sm"
-              />
-              <q-btn
-                style="background: #52616b !important"
-                outline
-                color="layout-text"
-                @click="setTheme('dark')"
-                class="q-mt-sm"
-              />
-              <q-btn
-                color="layout-text"
-                style="background: #b7c8d4 !important"
-                outline
-                @click="setTheme('light')"
-                class="q-mt-sm"
+                flat
+                class="full-width bg-layout-bg text-layout-text"
+                :label="darkmodeToogle ? 'Light' : 'Dark'"
+                @click="darkmodeChanged"
+                :icon="darkmodeToogle ? 'light_mode' : 'dark_mode'"
               />
             </div>
-          </q-menu>
-        </q-btn>
+            <q-separator color="layout-text" />
+
+            <div class="row justify-evenly" style="width: 155px">
+              <template v-for="theme in themes" :key="theme.name">
+                <q-btn
+                  outline
+                  color="layout-text"
+                  @click="setTheme(theme.name)"
+                  :class="theme.preview"
+                  style="width: 32px"
+                  class="q-mt-xs q-mb-xs"
+                />
+              </template>
+            </div>
+          </q-card>
+        </q-btn-dropdown>
 
         <q-space />
         <q-btn
@@ -316,6 +272,7 @@ import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { useLocalStore } from 'stores/localStore';
 import { defaultHeaderInformation } from 'src/types/defaults';
+import { themes } from 'components/themes';
 
 export default {
   setup() {
@@ -335,6 +292,7 @@ export default {
     const headerInfo = ref(localStore.headerInfo);
 
     return {
+      themes,
       navDrawer,
       miniState,
       darkmodeToogle,

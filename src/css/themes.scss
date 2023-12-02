@@ -1,42 +1,47 @@
 @use 'sass:map';
 
 $themes: (
-  'default': (
+  'theme-violet': (
     // general primary color, has to be visible on both light and dark backgrounds
     primary: #3b4fb5,
     // layout style, e.g. header, side drawerm dialog header...
     layout-text: #f5f5f5,
     layout-bg: #3b4fb5,
   ),
-  'cool-orange': (
+  'theme-orange': (
     primary: #ee4d2e,
     layout-text: #fff,
     layout-bg: #ee4d2e,
   ),
-  'nice-green': (
+  'theme-green': (
     primary: #1db992,
     layout-text: #fff,
     layout-bg: #1db992,
   ),
-  'olive-green': (
+  'theme-olive': (
     primary: #bfbc06,
     layout-text: #fff,
     layout-bg: #bfbc06,
   ),
-  'epic-blue': (
+  'theme-blue': (
     primary: #008fff,
     layout-text: #fff,
     layout-bg: #008fff,
   ),
-  'dark': (
+  'theme-dark': (
     primary: #52616b,
     layout-text: #fff,
     layout-bg: #1e2022,
   ),
-  'light': (
+  'theme-heaven': (
     primary: #b7c8d4,
     layout-text: #1d1d1d,
     layout-bg: #f0f5f9,
+  ),
+  'theme-purple': (
+    primary: #5a189a,
+    layout-text: #fff,
+    layout-bg: #10002b,
   ),
 );
 
@@ -124,4 +129,86 @@ $LIGHTING_FLAT: 3;
       );
     }
   }
+}
+
+.bg-start-violet {
+  background: linear-gradient(145deg, #3b4fb5 1%, rgb(255, 188, 188) 200%);
+}
+
+.preview-theme-violet {
+  background: #3b4fb5 !important;
+}
+
+.bg-start-orange {
+  background: radial-gradient(
+    circle,
+    rgb(125, 16, 80) 15%,
+    rgb(135, 7, 24) 54%,
+    rgb(238, 78, 46) 100%
+  );
+}
+
+.preview-theme-orange {
+  background: #ee4d2e !important;
+}
+
+.bg-start-green {
+  background: linear-gradient(
+    90deg,
+    rgba(10, 172, 71, 1) 0%,
+    rgba(29, 185, 146, 1) 35%,
+    rgba(21, 87, 150, 1) 100%
+  );
+}
+
+.preview-theme-green {
+  background: #1db992 !important;
+}
+
+.bg-start-olive {
+  background: radial-gradient(
+    circle,
+    rgba(191, 188, 6, 1) 5%,
+    rgba(29, 89, 2, 1) 100%
+  );
+}
+
+.preview-theme-olive {
+  background: #bfbc06 !important;
+}
+
+.bg-start-blue {
+  background: linear-gradient(
+    0deg,
+    rgba(5, 9, 100, 1) 35%,
+    rgba(0, 143, 255, 1) 150%
+  );
+}
+
+.preview-theme-blue {
+  background: #008fff !important;
+}
+
+.bg-start-dark {
+  background: linear-gradient(45deg, #1e2022 2%, #b7c8d4 250%);
+}
+
+.preview-theme-dark {
+  background: #52616b !important;
+}
+
+.bg-start-heaven {
+  background: linear-gradient(45deg, #7cacd5 10%, #a0bdd0 52%, #f0f5f9 100%);
+}
+
+.preview-theme-heaven {
+  background: #b7c8d4 !important;
+}
+
+.bg-start-purple {
+  background: radial-gradient(circle, #5a189a 5%, #240046 100%, #10002b 5000%);
+}
+
+.preview-theme-purple {
+  background: #5a189a !important;
 }

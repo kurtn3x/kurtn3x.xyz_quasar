@@ -19,7 +19,7 @@ export function defaultUser() {
 
 export function defaultHeaderInformation() {
   const info: types.HeaderInformationType = {
-    username: 'User',
+    username: 'Anon',
     is_admin: false,
     avatar: 'https://media.kurtn3x.xyz/default.png',
   };

@@ -25,12 +25,11 @@
           <q-tab name="linux" :icon="mdiLinux" label="Linux" />
           <q-tab name="android" :icon="mdiAndroid" label="Android" />
         </q-tabs>
-        <q-separator size="2px" color="primary" />
+        <q-separator size="2px" color="layout-bg" />
         <q-tab-panels
           v-model="helpVPNDialogTabs"
           animated
           class="bg-transparent"
-          style="height: 270px"
         >
           <q-tab-panel name="windows">
             <ol>
@@ -72,27 +71,21 @@
               </li>
               <li class="text-body1 q-mt-sm">
                 Generate a Public and Private-Keypair.
-                <q-btn
-                  push
-                  class="bg-blue text-white"
-                  label="Command"
-                  icon="content_copy"
-                  size="sm"
-                  @click="copyToClipboard(linuxCommand)"
-                >
-                  <q-tooltip
-                    :class="
-                      darkmode ? 'bg-dark text-white' : 'bg-white text-dark'
-                    "
-                    style="
-                      font-family: 'Courier New';
-                      resize: none;
-                      font-size: 10pt;
-                    "
+                <div class="q-mt-sm bg-grey-8 row items-center">
+                  <a
+                    style="font-family: 'Courier New'"
+                    class="text-white q-ma-xs text-body2"
+                    >{{ linuxCommand }}</a
                   >
-                    {{ linuxCommand }}
-                  </q-tooltip>
-                </q-btn>
+                  <q-space />
+                  <q-btn
+                    push
+                    class="bg-blue text-white q-ma-xs"
+                    icon="content_copy"
+                    size="sm"
+                    @click="copyToClipboard(linuxCommand)"
+                  />
+                </div>
               </li>
               <li class="text-body1 q-mt-sm">
                 Copy the resulting Public-Key (File peer_A.pub) to the
@@ -111,11 +104,20 @@
               <li class="text-body1 q-mt-sm">
                 Activate the connection. If you copied it to /etc/wireguard/
                 activate it with
-                <div
-                  style="font-family: 'Courier New'"
-                  class="bg-grey-8 text-white"
-                >
-                  sudo wg-quick up wg0
+                <div class="q-mt-sm bg-grey-8 row items-center">
+                  <a
+                    style="font-family: 'Courier New'"
+                    class="text-white q-ma-xs text-body2"
+                    >sudo wg-quick up wg0</a
+                  >
+                  <q-space />
+                  <q-btn
+                    push
+                    class="bg-blue text-white q-ma-xs"
+                    icon="content_copy"
+                    size="sm"
+                    @click="copyToClipboard('sudo wg-quick up wg0')"
+                  />
                 </div>
               </li>
             </ol>
@@ -156,7 +158,7 @@
           <q-btn
             v-close-popup
             push
-            class="bg-green text-white q-mt-md"
+            class="bg-green text-white"
             icon="done"
             size="md"
             label="Ok"
@@ -168,18 +170,23 @@
 
     <q-dialog v-model="setupVPNDialog">
       <q-card bordered style="max-width: 400px">
-        <q-toolbar class="bg-layout-bg text-layout-text text-center">
+        <q-toolbar
+          class="bg-layout-bg text-layout-text text-center items-center"
+        >
           <q-toolbar-title class="q-ma-sm"
             >Setup VPN Connection</q-toolbar-title
           >
-          <q-btn
-            icon="help"
-            push
-            class="bg-blue text-white absolute-right q-mt-xs q-mr-xs"
-            round
-            style="height: 15px; width: 15px"
-            @click="helpVPNDialog = true"
-          />
+          <div class="absolute-right row items-center q-mr-sm">
+            <q-btn
+              icon="question_mark"
+              push
+              class="bg-blue text-white"
+              round
+              size="sm"
+              style="height: 15px; width: 15px"
+              @click="helpVPNDialog = true"
+            />
+          </div>
         </q-toolbar>
         <div class="text-body1 q-ma-md">
           <div class="text-center text-body2">
@@ -241,14 +248,17 @@
       <q-card bordered class="full-width">
         <q-toolbar class="bg-layout-bg text-layout-text text-center">
           <q-toolbar-title class="q-ma-sm">VPN Connection Data</q-toolbar-title>
-          <q-btn
-            icon="help"
-            push
-            class="bg-blue text-white absolute-right q-mt-xs q-mr-xs"
-            round
-            style="height: 15px; width: 15px"
-            @click="helpVPNDialog = true"
-          />
+          <div class="absolute-right row items-center q-mr-sm">
+            <q-btn
+              icon="question_mark"
+              push
+              class="bg-blue text-white"
+              round
+              size="sm"
+              style="height: 15px; width: 15px"
+              @click="helpVPNDialog = true"
+            />
+          </div>
         </q-toolbar>
         <q-separator color="layout-text" />
         <q-tabs
@@ -264,12 +274,11 @@
           <q-tab name="config" icon="settings" label="Config" />
           <q-tab name="info" icon="info" label="Info" />
         </q-tabs>
-        <q-separator size="2px" color="primary" />
+        <q-separator size="2px" color="layout-bg" />
         <q-tab-panels
           v-model="setupVPNDialogTabs"
           animated
           class="bg-transparent"
-          style="height: 270px"
         >
           <q-tab-panel name="windows">
             <div class="text-center text-body1">
@@ -302,7 +311,7 @@
             </q-input>
           </q-tab-panel>
           <q-tab-panel name="config">
-            <div class="row justify-center q-mt-xl">
+            <div class="row justify-center">
               <div class="text-center text-body1">
                 Copy your hidden private key and input it below. <br />
                 This will generate a valid Wireguard-Config
@@ -597,7 +606,7 @@
               <div class="row">
                 <q-btn
                   size="sm"
-                  icon="info"
+                  icon="question_mark"
                   class="q-ml-md bg-blue text-white"
                   push
                   round

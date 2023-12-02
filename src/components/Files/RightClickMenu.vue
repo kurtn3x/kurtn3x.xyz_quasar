@@ -7,25 +7,31 @@
     <q-card bordered style="width: 350px">
       <q-toolbar class="bg-layout-bg text-layout-text text-center">
         <q-toolbar-title class="q-ma-sm">Set new Password</q-toolbar-title>
-        <q-btn
-          icon="help"
-          push
-          class="bg-blue text-white absolute-right q-mt-xs q-mr-xs"
-          round
-          style="height: 15px; width: 15px"
-        >
-          <q-tooltip
-            class="text-body2"
-            style="width: 250px"
-            anchor="bottom left"
-            self="top middle"
+
+        <div class="absolute-right row items-center q-mr-sm">
+          <q-btn
+            icon="question_mark"
+            push
+            class="bg-blue text-white"
+            round
+            size="sm"
+            style="height: 15px; width: 15px"
           >
-            Passwords set for files are handled unsecurely. Don't use e.g.
-            personal Passwords here.
-          </q-tooltip>
-        </q-btn>
+            <q-tooltip
+              class="text-body2 bg-layout-bg text-layout-text text-center"
+              style="width: 250px"
+              anchor="bottom left"
+              self="top middle"
+            >
+              <div class="q-ma-xs">
+                Passwords set for files are handled unsecurely. Don't use
+                personal Passwords here. (Password Generator recommended)
+              </div>
+            </q-tooltip>
+          </q-btn>
+        </div>
       </q-toolbar>
-      <div class="text-body1 text-center q-ma-md">
+      <div class="text-body1 text-center q-ma-sm">
         <q-input
           v-model="sharingPasswordOptions.shared_password"
           class="q-mt-sm full-width"
@@ -33,8 +39,18 @@
           label="Password"
           input-class="text-body1"
           outlined
+          dense
+          no-error-icon
+          hide-bottom-space
           :type="sharingPasswordOptions.isPwd ? 'password' : 'text'"
           :color="darkmode ? 'white' : 'black'"
+          :rules="[
+            (val) =>
+              /^([a-zA-Z0-9\u0600-\u06FF\u0660-\u0669\u06F0-\u06F9 _.-]+)$/.test(
+                val
+              ) ||
+              'Only alphanumeric characters allowed and must contain at least 1 character.',
+          ]"
         >
           <template v-slot:prepend>
             <q-icon name="lock" />
@@ -51,19 +67,19 @@
             />
           </template>
         </q-input>
-        <div class="row q-mt-md">
+        <div class="row q-mt-md q-mb-md">
           <q-btn
             label="Generate"
             icon="refresh"
             push
-            class="bg-blue text-white col q-mr-xs"
+            class="bg-blue text-white col q-mr-sm"
             @click="generatePassword()"
           />
           <q-btn
             icon="content_copy"
             label="Copy"
             push
-            class="bg-blue text-white col q-ml-xs"
+            class="bg-blue text-white col q-ml-sm"
             @click="copyToClipboard(sharingPasswordOptions.shared_password)"
           />
         </div>
@@ -177,10 +193,10 @@
             "
           >
             <q-btn
-              outline
+              push
               icon="lock"
               label="Set Password"
-              class="full-width full-height"
+              class="full-width full-height bg-blue text-white"
               @click="sharingPasswordDialog = true"
             />
           </q-item>
