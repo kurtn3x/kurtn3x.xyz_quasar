@@ -642,6 +642,8 @@
         bordered
         flat
         v-if="vpnConnections.length > 0"
+        :style="'max-height:' + ($q.screen.height - 200) + 'px;'"
+        style="overflow: scroll"
       >
         <q-item dense>
           <q-item-section avatar class="items-left col-1"> Nr. </q-item-section>
@@ -653,31 +655,28 @@
           </q-item-section>
         </q-item>
         <q-separator color="layout-bg" />
-        <q-scroll-area :style="'height:' + ($q.screen.height - 230) + 'px;'">
-          <template v-for="(item, index) in vpnConnections" :key="item">
-            <q-item
-              clickable
-              @click="
-                vpnInfoDialog = true;
-                vpnClientInfo = item;
-              "
-              :style="'width:' + ($q.screen.width - 18) + 'px;'"
-            >
-              <q-item-section avatar class="items-left col-1">
-                {{ index }}.
-              </q-item-section>
-              <q-item-section class="text-body1 col">
-                <q-item-label class="text-weight-bold text-primary ellipsis">
-                  {{ item.name }}
-                </q-item-label>
-              </q-item-section>
-              <q-item-section class="text-body2 col">
-                <div class="q-ml-md">{{ item.addresses }}</div>
-              </q-item-section>
-            </q-item>
-            <q-separator size="1px" />
-          </template>
-        </q-scroll-area>
+        <template v-for="(item, index) in vpnConnections" :key="item">
+          <q-item
+            clickable
+            @click="
+              vpnInfoDialog = true;
+              vpnClientInfo = item;
+            "
+          >
+            <q-item-section avatar class="items-left col-1">
+              {{ index }}.
+            </q-item-section>
+            <q-item-section class="text-body1 col">
+              <q-item-label class="text-weight-bold text-primary ellipsis">
+                {{ item.name }}
+              </q-item-label>
+            </q-item-section>
+            <q-item-section class="text-body2 col">
+              <div class="q-ml-md">{{ item.addresses }}</div>
+            </q-item-section>
+          </q-item>
+          <q-separator size="1px" />
+        </template>
       </q-card>
       <div class="row justify-center q-ma-md absolute-bottom">
         <q-btn
