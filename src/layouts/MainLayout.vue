@@ -2,7 +2,7 @@
   <q-layout view="hHh LpR fff">
     <!-- HEADER -->
     <q-header reveal height-hint="98" class="bg-layout-bg text-layout-text">
-      <q-toolbar class="q-pa-none" v-if="!localStore.isAuthenticated">
+      <q-toolbar class="q-pa-none" v-if="localStore.isAuthenticated">
         <q-btn
           flat
           stretch
@@ -125,7 +125,7 @@
         </q-btn>
       </q-toolbar>
 
-      <q-toolbar class="q-pa-none q-ma-none" v-if="localStore.isAuthenticated">
+      <q-toolbar class="q-pa-none q-ma-none" v-if="!localStore.isAuthenticated">
         <q-btn unelevated stretch icon="home" size="md" to="/" />
         <q-btn-dropdown
           icon="settings"
@@ -194,7 +194,7 @@
       side="left"
       :mini="miniState"
       class="bg-layout-bg text-layout-text column justify-between"
-      v-if="!localStore.isAuthenticated"
+      v-if="localStore.isAuthenticated"
     >
       <q-list padding class="q-pa-none">
         <q-item
