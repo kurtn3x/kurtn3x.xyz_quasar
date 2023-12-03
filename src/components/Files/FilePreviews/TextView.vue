@@ -100,6 +100,10 @@ import { useLocalStore } from 'stores/localStore';
 
 const props = defineProps({
   item: Object,
+  password: {
+    type: String,
+    default: '',
+  },
 });
 
 const q = useQuasar();
@@ -138,7 +142,12 @@ watch(
 
 function getFile() {
   api
-    .get('/files/file-content/' + props.item.id, axiosConfig)
+    .get(
+      '/files/file-content/' +
+        props.item.id +
+        (props.password != '' ? '?password=' + props.password : ''),
+      axiosConfig
+    )
     .then((response) => {
       if (response.status == 200) {
         text.value = response.data.content;

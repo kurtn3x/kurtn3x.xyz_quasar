@@ -35,11 +35,20 @@ import { defineProps, ref } from 'vue';
 
 const props = defineProps({
   item: Object,
+  password: {
+    type: String,
+    default: '',
+  },
 });
 var loading = ref(true);
 var error = ref(false);
 
-var src = ref('https://api.kurtn3x.xyz/files/content/file/' + props.item.id);
+var src = ref(
+  'https://api.kurtn3x.xyz/files/content/file/' +
+    props.item.id +
+    (props.password != '' ? '?password=' + props.password : '')
+);
+
 var videoOptions = ref({
   autoplay: true,
   controls: true,

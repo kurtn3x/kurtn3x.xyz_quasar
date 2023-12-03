@@ -16,7 +16,7 @@
         bordered
         flat
         style="height: 200px"
-        class="bg-layout-bg text-layout-text"
+        class="bg-primary text-layout-text"
       >
         <q-avatar
           rounded
@@ -26,7 +26,6 @@
         >
           <q-card
             class="bg-transparent"
-            bordered
             flat
             dark
             style="height: 170px; width: 170px"
@@ -128,14 +127,13 @@
         </q-card-actions>
       </q-card>
 
-      <q-separator size="2px" color="layout-text" />
       <q-card
         flat
         bordered
         class="bg-transparent"
         :style="'min-height:' + screenHeight + 'px;'"
       >
-        <q-separator color="primary" size="2px" />
+        <q-separator size="2px" :color="darkmode ? 'white' : 'dark'" />
         <q-tabs
           v-model="profile_tab"
           align="justify"
@@ -144,13 +142,27 @@
           active-color="layout-text"
           active-bg-color="layout-bg"
         >
-          <q-separator vertical color="primary" size="2px" />
+          <q-separator
+            vertical
+            size="2px"
+            :color="darkmode ? 'white' : 'dark'"
+          />
 
           <q-tab name="about" icon="person" label="About" />
+          <q-separator
+            vertical
+            size="2px"
+            :color="darkmode ? 'white' : 'dark'"
+          />
+
           <q-tab name="placeholder" icon="block" label="Placeholder" />
-          <q-separator vertical color="primary" size="2px" />
+          <q-separator
+            vertical
+            size="2px"
+            :color="darkmode ? 'white' : 'dark'"
+          />
         </q-tabs>
-        <q-separator size="2px" color="primary" />
+        <q-separator size="2px" :color="darkmode ? 'white' : 'dark'" />
         <q-tab-panels v-model="profile_tab" animated class="bg-transparent">
           <q-tab-panel name="about">
             <q-card flat class="full-width full-height bg-transparent">
@@ -241,17 +253,15 @@
     </div>
     <div class="lt-md">
       <q-card flat bordered class="bg-transparent q-ma-sm">
-        <div style="height: 225px" class="bg-layout-bg">
+        <div style="height: 225px" class="bg-primary">
           <div class="row justify-center items-center">
             <q-avatar
               size="150px"
               style="z-index: 99; border-radius: 10%"
-              square
               class="q-mt-md"
             >
               <q-card
                 class="bg-transparent"
-                bordered
                 flat
                 style="height: 150px; width: 150px"
                 dark
@@ -285,7 +295,7 @@
             {{ user.username }}
           </div>
         </div>
-        <q-separator color="layout-text" size="2px" />
+        <q-separator size="2px" :color="darkmode ? 'white' : 'dark'" />
 
         <q-tabs
           v-model="profile_tab"
@@ -293,17 +303,28 @@
           inline-label
           indicator-color="transparent"
           active-color="layout-text"
-          active-bg-color="layout-bg"
+          active-bg-color="primary"
           class="bg-transparent"
         >
-          <q-separator vertical color="layout-bg" />
-
+          <q-separator
+            vertical
+            size="2px"
+            :color="darkmode ? 'white' : 'dark'"
+          />
           <q-tab name="about" icon="person" label="About" />
-          <q-separator vertical size="2px" color="primary" />
+          <q-separator
+            vertical
+            size="2px"
+            :color="darkmode ? 'white' : 'dark'"
+          />
           <q-tab name="placeholder" icon="block" label="Placeholder" />
-          <q-separator vertical size="2px" color="primary" />
+          <q-separator
+            vertical
+            size="2px"
+            :color="darkmode ? 'white' : 'dark'"
+          />
         </q-tabs>
-        <q-separator size="2px" color="primary" />
+        <q-separator size="2px" :color="darkmode ? 'white' : 'dark'" />
         <q-tab-panels v-model="profile_tab" animated class="bg-transparent">
           <q-tab-panel name="about" class="bg-transparent">
             <q-card flat class="bg-transparent">

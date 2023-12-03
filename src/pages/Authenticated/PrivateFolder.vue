@@ -509,7 +509,7 @@
                 v-model="uploadFilesDialogFiles"
                 @update:model-value="appendFiles"
                 color="white"
-                class="bg-blue text-white rounded-borders q-mr-md"
+                class="bg-primary text-layout-text rounded-borders q-mr-md"
                 label-color="white"
               >
                 <template v-slot:label>
@@ -618,12 +618,20 @@
               <q-menu
                 v-model="navbarOverflowMenuHover"
                 @mouseleave="navbarOverflowMenuHover = false"
+                class="no-shadow"
               >
-                <q-list bordered seperator>
+                <q-card
+                  flat
+                  bordered
+                  style="min-width: 150px; max-width: 250px"
+                >
+                  <q-separator
+                    size="1px"
+                    :color="darkmode ? 'white' : 'dark'"
+                  />
                   <template v-for="item in navbarIndex.menu_items" :key="item">
                     <q-item
                       clickable
-                      flat
                       class="text-primary text-weight-bold text-h6"
                       @click="getFolderNavbar(item, 1)"
                       @v-drag-enter="
@@ -638,12 +646,16 @@
                       @v-drag-drop="changeParentDragNDrop($event, item.id)"
                       v-droppable
                     >
-                      <a class="no-pointer-events">
+                      <div class="no-pointer-events ellipsis">
                         {{ item.name }}
-                      </a>
+                      </div>
                     </q-item>
+                    <q-separator
+                      size="1px"
+                      :color="darkmode ? 'white' : 'dark'"
+                    />
                   </template>
-                </q-list>
+                </q-card>
               </q-menu>
             </q-item>
             <template v-for="item in navbarIndex.navbar_items" :key="item">

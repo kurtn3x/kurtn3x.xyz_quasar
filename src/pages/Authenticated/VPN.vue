@@ -11,7 +11,7 @@
         <q-toolbar class="bg-layout-bg text-layout-text text-center">
           <q-toolbar-title class="q-ma-sm">VPN Setup Help</q-toolbar-title>
         </q-toolbar>
-        <q-separator color="layout-text" />
+        <q-separator size="2px" :color="darkmode ? 'white' : 'dark'" />
         <q-tabs
           inline-label
           v-model="helpVPNDialogTabs"
@@ -21,11 +21,31 @@
           active-color="layout-text"
           active-bg-color="layout-bg"
         >
+          <q-separator
+            vertical
+            size="2px"
+            :color="darkmode ? 'white' : 'dark'"
+          />
           <q-tab name="windows" :icon="mdiMicrosoftWindows" label="Windows" />
+          <q-separator
+            vertical
+            size="2px"
+            :color="darkmode ? 'white' : 'dark'"
+          />
           <q-tab name="linux" :icon="mdiLinux" label="Linux" />
+          <q-separator
+            vertical
+            size="2px"
+            :color="darkmode ? 'white' : 'dark'"
+          />
           <q-tab name="android" :icon="mdiAndroid" label="Android" />
+          <q-separator
+            vertical
+            size="2px"
+            :color="darkmode ? 'white' : 'dark'"
+          />
         </q-tabs>
-        <q-separator size="2px" color="layout-bg" />
+        <q-separator size="2px" :color="darkmode ? 'white' : 'dark'" />
         <q-tab-panels
           v-model="helpVPNDialogTabs"
           animated
@@ -260,7 +280,7 @@
             />
           </div>
         </q-toolbar>
-        <q-separator color="layout-text" />
+        <q-separator size="2px" :color="darkmode ? 'white' : 'dark'" />
         <q-tabs
           inline-label
           v-model="setupVPNDialogTabs"
@@ -270,11 +290,31 @@
           active-color="layout-text"
           active-bg-color="layout-bg"
         >
+          <q-separator
+            vertical
+            size="2px"
+            :color="darkmode ? 'white' : 'dark'"
+          />
           <q-tab name="windows" :icon="mdiMicrosoftWindows" label="Windows" />
+          <q-separator
+            vertical
+            size="2px"
+            :color="darkmode ? 'white' : 'dark'"
+          />
           <q-tab name="config" icon="settings" label="Config" />
+          <q-separator
+            vertical
+            size="2px"
+            :color="darkmode ? 'white' : 'dark'"
+          />
           <q-tab name="info" icon="info" label="Info" />
+          <q-separator
+            vertical
+            size="2px"
+            :color="darkmode ? 'white' : 'dark'"
+          />
         </q-tabs>
-        <q-separator size="2px" color="layout-bg" />
+        <q-separator size="2px" :color="darkmode ? 'white' : 'dark'" />
         <q-tab-panels
           v-model="setupVPNDialogTabs"
           animated
@@ -530,38 +570,43 @@
             >Info for {{ vpnClientInfo.name }}</q-toolbar-title
           >
         </q-toolbar>
-        <div class="q-ma-md">
+        <div class="q-ma-md" style="line-break: anywhere">
           <div class="row q-mt-md">
-            <div class="col-3 text-weight-bold">Name</div>
-            <div class="col-7">{{ vpnClientInfo.name }}</div>
+            <div class="col-3 text-weight-bolder">Name</div>
+            <div class="col">{{ vpnClientInfo.name }}</div>
           </div>
           <div class="row q-mt-md">
-            <div class="col-3 text-weight-bold">Addresses</div>
-            <div class="col-7">{{ vpnClientInfo.addresses }}</div>
+            <div class="col-3 text-weight-bolder">Addresses</div>
+            <div class="col">{{ vpnClientInfo.addresses }}</div>
           </div>
           <div class="row q-mt-md">
-            <div class="col-3 text-weight-bold">Created</div>
-            <div class="col-7">{{ vpnClientInfo.created }}</div>
+            <div class="col-3 text-weight-bolder">Created</div>
+            <div class="col">{{ vpnClientInfo.created }}</div>
           </div>
           <div class="row q-mt-md">
-            <div class="col-3 text-weight-bold">Public Key</div>
-            <div class="col-7 ellipsis">
+            <div class="col-3 text-weight-bolder">Public Key</div>
+            <div class="col">
               {{ vpnClientInfo.client_publickey }}
-              <q-tooltip
-                :class="darkmode ? 'bg-dark text-white' : 'bg-white text-dark'"
-                class="text-caption"
-              >
-                {{ vpnClientInfo.client_publickey }}
-              </q-tooltip>
             </div>
+          </div>
+          <div class="row justify-center q-mt-md">
+            <q-btn
+              size="md"
+              icon="delete"
+              class="bg-red text-white"
+              label="Delete Connection"
+              push
+              @click="deleteVPNConnection(vpnClientInfo)"
+              style="width: 250px"
+            />
           </div>
         </div>
 
         <q-separator class="q-mt-sm" />
-        <q-card-actions align="center" class="q-mt-sm q-mb-sm">
+        <q-card-actions align="evenly" class="q-ma-sm row">
           <q-btn
             v-close-popup
-            flat
+            push
             class="bg-green text-white"
             icon="done"
             size="md"
@@ -572,15 +617,69 @@
       </q-card>
     </q-dialog>
     <div class="q-ma-sm">
-      <div class="text-center text-h5 q-mt-md text-weight-bold">
-        My VPN Connections
+      <q-toolbar class="bg-layout-bg text-layout-text text-center">
+        <q-toolbar-title class="q-ma-sm">VPN Connections</q-toolbar-title>
+        <div class="absolute-right row items-center q-mr-sm">
+          <q-btn
+            icon="question_mark"
+            push
+            class="bg-blue text-white"
+            label="Help"
+            size="md"
+            @click="helpVPNDialog = true"
+          />
+        </div>
+      </q-toolbar>
+      <div
+        v-if="vpnConnections.length == 0"
+        class="text-center q-mt-md text-body1"
+      >
+        No VPN setup yet. Click the + at the bottom of the screen to set one up.
       </div>
 
-      <q-page-sticky
-        position="bottom"
-        :offset="[0, 20]"
-        style="z-index: 999999999999999"
+      <q-card
+        class="bg-transparent"
+        bordered
+        flat
+        v-if="vpnConnections.length > 0"
       >
+        <q-item dense>
+          <q-item-section avatar class="items-left col-1"> Nr. </q-item-section>
+          <q-item-section class="col">
+            <q-item-label> Name </q-item-label>
+          </q-item-section>
+          <q-item-section class="col">
+            <div class="q-ml-md">Addresses (IPv4, IPv6)</div>
+          </q-item-section>
+        </q-item>
+        <q-separator color="layout-bg" />
+        <q-scroll-area :style="'height:' + ($q.screen.height - 230) + 'px;'">
+          <template v-for="(item, index) in vpnConnections" :key="item">
+            <q-item
+              clickable
+              @click="
+                vpnInfoDialog = true;
+                vpnClientInfo = item;
+              "
+              :style="'width:' + ($q.screen.width - 18) + 'px;'"
+            >
+              <q-item-section avatar class="items-left col-1">
+                {{ index }}.
+              </q-item-section>
+              <q-item-section class="text-body1 col">
+                <q-item-label class="text-weight-bold text-primary ellipsis">
+                  {{ item.name }}
+                </q-item-label>
+              </q-item-section>
+              <q-item-section class="text-body2 col">
+                <div class="q-ml-md">{{ item.addresses }}</div>
+              </q-item-section>
+            </q-item>
+            <q-separator size="1px" />
+          </template>
+        </q-scroll-area>
+      </q-card>
+      <div class="row justify-center q-ma-md absolute-bottom">
         <q-btn
           push
           icon="add"
@@ -588,46 +687,10 @@
           direction="up"
           color="green"
           round
-          padding="sm"
-          style="height: 60px; width: 60px"
+          size="lg"
           @click="setupVPNDialog = !setupVPNDialog"
         />
-      </q-page-sticky>
-      <q-list bordered separator class="q-mt-md">
-        <template v-for="item in vpnConnections" :key="item">
-          <q-item>
-            <q-item-section class="text-body1">
-              <q-item-label overline> Name: {{ item.name }} </q-item-label>
-              <div class="row">
-                <div class="col">{{ item.addresses }}</div>
-              </div>
-            </q-item-section>
-            <q-item-section side class="row">
-              <div class="row">
-                <q-btn
-                  size="sm"
-                  icon="question_mark"
-                  class="q-ml-md bg-blue text-white"
-                  push
-                  round
-                  @click="
-                    vpnInfoDialog = true;
-                    vpnClientInfo = item;
-                  "
-                />
-                <q-btn
-                  size="sm"
-                  icon="close"
-                  class="q-ml-md bg-red text-white"
-                  push
-                  round
-                  @click="deleteVPNConnection(item)"
-                />
-              </div>
-            </q-item-section>
-          </q-item>
-        </template>
-      </q-list>
+      </div>
     </div>
   </div>
 </template>
@@ -729,6 +792,8 @@ export default defineComponent({
         .then((response) => {
           if (response.status == 200) {
             this.notify('positive', 'Deleted.');
+            this.vpnInfoDialog = false;
+            this.vpnClientInfo = {} as VPNClientInfoType;
             this.getVPNConnections();
           } else {
             this.notify('negative', response.data.error);

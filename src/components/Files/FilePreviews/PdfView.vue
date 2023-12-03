@@ -93,6 +93,10 @@ GlobalWorkerOptions.workerSrc = PdfjsWorker;
 
 const props = defineProps({
   item: Object,
+  password: {
+    type: String,
+    default: '',
+  },
 });
 
 const q = useQuasar();
@@ -254,7 +258,12 @@ var barStyle = {
 // functions
 async function getPdfFile() {
   await api
-    .get('/files/file-content/' + props.item.id, axiosConfig)
+    .get(
+      '/files/file-content/' +
+        props.item.id +
+        (props.password != '' ? '?password=' + props.password : ''),
+      axiosConfig
+    )
     .then((response) => {
       base64.value = 'data:application/pdf;base64,' + response.data.content;
       error.value = false;

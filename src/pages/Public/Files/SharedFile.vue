@@ -168,6 +168,7 @@
     <viewer-wrapper
       :propItem="item"
       :active="filePreview"
+      :password="password"
       @close="filePreview = false"
     />
   </div>

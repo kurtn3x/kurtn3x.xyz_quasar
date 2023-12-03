@@ -69,6 +69,7 @@
       </q-card>
     </q-dialog>
     <q-card bordered flat class="q-ma-sm bg-transparent">
+      <q-separator size="1px" :color="darkmode ? 'white' : 'dark'" />
       <q-tabs
         inline-label
         v-model="tab"
@@ -76,13 +77,20 @@
         align="justify"
         indicator-color="transparent"
         active-color="layout-text"
-        active-bg-color="layout-bg"
+        active-bg-color="primary"
       >
+        <q-separator vertical size="1px" :color="darkmode ? 'white' : 'dark'" />
+
         <q-tab name="site" icon="settings_applications" label="Site" />
+        <q-separator vertical size="1px" :color="darkmode ? 'white' : 'dark'" />
+
         <q-tab name="profile" icon="person" label="Profile" />
+        <q-separator vertical size="1px" :color="darkmode ? 'white' : 'dark'" />
+
         <q-tab name="account" icon="admin_panel_settings" label="Account" />
+        <q-separator vertical size="1px" :color="darkmode ? 'white' : 'dark'" />
       </q-tabs>
-      <q-separator size="2px" color="primary" />
+      <q-separator size="1px" :color="darkmode ? 'white' : 'dark'" />
 
       <q-tab-panels v-model="tab" animated class="bg-transparent">
         <q-tab-panel name="site" class="q-pa-none q-ma-none">

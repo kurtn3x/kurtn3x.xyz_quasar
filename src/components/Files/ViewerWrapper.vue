@@ -134,25 +134,25 @@
         style="min-height: 250px; min-width: 250px"
       >
         <div v-if="mimePreview.video">
-          <VideoView :item="item" />
+          <VideoView :item="item" :password="$props.password" />
         </div>
         <div v-else-if="mimePreview.image" class="col column">
-          <ImageView :item="item" />
+          <ImageView :item="item" :password="$props.password" />
         </div>
         <div v-else-if="mimePreview.code" class="col column">
-          <CodeView :item="item" />
+          <CodeView :item="item" :password="$props.password" />
         </div>
         <div v-else-if="mimePreview.text" class="col column">
-          <TextView :item="item" />
+          <TextView :item="item" :password="$props.password" />
         </div>
         <div v-else-if="mimePreview.wysiwyg" class="col column">
-          <WysiwygView :item="item" />
+          <WysiwygView :item="item" :password="$props.password" />
         </div>
         <div v-else-if="mimePreview.pdf" class="col column">
-          <PdfView :item="item" />
+          <PdfView :item="item" :password="$props.password" />
         </div>
         <div v-else-if="mimePreview.markdown" class="col column">
-          <CodeView :item="item" />
+          <CodeView :item="item" :password="$props.password" />
         </div>
         <div v-else>
           <div class="text-h6 text-center q-mt-lg">No Preview available.</div>
@@ -215,7 +215,12 @@ export default defineComponent({
   props: {
     propItem: Object,
     active: Boolean,
+    password: {
+      type: String,
+      default: '',
+    },
   },
+
   emits: ['close'],
 
   setup(props) {
@@ -361,7 +366,10 @@ export default defineComponent({
     },
 
     downloadFile(id: string) {
-      var url = 'https://api.kurtn3x.xyz/files/download/file/' + id;
+      var url =
+        'https://api.kurtn3x.xyz/files/download/file/' +
+        id +
+        (this.$props.password != '' ? '?password=' + this.$props.password : '');
       window?.open(url, '_blank')?.focus();
     },
   },

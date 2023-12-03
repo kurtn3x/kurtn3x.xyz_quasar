@@ -145,7 +145,12 @@ import { javascript } from '@codemirror/lang-javascript';
 
 const props = defineProps({
   item: Object,
+  password: {
+    type: String,
+    default: '',
+  },
 });
+
 watch(
   () => props.item.id,
   () => {
@@ -255,7 +260,12 @@ getFile();
 // functions
 function getFile() {
   api
-    .get('/files/file-content/' + props.item.id, axiosConfig)
+    .get(
+      '/files/file-content/' +
+        props.item.id +
+        (props.password != '' ? '?password=' + props.password : ''),
+      axiosConfig
+    )
     .then((response) => {
       if (response.status == 200) {
         text.value = response.data.content;
