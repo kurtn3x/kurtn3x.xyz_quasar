@@ -651,10 +651,10 @@
             <q-item-label> Name </q-item-label>
           </q-item-section>
           <q-item-section class="col">
-            <div class="q-ml-md">Addresses (IPv4, IPv6)</div>
+            <div class="q-ml-md">Addresses (v4, v6)</div>
           </q-item-section>
         </q-item>
-        <q-separator color="layout-bg" />
+        <q-separator color="primary" size="2px" />
         <template v-for="(item, index) in vpnConnections" :key="item">
           <q-item
             clickable

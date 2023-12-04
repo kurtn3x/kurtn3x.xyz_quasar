@@ -161,24 +161,25 @@
               @click="updateSharing"
             />
           </q-item>
-          <q-item
-            v-if="item.shared == true && item.shared_password_protected == true"
-          >
+          <q-item v-if="item.shared && item.shared_password_protected">
             <q-item-section>
-              <q-item-label class="text-center text-green" overline
-                >Password set</q-item-label
+              <q-item-label
+                class="text-center text-green text-weight-bold"
+                overline
+                style="font-size: 13px"
+                >Password protected</q-item-label
               >
               <div class="row full-width q-mt-xs">
                 <q-btn
-                  outline
+                  push
                   icon="lock edit"
-                  class="col q-mr-xs"
+                  class="col q-mr-sm bg-blue text-white"
                   @click="sharingPasswordDialog = true"
                 />
                 <q-btn
-                  outline
+                  push
                   icon="lock close"
-                  class="col q-ml-xs"
+                  class="col q-ml-sm bg-red text-white"
                   @click="
                     sharingPasswordOptions.shared_password_protected = false;
                     updateSharingPassword();
@@ -196,7 +197,7 @@
               push
               icon="lock"
               label="Set Password"
-              class="full-width full-height bg-blue text-white"
+              class="full-width full-height bg-primary text-layout-text"
               @click="sharingPasswordDialog = true"
             />
           </q-item>

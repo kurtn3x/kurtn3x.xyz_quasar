@@ -3,10 +3,10 @@
 $themes: (
   'theme-violet': (
     // general primary color, has to be visible on both light and dark backgrounds
-    primary: #3b4fb5,
+    primary: #2063af,
     // layout style, e.g. header, side drawerm dialog header...
     layout-text: #f5f5f5,
-    layout-bg: #3b4fb5,
+    layout-bg: #054690,
   ),
   'theme-orange': (
     primary: #ee4d2e,
@@ -24,12 +24,12 @@ $themes: (
     layout-bg: #bfbc06,
   ),
   'theme-blue': (
-    primary: #008fff,
+    primary: #2ba3ff,
     layout-text: #fff,
-    layout-bg: #008fff,
+    layout-bg: #2ba3ff,
   ),
   'theme-dark': (
-    primary: #52616b,
+    primary: #7a97aa,
     layout-text: #fff,
     layout-bg: #1e2022,
   ),
@@ -39,9 +39,9 @@ $themes: (
     layout-bg: #f0f5f9,
   ),
   'theme-purple': (
-    primary: #5a189a,
+    primary: #7630bd,
     layout-text: #fff,
-    layout-bg: #10002b,
+    layout-bg: #290861,
   ),
 );
 
@@ -104,6 +104,9 @@ $LIGHTING_FLAT: 3;
 }
 
 @each $theme, $colors in $themes {
+  .preview-#{$theme} {
+    background: map-get($map: $colors, $key: 'primary') !important;
+  }
   [data-theme='#{$theme}'] {
     @each $name, $color in $colors {
       .bg-#{$name} {
@@ -132,11 +135,7 @@ $LIGHTING_FLAT: 3;
 }
 
 .bg-start-violet {
-  background: linear-gradient(145deg, #3b4fb5 1%, rgb(255, 188, 188) 200%);
-}
-
-.preview-theme-violet {
-  background: #3b4fb5 !important;
+  background: linear-gradient(145deg, #054690 1%, rgb(255, 0, 0) 250%);
 }
 
 .bg-start-orange {
@@ -148,10 +147,6 @@ $LIGHTING_FLAT: 3;
   );
 }
 
-.preview-theme-orange {
-  background: #ee4d2e !important;
-}
-
 .bg-start-green {
   background: linear-gradient(
     90deg,
@@ -159,10 +154,6 @@ $LIGHTING_FLAT: 3;
     rgba(29, 185, 146, 1) 35%,
     rgba(21, 87, 150, 1) 100%
   );
-}
-
-.preview-theme-green {
-  background: #1db992 !important;
 }
 
 .bg-start-olive {
@@ -173,42 +164,18 @@ $LIGHTING_FLAT: 3;
   );
 }
 
-.preview-theme-olive {
-  background: #bfbc06 !important;
-}
-
 .bg-start-blue {
-  background: linear-gradient(
-    0deg,
-    rgba(5, 9, 100, 1) 35%,
-    rgba(0, 143, 255, 1) 150%
-  );
-}
-
-.preview-theme-blue {
-  background: #008fff !important;
+  background: linear-gradient(0deg, rgba(5, 9, 100, 1) 15%, #2ba3ff 100%);
 }
 
 .bg-start-dark {
   background: linear-gradient(45deg, #1e2022 2%, #b7c8d4 250%);
 }
 
-.preview-theme-dark {
-  background: #52616b !important;
-}
-
 .bg-start-heaven {
   background: linear-gradient(45deg, #7cacd5 10%, #a0bdd0 52%, #f0f5f9 100%);
 }
 
-.preview-theme-heaven {
-  background: #b7c8d4 !important;
-}
-
 .bg-start-purple {
   background: radial-gradient(circle, #5a189a 5%, #240046 100%, #10002b 5000%);
-}
-
-.preview-theme-purple {
-  background: #5a189a !important;
 }

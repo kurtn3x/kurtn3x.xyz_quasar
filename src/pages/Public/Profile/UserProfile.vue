@@ -140,7 +140,7 @@
           inline-label
           indicator-color="transparent"
           active-color="layout-text"
-          active-bg-color="layout-bg"
+          active-bg-color="primary"
         >
           <q-separator
             vertical

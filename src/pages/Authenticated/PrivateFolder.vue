@@ -1427,7 +1427,7 @@
       <q-page-sticky position="bottom-right" style="z-index: 100">
         <q-btn
           icon="analytics"
-          class="bg-layout-bg text-layout-text"
+          class="bg-primary text-layout-text"
           unelevated
           size="sm"
           v-if="!progressSticky"
