@@ -127,39 +127,40 @@
 
       <q-toolbar class="q-pa-none q-ma-none" v-if="!localStore.isAuthenticated">
         <q-btn unelevated stretch icon="home" size="md" to="/" />
-        <q-btn-dropdown
+        <q-btn
           icon="settings"
           class="bg-transparent text-layout-text"
           unelevated
           stretch
-          content-class="bg-layout-bg no-shadow"
         >
-          <q-card class="bg-transparent no-shadow" flat bordered dark>
-            <div>
-              <q-btn
-                flat
-                class="full-width bg-layout-bg text-layout-text"
-                :label="darkmodeToogle ? 'Light' : 'Dark'"
-                @click="darkmodeChanged"
-                :icon="darkmodeToogle ? 'light_mode' : 'dark_mode'"
-              />
-            </div>
-            <q-separator color="layout-text" />
-
-            <div class="row justify-evenly" style="width: 155px">
-              <template v-for="theme in themes" :key="theme.name">
+          <q-menu class="bg-layout-bg no-shadow">
+            <q-card class="bg-transparent no-shadow" flat bordered dark>
+              <div>
                 <q-btn
-                  outline
-                  color="layout-text"
-                  @click="setTheme(theme.name)"
-                  :class="theme.preview"
-                  style="width: 32px"
-                  class="q-mt-xs q-mb-xs"
+                  flat
+                  class="full-width bg-layout-bg text-layout-text"
+                  :label="darkmodeToogle ? 'Light' : 'Dark'"
+                  @click="darkmodeChanged"
+                  :icon="darkmodeToogle ? 'light_mode' : 'dark_mode'"
                 />
-              </template>
-            </div>
-          </q-card>
-        </q-btn-dropdown>
+              </div>
+              <q-separator color="layout-text" />
+
+              <div class="row justify-evenly" style="width: 155px">
+                <template v-for="theme in themes" :key="theme.name">
+                  <q-btn
+                    outline
+                    color="layout-text"
+                    @click="setTheme(theme.name)"
+                    :class="theme.preview"
+                    style="width: 32px"
+                    class="q-mt-xs q-mb-xs"
+                  />
+                </template>
+              </div>
+            </q-card>
+          </q-menu>
+        </q-btn>
 
         <q-space />
         <q-btn

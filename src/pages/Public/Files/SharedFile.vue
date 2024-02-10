@@ -157,7 +157,7 @@
       <q-btn
         label="File Information"
         icon="question_mark"
-        class="cursor-pointer q-mt-lg bg-blue-8"
+        class="cursor-pointer q-mt-lg bg-blue-8 text-white"
         push
         @click="itemInformationDialog = true"
         size="xl"

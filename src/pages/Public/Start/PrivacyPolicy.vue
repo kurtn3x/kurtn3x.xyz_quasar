@@ -10,11 +10,11 @@
       <q-expansion-item
         label="Cookies"
         header-style="fontSize: 1.9em; height: 70px"
-        header-class="text-h5 text-weight-bolder text-layout-text bg-layout-bg"
+        header-class="text-h5 text-weight-bolder text-layout-text bg-layout-bg q-mr-sm q-ml-sm"
         class="full-width text-center"
         expand-icon-class="text-layout-text"
       >
-        <q-list bordered>
+        <q-list bordered class="q-ml-sm q-mr-sm">
           <div
             class="text-center text-body1 q-mr-lg q-ml-lg q-mt-sm q-mb-sm text-layout-text"
           >
@@ -23,15 +23,15 @@
           </div>
         </q-list>
       </q-expansion-item>
-      <q-separator color="layout-text" />
+      <q-separator color="layout-text" class="q-mr-sm q-ml-sm" />
       <q-expansion-item
         label="Privacy Policy"
         header-style="fontSize: 1.9em; height: 70px"
-        header-class="text-h5 text-weight-bolder text-layout-text bg-layout-bg"
+        header-class="text-h5 text-weight-bolder text-layout-text bg-layout-bg q-mr-sm q-ml-sm"
         class="full-width text-center"
         expand-icon-class="text-layout-text"
       >
-        <q-list bordered>
+        <q-list bordered class="q-mr-sm q-ml-sm">
           <div
             class="text-center text-body1 q-mr-lg q-ml-lg q-mt-sm q-mb-md text-layout-text"
           >
@@ -42,15 +42,15 @@
           </div>
         </q-list>
       </q-expansion-item>
-      <q-separator color="layout-text" />
+      <q-separator color="layout-text" class="q-mr-sm q-ml-sm" />
       <q-expansion-item
         label="Contact"
         header-style="fontSize: 1.9em; height: 70px"
-        header-class="text-h5 text-weight-bolder text-layout-text bg-layout-bg"
+        header-class="text-h5 text-weight-bolder text-layout-text bg-layout-bg q-mr-sm q-ml-sm"
         class="full-width text-center"
         expand-icon-class="text-layout-text"
       >
-        <q-list bordered>
+        <q-list bordered class="q-mr-sm q-ml-sm">
           <div
             class="text-center text-body1 q-mr-lg q-ml-lg q-mt-sm q-mb-md text-layout-text"
           >

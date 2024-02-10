@@ -10,10 +10,7 @@
   </div>
 
   <div v-if="!loading && !error" class="col column">
-    <div
-      class="bg-light-blue-8 row text-white q-mt-sm full-width"
-      style="height: 40px"
-    >
+    <div class="bg-light-blue-8 row text-white full-width" style="height: 40px">
       <q-btn
         icon="save"
         label="Save"
@@ -31,7 +28,7 @@
           <q-card bordered>
             <q-item>
               <q-item-section side>
-                <q-icon name="text_decrease" size="sm" color="blue-5" />
+                <q-icon name="text_decrease" size="sm" />
               </q-item-section>
               <q-item-section>
                 <q-slider
@@ -43,19 +40,17 @@
                   label
                   switch-label-side
                   :label-value="textScale + 'x'"
-                  color="blue-5"
-                  label-color="blue-5"
                 />
               </q-item-section>
               <q-item-section side>
-                <q-icon name="text_increase" size="sm" color="blue-5" />
+                <q-icon name="text_increase" size="sm" />
               </q-item-section>
             </q-item>
-            <q-separator color="blue-5" />
+            <q-separator />
             <q-item
               ><q-item-section>
                 <q-checkbox
-                  class="text-blue-5 text-body1"
+                  class="text-body1"
                   v-model="mono"
                   label="Monospace Font"
                   color="green"
@@ -73,8 +68,9 @@
       />
     </div>
     <q-card
-      class="col column q-mt-xs"
+      class="col column"
       bordered
+      square
       :class="darkmode ? 'bg-dark text-white' : 'bg-white text-dark'"
     >
       <textarea
@@ -86,6 +82,7 @@
           darkmode ? 'bg-dark text-white' : 'bg-white text-dark',
           mono ? 'mono' : '',
         ]"
+        @keydown.ctrl.s.prevent.stop="save"
       />
     </q-card>
   </div>

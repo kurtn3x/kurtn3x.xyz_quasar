@@ -10,10 +10,7 @@
   </div>
 
   <div v-if="!loading && !error" class="col column">
-    <div
-      class="bg-light-blue-8 row text-white q-mt-sm full-width"
-      style="height: 40px"
-    >
+    <div class="bg-light-blue-8 row text-white full-width" style="height: 40px">
       <q-btn
         icon="save"
         label="Save"
@@ -25,7 +22,19 @@
       <q-separator vertical color="white" />
       <q-space />
       <q-separator vertical color="white" />
-      <q-btn icon="info" flat stretch @click="showInfo = !showInfo" />
+      <q-btn icon="info" flat stretch>
+        <q-menu anchor="bottom middle" self="top middle">
+          <div class="bg-light-blue-6 text-body1 text-center">
+            <a class="q-ml-sm text-white"> Info </a>
+          </div>
+          <div class="q-ma-sm text-body1">
+            <div>Lines: {{ state.lines }}</div>
+            <div>Cursor: {{ state.cursor }}</div>
+            <div>Characters: {{ state.length }}</div>
+            <div>Selected: {{ state.selected }}</div>
+          </div>
+        </q-menu>
+      </q-btn>
       <q-separator vertical color="white" />
       <q-btn icon="settings" flat stretch>
         <q-menu class="no-shadow" anchor="bottom middle" self="top middle">
@@ -77,7 +86,7 @@
         @click="darkmode = !darkmode"
       />
     </div>
-    <q-card bordered class="col column q-mt-xs">
+    <q-card bordered class="col column">
       <q-scroll-area
         :class="darkmode ? 'bg-one-dark text-white' : 'bg-white text-dark'"
         :thumb-style="thumbStyle"
@@ -98,33 +107,6 @@
         >
         </codemirror>
       </q-scroll-area>
-    </q-card>
-    <q-card
-      v-if="showInfo"
-      bordered
-      class="absolute-bottom-right bg-transparent q-mr-md q-mb-md"
-    >
-      <div class="bg-light-blue-6 text-body1 row">
-        <a class="q-ml-sm text-white"> Info </a>
-        <q-space />
-        <q-btn
-          class="bg-red text-white"
-          flat
-          icon="close"
-          size="sm"
-          style="width: 20px; height: 20px"
-          @click="showInfo = false"
-        />
-      </div>
-      <div
-        class="q-ma-sm text-body1"
-        :class="darkmode ? 'text-white' : 'text-dark'"
-      >
-        <div>Lines: {{ state.lines }}</div>
-        <div>Cursor: {{ state.cursor }}</div>
-        <div>Characters: {{ state.length }}</div>
-        <div>Selected: {{ state.selected }}</div>
-      </div>
     </q-card>
   </div>
 </template>

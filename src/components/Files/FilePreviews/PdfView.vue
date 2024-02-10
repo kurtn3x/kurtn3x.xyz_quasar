@@ -18,7 +18,11 @@
   <div v-if="!loading && !error" class="col column">
     <q-resize-observer @resize="onResize" />
     <q-scroll-area :thumb-style="thumbStyle" :bar-style="barStyle" class="col">
-      <div :id="id" class="pdfviewer row justify-center" ref="pdfviewer">
+      <div
+        :id="id"
+        class="pdfviewer column justify-center items-center"
+        ref="pdfviewer"
+      >
         <div v-for="pageNum in pageNumbersArray" :key="pageNum">
           <div :id="id && `${id}-${pageNum}`" class="pdfviewer_page col">
             <canvas />
@@ -26,7 +30,10 @@
         </div>
       </div>
     </q-scroll-area>
-    <div class="bg-light-blue-8 row items-center" style="height: 50px">
+    <div
+      class="bg-light-blue-8 row items-center text-white"
+      style="height: 50px"
+    >
       <q-btn
         icon="view_stream"
         flat
@@ -41,20 +48,28 @@
         @click="pdfSiteView = true"
         :disable="pdfSiteView"
       />
-      <q-btn
-        icon="zoom_out"
-        flat
-        stretch
-        @click="pdfZoom -= 0.25"
-        :disable="pdfZoom == 0.25"
-      />
-      <q-btn
-        icon="zoom_in"
-        flat
-        stretch
-        @click="pdfZoom += 0.25"
-        :disable="pdfZoom == 3"
-      />
+
+      <q-btn icon="zoom_in" flat stretch>
+        <q-menu anchor="top middle" self="bottom middle">
+          <div
+            class="row items-center justify-center"
+            style="width: 240px; height: 40px"
+          >
+            <q-btn icon="zoom_out" flat stretch @click="pdfZoom -= 0.25" />
+            <q-slider
+              v-model="pdfZoom"
+              :min="0.25"
+              :max="3"
+              :step="0.1"
+              snap
+              switch-label-side
+              :label-value="textScale + 'x'"
+              style="max-width: 125px"
+            />
+            <q-btn icon="zoom_in" flat stretch @click="pdfZoom += 0.25" />
+          </div>
+        </q-menu>
+      </q-btn>
 
       <q-space />
       <a v-if="!pdfSiteView" class="text-body1 q-mr-md"
@@ -85,7 +100,7 @@
 import { defineProps, ref, computed, onMounted, watch, onUnmounted } from 'vue';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
-import { pdfsample } from './samples';
+// import { pdfsample } from './samples';
 
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
 import PdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry';

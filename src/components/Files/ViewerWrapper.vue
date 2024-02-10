@@ -130,7 +130,7 @@
 
       <q-resize-observer @resize="onResize" />
       <q-card-section
-        class="col column q-pa-sm"
+        class="col column q-pa-xs"
         style="min-height: 250px; min-width: 250px"
       >
         <div v-if="mimePreview.video">
