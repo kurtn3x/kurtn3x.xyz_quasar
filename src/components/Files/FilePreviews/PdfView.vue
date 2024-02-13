@@ -55,18 +55,30 @@
             class="row items-center justify-center"
             style="width: 240px; height: 40px"
           >
-            <q-btn icon="zoom_out" flat stretch @click="pdfZoom -= 0.25" />
+            <q-btn
+              icon="zoom_out"
+              flat
+              stretch
+              @click="pdfZoom -= 0.25"
+              :disable="pdfZoom <= 0.25"
+            />
             <q-slider
               v-model="pdfZoom"
               :min="0.25"
-              :max="3"
+              :max="2.5"
               :step="0.1"
               snap
               switch-label-side
               :label-value="textScale + 'x'"
               style="max-width: 125px"
             />
-            <q-btn icon="zoom_in" flat stretch @click="pdfZoom += 0.25" />
+            <q-btn
+              icon="zoom_in"
+              flat
+              stretch
+              @click="pdfZoom += 0.25"
+              :disable="pdfZoom >= 2.5"
+            />
           </div>
         </q-menu>
       </q-btn>
