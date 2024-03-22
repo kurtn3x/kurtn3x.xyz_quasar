@@ -11,7 +11,7 @@
         <q-toolbar class="bg-layout-bg text-layout-text text-center">
           <q-toolbar-title class="q-ma-sm">VPN Setup Help</q-toolbar-title>
         </q-toolbar>
-        <q-separator size="2px" :color="darkmode ? 'white' : 'dark'" />
+        <q-separator size="1px" :color="darkmode ? 'white' : 'dark'" />
         <q-tabs
           inline-label
           v-model="helpVPNDialogTabs"
@@ -23,29 +23,29 @@
         >
           <q-separator
             vertical
-            size="2px"
+            size="1px"
             :color="darkmode ? 'white' : 'dark'"
           />
           <q-tab name="windows" :icon="mdiMicrosoftWindows" label="Windows" />
           <q-separator
             vertical
-            size="2px"
+            size="1px"
             :color="darkmode ? 'white' : 'dark'"
           />
           <q-tab name="linux" :icon="mdiLinux" label="Linux" />
           <q-separator
             vertical
-            size="2px"
+            size="1px"
             :color="darkmode ? 'white' : 'dark'"
           />
           <q-tab name="android" :icon="mdiAndroid" label="Android" />
           <q-separator
             vertical
-            size="2px"
+            size="1px"
             :color="darkmode ? 'white' : 'dark'"
           />
         </q-tabs>
-        <q-separator size="2px" :color="darkmode ? 'white' : 'dark'" />
+        <q-separator size="1px" :color="darkmode ? 'white' : 'dark'" />
         <q-tab-panels
           v-model="helpVPNDialogTabs"
           animated
@@ -280,7 +280,7 @@
             />
           </div>
         </q-toolbar>
-        <q-separator size="2px" :color="darkmode ? 'white' : 'dark'" />
+        <q-separator size="1px" :color="darkmode ? 'white' : 'dark'" />
         <q-tabs
           inline-label
           v-model="setupVPNDialogTabs"
@@ -292,29 +292,29 @@
         >
           <q-separator
             vertical
-            size="2px"
+            size="1px"
             :color="darkmode ? 'white' : 'dark'"
           />
           <q-tab name="windows" :icon="mdiMicrosoftWindows" label="Windows" />
           <q-separator
             vertical
-            size="2px"
+            size="1px"
             :color="darkmode ? 'white' : 'dark'"
           />
           <q-tab name="config" icon="settings" label="Config" />
           <q-separator
             vertical
-            size="2px"
+            size="1px"
             :color="darkmode ? 'white' : 'dark'"
           />
           <q-tab name="info" icon="info" label="Info" />
           <q-separator
             vertical
-            size="2px"
+            size="1px"
             :color="darkmode ? 'white' : 'dark'"
           />
         </q-tabs>
-        <q-separator size="2px" :color="darkmode ? 'white' : 'dark'" />
+        <q-separator size="1px" :color="darkmode ? 'white' : 'dark'" />
         <q-tab-panels
           v-model="setupVPNDialogTabs"
           animated

@@ -202,7 +202,8 @@
               no-results-label="No folder found"
               @update:selected="moveItemsUpdateSelectedLabel"
             >
-              <template v-slot:default-body="prop">
+              <!-- this is the add button in the tree, ugly af and annoying so removed for now -->
+              <!-- <template v-slot:default-body="prop">
                 <q-btn
                   icon="add"
                   v-if="(prop as any).node.temporary_show_input != true"
@@ -251,7 +252,7 @@
                     />
                   </template>
                 </q-input>
-              </template>
+              </template> -->
             </q-tree>
           </q-scroll-area>
         </div>
@@ -593,7 +594,7 @@
                 (e: any, x: any, y: any) => y.target.classList.remove('bg-indigo-11')
               "
               @v-drag-drop="
-                changeParentDragNDrop($event, navbarIndex.home_folder_id)
+                changeParentDragNDrop($event, navbarIndex.homeFolderId)
               "
               v-droppable
               style="display: inline-block"
@@ -604,12 +605,12 @@
                 class="full-width full-height no-pointer-events"
               />
             </q-item>
-            <a v-if="navbarIndex.menu_items.length != 0">/</a>
+            <a v-if="navbarIndex.menuItems.length != 0">/</a>
             <q-item
               clickable
               flat
               class="rounded-borders text-primary text-weight-bold text-h5"
-              v-if="navbarIndex.menu_items.length > 0"
+              v-if="navbarIndex.menuItems.length > 0"
               style="display: inline-block"
               @dragover="navbarOverflowMenuHover = true"
               @dragstop="navbarOverflowMenuHover = false"
@@ -629,7 +630,7 @@
                     size="1px"
                     :color="darkmode ? 'white' : 'dark'"
                   />
-                  <template v-for="item in navbarIndex.menu_items" :key="item">
+                  <template v-for="item in navbarIndex.menuItems" :key="item">
                     <q-item
                       clickable
                       class="text-primary text-weight-bold text-h6"
@@ -649,6 +650,11 @@
                       <div class="no-pointer-events ellipsis">
                         {{ item.name }}
                       </div>
+                      <q-tooltip
+                        class="text-body1 bg-layout-bg text-layout-text"
+                      >
+                        {{ item.name }}
+                      </q-tooltip>
                     </q-item>
                     <q-separator
                       size="1px"
@@ -658,7 +664,7 @@
                 </q-card>
               </q-menu>
             </q-item>
-            <template v-for="item in navbarIndex.navbar_items" :key="item">
+            <template v-for="item in navbarIndex.navbarItems" :key="item">
               <a class="text-weight-bolder">/</a>
               <q-item
                 clickable
@@ -1145,7 +1151,11 @@
                 <q-popup-proxy
                   context-menu
                   :breakpoint="0"
-                  @before-show="item.selected = true"
+                  @before-show="
+                    clearSelectedItems();
+                    allSelected = false;
+                    item.selected = true;
+                  "
                   @before-hide="
                     selectedItems.indexOf(item) == -1
                       ? (item.selected = false)
@@ -1262,7 +1272,11 @@
                 <q-popup-proxy
                   context-menu
                   :breakpoint="0"
-                  @before-show="item.selected = true"
+                  @before-show="
+                    clearSelectedItems();
+                    allSelected = false;
+                    item.selected = true;
+                  "
                   @before-hide="
                     selectedItems.indexOf(item) == -1
                       ? (item.selected = false)
@@ -1700,12 +1714,12 @@ export default defineComponent({
 
     const navbarIndex: Ref<NavbarIndexType> = ref({
       // holds the id of the home folder
-      home_folder_id: '',
-      // holds all items in the navbar
-      navbar_items: [],
+      homeFolderId: '',
+      // holds all items in the navbar; items={name: "www", id: "123"}
+      navbarItems: [],
       // holds items in the menu if navbar is too big
-      menu_items: [],
-      last_moved_item_id: '',
+      menuItems: [],
+      lastMovedItemId: '',
     });
 
     return {
@@ -1746,7 +1760,7 @@ export default defineComponent({
       navbarIndex,
       navbarOverflowMenuHover: ref(false),
 
-      // options
+      // filter / sorting
       filterDialog: ref(false),
       filterSearch: ref(''),
       filterSortBy: ref(null) as Ref<string | object | null>,
@@ -1794,12 +1808,11 @@ export default defineComponent({
       // dragover
       scrollAreaDragover: ref(false),
 
-      // move items
+      // map of all folders the user has, used when moving items (given into q-tree)
       allAvailableFolders: ref([]) as Ref<AllAvailableFoldersType[]>,
 
       // dialog for moving selections
       moveSelectedItemsDialog: ref(false),
-      moveSingleItem: ref(false),
 
       moveItemsExpanded: ref(['']),
       moveItemsFilter: ref(''),
@@ -1875,39 +1888,39 @@ export default defineComponent({
 
         // if the width of the item is larger than the actual place for it
         // always show at least 1 item even if it's too large
-        if (l > t && this.navbarIndex.navbar_items.length > 1) {
+        if (l > t && this.navbarIndex.navbarItems.length > 1) {
           // → handle overflowing navbar
 
           // check if the last element of the navbar isn't the last moved item
           // this is used to prevent an infinite loop
-          var l = this.navbarIndex.navbar_items.length;
-          var x = this.navbarIndex.navbar_items[l - 1];
-          if (x.id != this.navbarIndex.last_moved_item_id) {
+          var l = this.navbarIndex.navbarItems.length;
+          var x = this.navbarIndex.navbarItems[l - 1];
+          if (x.id != this.navbarIndex.lastMovedItemId) {
             // grab the first item of the navbar and push it to the menu list
-            var removed = this.navbarIndex.navbar_items.shift() as {
+            var removed = this.navbarIndex.navbarItems.shift() as {
               name: string;
               id: string;
             };
-            this.navbarIndex.menu_items.push(removed);
+            this.navbarIndex.menuItems.push(removed);
             // set the moved element as the last moved element
-            this.navbarIndex.last_moved_item_id = removed.id;
+            this.navbarIndex.lastMovedItemId = removed.id;
           }
         } else {
           // if the width of the item is smaller than the actual place for it
           // we may be able to clear items of the list which is created when content overflows
-          if (this.navbarIndex.menu_items.length > 0) {
-            // grab the last item of menu_items array
-            var l = this.navbarIndex.menu_items.length;
-            var x = this.navbarIndex.menu_items[l - 1];
+          if (this.navbarIndex.menuItems.length > 0) {
+            // grab the last item of menuItems array
+            var l = this.navbarIndex.menuItems.length;
+            var x = this.navbarIndex.menuItems[l - 1];
             // check if that isn't the item that was moved in a previous run → prevent inf loop
-            if (x.id != this.navbarIndex.last_moved_item_id) {
-              // remove that item from the menu_items array and add it to the navbar Items
-              var removed = this.navbarIndex.menu_items.shift() as {
+            if (x.id != this.navbarIndex.lastMovedItemId) {
+              // remove that item from the menuItems array and add it to the navbar Items
+              var removed = this.navbarIndex.menuItems.shift() as {
                 name: string;
                 id: string;
               };
-              this.navbarIndex.navbar_items.push(removed);
-              this.navbarIndex.last_moved_item_id = removed.id;
+              this.navbarIndex.navbarItems.push(removed);
+              this.navbarIndex.lastMovedItemId = removed.id;
             }
           }
         }
@@ -1917,7 +1930,7 @@ export default defineComponent({
 
   computed: {
     pathNames() {
-      return this.navbarIndex.navbar_items.length;
+      return this.navbarIndex.navbarItems.length;
     },
 
     darkmode() {
@@ -1953,7 +1966,7 @@ export default defineComponent({
         .then((response) => {
           if (response.status == 200) {
             this.rawFolderContent = response.data;
-            this.navbarIndex.home_folder_id = response.data.id;
+            this.navbarIndex.homeFolderId = response.data.id;
             this.initialFetch = true;
             this.initialFetchSuccessful = true;
             this.loading = false;
@@ -3062,24 +3075,24 @@ export default defineComponent({
       if (identifier == 0) {
         // home folder
         // → clear the arrays
-        this.navbarIndex.menu_items = [];
-        this.navbarIndex.navbar_items = [];
+        this.navbarIndex.menuItems = [];
+        this.navbarIndex.navbarItems = [];
         this.getHomeFolder();
       } else if (identifier == 1) {
         // menu items
-        this.navbarIndex.last_moved_item_id = '';
-        this.navbarIndex.navbar_items = [];
-        const index = this.navbarIndex.menu_items.findIndex(
+        this.navbarIndex.lastMovedItemId = '';
+        this.navbarIndex.navbarItems = [];
+        const index = this.navbarIndex.menuItems.findIndex(
           (i) => i.id === item.id
         );
-        this.navbarIndex.menu_items.length = index + 1;
+        this.navbarIndex.menuItems.length = index + 1;
         this.getFolderId(item.id, false);
       } else {
         // navbar items
-        const index = this.navbarIndex.navbar_items.findIndex(
+        const index = this.navbarIndex.navbarItems.findIndex(
           (i) => i.id === item.id
         );
-        this.navbarIndex.navbar_items.length = index + 1;
+        this.navbarIndex.navbarItems.length = index + 1;
         this.getFolderId(item.id, false);
       }
     },
@@ -3095,8 +3108,8 @@ export default defineComponent({
         .then((response) => {
           if (response.status == 200) {
             this.rawFolderContent = response.data;
-            this.navbarIndex.last_moved_item_id = '';
-            this.navbarIndex.navbar_items.pop();
+            this.navbarIndex.lastMovedItemId = '';
+            this.navbarIndex.navbarItems.pop();
             this.selectedItems = [];
             this.allSelected = false;
             this.loading = false;
@@ -3143,7 +3156,7 @@ export default defineComponent({
 
             // push the data to the navbarindex map
             if (navbarAdd == true) {
-              this.navbarIndex.navbar_items.push({
+              this.navbarIndex.navbarItems.push({
                 name: response.data.name,
                 id: response.data.id,
               });

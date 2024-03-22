@@ -133,7 +133,7 @@
         class="bg-transparent"
         :style="'min-height:' + screenHeight + 'px;'"
       >
-        <q-separator size="2px" :color="darkmode ? 'white' : 'dark'" />
+        <q-separator size="1px" :color="darkmode ? 'white' : 'dark'" />
         <q-tabs
           v-model="profile_tab"
           align="justify"
@@ -144,25 +144,25 @@
         >
           <q-separator
             vertical
-            size="2px"
+            size="1px"
             :color="darkmode ? 'white' : 'dark'"
           />
 
           <q-tab name="about" icon="person" label="About" />
           <q-separator
             vertical
-            size="2px"
+            size="1px"
             :color="darkmode ? 'white' : 'dark'"
           />
 
           <q-tab name="placeholder" icon="block" label="Placeholder" />
           <q-separator
             vertical
-            size="2px"
+            size="1px"
             :color="darkmode ? 'white' : 'dark'"
           />
         </q-tabs>
-        <q-separator size="2px" :color="darkmode ? 'white' : 'dark'" />
+        <q-separator size="1px" :color="darkmode ? 'white' : 'dark'" />
         <q-tab-panels v-model="profile_tab" animated class="bg-transparent">
           <q-tab-panel name="about">
             <q-card flat class="full-width full-height bg-transparent">
@@ -295,7 +295,7 @@
             {{ user.username }}
           </div>
         </div>
-        <q-separator size="2px" :color="darkmode ? 'white' : 'dark'" />
+        <q-separator size="1px" :color="darkmode ? 'white' : 'dark'" />
 
         <q-tabs
           v-model="profile_tab"
@@ -308,23 +308,23 @@
         >
           <q-separator
             vertical
-            size="2px"
+            size="1px"
             :color="darkmode ? 'white' : 'dark'"
           />
           <q-tab name="about" icon="person" label="About" />
           <q-separator
             vertical
-            size="2px"
+            size="1px"
             :color="darkmode ? 'white' : 'dark'"
           />
           <q-tab name="placeholder" icon="block" label="Placeholder" />
           <q-separator
             vertical
-            size="2px"
+            size="1px"
             :color="darkmode ? 'white' : 'dark'"
           />
         </q-tabs>
-        <q-separator size="2px" :color="darkmode ? 'white' : 'dark'" />
+        <q-separator size="1px" :color="darkmode ? 'white' : 'dark'" />
         <q-tab-panels v-model="profile_tab" animated class="bg-transparent">
           <q-tab-panel name="about" class="bg-transparent">
             <q-card flat class="bg-transparent">

@@ -69,10 +69,10 @@ export interface UploadDialogEntryType {
 }
 
 export interface NavbarIndexType {
-  home_folder_id: string;
-  navbar_items: { name: string; id: string }[];
-  menu_items: { name: string; id: string }[];
-  last_moved_item_id: string;
+  homeFolderId: string;
+  navbarItems: { name: string; id: string }[];
+  menuItems: { name: string; id: string }[];
+  lastMovedItemId: string;
 }
 
 export interface AllAvailableFoldersType {

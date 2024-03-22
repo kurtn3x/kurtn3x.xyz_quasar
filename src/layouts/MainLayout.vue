@@ -27,14 +27,14 @@
           <q-icon name="arrow_drop_down" size="sm" />
           <q-menu class="q-mr-xs" dark>
             <q-card class="bg-layout-bg" bordered dark style="width: 240px">
-              <div class="q-ma-xs q-mt-sm">
-                <div class="row justify-center">
+              <div class="q-mt-sm">
+                <div class="row justify-center q-ma-xs">
                   <q-btn
                     flat
-                    class="bg-layout-bg q-mb-xs text-layout-text"
+                    class="bg-layout-bg text-layout-text"
                     :to="myprofileroute"
-                    align="center"
-                    style="font-size: 14px; width: 215px"
+                    align="left"
+                    style="font-size: 14px; width: 210px"
                   >
                     <q-avatar rounded size="20px">
                       <img :src="headerInfo.avatar" />
@@ -44,81 +44,85 @@
                 </div>
 
                 <q-separator color="layout-text" inset />
-                <div class="row justify-center">
+                <div class="row justify-center q-ma-xs">
                   <q-btn
                     flat
                     to="/dashboard/settings/profile"
                     icon="person"
                     label="Profile Settings"
-                    style="font-size: 14px; width: 215px"
-                    class="bg-layout-bg text-layout-text q-mb-xs q-mt-xs"
-                    align="center"
+                    style="font-size: 14px; width: 210px"
+                    class="bg-layout-bg text-layout-text"
+                    align="left"
                   />
                 </div>
                 <q-separator color="layout-text" inset />
-                <div class="row justify-center">
+                <div class="row justify-center q-ma-xs">
                   <q-btn
                     flat
                     to="/dashboard/settings/account"
                     icon="admin_panel_settings"
                     label="Account Settings"
-                    style="font-size: 14px; width: 215px"
-                    class="bg-layout-bg text-layout-text q-mt-xs"
-                    align="center"
+                    style="font-size: 14px; width: 210px"
+                    class="bg-layout-bg text-layout-text"
+                    align="left"
                   />
                 </div>
               </div>
-
               <q-separator inset color="layout-text" />
-              <div class="row q-ma-xs q-mb-sm">
-                <q-btn-dropdown
-                  icon="settings"
-                  class="bg-transparent text-layout-text"
-                  flat
-                  content-class="bg-layout-bg no-shadow"
-                  menu-anchor="bottom middle"
-                  menu-self="top middle"
-                >
-                  <q-card class="bg-transparent no-shadow" flat bordered dark>
-                    <div>
-                      <q-btn
-                        flat
-                        class="full-width bg-layout-bg text-layout-text"
-                        :label="darkmodeToogle ? 'Light' : 'Dark'"
-                        @click="darkmodeChanged"
-                        :icon="darkmodeToogle ? 'light_mode' : 'dark_mode'"
-                      />
-                    </div>
-                    <q-separator color="layout-text" />
-
-                    <div class="row justify-evenly" style="width: 155px">
-                      <template v-for="theme in themes" :key="theme.name">
+              <div class="q-mb-sm">
+                <div class="row q-ma-xs justify-center">
+                  <q-btn-dropdown
+                    icon="settings"
+                    class="bg-transparent text-layout-text"
+                    flat
+                    content-class="bg-layout-bg no-shadow"
+                    menu-anchor="bottom middle"
+                    menu-self="top middle"
+                    style="width: 100px"
+                  >
+                    <q-card class="bg-transparent no-shadow" flat bordered dark>
+                      <div>
                         <q-btn
-                          outline
-                          color="layout-text"
-                          @click="setTheme(theme.name)"
-                          :class="theme.preview"
-                          style="width: 32px"
-                          class="q-mt-xs q-mb-xs"
+                          flat
+                          class="full-width bg-layout-bg text-layout-text"
+                          :label="darkmodeToogle ? 'Light' : 'Dark'"
+                          @click="darkmodeChanged"
+                          :icon="darkmodeToogle ? 'light_mode' : 'dark_mode'"
                         />
-                      </template>
-                    </div>
-                  </q-card>
-                </q-btn-dropdown>
-                <q-space />
+                      </div>
+                      <q-separator color="layout-text" />
 
-                <q-separator vertical inset color="layout-text" />
-                <q-space />
-                <q-btn
-                  flat
-                  icon="logout"
-                  class="bg-layout-bg text-layout-text"
-                  label="Logout"
-                  v-close-popup
-                  @click="logout"
-                  style="font-size: 14px; width: 130px"
-                  align="center"
-                />
+                      <div class="row justify-evenly" style="width: 155px">
+                        <template v-for="theme in themes" :key="theme.name">
+                          <q-btn
+                            outline
+                            color="layout-text"
+                            @click="setTheme(theme.name)"
+                            :class="theme.preview"
+                            style="width: 32px"
+                            class="q-mt-xs q-mb-xs"
+                          />
+                        </template>
+                      </div>
+                    </q-card>
+                  </q-btn-dropdown>
+
+                  <q-separator
+                    class="q-ml-xs q-mr-xs"
+                    vertical
+                    inset
+                    color="layout-text"
+                  />
+                  <q-btn
+                    flat
+                    icon="logout"
+                    class="bg-layout-bg text-layout-text"
+                    v-close-popup
+                    @click="logout"
+                    style="font-size: 14px; width: 100px"
+                    align="center"
+                  />
+                </div>
               </div>
             </q-card>
           </q-menu>
