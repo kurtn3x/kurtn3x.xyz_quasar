@@ -17,7 +17,7 @@
         />
         <q-space />
 
-        <q-btn stretch flat class="button_hover q-ml-sm">
+        <q-btn stretch flat class="button_hover">
           <q-avatar class="q-mr-sm" size="26px" rounded>
             <img :src="headerInfo.avatar" />
           </q-avatar>
@@ -25,7 +25,7 @@
             headerInfo.username
           }}</a>
           <q-icon name="arrow_drop_down" size="sm" />
-          <q-menu class="q-mr-xs" dark>
+          <q-menu dark anchor="bottom left" self="top left">
             <q-card class="bg-layout-bg" bordered dark style="width: 240px">
               <div class="q-mt-sm">
                 <div class="row justify-center q-ma-xs">
@@ -34,7 +34,7 @@
                     class="bg-layout-bg text-layout-text"
                     :to="myprofileroute"
                     align="left"
-                    style="font-size: 14px; width: 210px"
+                    style="font-size: 14px; width: 220px"
                   >
                     <q-avatar rounded size="20px">
                       <img :src="headerInfo.avatar" />
@@ -50,7 +50,7 @@
                     to="/dashboard/settings/profile"
                     icon="person"
                     label="Profile Settings"
-                    style="font-size: 14px; width: 210px"
+                    style="font-size: 14px; width: 220px"
                     class="bg-layout-bg text-layout-text"
                     align="left"
                   />
@@ -62,7 +62,7 @@
                     to="/dashboard/settings/account"
                     icon="admin_panel_settings"
                     label="Account Settings"
-                    style="font-size: 14px; width: 210px"
+                    style="font-size: 14px; width: 220px"
                     class="bg-layout-bg text-layout-text"
                     align="left"
                   />

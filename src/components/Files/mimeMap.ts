@@ -36,9 +36,9 @@ const CODEMIME = [
   'application/yaml',
   'text/xml',
   'application/x-sh',
+  'text/markdown',
 ];
 
-const MARKDOWNMIME = ['text/markdown'];
 const PDFMIME = ['application/pdf'];
 const WYSIWYGMIME = ['text/wysiwyg'];
 
@@ -85,14 +85,6 @@ for (const mime of PDFMIME) {
     icon: 'picture_as_pdf',
     type: 'pdf',
     availableTypes: [],
-  });
-}
-
-for (const mime of MARKDOWNMIME) {
-  mimeMap.set(mime, {
-    icon: 'code',
-    type: 'markdown',
-    availableTypes: ['code', 'text', 'markdown'],
   });
 }
 

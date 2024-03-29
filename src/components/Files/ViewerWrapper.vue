@@ -11,17 +11,8 @@
     seamless
   >
     <q-card
-      :style="
-        maximizedToggle
-          ? 'width: 100%; height: 100%;'
-          : dialogStyle +
-            ';' +
-            'max-width:' +
-            ($q.screen.width - 100) +
-            'px; resize: both'
-      "
+      :style="maximizedToggle ? 'width: 100%; height: 100%;' : dialogStyle"
       class="column"
-      style="min-height: 400px; min-width: 350px"
       ref="viewerWrapper"
       id="viewerWrapper"
     >
@@ -151,23 +142,16 @@
         <div v-else-if="mimePreview.pdf" class="col column">
           <PdfView :item="item" :password="$props.password" />
         </div>
-        <div v-else-if="mimePreview.markdown" class="col column">
-          <CodeView :item="item" :password="$props.password" />
-        </div>
         <div v-else>
           <div class="text-h6 text-center q-mt-lg">No Preview available.</div>
         </div>
       </q-card-section>
-      <div
+      <q-btn
         class="absolute-bottom-right row items-end"
         v-if="!maximizedToggle && !mobile"
-        style="
-          overflow: hidden;
-          background: #a8e3ff;
-          width: 15px;
-          height: 15px;
-          bottom: 0px;
-        "
+        size="xs"
+        style="overflow: hidden; background: #a8e3ff; bottom: 0px"
+        v-touch-pan.mouse="onPanResize"
       />
     </q-card>
   </q-dialog>
@@ -246,6 +230,10 @@ export default defineComponent({
         x: 0,
         y: 0,
       }),
+      dialogSize: ref({
+        x: 350,
+        y: 400,
+      }),
       dialogWidth: ref(0),
       initialDialogWidth: ref(0),
       availablePreviews: ref({
@@ -264,11 +252,6 @@ export default defineComponent({
           label: 'Rich Editor',
           mime: 'text/wysiwyg',
         },
-        markdown: {
-          available: false,
-          label: 'Markdown Preview',
-          mime: 'text/markdown',
-        },
       }),
       mimePreview: ref({
         video: false,
@@ -277,7 +260,6 @@ export default defineComponent({
         text: false,
         code: false,
         wysiwyg: false,
-        markdown: false,
       }),
     };
   },
@@ -296,7 +278,13 @@ export default defineComponent({
         this.dialogPos.x +
         'px,' +
         this.dialogPos.y +
-        'px)'
+        'px); ' +
+        'min-width: ' +
+        this.dialogSize.x +
+        'px; ' +
+        'min-height: ' +
+        this.dialogSize.y +
+        'px;'
       );
     },
   },
@@ -326,10 +314,70 @@ export default defineComponent({
       this.showDialog = false;
     },
 
+    // do some math so the dialog isnt allowed to leave the window
     onPan(evt: any) {
+      if (this.maximizedToggle) {
+        return;
+      }
+      var el = document.getElementById('viewerWrapper') as any;
+      var bounds = el.getBoundingClientRect() as any;
+      var x;
+      if (bounds.x <= 0) {
+        x = this.dialogPos.x + 5;
+      } else if (bounds.x + el.clientWidth >= this.q.screen.width) {
+        x = this.dialogPos.x - 5;
+      } else {
+        x = this.dialogPos.x + evt.delta.x;
+      }
+
+      var y;
+      if (bounds.y <= 0) {
+        y = this.dialogPos.y + 5;
+      } else if (bounds.y + el.clientHeight >= this.q.screen.height) {
+        y = this.dialogPos.y - 5;
+      } else {
+        y = this.dialogPos.y + evt.delta.y;
+      }
+
       this.dialogPos = {
-        x: this.dialogPos.x + evt.delta.x,
-        y: this.dialogPos.y + evt.delta.y,
+        x: x,
+        y: y,
+      };
+    },
+
+    onPanResize(evt: any) {
+      var el = document.getElementById('viewerWrapper') as any;
+      var bounds = el.getBoundingClientRect() as any;
+      var x;
+      // window width is between 350px and screenwidth-100
+      if (x > this.q.screen.width - 100) {
+        x = this.q.screen.width - 100;
+      } else if (
+        bounds.x + el.clientWidth >= this.q.screen.width ||
+        bounds.x <= 0
+      ) {
+        // dont allow the resizing to make the window leave
+        x = this.dialogSize.x - 5;
+      } else {
+        x = this.dialogSize.x + evt.delta.x;
+      }
+
+      // window height is between 400px and screenheight-100
+      var y;
+      if (y > this.q.screen.height - 100) {
+        y = this.q.screen.height - 100;
+      } else if (
+        bounds.y + el.clientHeight >= this.q.screen.height ||
+        bounds.y <= 0
+      ) {
+        y = this.dialogSize.y - 5;
+      } else {
+        y = this.dialogSize.y + evt.delta.y;
+      }
+
+      this.dialogSize = {
+        x: x,
+        y: y,
       };
     },
 
