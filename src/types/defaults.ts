@@ -1,16 +1,17 @@
 import * as types from 'src/types/index';
 
+// for testing
 export function defaultUser() {
   const user: types.UserProfileType = {
     role: 'User',
-    username: 'WWWWWWWWWWWWWWWW',
+    username: 'Lorem ipsum',
     name: 'Lorem ipsum dolor sit amet, consetetur',
     status: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr',
     description:
       'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore',
     location: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr',
     date_joined: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr',
-    avatar: 'https://media.kurtn3x.xyz/Users/kurt/avatar.png',
+    avatar: 'https://media.kurtn3x.xyz/default.png',
     id: '',
   };
 
@@ -19,7 +20,7 @@ export function defaultUser() {
 
 export function defaultHeaderInformation() {
   const info: types.HeaderInformationType = {
-    username: 'Anon',
+    username: 'username',
     is_admin: false,
     avatar: 'https://media.kurtn3x.xyz/default.png',
   };

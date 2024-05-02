@@ -1563,7 +1563,11 @@
                         <q-item-section no-wrap>
                           <q-linear-progress
                             size="25px"
-                            :value="progress.transferred_percent_num"
+                            :value="
+                              progress.status == 'ok'
+                                ? progress.transferred_percent_num
+                                : 1
+                            "
                             :color="
                               progress.status == 'error'
                                 ? 'red-8'
