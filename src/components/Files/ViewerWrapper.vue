@@ -322,19 +322,22 @@ export default defineComponent({
       var el = document.getElementById('viewerWrapper') as any;
       var bounds = el.getBoundingClientRect() as any;
       var x;
-      if (bounds.x <= 0) {
-        x = this.dialogPos.x + 5;
-      } else if (bounds.x + el.clientWidth >= this.q.screen.width) {
-        x = this.dialogPos.x - 5;
+      if (bounds.x < 0) {
+        x = this.dialogPos.x - bounds.x;
+      } else if (bounds.x + el.clientWidth > this.q.screen.width) {
+        x =
+          this.dialogPos.x + (this.q.screen.width - bounds.x - el.clientWidth);
       } else {
         x = this.dialogPos.x + evt.delta.x;
       }
 
       var y;
-      if (bounds.y <= 0) {
-        y = this.dialogPos.y + 5;
-      } else if (bounds.y + el.clientHeight >= this.q.screen.height) {
-        y = this.dialogPos.y - 5;
+      if (bounds.y < 0) {
+        y = this.dialogPos.y - bounds.y;
+      } else if (bounds.y + el.clientHeight > this.q.screen.height) {
+        y =
+          this.dialogPos.y +
+          (this.q.screen.height - bounds.y - el.clientHeight);
       } else {
         y = this.dialogPos.y + evt.delta.y;
       }
@@ -349,28 +352,19 @@ export default defineComponent({
       var el = document.getElementById('viewerWrapper') as any;
       var bounds = el.getBoundingClientRect() as any;
       var x;
+      var y;
       // window width is between 350px and screenwidth-100
-      if (x > this.q.screen.width - 100) {
-        x = this.q.screen.width - 100;
-      } else if (
-        bounds.x + el.clientWidth >= this.q.screen.width ||
-        bounds.x <= 0
-      ) {
+
+      if (bounds.x + el.clientWidth >= this.q.screen.width || bounds.x <= 0) {
         // dont allow the resizing to make the window leave
-        x = this.dialogSize.x - 5;
+        x = this.dialogSize.x - 0.1;
       } else {
         x = this.dialogSize.x + evt.delta.x;
       }
 
       // window height is between 400px and screenheight-100
-      var y;
-      if (y > this.q.screen.height - 100) {
-        y = this.q.screen.height - 100;
-      } else if (
-        bounds.y + el.clientHeight >= this.q.screen.height ||
-        bounds.y <= 0
-      ) {
-        y = this.dialogSize.y - 5;
+      if (bounds.y + el.clientHeight >= this.q.screen.height || bounds.y <= 0) {
+        y = this.dialogSize.y - 0.1;
       } else {
         y = this.dialogSize.y + evt.delta.y;
       }

@@ -23,7 +23,7 @@
     "codemirror": "^6.0.1",
     "highlight.js": "^11.9.0",
     "lodash": "^4.17.21",
-    "npm": "^9.9.3",
+    "npm": "^10.7.0",
     "particles.vue3": "^2.12.0",
     "pdfjs-dist": "^2.16.105",
     "pinia": "^2.1.7",

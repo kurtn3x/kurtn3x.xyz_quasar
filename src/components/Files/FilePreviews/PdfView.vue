@@ -69,7 +69,6 @@
               :step="0.1"
               snap
               switch-label-side
-              :label-value="textScale + 'x'"
               style="max-width: 125px"
             />
             <q-btn
@@ -113,6 +112,7 @@ import { defineProps, ref, computed, onMounted, watch, onUnmounted } from 'vue';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 // import { pdfsample } from './samples';
+import { isProxy, toRaw } from 'vue';
 
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
 import PdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry';
@@ -164,6 +164,7 @@ watch(pdfSiteView, async (n, o) => {
 
 watch([width, pdfCurrentPage], async () => {
   if (pdfDoc.value != null) {
+    // console.log(pdfDoc.value);
     await render(pdfDoc.value);
   }
 });
@@ -221,7 +222,7 @@ async function render(doc) {
   const pageElements = document.getElementsByClassName('pdfviewer_page');
   await Promise.all(
     pageNumbersArray.value.map(async (pageNum, i) => {
-      const page = await doc.getPage(pageNum);
+      const page = await toRaw(doc).getPage(pageNum);
       const rotation = page.rotate;
       const [canvas, div1, div2] = pageElements[i].children;
       const [actualWidth, actualHeight] = getPageDimensions(
@@ -229,7 +230,6 @@ async function render(doc) {
           ? page.view[2] / page.view[3]
           : page.view[3] / page.view[2]
       );
-
       canvas.style.width = `${Math.floor(actualWidth)}px`;
       canvas.style.height = `${Math.floor(actualHeight)}px`;
 
