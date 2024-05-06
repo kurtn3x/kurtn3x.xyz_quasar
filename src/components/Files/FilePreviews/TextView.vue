@@ -18,10 +18,10 @@
         stretch
         class="bg-green text-white"
         @click="save"
+        v-if="localStore.isAuthenticated"
       />
-      <q-separator vertical color="white" />
+      <q-separator vertical color="white" v-if="localStore.isAuthenticated" />
       <q-space />
-      <q-separator vertical color="white" />
       <q-separator vertical color="white" />
       <q-btn icon="settings" flat stretch>
         <q-menu class="no-shadow" anchor="bottom middle" self="top middle">

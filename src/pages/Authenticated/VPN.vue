@@ -616,83 +616,88 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-    <div class="q-ma-sm">
-      <q-toolbar class="bg-layout-bg text-layout-text text-center">
-        <q-toolbar-title class="q-ma-sm">VPN Connections</q-toolbar-title>
-        <div class="absolute-right row items-center q-mr-sm">
+    <q-page class="column">
+      <div class="q-ma-sm">
+        <q-toolbar class="bg-layout-bg text-layout-text text-center">
+          <q-toolbar-title class="q-ma-sm">VPN Connections</q-toolbar-title>
+          <div class="absolute-right row items-center q-mr-sm">
+            <q-btn
+              icon="question_mark"
+              push
+              class="bg-blue text-white"
+              size="md"
+              @click="helpVPNDialog = true"
+            />
+          </div>
+        </q-toolbar>
+        <div
+          v-if="vpnConnections.length == 0"
+          class="text-center q-mt-md text-body1"
+        >
+          No VPN setup yet. Click the + at the bottom of the screen to set one
+          up.
+        </div>
+
+        <q-card
+          class="bg-transparent"
+          bordered
+          flat
+          v-if="vpnConnections.length > 0"
+        >
+          <q-item dense>
+            <q-item-section avatar class="items-left col-1">
+              Nr.
+            </q-item-section>
+            <q-item-section class="col">
+              <q-item-label> Name </q-item-label>
+            </q-item-section>
+            <q-item-section class="col">
+              <div class="q-ml-md">Addresses (v4, v6)</div>
+            </q-item-section>
+          </q-item>
+          <q-separator color="primary" size="2px" />
+          <div
+            :style="'max-height:' + ($q.screen.height - 240) + 'px;'"
+            style="overflow: scroll"
+          >
+            <template v-for="(item, index) in vpnConnections" :key="item">
+              <q-item
+                clickable
+                @click="
+                  vpnInfoDialog = true;
+                  vpnClientInfo = item;
+                "
+              >
+                <q-item-section avatar class="items-left col-1">
+                  {{ index }}.
+                </q-item-section>
+                <q-item-section class="text-body1 col">
+                  <q-item-label class="text-weight-bold text-primary ellipsis">
+                    {{ item.name }}
+                  </q-item-label>
+                </q-item-section>
+                <q-item-section class="text-body2 col">
+                  <div class="q-ml-md">{{ item.addresses }}</div>
+                </q-item-section>
+              </q-item>
+              <q-separator size="1px" />
+            </template>
+          </div>
+        </q-card>
+        <div class="row justify-center q-ma-md absolute-bottom">
           <q-btn
-            icon="question_mark"
             push
-            class="bg-blue text-white"
-            size="md"
-            @click="helpVPNDialog = true"
+            icon="add"
+            active-icon="add"
+            direction="up"
+            color="green"
+            round
+            size="lg"
+            @click="setupVPNDialog = !setupVPNDialog"
           />
         </div>
-      </q-toolbar>
-      <div
-        v-if="vpnConnections.length == 0"
-        class="text-center q-mt-md text-body1"
-      >
-        No VPN setup yet. Click the + at the bottom of the screen to set one up.
       </div>
-
-      <q-card
-        class="bg-transparent"
-        bordered
-        flat
-        v-if="vpnConnections.length > 0"
-      >
-        <q-item dense>
-          <q-item-section avatar class="items-left col-1"> Nr. </q-item-section>
-          <q-item-section class="col">
-            <q-item-label> Name </q-item-label>
-          </q-item-section>
-          <q-item-section class="col">
-            <div class="q-ml-md">Addresses (v4, v6)</div>
-          </q-item-section>
-        </q-item>
-        <q-separator color="primary" size="2px" />
-        <div
-          :style="'max-height:' + ($q.screen.height - 240) + 'px;'"
-          style="overflow: scroll"
-        >
-          <template v-for="(item, index) in vpnConnections" :key="item">
-            <q-item
-              clickable
-              @click="
-                vpnInfoDialog = true;
-                vpnClientInfo = item;
-              "
-            >
-              <q-item-section avatar class="items-left col-1">
-                {{ index }}.
-              </q-item-section>
-              <q-item-section class="text-body1 col">
-                <q-item-label class="text-weight-bold text-primary ellipsis">
-                  {{ item.name }}
-                </q-item-label>
-              </q-item-section>
-              <q-item-section class="text-body2 col">
-                <div class="q-ml-md">{{ item.addresses }}</div>
-              </q-item-section>
-            </q-item>
-            <q-separator size="1px" />
-          </template>
-        </div>
-      </q-card>
-      <div class="row justify-center q-ma-md absolute-bottom">
-        <q-btn
-          push
-          icon="add"
-          active-icon="add"
-          direction="up"
-          color="green"
-          round
-          size="lg"
-          @click="setupVPNDialog = !setupVPNDialog"
-        />
-      </div>
-    </div>
+    </q-page>
   </div>
 </template>
 

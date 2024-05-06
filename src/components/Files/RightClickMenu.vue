@@ -39,7 +39,6 @@
           label="Password"
           input-class="text-body1"
           outlined
-          dense
           no-error-icon
           hide-bottom-space
           :type="sharingPasswordOptions.isPwd ? 'password' : 'text'"
@@ -67,23 +66,26 @@
             />
           </template>
         </q-input>
-        <div class="row q-mt-md q-mb-md">
-          <q-btn
-            label="Generate"
-            icon="refresh"
-            push
-            class="bg-blue text-white col q-mr-sm"
-            @click="generatePassword()"
-          />
-          <q-btn
-            icon="content_copy"
-            label="Copy"
-            push
-            class="bg-blue text-white col q-ml-sm"
-            @click="copyToClipboard(sharingPasswordOptions.shared_password)"
-          />
-        </div>
       </div>
+      <q-card-actions
+        align="center"
+        class="row q-ml-md q-mr-md q-mb-sm q-mt-sm"
+      >
+        <q-btn
+          label="Random"
+          icon="refresh"
+          push
+          class="bg-blue text-white col"
+          @click="generatePassword()"
+        />
+        <q-btn
+          icon="content_copy"
+          label="Copy"
+          push
+          class="bg-blue text-white col"
+          @click="copyToClipboard(sharingPasswordOptions.shared_password)"
+        />
+      </q-card-actions>
       <q-separator />
       <q-card-actions align="center" class="row q-mt-sm q-mb-sm">
         <q-btn
