@@ -32,6 +32,7 @@
             label="Name"
             class="text-primary text-body1 col"
             style="height: 45px"
+            @keyup.enter="createFile"
           />
         </div>
         <div class="q-ml-md">
@@ -977,6 +978,8 @@
       </div>
       <q-scroll-area
         class="col"
+        ref="mainScrollArea"
+        style="overflow: scroll"
         :class="scrollAreaDragover ? 'bg-cyan-14' : ''"
         @drop.prevent.stop="
             (ev: DragEvent) => {
@@ -996,6 +999,7 @@
                   scrollAreaDragover = true;
                 }
               }
+              testScrollArea(ev)
             }
           "
         @dragenter.self="
@@ -1536,11 +1540,11 @@
                     <div v-if="progress.status != ''">
                       <q-item
                         class="full-width text-white"
-                        :class="progress.color"
+                        :class="progress.statusColor"
                         style="height: 10px"
                       >
                         <q-item-section avatar>
-                          <q-icon :name="progress.icon" size="sm" />
+                          <q-icon :name="progress.typeIcon" size="sm" />
                           <div
                             class="q-ml-md text-body1 ellipsis"
                             style="width: 100px"
@@ -1548,7 +1552,7 @@
                             {{ progress.name }}
 
                             <q-tooltip
-                              class="text-body1"
+                              class="text-body1 bordered"
                               :class="
                                 darkmode
                                   ? 'bg-dark text-white'
@@ -1565,7 +1569,7 @@
                             size="25px"
                             :value="
                               progress.status == 'ok'
-                                ? progress.transferred_percent_num
+                                ? progress.transferredPercent
                                 : 1
                             "
                             :color="
@@ -1587,19 +1591,23 @@
                                 class="text-body2"
                                 text-color="white"
                                 :label="
-                                  progress.error
+                                  progress.message
                                     ? 'Error'
-                                    : progress.transferred_percent_label
+                                    : transferedPercentLabel(
+                                        progress.transferredPercent
+                                      )
                                 "
                               />
                             </div>
                             <q-tooltip
-                              :class="progress.error ? 'bg-red-8' : 'bg-blue-8'"
+                              :class="
+                                progress.message ? 'bg-red-8' : 'bg-blue-8'
+                              "
                             >
                               <q-badge
                                 class="text-body1 row justify-evenly bg-blue-8"
                                 style="width: 200px"
-                                v-if="!progress.error"
+                                v-if="!progress.message"
                               >
                                 <div>
                                   {{ progress.transferred }}
@@ -1611,10 +1619,10 @@
                               <q-badge
                                 class="text-body1 row justify-evenly bg-red-8"
                                 style="width: 200px"
-                                v-if="progress.error"
+                                v-if="progress.message"
                               >
                                 <div>
-                                  {{ progress.error }}
+                                  {{ progress.message }}
                                 </div>
                               </q-badge>
                             </q-tooltip>
@@ -1674,7 +1682,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive, computed } from 'vue';
+import { defineComponent, ref, reactive } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { useQuasar, scroll, QInput } from 'quasar';
 import { api } from 'boot/axios';
@@ -1958,6 +1966,14 @@ export default defineComponent({
   },
 
   methods: {
+    testScrollArea(ev: any) {
+      var y = ev.clientY;
+      console.log(y);
+      console.log(
+        (this.$refs.mainScrollArea as any).$el.getBoundingClientRect()
+      );
+    },
+
     log(something: any) {
       console.log(something);
     },
@@ -2156,7 +2172,7 @@ export default defineComponent({
     // cancel the upload of an file
     cancelRequest(progress: UploadProgressEntryType) {
       progress.abort.cancel();
-      progress.transferred_percent_num = 1;
+      progress.transferredPercent = 1;
       progress.transferred = 'ERROR';
       progress.status = 'ok';
     },
@@ -2187,6 +2203,14 @@ export default defineComponent({
     // get the real FileObject of an file
     async getFile(fileEntry: FileSystemFileEntry) {
       return new Promise((resolve, reject) => fileEntry.file(resolve, reject));
+    },
+
+    transferedPercentLabel(num: number) {
+      if (num > 0.99) {
+        return '100%';
+      } else {
+        return Math.round(num * 100) + '%';
+      }
     },
 
     // run (recursively) trough a folder, mapping files and directories with IDs
@@ -2258,26 +2282,20 @@ export default defineComponent({
       this.progressPanel = true;
       this.progressSticky = true;
       var copyOfUploadMap = uploadMap;
-      for (var item of copyOfUploadMap) {
+      copyOfUploadMap.forEach(async (item) => {
         if (item.type == 'folder') {
           let source = this.$axios.CancelToken.source();
 
           var folderProgress: UploadProgressEntryType = reactive({
             name: item.name,
-            icon: 'folder',
-            color: 'bg-blue',
-            status: '',
-            error: '',
+            typeIcon: 'folder',
+            status: 'loading',
+            statusColor: 'bg-blue',
+            message: '',
             abort: source,
             size: '0B',
             transferred: '0B',
-            transferred_percent_num: 0,
-            transferred_percent_label: computed(
-              () =>
-                (folderProgress.transferred_percent_num < 0.99
-                  ? Math.round(folderProgress.transferred_percent_num * 100)
-                  : 100) + '%'
-            ),
+            transferredPercent: 0,
           });
 
           this.progressPanelProgressMap.push(folderProgress);
@@ -2341,7 +2359,6 @@ export default defineComponent({
             }
           }
           folderProgress.size = this.fileSizeIEC(folderSizeByte);
-          folderProgress.status = 'loading';
 
           let config = {
             withCredentials: true,
@@ -2349,7 +2366,7 @@ export default defineComponent({
               folderProgress.transferred = this.fileSizeIEC(
                 progressEvent.loaded
               );
-              folderProgress.transferred_percent_num = (progressEvent.loaded /
+              folderProgress.transferredPercent = (progressEvent.loaded /
                 folderSizeByte) as number;
             },
             cancelToken: source.token,
@@ -2363,18 +2380,18 @@ export default defineComponent({
             .post('/files/upload/folder', form_data, config as any)
             .catch((error) => {
               folderProgress.status = 'error';
-              folderProgress.color = 'bg-red';
-              folderProgress.transferred_percent_num = 0.0;
+              folderProgress.statusColor = 'bg-red';
+              folderProgress.transferredPercent = 0.0;
               if (error.response) {
-                folderProgress.error = error.response.data.error;
+                folderProgress.message = error.response.data.error;
               } else {
-                folderProgress.error = error.message;
+                folderProgress.message = error.message;
               }
             });
           if (response !== undefined) {
             folderProgress.status = 'ok';
-            folderProgress.transferred_percent_num = 1.0;
-            folderProgress.color = 'bg-green';
+            folderProgress.transferredPercent = 1.0;
+            folderProgress.statusColor = 'bg-green';
             this.refreshFolder();
           }
         } else if (item.type == 'file' && item.content instanceof File) {
@@ -2391,20 +2408,14 @@ export default defineComponent({
 
           var fileProgress: UploadProgressEntryType = reactive({
             name: item.name,
-            icon: 'file_present',
-            color: 'bg-blue',
+            typeIcon: 'file_present',
             status: 'loading',
-            error: '',
+            statusColor: 'bg-blue',
+            message: '',
             abort: source,
             size: this.fileSizeIEC(itemSize),
             transferred: '0B',
-            transferred_percent_num: 0,
-            transferred_percent_label: computed(
-              () =>
-                (fileProgress.transferred_percent_num < 0.99
-                  ? Math.round(fileProgress.transferred_percent_num * 100)
-                  : 100) + '%'
-            ),
+            transferredPercent: 0,
           });
           this.progressPanelProgressMap.push(fileProgress);
           // upload file
@@ -2412,8 +2423,7 @@ export default defineComponent({
             withCredentials: true,
             onUploadProgress: (progressEvent: ProgressEvent) => {
               fileProgress.transferred = this.fileSizeIEC(progressEvent.loaded);
-              fileProgress.transferred_percent_num =
-                progressEvent.loaded / itemSize;
+              fileProgress.transferredPercent = progressEvent.loaded / itemSize;
             },
             cancelToken: source.token,
             headers: {
@@ -2425,22 +2435,22 @@ export default defineComponent({
             .post('/files/upload/file', form_data, config as any)
             .catch((error) => {
               fileProgress.status = 'error';
-              fileProgress.color = 'bg-red';
-              fileProgress.transferred_percent_num = 0.0;
+              fileProgress.statusColor = 'bg-red';
+              fileProgress.transferredPercent = 0.0;
               if (error.response) {
-                fileProgress.error = error;
+                fileProgress.message = error;
               } else {
-                fileProgress.error = error.message;
+                fileProgress.message = error.message;
               }
             });
           if (response !== undefined) {
             fileProgress.status = 'ok';
-            fileProgress.transferred_percent_num = 1.0;
-            fileProgress.color = 'bg-green';
+            fileProgress.statusColor = 'bg-green';
+            fileProgress.transferredPercent = 1.0;
             this.refreshFolder();
           }
         }
-      }
+      });
     },
 
     // find a valid name for a file being uploaded in the current folder and uploadMap context
@@ -2769,7 +2779,7 @@ export default defineComponent({
     // allAvailableFolders, but instead appends to the existing object
     createFolderMoveDialog(propNode: any) {
       if (propNode.temporary_label.length < 1) {
-        this.notify('negative', 'Please type something.');
+        this.notify('negative', 'Name must be at least 1 character long.');
         return;
       }
       if (/\/|\x00/.test(propNode.temporary_label)) {
@@ -2825,7 +2835,7 @@ export default defineComponent({
     // create folder
     createFolder() {
       if (this.newFolder.name.length < 1) {
-        this.notify('negative', 'Please type something.');
+        this.notify('negative', 'Name must be at least 1 character long.');
         return;
       }
       if (/\/|\x00/.test(this.newFolder.name)) {
@@ -2872,7 +2882,7 @@ export default defineComponent({
 
     createFile() {
       if (this.newFile.name.length < 1) {
-        this.notify('negative', 'Please type something.');
+        this.notify('negative', 'Name must be at least 1 character long.');
         return;
       }
       if (/\/|\x00/.test(this.newFile.name)) {
@@ -3018,7 +3028,7 @@ export default defineComponent({
       var flat = flatten(this.allAvailableFolders);
       this.moveItemsSelectedPath = flat.find(
         (o) => o.id == this.moveItemsSelectedId
-      ).path;
+      ).name;
     },
 
     // moving all selected items to a new folder

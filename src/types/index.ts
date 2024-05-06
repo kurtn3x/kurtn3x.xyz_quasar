@@ -41,15 +41,14 @@ export interface FileItemExtendedType {
 
 export interface UploadProgressEntryType {
   name: string;
-  icon: string;
-  color: string;
+  typeIcon: string;
   status: string;
-  error: string;
+  statusColor: string;
+  message: string;
   abort: CancelTokenSource;
   size: string;
   transferred: string;
-  transferred_percent_num: number;
-  transferred_percent_label: string;
+  transferredPercent: number;
 }
 export interface TraverseFolderMapType {
   type: string;
