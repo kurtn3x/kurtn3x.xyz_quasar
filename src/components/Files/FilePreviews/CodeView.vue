@@ -93,11 +93,10 @@
         :thumb-style="thumbStyle"
         :bar-style="barStyle"
         class="col column"
-        ref="scrollArea"
       >
         <codemirror
           v-model="text"
-          placeholder="Code goes here..."
+          placeholder="Write something..."
           :autofocus="true"
           :indent-with-tab="true"
           :tab-size="tabsize"
@@ -184,7 +183,20 @@ const langOptions = [
 var lang = ref('');
 var tabsize = ref(4);
 var text = ref('');
-var showInfo = ref(true);
+
+// set the initial config for python, javascript, markdown or json
+const initialMime = props.item.mime;
+if (initialMime == 'text/x-python') {
+  lang.value = 'python';
+} else if (
+  initialMime in ['application/x-javascript', 'application/javascript']
+) {
+  lang.value = 'javascript';
+} else if (initialMime == 'text/markdown') {
+  lang.value = 'markdown';
+} else if (initialMime == 'application/json') {
+  lang.value = 'json';
+}
 
 // styling
 var thumbStyle = {

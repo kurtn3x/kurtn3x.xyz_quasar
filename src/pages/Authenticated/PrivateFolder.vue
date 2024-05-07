@@ -2,10 +2,10 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="initialFetch && initialFetchSuccessful">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="initialFetch && !initialFetchSuccessful">
     <viewer-wrapper
       :propItem="mediaItem"
       :active="mediaPreview"
@@ -470,7 +470,8 @@
                                     file.temp as string
                                   ) == false &&
                                   checkNameExistUploadContext(
-                                    file.temp as string
+                                    file.temp as string,
+                                    file.name
                                   ) == false
                                 ) {
                                   file.name = file.temp as string;
@@ -976,6 +977,15 @@
 
         <q-separator size="2px" color="primary" />
       </div>
+      <div class="row justify-center">
+        <q-btn
+          icon="arrow_upward"
+          size="lg"
+          color="primary"
+          round
+          class="absolute"
+        />
+      </div>
       <q-scroll-area
         class="col"
         ref="mainScrollArea"
@@ -999,7 +1009,6 @@
                   scrollAreaDragover = true;
                 }
               }
-              testScrollArea(ev)
             }
           "
         @dragenter.self="
@@ -1098,6 +1107,7 @@
                     (item as FolderEntryType).drag_over ? 'bg-indigo-11' : '',
                     item.selected ? 'bg-cyan-14 text-white' : '',
                   ]"
+                @drag=" (ev: InputEvent) => {testScrollArea(ev)}"
                 @v-drag-enter="
                     (ev: string[]) => {
                       if (ev[1] != item.id) {
@@ -1569,8 +1579,8 @@
                             size="25px"
                             :value="
                               progress.status == 'ok'
-                                ? progress.transferredPercent
-                                : 1
+                                ? 1
+                                : progress.transferredPercent
                             "
                             :color="
                               progress.status == 'error'
@@ -1967,11 +1977,7 @@ export default defineComponent({
 
   methods: {
     testScrollArea(ev: any) {
-      var y = ev.clientY;
-      console.log(y);
-      console.log(
-        (this.$refs.mainScrollArea as any).$el.getBoundingClientRect()
-      );
+      console.log('test');
     },
 
     log(something: any) {
@@ -2327,6 +2333,7 @@ export default defineComponent({
           );
 
           var folderSizeByte = 0;
+          var folderEntries = 0;
 
           // append the formData
           let form_data = new FormData();
@@ -2357,6 +2364,31 @@ export default defineComponent({
               );
               folderSizeByte += file.size;
             }
+            folderEntries += 1;
+          }
+          // don't upload folders larger than 500MiB
+          if (folderSizeByte > 524288000) {
+            folderProgress.status = 'error';
+            folderProgress.statusColor = 'bg-red';
+            folderProgress.transferredPercent = 0.0;
+            folderProgress.message = 'Folder too large (>500MiB).';
+            this.notify(
+              'negative',
+              'Folder exceeds the maximum upload limit of 500MiB.'
+            );
+            return;
+          }
+          // dont upload folders that contain too many children
+          if (folderEntries > 1000) {
+            folderProgress.status = 'error';
+            folderProgress.statusColor = 'bg-red';
+            folderProgress.transferredPercent = 0.0;
+            folderProgress.message = 'Folder contains too many items (>1000).';
+            this.notify(
+              'negative',
+              'Folder exceeds the maximum entry limit of 1000 Files.'
+            );
+            return;
           }
           folderProgress.size = this.fileSizeIEC(folderSizeByte);
 
@@ -2418,6 +2450,19 @@ export default defineComponent({
             transferredPercent: 0,
           });
           this.progressPanelProgressMap.push(fileProgress);
+
+          // don't upload files larger than 500MiB
+          if (itemSize > 524288000) {
+            fileProgress.status = 'error';
+            fileProgress.statusColor = 'bg-red';
+            fileProgress.transferredPercent = 0.0;
+            fileProgress.message = 'File too large (>500MiB).';
+            this.notify(
+              'negative',
+              'File exceeds the maximum upload limit of 500MiB.'
+            );
+            return;
+          }
           // upload file
           let config = {
             withCredentials: true,
@@ -2460,7 +2505,7 @@ export default defineComponent({
       // check existance of name, return 0 if everything is Ok
       if (
         this.checkNameExistFolderContext(name) == false &&
-        this.checkNameExistUploadContext(name) == false
+        this.checkNameExistUploadContext(name, '') == false
       ) {
         return [0, name];
       }
@@ -2665,8 +2710,14 @@ export default defineComponent({
     },
 
     // check if a name exists in current upload context (uploadFilesDialogUploadMap)
-    checkNameExistUploadContext(name: string) {
-      return this.uploadFilesDialogUploadMap.some((el) => el.name == name);
+    checkNameExistUploadContext(new_name: string, existing_name: string) {
+      if (new_name == existing_name) {
+        return false;
+      } else {
+        return this.uploadFilesDialogUploadMap.some(
+          (el) => el.name == new_name
+        );
+      }
     },
 
     // copy a text to clipboard
