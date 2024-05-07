@@ -259,6 +259,19 @@
           <q-item-section> Torrents </q-item-section>
         </q-item>
         <q-separator color="layout-text" />
+        <q-item
+          clickable
+          v-ripple
+          class="text-body1 text-layout-text"
+          to="/dashboard/settings"
+          style="height: 55px"
+        >
+          <q-item-section avatar>
+            <q-icon name="settings" />
+          </q-item-section>
+          <q-item-section> Settings </q-item-section>
+        </q-item>
+        <q-separator color="layout-text" />
       </q-list>
     </q-drawer>
 
