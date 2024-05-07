@@ -2,10 +2,10 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="initialFetch && !initialFetchSuccessful">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="initialFetch && initialFetchSuccessful">
     <viewer-wrapper
       :propItem="mediaItem"
       :active="mediaPreview"
@@ -977,19 +977,20 @@
 
         <q-separator size="2px" color="primary" />
       </div>
-      <div class="row justify-center">
+      <div class="row justify-center" v-if="scrollShow.top">
         <q-btn
           icon="arrow_upward"
           size="lg"
           color="primary"
           round
           class="absolute"
+          style="z-index: 50"
+          @dragover.prevent="scrollUp"
         />
       </div>
       <q-scroll-area
         class="col"
         ref="mainScrollArea"
-        style="overflow: scroll"
         :class="scrollAreaDragover ? 'bg-cyan-14' : ''"
         @drop.prevent.stop="
             (ev: DragEvent) => {
@@ -1107,7 +1108,8 @@
                     (item as FolderEntryType).drag_over ? 'bg-indigo-11' : '',
                     item.selected ? 'bg-cyan-14 text-white' : '',
                   ]"
-                @drag=" (ev: InputEvent) => {testScrollArea(ev)}"
+                @drag="showScroll"
+                @dragend="hideScroll"
                 @v-drag-enter="
                     (ev: string[]) => {
                       if (ev[1] != item.id) {
@@ -1282,6 +1284,8 @@
                 v-draggable="['file', item.id]"
                 @click="openInNewTab(item)"
                 :class="item.selected ? 'bg-cyan-14 text-white' : ''"
+                @drag="showScroll"
+                @dragend="hideScroll"
               >
                 <q-popup-proxy
                   context-menu
@@ -1388,7 +1392,6 @@
                 </q-item-section>
               </q-item>
             </div>
-
             <q-separator
               @drop.stop.prevent=""
               @dragover.stop.prevent=""
@@ -1397,6 +1400,15 @@
           </div>
         </template>
       </q-scroll-area>
+      <div class="absolute-bottom row justify-center" v-if="scrollShow.bottom">
+        <q-btn
+          icon="arrow_downward"
+          size="lg"
+          color="primary"
+          round
+          @dragover.prevent="scrollDown"
+        />
+      </div>
 
       <!-- Mobile Button for add files -->
 
@@ -1829,6 +1841,7 @@ export default defineComponent({
 
       // dragover
       scrollAreaDragover: ref(false),
+      scrollShow: ref({ top: false, bottom: false }),
 
       // map of all folders the user has, used when moving items (given into q-tree)
       allAvailableFolders: ref([]) as Ref<AllAvailableFoldersType[]>,
@@ -1976,8 +1989,38 @@ export default defineComponent({
   },
 
   methods: {
-    testScrollArea(ev: any) {
-      console.log('test');
+    // mainScrollArea
+    scrollUp() {
+      var scrollArea = this.$refs.mainScrollArea as any;
+      var currentPos = scrollArea.getScrollPosition().top;
+      scrollArea.setScrollPosition('vertical', currentPos - 45);
+    },
+
+    scrollDown() {
+      var scrollArea = this.$refs.mainScrollArea as any;
+      var currentPos = scrollArea.getScrollPosition().top;
+      scrollArea.setScrollPosition('vertical', currentPos + 45);
+    },
+
+    showScroll() {
+      var scrollArea = this.$refs.mainScrollArea as any;
+      var scrollPercent = scrollArea.getScrollPercentage().top;
+      console.log(scrollPercent);
+      if (scrollPercent == 0) {
+        this.scrollShow.top = false;
+        this.scrollShow.bottom = true;
+      } else if (scrollPercent == 1) {
+        this.scrollShow.top = true;
+        this.scrollShow.bottom = false;
+      } else {
+        this.scrollShow.top = true;
+        this.scrollShow.bottom = true;
+      }
+    },
+
+    hideScroll() {
+      this.scrollShow.top = false;
+      this.scrollShow.bottom = false;
     },
 
     log(something: any) {
