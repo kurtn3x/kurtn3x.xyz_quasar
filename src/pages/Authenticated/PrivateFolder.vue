@@ -821,13 +821,54 @@
 
           <!-- toolbar on small screens -->
           <div class="row lt-sm full-width">
-            <q-space />
+            <q-fab
+              push
+              icon="add"
+              direction="down"
+              class="q-mr-sm q-ml-md"
+              color="light-green"
+              padding="sm"
+              style="z-index: 1"
+            >
+              <q-fab-action
+                class="text-body1 bg-light-green"
+                text-color="white"
+                outline
+                icon="note_add"
+                label="New File"
+                @click="createFileDialog = true"
+                style="width: 180px"
+                padding="sm"
+              />
+
+              <q-fab-action
+                class="text-body1 bg-light-green"
+                text-color="white"
+                outline
+                icon="create_new_folder"
+                label="New Folder"
+                @click="newFolder.show = true"
+                style="width: 180px"
+                padding="sm"
+              />
+
+              <q-fab-action
+                @click="uploadFilesDialog = true"
+                icon="file_upload"
+                label="Upload Files"
+                class="text-body1 bg-light-green"
+                text-color="white"
+                style="width: 180px"
+                outline
+                padding="sm"
+              />
+            </q-fab>
             <q-input
               :color="darkmode ? 'white' : 'black'"
               v-model="filterSearch"
               input-class="text-left"
               label="Search"
-              class="text-body1 col q-ml-md"
+              class="text-body1 col q-ml-sm"
               outlined
               dense
             >
@@ -847,10 +888,11 @@
                   icon="search"
                   class="bg-primary text-white"
                   @click="filterDialog = !filterDialog"
-                  style="height: 40px; width: 65px"
+                  style="height: 40px; width: 50px"
                 />
               </template>
             </q-input>
+
             <div class="q-ml-md q-mr-sm" style="width: 80px">
               <q-fab
                 push
@@ -1400,67 +1442,21 @@
           </div>
         </template>
       </q-scroll-area>
-      <div class="absolute-bottom row justify-center" v-if="scrollShow.bottom">
-        <q-btn
-          icon="arrow_downward"
-          size="lg"
-          color="primary"
-          round
-          @dragover.prevent="scrollDown"
-        />
-      </div>
-
-      <!-- Mobile Button for add files -->
-
-      <q-page-sticky
-        class="lt-sm"
-        position="bottom"
-        :offset="[0, 15]"
-        style="z-index: 101"
-      >
-        <q-fab
-          push
-          icon="add"
-          direction="up"
-          class="q-mr-md"
-          color="light-green"
-          padding="md"
-          style="z-index: 1"
-        >
-          <q-fab-action
-            class="text-body1 bg-light-green"
-            text-color="white"
-            outline
-            icon="note_add"
-            label="New File"
-            @click="createFileDialog = true"
-            style="width: 180px"
-            padding="md"
-          />
-
-          <q-fab-action
-            class="text-body1 bg-light-green"
-            text-color="white"
-            outline
-            icon="create_new_folder"
-            label="New Folder"
-            @click="newFolder.show = true"
-            style="width: 180px"
-            padding="md"
-          />
-
-          <q-fab-action
-            @click="uploadFilesDialog = true"
-            icon="file_upload"
-            label="Upload Files"
-            class="text-body1 bg-light-green"
-            text-color="white"
-            style="width: 180px"
-            outline
-            padding="md"
-          />
-        </q-fab>
-      </q-page-sticky>
+      <q-btn
+        v-if="scrollShow.bottom"
+        icon="arrow_downward"
+        size="lg"
+        class="absolute-bottom"
+        color="primary"
+        round
+        @dragover.prevent="scrollDown"
+        style="
+          z-index: 10000000;
+          position: absolute;
+          left: 50%;
+          margin-left: -30px;
+        "
+      />
 
       <!-- Bottom Right Upload Progress -->
 
@@ -2005,13 +2001,16 @@ export default defineComponent({
     showScroll() {
       var scrollArea = this.$refs.mainScrollArea as any;
       var scrollPercent = scrollArea.getScrollPercentage().top;
-      console.log(scrollPercent);
-      if (scrollPercent == 0) {
+      var scrollState = scrollArea.getScroll();
+      if (scrollState.verticalSize == scrollState.verticalContainerSize) {
         this.scrollShow.top = false;
-        this.scrollShow.bottom = true;
+        this.scrollShow.bottom = false;
       } else if (scrollPercent == 1) {
         this.scrollShow.top = true;
         this.scrollShow.bottom = false;
+      } else if (scrollPercent == 0) {
+        this.scrollShow.top = false;
+        this.scrollShow.bottom = true;
       } else {
         this.scrollShow.top = true;
         this.scrollShow.bottom = true;
