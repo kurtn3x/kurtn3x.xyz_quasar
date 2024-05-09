@@ -1026,7 +1026,7 @@
           color="primary"
           round
           class="absolute"
-          style="z-index: 50"
+          style="z-index: 50; width: 60px; height: 60px"
           @dragover.prevent="scrollUp"
         />
       </div>
@@ -1442,6 +1442,7 @@
           </div>
         </template>
       </q-scroll-area>
+
       <q-btn
         v-if="scrollShow.bottom"
         icon="arrow_downward"
@@ -1455,6 +1456,8 @@
           position: absolute;
           left: 50%;
           margin-left: -30px;
+          width: 60px;
+          height: 60px;
         "
       />
 
@@ -1989,13 +1992,13 @@ export default defineComponent({
     scrollUp() {
       var scrollArea = this.$refs.mainScrollArea as any;
       var currentPos = scrollArea.getScrollPosition().top;
-      scrollArea.setScrollPosition('vertical', currentPos - 45);
+      scrollArea.setScrollPosition('vertical', currentPos - 25);
     },
 
     scrollDown() {
       var scrollArea = this.$refs.mainScrollArea as any;
       var currentPos = scrollArea.getScrollPosition().top;
-      scrollArea.setScrollPosition('vertical', currentPos + 45);
+      scrollArea.setScrollPosition('vertical', currentPos + 25);
     },
 
     showScroll() {
