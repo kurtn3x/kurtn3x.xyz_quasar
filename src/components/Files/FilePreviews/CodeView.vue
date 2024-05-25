@@ -10,7 +10,10 @@
   </div>
 
   <div v-if="!loading && !error" class="col column">
-    <div class="bg-light-blue-8 row text-white full-width" style="height: 40px">
+    <div
+      class="bg-layout-bg row text-layout-text full-width"
+      style="height: 40px"
+    >
       <q-btn
         icon="save"
         label="Save"
@@ -20,9 +23,13 @@
         @click="save"
         v-if="localStore.isAuthenticated"
       />
-      <q-separator vertical color="white" v-if="localStore.isAuthenticated" />
+      <q-separator
+        vertical
+        color="layout-text"
+        v-if="localStore.isAuthenticated"
+      />
       <q-space />
-      <q-separator vertical color="white" />
+      <q-separator vertical color="layout-text" />
       <q-btn icon="info" flat stretch>
         <q-menu anchor="bottom middle" self="top middle">
           <div class="bg-light-blue-6 text-body1 text-center">
@@ -36,7 +43,7 @@
           </div>
         </q-menu>
       </q-btn>
-      <q-separator vertical color="white" />
+      <q-separator vertical color="layout-text" />
       <q-btn icon="settings" flat stretch>
         <q-menu class="no-shadow" anchor="bottom middle" self="top middle">
           <q-card bordered>
@@ -80,7 +87,7 @@
           </q-card>
         </q-menu>
       </q-btn>
-      <q-separator vertical color="white" />
+      <q-separator vertical color="layout-text" />
       <q-btn
         :icon="darkmode ? 'dark_mode' : 'light_mode'"
         flat
@@ -90,12 +97,13 @@
     <q-card bordered class="col column">
       <q-scroll-area
         :class="darkmode ? 'bg-one-dark text-white' : 'bg-white text-dark'"
+        :style="'height:' + (props.height - 45) + 'px'"
         :thumb-style="thumbStyle"
         :bar-style="barStyle"
-        class="col column"
       >
         <codemirror
           v-model="text"
+          class=""
           placeholder="Write something..."
           :autofocus="true"
           :indent-with-tab="true"
@@ -131,6 +139,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  height: {
+    type: Number,
+    default: 250,
+  },
 });
 
 watch(
@@ -149,6 +161,7 @@ const axiosConfig = {
 };
 var loading = ref(true);
 var error = ref(false);
+var height = ref(props.size);
 
 // lang options
 const langmap = new Map();

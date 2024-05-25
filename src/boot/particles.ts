@@ -1,8 +1,13 @@
 import { boot } from 'quasar/wrappers';
-import Particles from 'particles.vue3';
+import Particles from '@tsparticles/vue3';
+import { loadSlim } from '@tsparticles/slim';
 
-// "async" is optional;
-// more info on params: https://v2.quasar.dev/quasar-cli/boot-files
 export default boot(async ({ app }) => {
-  app.use(Particles);
+  app.use(Particles, {
+    init: async (engine) => {
+      await loadSlim(engine);
+    },
+  });
 });
+
+export { Particles };
