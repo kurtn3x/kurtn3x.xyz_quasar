@@ -10,7 +10,10 @@
   </div>
 
   <div v-if="!loading && !error" class="col column">
-    <div class="bg-light-blue-8 row text-white full-width" style="height: 40px">
+    <div
+      class="bg-layout-bg text-layout-text row full-width"
+      style="height: 40px"
+    >
       <q-btn
         icon="save"
         label="Save"
@@ -20,9 +23,13 @@
         @click="save"
         v-if="localStore.isAuthenticated"
       />
-      <q-separator vertical color="white" v-if="localStore.isAuthenticated" />
+      <q-separator
+        vertical
+        color="layout-text"
+        v-if="localStore.isAuthenticated"
+      />
       <q-space />
-      <q-separator vertical color="white" />
+      <q-separator vertical color="layout-text" />
       <q-btn icon="settings" flat stretch>
         <q-menu class="no-shadow" anchor="bottom middle" self="top middle">
           <q-card bordered>
@@ -60,26 +67,23 @@
           </q-card>
         </q-menu>
       </q-btn>
-      <q-separator vertical color="white" />
+      <q-separator vertical color="layout-text" />
       <q-btn
         :icon="darkmode ? 'dark_mode' : 'light_mode'"
         flat
         @click="darkmode = !darkmode"
       />
     </div>
-    <q-card
-      class="col column"
-      bordered
-      square
-      :class="darkmode ? 'bg-dark text-white' : 'bg-white text-dark'"
-    >
+    <q-card class="col column q-ma-xs" bordered square>
       <textarea
         :style="'font-size:' + textSize + 'px;'"
         style="resize: none"
         v-model="text"
         class="col full-width rounded-borders textarea"
         :class="[
-          darkmode ? 'bg-dark text-white' : 'bg-white text-dark',
+          darkmode
+            ? 'bg-dark text-white textarea-dark'
+            : 'bg-white text-dark textarea-light',
           mono ? 'mono' : '',
         ]"
         @keydown.ctrl.s.prevent.stop="save"
@@ -196,19 +200,30 @@ function save() {
 }
 </script>
 
-<style>
-.textarea {
+<style lang="scss">
+.textarea-dark {
   padding: 10px;
   max-width: 100%;
   line-height: 1.5;
   border-radius: 5px;
-  border: 2px solid #31beff;
-  box-shadow: 1px 1px 1px #31beff;
+  border: 2px solid #c5c5c5;
 }
 
-.textarea:focus {
-  border: 2px solid #036ff4;
-  box-shadow: 1px 1px 1px #036ff4;
+.textarea-dark:focus {
+  border: 3px solid #ffffff;
+  outline: none;
+}
+
+.textarea-light {
+  padding: 10px;
+  max-width: 100%;
+  line-height: 1.5;
+  border-radius: 5px;
+  border: 2px solid #575757;
+}
+
+.textarea-light:focus {
+  border: 3px solid #1d1d1d;
   outline: none;
 }
 

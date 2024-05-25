@@ -1,7 +1,15 @@
 <template>
-  <Particles
-    id="tsparticles_index"
-    :options="{
+  <vue-particles id="tsparticles" :options="options" />
+</template>
+
+<script lang="ts">
+import { defineComponent } from 'vue';
+declare module '@tsparticles/vue3';
+
+export default defineComponent({
+  name: 'ParticlesIndex',
+  setup() {
+    const options = {
       fpsLimit: 60,
       particles: {
         color: { value: '#f8f0e3' },
@@ -11,12 +19,12 @@
           direction: 'none',
           enable: true,
           out_mode: 'out',
-          random: true,
-          speed: 0.3,
-          straight: false,
+          random: false,
+          speed: 0.4,
+          straight: true,
         },
         number: {
-          density: { enable: true, value_area: 1000 },
+          density: { enable: true, value_area: 2000 },
           value: 300,
         },
         opacity: {
@@ -31,30 +39,16 @@
           type: 'circle',
         },
         size: {
-          anim: { enable: false, size_min: 0.6, speed: 4, sync: false },
+          anim: {
+            enable: false,
+          },
           random: false,
           value: 1,
         },
       },
       retina_detect: true,
-    }"
-    :particlesInit="particlesInit2"
-  />
-</template>
-
-<script lang="ts">
-import { defineComponent } from 'vue';
-import { loadFull } from 'tsparticles';
-import { Engine } from 'tsparticles-engine';
-
-export default defineComponent({
-  name: 'ParticlesIndex',
-  data() {
-    return {
-      particlesInit2: async (engine: Engine) => {
-        await loadFull(engine);
-      },
     };
+    return { options };
   },
 });
 </script>

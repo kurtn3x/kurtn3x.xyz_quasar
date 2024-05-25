@@ -15,9 +15,13 @@
   >
     Error loading pdf
   </div>
-  <div v-if="!loading && !error" class="col column">
+  <div v-show="!loading && !error" class="col column">
     <q-resize-observer @resize="onResize" />
-    <q-scroll-area :thumb-style="thumbStyle" :bar-style="barStyle" class="col">
+    <q-scroll-area
+      :thumb-style="thumbStyle"
+      :bar-style="barStyle"
+      :style="'height:' + (props.height - 60) + 'px'"
+    >
       <div
         :id="id"
         class="pdfviewer column justify-center items-center"
@@ -31,36 +35,35 @@
       </div>
     </q-scroll-area>
     <div
-      class="bg-light-blue-8 row items-center text-white"
+      class="bg-layout-bg row items-center text-layout-text"
       style="height: 50px"
     >
       <q-btn
-        icon="view_stream"
+        :icon="darkmode ? 'light_mode' : 'dark_mode'"
         flat
         stretch
-        @click="pdfSiteView = false"
-        :disable="!pdfSiteView"
+        @click="toogleDarkmode"
       />
       <q-btn
-        icon="view_carousel"
+        :icon="pdfSiteView ? 'view_stream' : 'view_carousel'"
         flat
         stretch
-        @click="pdfSiteView = true"
-        :disable="pdfSiteView"
+        @click="pdfSiteView = !pdfSiteView"
       />
 
       <q-btn icon="zoom_in" flat stretch>
         <q-menu anchor="top middle" self="bottom middle">
           <div
             class="row items-center justify-center"
-            style="width: 240px; height: 40px"
+            style="width: 240px; height: 60px"
           >
             <q-btn
               icon="zoom_out"
               flat
-              stretch
+              round
               @click="pdfZoom -= 0.25"
               :disable="pdfZoom <= 0.25"
+              class="q-mr-sm"
             />
             <q-slider
               v-model="pdfZoom"
@@ -72,9 +75,10 @@
               style="max-width: 125px"
             />
             <q-btn
+              round
               icon="zoom_in"
               flat
-              stretch
+              class="q-ml-sm"
               @click="pdfZoom += 0.25"
               :disable="pdfZoom >= 2.5"
             />
@@ -108,21 +112,33 @@
 </template>
 
 <script setup>
-import { defineProps, ref, computed, onMounted, watch, onUnmounted } from 'vue';
+import {
+  defineProps,
+  ref,
+  computed,
+  onMounted,
+  watch,
+  onUnmounted,
+  onBeforeUnmount,
+} from 'vue';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
-// import { pdfsample } from './samples';
 import { isProxy, toRaw } from 'vue';
-
+import { useLocalStore } from 'stores/localStore';
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
-import PdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry';
-GlobalWorkerOptions.workerSrc = PdfjsWorker;
+// no idea what this is, but it works. Vite is an asshole
+import pdfJSWorkerURL from 'pdfjs-dist/build/pdf.worker?url';
+GlobalWorkerOptions.workerSrc = pdfJSWorkerURL;
 
 const props = defineProps({
   item: Object,
   password: {
     type: String,
     default: '',
+  },
+  height: {
+    type: Number,
+    default: 250,
   },
 });
 
@@ -136,6 +152,8 @@ const axiosConfig = {
 var loading = ref(true);
 var error = ref(false);
 var longload = ref(false);
+const localStore = useLocalStore();
+var darkmode = ref(localStore.darkmodeState);
 
 // options / values
 var pdfPageCount = ref(0);
@@ -152,6 +170,8 @@ var width = computed(() => {
   return defWidth.value * pdfZoom.value;
 });
 var base64 = ref('');
+// TESTING
+// import { pdfsample } from './samples';
 // base64.value = 'data:application/pdf;base64,' + pdfsample;
 
 watch(pdfSiteView, async (n, o) => {
@@ -177,11 +197,15 @@ watch(
     console.log('loading of pdf done');
     await render(doc);
     console.log('rendering of pdf done');
+    if (darkmode.value == true) {
+      pdfviewer.value.style.filter =
+        'invert(70%) contrast(200%) brightness(100%) hue-rotate(180deg)';
+    }
   }
 );
 
 async function load(src) {
-  const loadingTask = getDocument(src);
+  const loadingTask = pdfjsLib.getDocument(src);
   // // password stuff
   // loadingTask.onPassword = (callback, reason) => {
   //   const retry = reason === pdf.PasswordResponses.INCORRECT_PASSWORD;
@@ -200,6 +224,7 @@ async function renderPage(page, canvas, width, rotation) {
 
   canvas.width = viewport.width;
   canvas.height = viewport.height;
+  canvas.background = 'rgba(0,0,0,0)';
 
   await page.render({
     canvasContext: canvas.getContext('2d'),
@@ -220,6 +245,7 @@ async function render(doc) {
     ? [pdfCurrentPage.value]
     : [...Array(pdfPageCount.value + 1).keys()].slice(1);
   const pageElements = document.getElementsByClassName('pdfviewer_page');
+
   await Promise.all(
     pageNumbersArray.value.map(async (pageNum, i) => {
       const page = await toRaw(doc).getPage(pageNum);
@@ -238,22 +264,23 @@ async function render(doc) {
   );
 }
 
-async function emptyElement() {
-  while (pdfviewer.value.firstChild) {
-    await pdfviewer.value.removeChild(pdfviewer.value.firstChild);
+async function emptyElement(pdfViewerValue) {
+  while (pdfViewerValue.firstChild) {
+    await pdfViewerValue.removeChild(pdfViewerValue.firstChild);
   }
 }
 
 async function releaseChildCanvases() {
-  await pdfviewer.value.querySelectorAll('canvas').forEach((canvas) => {
+  var pdfViewerValue = pdfviewer.value;
+  await emptyElement(pdfViewerValue);
+  await pdfViewerValue.querySelectorAll('canvas').forEach((canvas) => {
     canvas.width = 1;
     canvas.height = 1;
     canvas.getContext('2d')?.clearRect(0, 0, 1, 1);
   });
-  await emptyElement();
 }
 
-onUnmounted(async () => {
+onBeforeUnmount(async () => {
   await releaseChildCanvases();
 });
 
@@ -263,6 +290,14 @@ onMounted(async () => {
   console.log('loading of pdf done');
   await render(doc);
   console.log('rendering of pdf done');
+  if (darkmode.value == true) {
+    pdfviewer.value.style.filter =
+      'invert(70%) contrast(200%) brightness(100%) hue-rotate(180deg)';
+  }
+  loading.value = false;
+  // TESTING
+  // loading.value = false;
+  // error.value = false;
 });
 
 // styling
@@ -282,7 +317,17 @@ var barStyle = {
   opacity: 0.2,
 };
 
-// functions
+function toogleDarkmode() {
+  if (darkmode.value == false) {
+    pdfviewer.value.style.filter =
+      'invert(70%) contrast(200%) brightness(100%) hue-rotate(180deg)';
+    darkmode.value = true;
+  } else {
+    pdfviewer.value.style.filter = '';
+    darkmode.value = false;
+  }
+}
+
 async function getPdfFile() {
   await api
     .get(
@@ -294,7 +339,6 @@ async function getPdfFile() {
     .then((response) => {
       base64.value = 'data:application/pdf;base64,' + response.data.content;
       error.value = false;
-      loading.value = false;
     })
     .catch(() => {
       error.value = true;
