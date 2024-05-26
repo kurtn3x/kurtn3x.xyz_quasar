@@ -16,19 +16,19 @@
     Error loading pdf
   </div>
   <div v-show="!loading && !error" class="col column">
-    <q-resize-observer @resize="onResize" />
+    <q-resize-observer @resize="onResize" :debounce="500" />
     <q-scroll-area
       :thumb-style="thumbStyle"
       :bar-style="barStyle"
-      :style="'height:' + (props.height - 60) + 'px'"
+      class="col column"
     >
       <div
         :id="id"
-        class="pdfviewer column justify-center items-center"
+        class="pdfviewer justify-center items-center col column"
         ref="pdfviewer"
       >
         <div v-for="pageNum in pageNumbersArray" :key="pageNum">
-          <div :id="id && `${id}-${pageNum}`" class="pdfviewer_page col">
+          <div :id="id && `${id}-${pageNum}`" class="pdfviewer_page col column">
             <canvas />
           </div>
         </div>
@@ -136,10 +136,6 @@ const props = defineProps({
     type: String,
     default: '',
   },
-  height: {
-    type: Number,
-    default: 250,
-  },
 });
 
 const q = useQuasar();
@@ -171,8 +167,8 @@ var width = computed(() => {
 });
 var base64 = ref('');
 // TESTING
-// import { pdfsample } from './samples';
-// base64.value = 'data:application/pdf;base64,' + pdfsample;
+import { pdfsample } from './samples';
+base64.value = 'data:application/pdf;base64,' + pdfsample;
 
 watch(pdfSiteView, async (n, o) => {
   if (n == true) {
@@ -296,8 +292,8 @@ onMounted(async () => {
   }
   loading.value = false;
   // TESTING
-  // loading.value = false;
-  // error.value = false;
+  loading.value = false;
+  error.value = false;
 });
 
 // styling
@@ -348,5 +344,12 @@ async function getPdfFile() {
 
 function onResize(size) {
   defWidth.value = size.width;
+  var els = document.getElementsByClassName('q-scrollarea__container');
+  // add col and column to the chield elements of the scrollbar
+  // this has to be done because with a lot of resizing and moving going on in the windows
+  // the child-scrollbar-elements often have trouble gaining their full size
+  for (var el of els) {
+    el.classList.add('column', 'col');
+  }
 }
 </script>

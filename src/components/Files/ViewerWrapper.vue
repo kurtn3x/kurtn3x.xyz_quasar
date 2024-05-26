@@ -119,7 +119,6 @@
       </div>
       <q-separator :color="darkmode ? 'white' : 'dark'" />
 
-      <q-resize-observer @resize="onResize" />
       <q-card-section
         class="col column q-pa-xs"
         style="min-height: 250px; min-width: 250px"
@@ -131,11 +130,7 @@
           <ImageView :item="item" :password="$props.password" />
         </div>
         <div v-else-if="mimePreview.code" class="col column">
-          <CodeView
-            :item="item"
-            :height="childHeight"
-            :password="$props.password"
-          />
+          <CodeView :item="item" :password="$props.password" />
         </div>
         <div v-else-if="mimePreview.text" class="col column">
           <TextView :item="item" :password="$props.password" />
@@ -144,16 +139,11 @@
           <WysiwygView :item="item" :password="$props.password" />
         </div>
         <div v-else-if="mimePreview.pdf" class="col column">
-          <PdfView
-            :item="item"
-            :height="childHeight"
-            :password="$props.password"
-          />
+          <PdfView :item="item" :password="$props.password" />
         </div>
         <div v-else>
           <div class="text-h6 text-center q-mt-lg">No Preview available.</div>
         </div>
-        <q-resize-observer @resize="onResizeChild" :debounce="250" />
       </q-card-section>
       <q-btn
         class="absolute-bottom-right row items-end"
@@ -225,7 +215,6 @@ export default defineComponent({
     if (mobile == undefined) {
       mobile = false;
     }
-    var childHeight = ref(250);
     return {
       mimeMap,
       mobile,
@@ -234,7 +223,6 @@ export default defineComponent({
       localStore,
       q,
       showDialog,
-      childHeight,
       itemInformationDialog: ref(false),
       maximizedToggle: ref(true),
       dialogPos: ref({
@@ -272,8 +260,6 @@ export default defineComponent({
         code: false,
         wysiwyg: false,
       }),
-
-      breakinfinite: false,
     };
   },
 
@@ -309,6 +295,9 @@ export default defineComponent({
       this.item = newVal;
       this.setMime(newVal.mime, true);
     },
+    childHeight(newVal, oldVal) {
+      console.log(newVal);
+    },
   },
 
   methods: {
@@ -319,14 +308,6 @@ export default defineComponent({
         this.initialHeightMinimized = false;
         var el = document.getElementById('viewerWrapper') as any;
         el.style.height = '401px';
-      }
-    },
-    onResizeChild(s: any) {
-      if (this.breakinfinite == true) {
-        this.breakinfinite = false;
-      } else {
-        this.childHeight = s.height;
-        this.breakinfinite = true;
       }
     },
 

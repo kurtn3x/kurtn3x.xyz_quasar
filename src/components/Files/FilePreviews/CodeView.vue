@@ -95,15 +95,17 @@
       />
     </div>
     <q-card bordered class="col column">
+      <q-resize-observer @resize="onResize" :debounce="500" />
+
       <q-scroll-area
         :class="darkmode ? 'bg-one-dark text-white' : 'bg-white text-dark'"
-        :style="'height:' + (props.height - 45) + 'px'"
         :thumb-style="thumbStyle"
         :bar-style="barStyle"
+        class="col column"
       >
         <codemirror
           v-model="text"
-          class=""
+          class="col column"
           placeholder="Write something..."
           :autofocus="true"
           :indent-with-tab="true"
@@ -138,10 +140,6 @@ const props = defineProps({
   password: {
     type: String,
     default: '',
-  },
-  height: {
-    type: Number,
-    default: 250,
   },
 });
 
@@ -322,6 +320,16 @@ function save() {
         multiLine: true,
       });
     });
+}
+
+function onResize(_blank) {
+  var els = document.getElementsByClassName('q-scrollarea__container');
+  // add col and column to the chield elements of the scrollbar
+  // this has to be done because with a lot of resizing and moving going on in the windows
+  // the child-scrollbar-elements often have trouble gaining their full size
+  for (var el of els) {
+    el.classList.add('column', 'col');
+  }
 }
 </script>
 
