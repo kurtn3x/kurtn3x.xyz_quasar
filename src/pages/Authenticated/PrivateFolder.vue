@@ -154,6 +154,7 @@
               class="text-primary text-body1 col"
               style="height: 45px; max-width: 300px"
             />
+
             <q-btn
               icon="expand_more"
               :label="selectedItems.length + ' Items'"
@@ -2783,7 +2784,7 @@ export default defineComponent({
         type: type,
         message: message,
         progress: true,
-        multiLine: true,
+        multiLine: false,
       });
     },
 

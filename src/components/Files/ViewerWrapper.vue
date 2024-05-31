@@ -147,7 +147,8 @@
       </q-card-section>
       <q-btn
         class="absolute-bottom-right row items-end"
-        v-if="!maximizedToggle && !mobile"
+        v-if="!maximizedToggle"
+        icon="south_east"
         size="xs"
         style="overflow: hidden; background: #a8e3ff; bottom: 0px"
         v-touch-pan.mouse="onPanResize"

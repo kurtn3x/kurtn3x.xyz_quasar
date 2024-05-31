@@ -154,7 +154,7 @@ var FOLDER = {
     },
     {
       id: 'abddc',
-      name: 'test.code2',
+      name: 'wysiwyg',
       modified: '2023-08-16, 20:48:06',
       created: '2023-08-16, 20:48:06',
       shared_allow_all_read: false,
@@ -163,7 +163,7 @@ var FOLDER = {
       size: '2.5MB',
       path: 'Home',
       type: 'file',
-      mime: 'text/x-python',
+      mime: 'text/wysiwyg',
       created_iso: '2023-08-16T20:48:06.081354Z',
       modified_iso: '2023-08-16T20:48:06.089253Z',
       size_bytes: 2538486,

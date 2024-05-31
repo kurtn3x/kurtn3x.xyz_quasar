@@ -95,8 +95,6 @@
       />
     </div>
     <q-card bordered class="col column">
-      <q-resize-observer @resize="onResize" :debounce="500" />
-
       <q-scroll-area
         :class="darkmode ? 'bg-one-dark text-white' : 'bg-white text-dark'"
         :thumb-style="thumbStyle"
@@ -123,7 +121,15 @@
 
 <script setup>
 import { api } from 'boot/axios';
-import { defineProps, reactive, shallowRef, ref, computed, watch } from 'vue';
+import {
+  defineProps,
+  reactive,
+  shallowRef,
+  ref,
+  computed,
+  watch,
+  onMounted,
+} from 'vue';
 import { useQuasar } from 'quasar';
 import { useLocalStore } from 'stores/localStore';
 import { Codemirror } from 'vue-codemirror';
@@ -263,6 +269,13 @@ const handleStateUpdate = (viewUpdate) => {
 
 getFile();
 
+onMounted(async () => {
+  var els = document.getElementsByClassName('q-scrollarea__container');
+  for (var el of els) {
+    el.classList.add('column', 'col');
+  }
+});
+
 // functions
 function getFile() {
   api
@@ -320,16 +333,6 @@ function save() {
         multiLine: true,
       });
     });
-}
-
-function onResize(_blank) {
-  var els = document.getElementsByClassName('q-scrollarea__container');
-  // add col and column to the chield elements of the scrollbar
-  // this has to be done because with a lot of resizing and moving going on in the windows
-  // the child-scrollbar-elements often have trouble gaining their full size
-  for (var el of els) {
-    el.classList.add('column', 'col');
-  }
 }
 </script>
 
