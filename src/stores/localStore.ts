@@ -46,10 +46,6 @@ export const useLocalStore = defineStore('header', {
     },
 
     loginUser(headerData: HeaderInformationType) {
-      // fix this in backend
-      if (headerData.avatar == 'https://media.kurtn3x.xyz/') {
-        headerData.avatar = 'https://media.kurtn3x.xyz/default.png';
-      }
       this.headerInfo = headerData;
       this.authenticated = true;
     },

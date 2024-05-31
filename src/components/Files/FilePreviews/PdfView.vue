@@ -167,8 +167,8 @@ var width = computed(() => {
 });
 var base64 = ref('');
 // TESTING
-import { pdfsample } from './samples';
-base64.value = 'data:application/pdf;base64,' + pdfsample;
+// import { pdfsample } from './samples';
+// base64.value = 'data:application/pdf;base64,' + pdfsample;
 
 watch(pdfSiteView, async (n, o) => {
   if (n == true) {
@@ -292,8 +292,13 @@ onMounted(async () => {
   }
   loading.value = false;
   // TESTING
-  loading.value = false;
-  error.value = false;
+  var els = document.getElementsByClassName('q-scrollarea__container');
+  // add col and column to the chield elements of the scrollbar
+  // this has to be done because with a lot of resizing and moving going on in the windows
+  // the child-scrollbar-elements often have trouble gaining their full size
+  for (var el of els) {
+    el.classList.add('column', 'col');
+  }
 });
 
 // styling
@@ -344,12 +349,5 @@ async function getPdfFile() {
 
 function onResize(size) {
   defWidth.value = size.width;
-  var els = document.getElementsByClassName('q-scrollarea__container');
-  // add col and column to the chield elements of the scrollbar
-  // this has to be done because with a lot of resizing and moving going on in the windows
-  // the child-scrollbar-elements often have trouble gaining their full size
-  for (var el of els) {
-    el.classList.add('column', 'col');
-  }
 }
 </script>
