@@ -20,7 +20,7 @@
         flat
         stretch
         class="bg-green text-white"
-        @click="save"
+        @click="updateContent"
         v-if="localStore.isAuthenticated"
       />
       <q-separator
@@ -36,10 +36,12 @@
             <a class="q-ml-sm text-white"> Info </a>
           </div>
           <div class="q-ma-sm text-body1">
-            <div>Lines: {{ state.lines }}</div>
-            <div>Cursor: {{ state.cursor }}</div>
-            <div>Characters: {{ state.length }}</div>
-            <div>Selected: {{ state.selected }}</div>
+            <div class="q-ma-sm">
+              <a class="text-weight-bold">Lines:</a> {{ state.lines }}
+            </div>
+            <div class="q-ma-sm">
+              <a class="text-weight-bold">Characters:</a> {{ state.length }}
+            </div>
           </div>
         </q-menu>
       </q-btn>
@@ -57,6 +59,7 @@
                   :options="langOptions"
                   color="light-blue-6"
                   class="q-mr-md q-mt-xs q-mb-xs"
+                  @update:model-value="updateSyntax"
                 />
               </q-item-section>
             </q-item>
@@ -95,6 +98,7 @@
       />
     </div>
     <q-card bordered class="col column">
+      <q-resize-observer @resize="onResize" :debounce="250" />
       <q-scroll-area
         :class="darkmode ? 'bg-one-dark text-white' : 'bg-white text-dark'"
         :thumb-style="thumbStyle"
@@ -111,7 +115,7 @@
           :extensions="extensions"
           @update="handleStateUpdate"
           @ready="handleReady"
-          @keydown.ctrl.s.prevent.stop="save"
+          @keydown.ctrl.s.prevent.stop="updateContent"
         >
         </codemirror>
       </q-scroll-area>
@@ -149,12 +153,15 @@ const props = defineProps({
   },
 });
 
+var item = ref(props.item);
+
 watch(
-  () => props.item.id,
+  () => item.value.id,
   () => {
-    getFile();
+    getFileContent();
   }
 );
+
 const q = useQuasar();
 const localStore = useLocalStore();
 const axiosConfig = {
@@ -165,7 +172,6 @@ const axiosConfig = {
 };
 var loading = ref(true);
 var error = ref(false);
-var height = ref(props.size);
 
 // lang options
 const langmap = new Map();
@@ -173,7 +179,6 @@ langmap.set('python', python());
 langmap.set('json', json());
 langmap.set('markdown', markdown());
 langmap.set('javascript', javascript());
-
 const langOptions = [
   {
     label: 'None',
@@ -202,16 +207,20 @@ var tabsize = ref(4);
 var text = ref('');
 
 // set the initial config for python, javascript, markdown or json
-const initialMime = props.item.mime;
-if (initialMime == 'text/x-python') {
+const initialMime = item.value.mime;
+if (['text/x-python', 'text/code-python'].indexOf(initialMime) > -1) {
   lang.value = 'python';
 } else if (
-  initialMime in ['application/x-javascript', 'application/javascript']
+  [
+    'application/x-javascript',
+    'application/javascript',
+    'text/code-javascript',
+  ].indexOf(initialMime) > -1
 ) {
   lang.value = 'javascript';
-} else if (initialMime == 'text/markdown') {
+} else if (['text/markdown', 'text/code-markdown'].indexOf(initialMime) > -1) {
   lang.value = 'markdown';
-} else if (initialMime == 'application/json') {
+} else if (['application/json', 'text/code-json'].indexOf(initialMime) > -1) {
   lang.value = 'json';
 }
 
@@ -267,7 +276,7 @@ const handleStateUpdate = (viewUpdate) => {
   state.lines = viewUpdate.state.doc.lines;
 };
 
-getFile();
+getFileContent();
 
 onMounted(async () => {
   var els = document.getElementsByClassName('q-scrollarea__container');
@@ -277,11 +286,11 @@ onMounted(async () => {
 });
 
 // functions
-function getFile() {
+function getFileContent() {
   api
     .get(
       '/files/file-content/' +
-        props.item.id +
+        item.value.id +
         (props.password != '' ? '?password=' + props.password : ''),
       axiosConfig
     )
@@ -301,9 +310,9 @@ function getFile() {
     });
 }
 
-function save() {
+function updateContent() {
   var data = {
-    item_id: props.item.id,
+    item_id: item.value.id,
     content: text.value,
   };
   api
@@ -314,14 +323,18 @@ function save() {
           type: 'positive',
           message: 'Saved.',
           progress: true,
-          multiLine: true,
         });
+        if ('size' in response.data) {
+          item.value.size = response.data.size;
+        }
+        if ('size_bytes' in response.data) {
+          item.value.size_bytes = response.data.size_bytes;
+        }
       } else {
         q.notify({
           type: 'negative',
           message: 'Something went wrong.',
           progress: true,
-          multiLine: true,
         });
       }
     })
@@ -330,9 +343,47 @@ function save() {
         type: 'negative',
         message: 'Something went wrong.',
         progress: true,
-        multiLine: true,
       });
     });
+}
+
+function updateSyntax(syntax) {
+  var data = {
+    item_id: item.value.id,
+    mime: 'text/code-' + syntax,
+  };
+  api
+    .put('/files/update/' + item.value.type, data, axiosConfig)
+    .then((response) => {
+      if (response.status == 200) {
+        q.notify({
+          type: 'positive',
+          message: 'Saved.',
+          progress: true,
+        });
+        item.value.mime = data.mime;
+      } else {
+        q.notify({
+          type: 'negative',
+          message: 'Something went wrong.',
+          progress: true,
+        });
+      }
+    })
+    .catch(() => {
+      q.notify({
+        type: 'negative',
+        message: 'Something went wrong.',
+        progress: true,
+      });
+    });
+}
+
+function onResize(size) {
+  var els = document.getElementsByClassName('q-scrollarea__container');
+  for (var el of els) {
+    el.classList.add('column', 'col');
+  }
 }
 </script>
 

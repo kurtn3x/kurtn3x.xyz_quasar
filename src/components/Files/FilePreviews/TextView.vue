@@ -20,7 +20,7 @@
         flat
         stretch
         class="bg-green text-white"
-        @click="save"
+        @click="updateContent"
         v-if="localStore.isAuthenticated"
       />
       <q-separator
@@ -86,7 +86,7 @@
             : 'bg-white text-dark textarea-light',
           mono ? 'mono' : '',
         ]"
-        @keydown.ctrl.s.prevent.stop="save"
+        @keydown.ctrl.s.prevent.stop="updateContent"
       />
     </q-card>
   </div>
@@ -107,6 +107,8 @@ const props = defineProps({
   },
 });
 
+var item = ref(props.item);
+
 const q = useQuasar();
 const localStore = useLocalStore();
 const axiosConfig = {
@@ -126,7 +128,7 @@ var text = ref('');
 const defSize = 16;
 var textScale = ref(1);
 var mono = ref(false);
-getFile();
+getFileContent();
 
 var textSize = computed(() => {
   return defSize * textScale.value;
@@ -135,17 +137,17 @@ var textSize = computed(() => {
 // functions
 
 watch(
-  () => props.item.id,
+  () => item.value.id,
   () => {
-    getFile();
+    getFileContent();
   }
 );
 
-function getFile() {
+function getFileContent() {
   api
     .get(
       '/files/file-content/' +
-        props.item.id +
+        item.value.id +
         (props.password != '' ? '?password=' + props.password : ''),
       axiosConfig
     )
@@ -165,9 +167,9 @@ function getFile() {
     });
 }
 
-function save() {
+function updateContent() {
   var data = {
-    item_id: props.item.id,
+    item_id: item.value.id,
     content: text.value,
   };
   api
@@ -178,14 +180,18 @@ function save() {
           type: 'positive',
           message: 'Saved.',
           progress: true,
-          multiLine: true,
         });
+        if ('size' in response.data) {
+          item.value.size = response.data.size;
+        }
+        if ('size_bytes' in response.data) {
+          item.value.size_bytes = response.data.size_bytes;
+        }
       } else {
         q.notify({
           type: 'negative',
           message: 'Something went wrong.',
           progress: true,
-          multiLine: true,
         });
       }
     })
@@ -194,7 +200,6 @@ function save() {
         type: 'negative',
         message: 'Something went wrong.',
         progress: true,
-        multiLine: true,
       });
     });
 }

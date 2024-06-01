@@ -25,6 +25,10 @@ const TEXTMIME = ['text/plain', 'text/text'];
 
 const CODEMIME = [
   'text/code',
+  'text/code-json',
+  'text/code-javascript',
+  'text/code-markdown',
+  'text/code-python',
   'application/x-javascript',
   'text/x-python',
   'application/javascript',

@@ -227,7 +227,6 @@ export default defineComponent({
         type: type,
         message: message,
         progress: true,
-        multiLine: true,
       });
     },
 
