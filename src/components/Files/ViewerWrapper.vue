@@ -139,7 +139,16 @@
           <WysiwygView :item="item" :password="$props.password" />
         </div>
         <div v-else-if="mimePreview.pdf" class="col column">
-          <PdfView :item="item" :password="$props.password" />
+          <PdfView
+            :item="item"
+            :password="$props.password"
+            @update="
+              (args) => {
+                item.size = args.size;
+                item.size_bytes = args.size_bytes;
+              }
+            "
+          />
         </div>
         <div v-else>
           <div class="text-h6 text-center q-mt-lg">No Preview available.</div>

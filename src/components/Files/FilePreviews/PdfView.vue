@@ -4,10 +4,6 @@
     v-if="loading"
   >
     <q-spinner color="primary" size="10em" />
-    <div class="text-center text-red text-body1 q-ma-sm" v-if="longload">
-      It seems like loading is taking long. There might be something wrong with
-      the PDF and it cannot be previewed.
-    </div>
   </div>
   <div
     class="row justify-center q-mt-lg text-red text-h6"
@@ -16,7 +12,7 @@
     Error loading pdf
   </div>
   <div v-show="!loading && !error" class="col column">
-    <q-resize-observer @resize="onResize" :debounce="500" />
+    <q-resize-observer @resize="onResize" :debounce="250" />
     <q-scroll-area
       :thumb-style="thumbStyle"
       :bar-style="barStyle"
@@ -118,16 +114,16 @@ import {
   computed,
   onMounted,
   watch,
-  onUnmounted,
   onBeforeUnmount,
 } from 'vue';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
-import { isProxy, toRaw } from 'vue';
+import { toRaw } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
 // no idea what this is, but it works. Vite is an asshole
 import pdfJSWorkerURL from 'pdfjs-dist/build/pdf.worker?url';
+
 GlobalWorkerOptions.workerSrc = pdfJSWorkerURL;
 
 const props = defineProps({
@@ -147,9 +143,9 @@ const axiosConfig = {
 };
 var loading = ref(true);
 var error = ref(false);
-var longload = ref(false);
 const localStore = useLocalStore();
 var darkmode = ref(localStore.darkmodeState);
+var item = ref(props.item);
 
 // options / values
 var pdfPageCount = ref(0);
@@ -186,7 +182,7 @@ watch([width, pdfCurrentPage], async () => {
 });
 
 watch(
-  () => props.item.id,
+  () => item.value.id,
   async () => {
     await getPdfFile();
     const doc = await load(base64.value);
@@ -201,11 +197,7 @@ watch(
 );
 
 async function load(src) {
-  const loadingTask = pdfjsLib.getDocument(src);
-  // // password stuff
-  // loadingTask.onPassword = (callback, reason) => {
-  //   const retry = reason === pdf.PasswordResponses.INCORRECT_PASSWORD;
-  // };
+  const loadingTask = getDocument(src);
   const doc = await loadingTask.promise;
   pdfDoc.value = doc;
   return doc;
@@ -292,13 +284,8 @@ onMounted(async () => {
   }
   loading.value = false;
   // TESTING
-  var els = document.getElementsByClassName('q-scrollarea__container');
-  // add col and column to the chield elements of the scrollbar
-  // this has to be done because with a lot of resizing and moving going on in the windows
-  // the child-scrollbar-elements often have trouble gaining their full size
-  for (var el of els) {
-    el.classList.add('column', 'col');
-  }
+  // loading.value = false;
+  // error.value = false;
 });
 
 // styling
@@ -333,7 +320,7 @@ async function getPdfFile() {
   await api
     .get(
       '/files/file-content/' +
-        props.item.id +
+        item.value.id +
         (props.password != '' ? '?password=' + props.password : ''),
       axiosConfig
     )
@@ -349,5 +336,9 @@ async function getPdfFile() {
 
 function onResize(size) {
   defWidth.value = size.width;
+  var els = document.getElementsByClassName('q-scrollarea__container');
+  for (var el of els) {
+    el.classList.add('column', 'col');
+  }
 }
 </script>

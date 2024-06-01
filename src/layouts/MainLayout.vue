@@ -381,7 +381,6 @@ export default {
         type: type,
         message: message,
         progress: true,
-        multiLine: true,
       });
     },
 

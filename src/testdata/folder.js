@@ -131,7 +131,7 @@ var FOLDER = {
       size: '2.5MB',
       path: 'Home',
       type: 'file',
-      mime: 'text/markdown',
+      mime: 'text/code-python',
       created_iso: '2023-08-16T20:48:06.081354Z',
       modified_iso: '2023-08-16T20:48:06.089253Z',
       size_bytes: 2538486,

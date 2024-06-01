@@ -17,7 +17,7 @@
         flat
         stretch
         class="bg-green text-white"
-        @click="save"
+        @click="updateContent"
       />
       <q-separator vertical color="white" />
       <q-space />
@@ -105,6 +105,7 @@
       :class="darkmode ? 'text-white' : 'text-dark'"
       class="col column"
       max-height="600px"
+      @keydown.ctrl.s.prevent.stop="updateContent"
     />
   </div>
 </template>
@@ -123,6 +124,8 @@ const props = defineProps({
     default: '',
   },
 });
+var item = ref(props.item);
+
 const q = useQuasar();
 const localStore = useLocalStore();
 var loading = ref(true);
@@ -135,20 +138,20 @@ const axiosConfig = {
 };
 var darkmode = ref(localStore.darkmodeState);
 var text = ref('');
-getFile();
+getFileContent();
 
 watch(
-  () => props.item.id,
+  () => item.value.id,
   () => {
-    getFile();
+    getFileContent();
   }
 );
 
-function getFile() {
+function getFileContent() {
   api
     .get(
       '/files/file-content/' +
-        props.item.id +
+        item.value.id +
         (props.password != '' ? '?password=' + props.password : ''),
       axiosConfig
     )
@@ -162,9 +165,9 @@ function getFile() {
       error.value = true;
     });
 }
-function save() {
+function updateContent() {
   var data = {
-    item_id: props.item.id,
+    item_id: item.value.id,
     content: text.value,
   };
   api
@@ -175,14 +178,18 @@ function save() {
           type: 'positive',
           message: 'Saved.',
           progress: true,
-          multiLine: true,
         });
+        if ('size' in response.data) {
+          item.value.size = response.data.size;
+        }
+        if ('size_bytes' in response.data) {
+          item.value.size_bytes = response.data.size_bytes;
+        }
       } else {
         q.notify({
           type: 'negative',
           message: 'Something went wrong.',
           progress: true,
-          multiLine: true,
         });
       }
     })
@@ -191,7 +198,6 @@ function save() {
         type: 'negative',
         message: 'Something went wrong.',
         progress: true,
-        multiLine: true,
       });
     });
 }
