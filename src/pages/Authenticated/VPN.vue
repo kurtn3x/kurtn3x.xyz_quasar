@@ -188,7 +188,10 @@
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="setupVPNDialog">
+    <q-dialog
+      v-model="setupVPNDialog"
+      @hide="(vpnSetupInput.publicKey = ''), (vpnSetupInput.name = '')"
+    >
       <q-card bordered style="max-width: 400px">
         <q-toolbar
           class="bg-layout-bg text-layout-text text-center items-center"
@@ -208,60 +211,60 @@
             />
           </div>
         </q-toolbar>
-        <div class="text-body1 q-ma-md">
-          <div class="text-center text-body2">
-            Generate a private & public-keypair. Input a name for the connection
-            & the public key below.
+        <q-form @submit="createVPNClient">
+          <div class="q-ma-md text-body1">
+            <div class="text-center text-body2">
+              Generate a private & public-keypair. Input a name for the
+              connection & the public key below.
+            </div>
+            <q-input
+              v-model="vpnSetupInput.name"
+              outlined
+              dense
+              :color="darkmode ? 'white' : 'black'"
+              label="VPN Connection Name"
+              input-style="font-size: 14px"
+              input-class="text-body2 "
+              class="q-mt-md"
+              no-error-icon
+            />
+            <q-input
+              v-model="vpnSetupInput.publicKey"
+              outlined
+              dense
+              :color="darkmode ? 'white' : 'black'"
+              label="Public Key"
+              input-style="font-size: 14px"
+              input-class="text-body2 "
+              class="q-mt-md"
+              no-error-icon
+            />
+            <div class="row justify-center q-mt-md" v-if="loading">
+              <q-spinner size="2em" />
+            </div>
+            <div v-if="loading" class="text-center text-body1 q-mt-sm q-mb-md">
+              Generating Client Data... Please Wait.
+            </div>
           </div>
-
-          <q-input
-            v-model="vpnSetupInput.name"
-            outlined
-            dense
-            :color="darkmode ? 'white' : 'black'"
-            label="VPN Connection Name"
-            input-style="font-size: 14px"
-            input-class="text-body2 "
-            class="q-mt-md"
-            no-error-icon
-          />
-
-          <q-input
-            v-model="vpnSetupInput.publicKey"
-            outlined
-            dense
-            :color="darkmode ? 'white' : 'black'"
-            label="Public Key"
-            input-style="font-size: 14px"
-            input-class="text-body2 "
-            class="q-mt-md"
-            no-error-icon
-          />
-          <div class="row justify-center q-mt-md" v-if="loading">
-            <q-spinner size="2em" />
-          </div>
-          <div v-if="loading" class="text-center text-body1 q-mt-sm q-mb-md">
-            Generating Client Data... Please Wait.
-          </div>
-        </div>
-        <q-separator class="q-mt-sm" />
-        <q-card-actions align="center" class="q-mt-sm q-mb-sm row">
-          <q-btn
-            v-close-popup
-            push
-            icon="close"
-            label="Cancel"
-            class="bg-red text-white col"
-          />
-          <q-btn
-            push
-            class="bg-green text-white col"
-            icon="done"
-            size="md"
-            label="Generate"
-            @click="createVPNClient"
-          />
-        </q-card-actions>
+          <q-separator class="q-mt-sm" />
+          <q-card-actions align="center" class="q-mt-sm q-mb-sm row">
+            <q-btn
+              v-close-popup
+              push
+              icon="close"
+              label="Cancel"
+              class="bg-red text-white col"
+            />
+            <q-btn
+              push
+              class="bg-green text-white col"
+              icon="done"
+              size="md"
+              label="Generate"
+              type="submit"
+            />
+          </q-card-actions>
+        </q-form>
       </q-card>
     </q-dialog>
     <q-dialog v-model="setupVPNDialogSuccessful" persistent>
@@ -589,21 +592,17 @@
               {{ vpnClientInfo.client_publickey }}
             </div>
           </div>
-          <div class="row justify-center q-mt-md">
-            <q-btn
-              size="md"
-              icon="delete"
-              class="bg-red text-white"
-              label="Delete Connection"
-              push
-              @click="deleteVPNConnection(vpnClientInfo)"
-              style="width: 250px"
-            />
-          </div>
         </div>
 
         <q-separator class="q-mt-sm" />
         <q-card-actions align="evenly" class="q-ma-sm row">
+          <q-btn
+            size="md"
+            icon="delete"
+            class="bg-red text-white absolute-bottom-left q-ma-sm"
+            push
+            @click="deleteVPNConnection(vpnClientInfo)"
+          />
           <q-btn
             v-close-popup
             push
@@ -624,26 +623,14 @@
             <q-btn
               icon="question_mark"
               push
+              round
               class="bg-blue text-white"
               size="md"
               @click="helpVPNDialog = true"
             />
           </div>
         </q-toolbar>
-        <div
-          v-if="vpnConnections.length == 0"
-          class="text-center q-mt-md text-body1"
-        >
-          No VPN setup yet. Click the + at the bottom of the screen to set one
-          up.
-        </div>
-
-        <q-card
-          class="bg-transparent"
-          bordered
-          flat
-          v-if="vpnConnections.length > 0"
-        >
+        <q-card class="bg-transparent" bordered flat>
           <q-item dense>
             <q-item-section avatar class="items-left col-1">
               Nr.
@@ -657,6 +644,13 @@
           </q-item>
           <q-separator color="primary" size="2px" />
           <div
+            v-if="vpnConnections.length == 0"
+            class="text-center q-mt-md text-body1 q-mb-md"
+          >
+            No VPN setup yet. Click the + at the bottom of the screen to set one
+            up.
+          </div>
+          <div
             :style="'max-height:' + ($q.screen.height - 240) + 'px;'"
             style="overflow: scroll"
           >
@@ -667,12 +661,50 @@
                   vpnInfoDialog = true;
                   vpnClientInfo = item;
                 "
+                :class="item.selected ? 'bg-cyan-14 text-white' : ''"
               >
+                <q-popup-proxy
+                  context-menu
+                  :breakpoint="0"
+                  @before-show="item.selected = true"
+                  @before-hide="item.selected = false"
+                  class="shadow-1"
+                >
+                  <q-list separator bordered>
+                    <q-item
+                      clickable
+                      v-close-popup
+                      @click="deleteVPNConnection(item)"
+                    >
+                      <q-item-section avatar>
+                        <q-icon name="close" />
+                      </q-item-section>
+                      <q-item-section>
+                        <q-item-label>Delete</q-item-label>
+                      </q-item-section>
+                    </q-item>
+                    <q-item
+                      clickable
+                      @click="
+                        vpnInfoDialog = true;
+                        vpnClientInfo = item;
+                      "
+                    >
+                      <q-item-section avatar>
+                        <q-icon name="info" />
+                      </q-item-section>
+                      <q-item-section>
+                        <q-item-label>Information</q-item-label>
+                      </q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-popup-proxy>
+
                 <q-item-section avatar class="items-left col-1">
                   {{ index }}.
                 </q-item-section>
                 <q-item-section class="text-body1 col">
-                  <q-item-label class="text-weight-bold text-primary ellipsis">
+                  <q-item-label class="text-weight-bolder ellipsis">
                     {{ item.name }}
                   </q-item-label>
                 </q-item-section>
@@ -753,6 +785,7 @@ export default defineComponent({
       setupVPNDialogTabs: ref('windows'),
 
       vpnConnections: ref([]) as Ref<VPNClientInfoType[]>,
+
       vpnSetupInput: ref({ publicKey: '', name: '' }) as Ref<VPNSetupInputType>,
       vpnSetupConnection: ref({}) as Ref<VPNSetupConnectionType>,
       vpnClientInfo: ref({}) as Ref<VPNClientInfoType>,

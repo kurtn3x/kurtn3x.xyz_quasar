@@ -153,4 +153,5 @@ export interface VPNClientInfoType {
   client_publickey: string;
   id: string;
   created: string;
+  selected?: boolean;
 }
