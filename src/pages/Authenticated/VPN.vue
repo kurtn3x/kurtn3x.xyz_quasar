@@ -2,10 +2,10 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="initialFetch && initialFetchSuccessful">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="initialFetch && !initialFetchSuccessful">
     <q-dialog v-model="helpVPNDialog">
       <q-card bordered class="full-width">
         <q-toolbar class="bg-layout-bg text-layout-text text-center">
@@ -58,19 +58,20 @@
                   href="https://download.wireguard.com/windows-client/wireguard-installer.exe"
                   target="_blank"
                   class="text-blue"
-                  >Download and Install the Wireguard Installer.
+                  >Download and Install Wireguard.
                 </a>
               </li>
               <li class="text-body1 q-mt-sm">
                 Start Wireguard. Add Tunnel → Add empty Tunnel...
               </li>
               <li class="text-body1 q-mt-sm">
-                Add a Name to the configuration. Copy the Public-Key under the
-                name input.
+                Add a name to the Wireguard-Configuration and copy the
+                Public-Key under the name Input in wireguard.
               </li>
               <li class="text-body1 q-mt-sm">
-                Add a name to the configuration on this website. Input the
-                copied Public-Key in the Public-Key Input. Click Generate.
+                Insert the copied Public-Key in the Public-Key Input on this
+                Website and add a unique name for the connection. Click
+                Generate.
               </li>
               <li class="text-body1 q-mt-sm">
                 Append the result under the windows Tab to the existing
@@ -108,13 +109,13 @@
                 </div>
               </li>
               <li class="text-body1 q-mt-sm">
-                Copy the resulting Public-Key (File peer_A.pub) to the
-                Public-Key Input on this Website. Choose a name for the
-                Connection. Click Generate.
+                Copy the resulting Public-Key-Output (File peer_A.pub) to the
+                Public-Key-Input on this Website. Add a name to the Connection.
+                Click Generate.
               </li>
               <li class="text-body1 q-mt-sm">
                 Under the Config-Tab input your Private-Key (File peer_A.key)
-                and download the Configuration. This is handled Client-Side.
+                and download the Configuration.
               </li>
               <li class="text-body1 q-mt-sm">
                 Either use a GUI-Application to import the Config (e.g.
@@ -154,19 +155,21 @@
               </li>
               <li class="text-body1 q-mt-sm">
                 Click the +. Create from Scratch. Generate a Private- and
-                Public-Keypair.
+                Public-Keypair with the <q-icon name="sync" />-Button.
+              </li>
+              <li class="text-body1 q-mt-sm">Copy the generated Public-Key.</li>
+              <li class="text-body1 q-mt-sm">
+                Insert the copied Public-Key in the Public-Key Input on this
+                Website and add a unique name for the connection. Click
+                Generate.
               </li>
               <li class="text-body1 q-mt-sm">
-                Copy the Public-Key to the Public Key Input on this Website.
-                Choose a name. Click Generate.
+                Under the Config-Tab input the generated Private-Key and
+                download the Configuration.
               </li>
               <li class="text-body1 q-mt-sm">
-                Under the Config-Tab input your Private-Key and download the
-                Configuration. This is handled Client-Side.
-              </li>
-              <li class="text-body1 q-mt-sm">
-                Go back, click the + again and choose Import from file or
-                archive. Select the downloaded Configuration (wg0.conf).
+                Go back, click the + again and choose Import from file. Select
+                the downloaded Configuration (wg0.conf).
               </li>
               <li class="text-body1 q-mt-sm">Activate the connection.</li>
             </ol>
@@ -298,7 +301,7 @@
             size="1px"
             :color="darkmode ? 'white' : 'dark'"
           />
-          <q-tab name="windows" :icon="mdiMicrosoftWindows" label="Windows" />
+          <q-tab name="info" icon="info" label="Info" />
           <q-separator
             vertical
             size="1px"
@@ -310,7 +313,7 @@
             size="1px"
             :color="darkmode ? 'white' : 'dark'"
           />
-          <q-tab name="info" icon="info" label="Info" />
+          <q-tab name="windows" :icon="mdiMicrosoftWindows" label="Windows" />
           <q-separator
             vertical
             size="1px"
@@ -323,62 +326,6 @@
           animated
           class="bg-transparent"
         >
-          <q-tab-panel name="windows">
-            <div class="text-center text-body1">
-              Append following configuration to your generated config.
-              <br />
-              Do not overwrite the existing lines.
-            </div>
-
-            <q-input
-              label="wg0.conf"
-              input-class="q-mt-sm"
-              input-style="font-family:'Courier New'; resize: none; height: 150px; font-size:10pt"
-              v-model="serverConfig"
-              :color="darkmode ? 'white' : 'black'"
-              outlined
-              type="textarea"
-              readonly
-              dense
-              class="q-mt-md"
-            >
-              <q-btn
-                flat
-                round
-                icon="content_copy"
-                class="q-pa-none q-ma-none absolute-right"
-                size="md"
-                style="height: 40px"
-                @click="copyToClipboard(serverConfig)"
-              />
-            </q-input>
-          </q-tab-panel>
-          <q-tab-panel name="config">
-            <div class="row justify-center">
-              <div class="text-center text-body1">
-                Copy your hidden private key and input it below. <br />
-                This will generate a valid Wireguard-Config
-              </div>
-              <q-input
-                v-model="vpnSetupConnection.privateKey"
-                outlined
-                :color="darkmode ? 'white' : 'black'"
-                dense
-                label="Your Private Key (not shared to anyone)"
-                input-style="font-size: 14px"
-                input-class="text-body2 "
-                class="q-mt-md"
-                no-error-icon
-                style="min-width: 350px"
-              />
-              <q-btn
-                label="Download Configuration"
-                push
-                class="bg-green text-white q-mt-md"
-                @click="downloadConfiguration"
-              />
-            </div>
-          </q-tab-panel>
           <q-tab-panel name="info">
             <div class="text-h6 text-weight-bold q-mb-sm">
               Interface Configuration
@@ -546,6 +493,62 @@
               </template>
             </q-input>
           </q-tab-panel>
+          <q-tab-panel name="config">
+            <div class="row justify-center">
+              <div class="text-center text-body1">
+                Copy your hidden private key and input it below. <br />
+                This will generate a valid Wireguard-Config
+              </div>
+              <q-input
+                v-model="vpnSetupConnection.privateKey"
+                outlined
+                :color="darkmode ? 'white' : 'black'"
+                dense
+                label="Your Private Key (not shared to anyone)"
+                input-style="font-size: 14px"
+                input-class="text-body2 "
+                class="q-mt-md"
+                no-error-icon
+                style="min-width: 350px"
+              />
+              <q-btn
+                label="Download Configuration"
+                push
+                class="bg-green text-white q-mt-md"
+                @click="downloadConfiguration"
+              />
+            </div>
+          </q-tab-panel>
+          <q-tab-panel name="windows">
+            <div class="text-center text-body1">
+              Append following configuration to your generated config.
+              <br />
+              Do not overwrite the existing lines.
+            </div>
+
+            <q-input
+              label="wg0.conf"
+              input-class="q-mt-sm"
+              input-style="font-family:'Courier New'; resize: none; height: 150px; font-size:10pt"
+              v-model="serverConfig"
+              :color="darkmode ? 'white' : 'black'"
+              outlined
+              type="textarea"
+              readonly
+              dense
+              class="q-mt-md"
+            >
+              <q-btn
+                flat
+                round
+                icon="content_copy"
+                class="q-pa-none q-ma-none absolute-right"
+                size="md"
+                style="height: 40px"
+                @click="copyToClipboard(serverConfig)"
+              />
+            </q-input>
+          </q-tab-panel>
         </q-tab-panels>
 
         <q-separator class="q-mt-sm" />
@@ -677,7 +680,7 @@
                       @click="deleteVPNConnection(item)"
                     >
                       <q-item-section avatar>
-                        <q-icon name="close" />
+                        <q-icon name="delete" />
                       </q-item-section>
                       <q-item-section>
                         <q-item-label>Delete</q-item-label>
@@ -775,14 +778,14 @@ export default defineComponent({
       setupVPNDialog: ref(false),
       vpnInfoDialog: ref(false),
       linuxCommand: ref(
-        'wg genkey | (umask 0077 && tee peer_A.key) | wg pubkey > peer_A.pub'
+        'wg genkey | (umask 0077 && tee peer_A.key) | wg pubkey > peer_A.pub && cat peer_A.pub'
       ),
 
       helpVPNDialog: ref(false),
       helpVPNDialogTabs: ref('windows'),
 
       setupVPNDialogSuccessful: ref(false),
-      setupVPNDialogTabs: ref('windows'),
+      setupVPNDialogTabs: ref('info'),
 
       vpnConnections: ref([]) as Ref<VPNClientInfoType[]>,
 
