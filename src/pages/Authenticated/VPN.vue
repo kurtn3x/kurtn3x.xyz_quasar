@@ -2,200 +2,22 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="initialFetch && !initialFetchSuccessful">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="initialFetch && initialFetchSuccessful">
     <q-dialog v-model="helpVPNDialog">
-      <q-card bordered class="full-width">
-        <q-toolbar class="bg-layout-bg text-layout-text text-center">
-          <q-toolbar-title class="q-ma-sm">VPN Setup Help</q-toolbar-title>
-        </q-toolbar>
-        <q-separator size="1px" :color="darkmode ? 'white' : 'dark'" />
-        <q-tabs
-          inline-label
-          v-model="helpVPNDialogTabs"
-          style="height: 50px"
-          align="justify"
-          indicator-color="transparent"
-          active-color="layout-text"
-          active-bg-color="primary"
-        >
-          <q-separator
-            vertical
-            size="1px"
-            :color="darkmode ? 'white' : 'dark'"
-          />
-          <q-tab name="windows" :icon="mdiMicrosoftWindows" label="Windows" />
-          <q-separator
-            vertical
-            size="1px"
-            :color="darkmode ? 'white' : 'dark'"
-          />
-          <q-tab name="linux" :icon="mdiLinux" label="Linux" />
-          <q-separator
-            vertical
-            size="1px"
-            :color="darkmode ? 'white' : 'dark'"
-          />
-          <q-tab name="android" :icon="mdiAndroid" label="Android" />
-          <q-separator
-            vertical
-            size="1px"
-            :color="darkmode ? 'white' : 'dark'"
-          />
-        </q-tabs>
-        <q-separator size="1px" :color="darkmode ? 'white' : 'dark'" />
-        <q-tab-panels
-          v-model="helpVPNDialogTabs"
-          animated
-          class="bg-transparent"
-        >
-          <q-tab-panel name="windows">
-            <ol>
-              <li class="text-body1">
-                <a
-                  href="https://download.wireguard.com/windows-client/wireguard-installer.exe"
-                  target="_blank"
-                  class="text-blue"
-                  >Download and Install Wireguard.
-                </a>
-              </li>
-              <li class="text-body1 q-mt-sm">
-                Start Wireguard. Add Tunnel → Add empty Tunnel...
-              </li>
-              <li class="text-body1 q-mt-sm">
-                Add a name to the Wireguard-Configuration and copy the
-                Public-Key under the name Input in wireguard.
-              </li>
-              <li class="text-body1 q-mt-sm">
-                Insert the copied Public-Key in the Public-Key Input on this
-                Website and add a unique name for the connection. Click
-                Generate.
-              </li>
-              <li class="text-body1 q-mt-sm">
-                Append the result under the windows Tab to the existing
-                Configuration.
-              </li>
-              <li class="text-body1 q-mt-sm">Activate the connection.</li>
-            </ol>
-          </q-tab-panel>
-          <q-tab-panel name="linux">
-            <ol>
-              <li class="text-body1">
-                <a
-                  href="https://www.wireguard.com/install/"
-                  target="_blank"
-                  class="text-blue"
-                  >Install Wireguard depending on Operating System.
-                </a>
-              </li>
-              <li class="text-body1 q-mt-sm">
-                Generate a Public and Private-Keypair.
-                <div class="q-mt-sm bg-grey-8 row items-center">
-                  <a
-                    style="font-family: 'Courier New'"
-                    class="text-white q-ma-xs text-body2"
-                    >{{ linuxCommand }}</a
-                  >
-                  <q-space />
-                  <q-btn
-                    push
-                    class="bg-blue text-white q-ma-xs"
-                    icon="content_copy"
-                    size="sm"
-                    @click="copyToClipboard(linuxCommand)"
-                  />
-                </div>
-              </li>
-              <li class="text-body1 q-mt-sm">
-                Copy the resulting Public-Key-Output (File peer_A.pub) to the
-                Public-Key-Input on this Website. Add a name to the Connection.
-                Click Generate.
-              </li>
-              <li class="text-body1 q-mt-sm">
-                Under the Config-Tab input your Private-Key (File peer_A.key)
-                and download the Configuration.
-              </li>
-              <li class="text-body1 q-mt-sm">
-                Either use a GUI-Application to import the Config (e.g.
-                Wireguird) or copy the Configuration (wg0.conf) to
-                /etc/wireguard/.
-              </li>
-              <li class="text-body1 q-mt-sm">
-                Activate the connection. If you copied it to /etc/wireguard/
-                activate it with
-                <div class="q-mt-sm bg-grey-8 row items-center">
-                  <a
-                    style="font-family: 'Courier New'"
-                    class="text-white q-ma-xs text-body2"
-                    >sudo wg-quick up wg0</a
-                  >
-                  <q-space />
-                  <q-btn
-                    push
-                    class="bg-blue text-white q-ma-xs"
-                    icon="content_copy"
-                    size="sm"
-                    @click="copyToClipboard('sudo wg-quick up wg0')"
-                  />
-                </div>
-              </li>
-            </ol>
-          </q-tab-panel>
-          <q-tab-panel name="android">
-            <ol>
-              <li class="text-body1">
-                <a
-                  href="https://play.google.com/store/apps/details?id=com.wireguard.android"
-                  target="_blank"
-                  class="text-blue"
-                  >Install Wireguard from Play Store.
-                </a>
-              </li>
-              <li class="text-body1 q-mt-sm">
-                Click the +. Create from Scratch. Generate a Private- and
-                Public-Keypair with the <q-icon name="sync" />-Button.
-              </li>
-              <li class="text-body1 q-mt-sm">Copy the generated Public-Key.</li>
-              <li class="text-body1 q-mt-sm">
-                Insert the copied Public-Key in the Public-Key Input on this
-                Website and add a unique name for the connection. Click
-                Generate.
-              </li>
-              <li class="text-body1 q-mt-sm">
-                Under the Config-Tab input the generated Private-Key and
-                download the Configuration.
-              </li>
-              <li class="text-body1 q-mt-sm">
-                Go back, click the + again and choose Import from file. Select
-                the downloaded Configuration (wg0.conf).
-              </li>
-              <li class="text-body1 q-mt-sm">Activate the connection.</li>
-            </ol>
-          </q-tab-panel>
-        </q-tab-panels>
-
-        <q-separator class="q-mt-sm" />
-        <q-card-actions align="center" class="q-mt-sm q-mb-sm" vertical>
-          <q-btn
-            v-close-popup
-            push
-            class="bg-green text-white"
-            icon="done"
-            size="md"
-            label="Ok"
-            style="width: 175px"
-          />
-        </q-card-actions>
-      </q-card>
+      <VPNHelpDialog />
+    </q-dialog>
+    <q-dialog v-model="vpnInfoDialog">
+      <VPNInformation :propItem="vpnClientInfo" />
     </q-dialog>
 
     <q-dialog
       v-model="setupVPNDialog"
       @hide="(vpnSetupInput.publicKey = ''), (vpnSetupInput.name = '')"
     >
-      <q-card bordered style="max-width: 400px">
+      <q-card bordered style="max-width: 400px; min-width: 350px">
         <q-toolbar
           class="bg-layout-bg text-layout-text text-center items-center"
         >
@@ -215,39 +37,65 @@
           </div>
         </q-toolbar>
         <q-form @submit="createVPNClient">
-          <div class="q-ma-md text-body1">
-            <div class="text-center text-body2">
-              Generate a private & public-keypair. Input a name for the
-              connection & the public key below.
-            </div>
+          <div class="q-ma-md text-body1" v-if="!loading">
             <q-input
               v-model="vpnSetupInput.name"
               outlined
-              dense
               :color="darkmode ? 'white' : 'black'"
               label="VPN Connection Name"
-              input-style="font-size: 14px"
-              input-class="text-body2 "
+              input-style="font-size: 18px"
+              input-class="text-body1"
               class="q-mt-md"
               no-error-icon
+              :rules="[
+                (val) => (val && val.length > 3) || 'At least 4 characters',
+                (val) =>
+                  (val && val.length < 17) || 'Not more than 16 characters',
+                (val) =>
+                  /^([a-zA-Z0-9\u0600-\u06FF\u0660-\u0669\u06F0-\u06F9 _.-]+)$/.test(
+                    val
+                  ) || 'Only alphanumeric characters allowed.',
+                (val) => /^\S+$/.test(val) || 'No spaces allowed.',
+              ]"
+              lazy-rules
             />
-            <q-input
-              v-model="vpnSetupInput.publicKey"
-              outlined
-              dense
-              :color="darkmode ? 'white' : 'black'"
-              label="Public Key"
-              input-style="font-size: 14px"
-              input-class="text-body2 "
-              class="q-mt-md"
-              no-error-icon
-            />
-            <div class="row justify-center q-mt-md" v-if="loading">
-              <q-spinner size="2em" />
+            <div class="row justify-center q-mt-sm">
+              <q-checkbox
+                v-model="vpnSetupInput.autoKeyGeneration"
+                color="green"
+                dense
+                label="Generate Keypair automatically"
+              />
             </div>
-            <div v-if="loading" class="text-center text-body1 q-mt-sm q-mb-md">
-              Generating Client Data... Please Wait.
+            <div v-if="!vpnSetupInput.autoKeyGeneration">
+              <q-input
+                v-if="!vpnSetupInput.autoKeyGeneration"
+                v-model="vpnSetupInput.publicKey"
+                outlined
+                dense
+                :color="darkmode ? 'white' : 'black'"
+                label="Public Key"
+                input-style="font-size: 14px"
+                input-class="text-body2 "
+                class="q-mt-md"
+                no-error-icon
+              />
+              <q-input
+                v-if="!vpnSetupInput.autoKeyGeneration"
+                v-model="vpnSetupInput.privateKey"
+                outlined
+                dense
+                :color="darkmode ? 'white' : 'black'"
+                label="Private Key"
+                input-style="font-size: 14px"
+                input-class="text-body2 "
+                class="q-mt-md"
+                no-error-icon
+              />
             </div>
+          </div>
+          <div v-if="loading" class="row justify-center items-center q-ma-md">
+            <q-spinner size="4em" />
           </div>
           <q-separator class="q-mt-sm" />
           <q-card-actions align="center" class="q-mt-sm q-mb-sm row">
@@ -296,38 +144,74 @@
           active-color="layout-text"
           active-bg-color="primary"
         >
-          <q-separator
-            vertical
-            size="1px"
-            :color="darkmode ? 'white' : 'dark'"
-          />
+          <q-separator vertical size="1px" />
           <q-tab name="info" icon="info" label="Info" />
-          <q-separator
-            vertical
-            size="1px"
-            :color="darkmode ? 'white' : 'dark'"
-          />
-          <q-tab name="config" icon="settings" label="Config" />
-          <q-separator
-            vertical
-            size="1px"
-            :color="darkmode ? 'white' : 'dark'"
-          />
-          <q-tab name="windows" :icon="mdiMicrosoftWindows" label="Windows" />
-          <q-separator
-            vertical
-            size="1px"
-            :color="darkmode ? 'white' : 'dark'"
-          />
+          <q-separator vertical size="1px" />
+          <q-tab name="config" icon="download" label="Download" />
+          <q-separator vertical size="1px" />
         </q-tabs>
-        <q-separator size="1px" :color="darkmode ? 'white' : 'dark'" />
+        <q-separator size="1px" />
         <q-tab-panels
           v-model="setupVPNDialogTabs"
           animated
           class="bg-transparent"
         >
           <q-tab-panel name="info">
-            <div class="text-h6 text-weight-bold q-mb-sm">
+            <div class="text-h6 text-weight-bold q-mb-sm">Your Keys</div>
+            <q-input
+              outlined
+              readonly
+              v-model="vpnSetupConnection.clientKey"
+              style="height: 50px"
+              :color="darkmode ? 'white' : 'dark'"
+              dense
+            >
+              <q-btn
+                flat
+                round
+                icon="content_copy"
+                class="absolute-right"
+                size="md"
+                @click="copyToClipboard(vpnSetupConnection.clientKey)"
+              />
+              <template v-slot:prepend>
+                <a
+                  style="width: 120px"
+                  class="text-body1"
+                  :class="darkmode ? 'text-white' : 'text-dark'"
+                >
+                  Public-Key:
+                </a>
+              </template>
+            </q-input>
+            <q-input
+              outlined
+              readonly
+              v-model="vpnSetupConnection.privateKey"
+              style="height: 50px"
+              :color="darkmode ? 'white' : 'dark'"
+              dense
+            >
+              <q-btn
+                flat
+                round
+                icon="content_copy"
+                class="absolute-right"
+                size="md"
+                @click="copyToClipboard(vpnSetupConnection.privateKey)"
+              />
+              <template v-slot:prepend>
+                <a
+                  style="width: 120px"
+                  class="text-body1"
+                  :class="darkmode ? 'text-white' : 'text-dark'"
+                >
+                  Private-Key:
+                </a>
+              </template>
+            </q-input>
+            <q-separator />
+            <div class="text-h6 text-weight-bold q-mt-md q-mb-sm">
               Interface Configuration
             </div>
             <q-input
@@ -494,60 +378,16 @@
             </q-input>
           </q-tab-panel>
           <q-tab-panel name="config">
-            <div class="row justify-center">
-              <div class="text-center text-body1">
-                Copy your hidden private key and input it below. <br />
-                This will generate a valid Wireguard-Config
-              </div>
-              <q-input
-                v-model="vpnSetupConnection.privateKey"
-                outlined
-                :color="darkmode ? 'white' : 'black'"
-                dense
-                label="Your Private Key (not shared to anyone)"
-                input-style="font-size: 14px"
-                input-class="text-body2 "
-                class="q-mt-md"
-                no-error-icon
-                style="min-width: 350px"
-              />
+            <div class="row justify-center q-ma-md">
               <q-btn
-                label="Download Configuration"
+                label="Download wg0.conf"
                 push
-                class="bg-green text-white q-mt-md"
+                size="lg"
+                icon="download"
+                class="bg-green text-white q-mt-lg"
                 @click="downloadConfiguration"
               />
             </div>
-          </q-tab-panel>
-          <q-tab-panel name="windows">
-            <div class="text-center text-body1">
-              Append following configuration to your generated config.
-              <br />
-              Do not overwrite the existing lines.
-            </div>
-
-            <q-input
-              label="wg0.conf"
-              input-class="q-mt-sm"
-              input-style="font-family:'Courier New'; resize: none; height: 150px; font-size:10pt"
-              v-model="serverConfig"
-              :color="darkmode ? 'white' : 'black'"
-              outlined
-              type="textarea"
-              readonly
-              dense
-              class="q-mt-md"
-            >
-              <q-btn
-                flat
-                round
-                icon="content_copy"
-                class="q-pa-none q-ma-none absolute-right"
-                size="md"
-                style="height: 40px"
-                @click="copyToClipboard(serverConfig)"
-              />
-            </q-input>
           </q-tab-panel>
         </q-tab-panels>
 
@@ -569,55 +409,6 @@
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="vpnInfoDialog">
-      <q-card bordered style="width: 400px">
-        <q-toolbar class="bg-layout-bg text-layout-text text-center">
-          <q-toolbar-title class="q-ma-sm"
-            >Info for {{ vpnClientInfo.name }}</q-toolbar-title
-          >
-        </q-toolbar>
-        <div class="q-ma-md" style="line-break: anywhere">
-          <div class="row q-mt-md">
-            <div class="col-3 text-weight-bolder">Name</div>
-            <div class="col">{{ vpnClientInfo.name }}</div>
-          </div>
-          <div class="row q-mt-md">
-            <div class="col-3 text-weight-bolder">Addresses</div>
-            <div class="col">{{ vpnClientInfo.addresses }}</div>
-          </div>
-          <div class="row q-mt-md">
-            <div class="col-3 text-weight-bolder">Created</div>
-            <div class="col">{{ vpnClientInfo.created }}</div>
-          </div>
-          <div class="row q-mt-md">
-            <div class="col-3 text-weight-bolder">Public Key</div>
-            <div class="col">
-              {{ vpnClientInfo.client_publickey }}
-            </div>
-          </div>
-        </div>
-
-        <q-separator class="q-mt-sm" />
-        <q-card-actions align="evenly" class="q-ma-sm row">
-          <q-btn
-            size="md"
-            icon="delete"
-            class="bg-red text-white absolute-bottom-left q-ma-sm"
-            push
-            @click="deleteVPNConnection(vpnClientInfo)"
-          />
-          <q-btn
-            v-close-popup
-            push
-            class="bg-green text-white"
-            icon="done"
-            size="md"
-            label="Ok"
-            style="width: 130px"
-          />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
     <q-page class="column">
       <div class="q-ma-sm">
         <q-toolbar class="bg-layout-bg text-layout-text text-center">
@@ -714,6 +505,46 @@
                 <q-item-section class="text-body2 col">
                   <div class="q-ml-md">{{ item.addresses }}</div>
                 </q-item-section>
+                <q-item-section side>
+                  <q-btn
+                    icon="more_vert"
+                    flat
+                    round
+                    :loading="loading"
+                    @click.prevent.stop
+                  >
+                    <q-menu>
+                      <q-list separator bordered>
+                        <q-item
+                          clickable
+                          v-close-popup
+                          @click="deleteVPNConnection(item)"
+                        >
+                          <q-item-section avatar>
+                            <q-icon name="delete" />
+                          </q-item-section>
+                          <q-item-section>
+                            <q-item-label>Delete</q-item-label>
+                          </q-item-section>
+                        </q-item>
+                        <q-item
+                          clickable
+                          @click="
+                            vpnInfoDialog = true;
+                            vpnClientInfo = item;
+                          "
+                        >
+                          <q-item-section avatar>
+                            <q-icon name="info" />
+                          </q-item-section>
+                          <q-item-section>
+                            <q-item-label>Information</q-item-label>
+                          </q-item-section>
+                        </q-item>
+                      </q-list>
+                    </q-menu>
+                  </q-btn>
+                </q-item-section>
               </q-item>
               <q-separator size="1px" />
             </template>
@@ -741,24 +572,20 @@ import { defineComponent, ref, Ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { useLocalStore } from 'stores/localStore';
-import {
-  mdiLinux,
-  mdiMicrosoftWindows,
-  mdiAndroid,
-} from '@quasar/extras/mdi-v6';
-import {
-  VPNSetupInputType,
-  VPNSetupConnectionType,
-  VPNClientInfoType,
-} from 'src/types/index';
+import { VPNSetupConnectionType, VPNClientInfoType } from 'src/types/index';
+import VPNHelpDialog from 'components/VPN/VPNHelpDialog.vue';
+import VPNInformation from 'components/VPN/VPNInformation.vue';
+import * as wireguard from 'components/VPN/wireguard.js';
 
 export default defineComponent({
   name: 'VPNView',
+  components: { VPNHelpDialog, VPNInformation },
+
   setup() {
     const localStore = useLocalStore();
     const q = useQuasar();
 
-    const axios_config = {
+    const axiosConfig = {
       withCredentials: true,
       headers: {
         'X-CSRFToken': q.cookies.get('csrftoken'),
@@ -766,58 +593,33 @@ export default defineComponent({
     };
 
     return {
-      mdiLinux,
-      mdiAndroid,
-      mdiMicrosoftWindows,
-      axios_config,
+      axiosConfig,
       localStore,
       q,
       initialFetch: ref(false),
       initialFetchSuccessful: ref(false),
       loading: ref(false),
-      setupVPNDialog: ref(false),
+
       vpnInfoDialog: ref(false),
-      linuxCommand: ref(
-        'wg genkey | (umask 0077 && tee peer_A.key) | wg pubkey > peer_A.pub && cat peer_A.pub'
-      ),
-
       helpVPNDialog: ref(false),
-      helpVPNDialogTabs: ref('windows'),
 
+      setupVPNDialog: ref(false),
       setupVPNDialogSuccessful: ref(false),
       setupVPNDialogTabs: ref('info'),
-
       vpnConnections: ref([]) as Ref<VPNClientInfoType[]>,
-
-      vpnSetupInput: ref({ publicKey: '', name: '' }) as Ref<VPNSetupInputType>,
-      vpnSetupConnection: ref({}) as Ref<VPNSetupConnectionType>,
       vpnClientInfo: ref({}) as Ref<VPNClientInfoType>,
+
+      vpnSetupInput: ref({
+        publicKey: '',
+        privateKey: '',
+        name: '',
+        autoKeyGeneration: true,
+      }),
+      vpnSetupConnection: ref({}) as Ref<VPNSetupConnectionType>,
     };
   },
 
   computed: {
-    serverConfig() {
-      return (
-        'Address = ' +
-        this.vpnSetupConnection.addresses +
-        '\n' +
-        'DNS = ' +
-        this.vpnSetupConnection.dnsServer +
-        '\n' +
-        '[Peer]\n' +
-        'PresharedKey = ' +
-        this.vpnSetupConnection.presharedKey +
-        '\n' +
-        'PublicKey = ' +
-        this.vpnSetupConnection.serverKey +
-        '\n' +
-        'AllowedIPs = ' +
-        this.vpnSetupConnection.allowedIPs +
-        '\n' +
-        'Endpoint = ' +
-        this.vpnSetupConnection.endpoint
-      );
-    },
     darkmode() {
       return this.localStore.darkmode;
     },
@@ -830,7 +632,7 @@ export default defineComponent({
   methods: {
     deleteVPNConnection(con: VPNClientInfoType) {
       api
-        .delete('/vpn_torrent/delete/vpn/' + con.id, this.axios_config)
+        .delete('/vpn_torrent/delete/vpn/' + con.id, this.axiosConfig)
         .then((response) => {
           if (response.status == 200) {
             this.notify('positive', 'Deleted.');
@@ -885,9 +687,7 @@ export default defineComponent({
 
       element.style.display = 'none';
       document.body.appendChild(element);
-
       element.click();
-
       document.body.removeChild(element);
     },
 
@@ -907,7 +707,7 @@ export default defineComponent({
     getVPNConnections() {
       this.loading = true;
       api
-        .get('/vpn_torrent/list/vpn', this.axios_config)
+        .get('/vpn_torrent/list/vpn', this.axiosConfig)
         .then((response) => {
           if (response.status == 200) {
             this.vpnConnections = response.data.clients as VPNClientInfoType[];
@@ -934,20 +734,38 @@ export default defineComponent({
     createVPNClient() {
       if (
         this.vpnSetupInput.name.length < 1 ||
-        this.vpnSetupInput.publicKey.length < 1
+        (this.vpnSetupInput.autoKeyGeneration == false &&
+          this.vpnSetupInput.publicKey.length < 1)
       ) {
         this.notify('negative', 'Please fill out all required fields.');
         return;
       }
 
+      if (this.vpnSetupInput.autoKeyGeneration == true) {
+        var keys = wireguard.generateKeypair();
+        this.vpnSetupInput.publicKey = keys.publicKey;
+      }
+
+      // don't transmit private key
+      var privateKey = this.vpnSetupInput.privateKey;
+      this.vpnSetupInput.privateKey = '';
+
       this.loading = true;
       api
-        .post('/vpn_torrent/create/vpn', this.vpnSetupInput, this.axios_config)
+        .post('/vpn_torrent/create/vpn', this.vpnSetupInput, this.axiosConfig)
         .then((response) => {
           if (response.status == 200) {
+            this.vpnSetupConnection = response.data;
+            if (this.vpnSetupInput.autoKeyGeneration == true) {
+              this.vpnSetupConnection.privateKey = keys.privateKey;
+              this.vpnSetupConnection.clientKey = keys.publicKey;
+            } else {
+              this.vpnSetupConnection.privateKey = privateKey;
+              this.vpnSetupConnection.clientKey = this.vpnSetupInput.publicKey;
+            }
+
             this.setupVPNDialogSuccessful = true;
             this.setupVPNDialog = false;
-            this.vpnSetupConnection = response.data;
             this.loading = false;
             this.getVPNConnections();
           } else {

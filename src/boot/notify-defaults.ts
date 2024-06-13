@@ -9,5 +9,6 @@ export default boot(async (/* { app, router, ... } */) => {
     timeout: 2500,
     textColor: 'white',
     actions: [{ icon: 'close', color: 'white', round: true }],
+    progress: true,
   });
 });

@@ -1727,7 +1727,7 @@ import type {
 } from 'src/types/index';
 
 export default defineComponent({
-  name: 'PrivateFolderView',
+  name: 'FilesView',
   directives: {
     draggable,
     droppable,
