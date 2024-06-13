@@ -75,7 +75,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: 'files',
-        component: () => import('pages/Authenticated/PrivateFolder.vue'),
+        component: () => import('pages/Authenticated/Files.vue'),
       },
       {
         path: 'vpn',

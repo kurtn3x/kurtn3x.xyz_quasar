@@ -138,13 +138,16 @@ export interface VPNSetupInputType {
 export interface VPNSetupConnectionType {
   name: string;
   addresses: string;
+  // (Public Key of Client)
   clientKey: string;
+  // Private Key of Client
+  privateKey: string;
+  // (Public Key of Server)
   serverKey: string;
   presharedKey: string;
   dnsServer: string;
   allowedIPs: string;
   endpoint: string;
-  privateKey: string;
 }
 
 export interface VPNClientInfoType {
