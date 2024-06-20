@@ -15,7 +15,14 @@
 
     <q-dialog
       v-model="setupVPNDialog"
-      @hide="(vpnSetupInput.publicKey = ''), (vpnSetupInput.name = '')"
+      @hide="
+        vpnSetupInput = {
+          clientPublicKey: '',
+          clientPrivateKey: '',
+          name: '',
+          autoKeyGeneration: true,
+        }
+      "
     >
       <q-card bordered style="max-width: 400px; min-width: 350px">
         <q-toolbar
@@ -70,7 +77,7 @@
             <div v-if="!vpnSetupInput.autoKeyGeneration">
               <q-input
                 v-if="!vpnSetupInput.autoKeyGeneration"
-                v-model="vpnSetupInput.publicKey"
+                v-model="vpnSetupInput.clientPublicKey"
                 outlined
                 dense
                 :color="darkmode ? 'white' : 'black'"
@@ -82,7 +89,7 @@
               />
               <q-input
                 v-if="!vpnSetupInput.autoKeyGeneration"
-                v-model="vpnSetupInput.privateKey"
+                v-model="vpnSetupInput.clientPrivateKey"
                 outlined
                 dense
                 :color="darkmode ? 'white' : 'black'"
@@ -161,7 +168,7 @@
             <q-input
               outlined
               readonly
-              v-model="vpnSetupConnection.clientKey"
+              v-model="vpnSetupConnection.clientPublicKey"
               style="height: 50px"
               :color="darkmode ? 'white' : 'dark'"
               dense
@@ -172,7 +179,7 @@
                 icon="content_copy"
                 class="absolute-right"
                 size="md"
-                @click="copyToClipboard(vpnSetupConnection.clientKey)"
+                @click="copyToClipboard(vpnSetupConnection.clientPublicKey)"
               />
               <template v-slot:prepend>
                 <a
@@ -187,7 +194,7 @@
             <q-input
               outlined
               readonly
-              v-model="vpnSetupConnection.privateKey"
+              v-model="vpnSetupConnection.clientPrivateKey"
               style="height: 50px"
               :color="darkmode ? 'white' : 'dark'"
               dense
@@ -198,7 +205,7 @@
                 icon="content_copy"
                 class="absolute-right"
                 size="md"
-                @click="copyToClipboard(vpnSetupConnection.privateKey)"
+                @click="copyToClipboard(vpnSetupConnection.clientPrivateKey)"
               />
               <template v-slot:prepend>
                 <a
@@ -243,7 +250,7 @@
             <q-input
               outlined
               readonly
-              v-model="vpnSetupConnection.dnsServer"
+              v-model="vpnSetupConnection.dnsServers"
               style="height: 50px"
               :color="darkmode ? 'white' : 'dark'"
               dense
@@ -254,7 +261,7 @@
                 icon="content_copy"
                 class="absolute-right"
                 size="md"
-                @click="copyToClipboard(vpnSetupConnection.dnsServer)"
+                @click="copyToClipboard(vpnSetupConnection.dnsServers)"
               />
               <template v-slot:prepend>
                 <a
@@ -302,7 +309,7 @@
               outlined
               readonly
               :color="darkmode ? 'white' : 'dark'"
-              v-model="vpnSetupConnection.serverKey"
+              v-model="vpnSetupConnection.serverPublicKey"
               style="height: 50px"
               dense
             >
@@ -312,7 +319,7 @@
                 icon="content_copy"
                 class="absolute-right"
                 size="md"
-                @click="copyToClipboard(vpnSetupConnection.serverKey)"
+                @click="copyToClipboard(vpnSetupConnection.serverPublicKey)"
               />
               <template v-slot:prepend>
                 <a
@@ -327,7 +334,7 @@
             <q-input
               outlined
               readonly
-              v-model="vpnSetupConnection.allowedIPs"
+              v-model="vpnSetupConnection.allowedIps"
               style="height: 50px"
               dense
               :color="darkmode ? 'white' : 'dark'"
@@ -338,7 +345,7 @@
                 icon="content_copy"
                 class="absolute-right"
                 size="md"
-                @click="copyToClipboard(vpnSetupConnection.allowedIPs)"
+                @click="copyToClipboard(vpnSetupConnection.allowedIps)"
               />
               <template v-slot:prepend>
                 <a
@@ -572,7 +579,11 @@ import { defineComponent, ref, Ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { useLocalStore } from 'stores/localStore';
-import { VPNSetupConnectionType, VPNClientInfoType } from 'src/types/index';
+import {
+  VPNConnectionType,
+  VPNInfoType,
+  VPNSetupInputType,
+} from 'src/types/index';
 import VPNHelpDialog from 'components/VPN/VPNHelpDialog.vue';
 import VPNInformation from 'components/VPN/VPNInformation.vue';
 import * as wireguard from 'components/VPN/wireguard.js';
@@ -606,16 +617,16 @@ export default defineComponent({
       setupVPNDialog: ref(false),
       setupVPNDialogSuccessful: ref(false),
       setupVPNDialogTabs: ref('info'),
-      vpnConnections: ref([]) as Ref<VPNClientInfoType[]>,
-      vpnClientInfo: ref({}) as Ref<VPNClientInfoType>,
+      vpnConnections: ref([]) as Ref<VPNInfoType[]>,
+      vpnClientInfo: ref({}) as Ref<VPNInfoType>,
 
       vpnSetupInput: ref({
-        publicKey: '',
-        privateKey: '',
+        clientPublicKey: '',
+        clientPrivateKey: '',
         name: '',
         autoKeyGeneration: true,
-      }),
-      vpnSetupConnection: ref({}) as Ref<VPNSetupConnectionType>,
+      }) as Ref<VPNSetupInputType>,
+      vpnSetupConnection: ref({}) as Ref<VPNConnectionType>,
     };
   },
 
@@ -630,14 +641,14 @@ export default defineComponent({
   },
 
   methods: {
-    deleteVPNConnection(con: VPNClientInfoType) {
+    deleteVPNConnection(con: VPNInfoType) {
       api
-        .delete('/vpn_torrent/delete/vpn/' + con.id, this.axiosConfig)
+        .delete('/vpn/delete/vpn/' + con.id, this.axiosConfig)
         .then((response) => {
           if (response.status == 200) {
             this.notify('positive', 'Deleted.');
             this.vpnInfoDialog = false;
-            this.vpnClientInfo = {} as VPNClientInfoType;
+            this.vpnClientInfo = {} as VPNInfoType;
             this.getVPNConnections();
           } else {
             this.notify('negative', response.data.error);
@@ -657,23 +668,23 @@ export default defineComponent({
       var config =
         '[Interface]\n' +
         'PrivateKey = ' +
-        this.vpnSetupConnection.privateKey +
+        this.vpnSetupConnection.clientPrivateKey +
         '\n' +
         'Address = ' +
         this.vpnSetupConnection.addresses +
         '\n' +
         'DNS = ' +
-        this.vpnSetupConnection.dnsServer +
+        this.vpnSetupConnection.dnsServers +
         '\n' +
         '[Peer]\n' +
         'PresharedKey = ' +
         this.vpnSetupConnection.presharedKey +
         '\n' +
         'PublicKey = ' +
-        this.vpnSetupConnection.serverKey +
+        this.vpnSetupConnection.serverPublicKey +
         '\n' +
         'AllowedIPs = ' +
-        this.vpnSetupConnection.allowedIPs +
+        this.vpnSetupConnection.allowedIps +
         '\n' +
         'Endpoint = ' +
         this.vpnSetupConnection.endpoint;
@@ -707,10 +718,10 @@ export default defineComponent({
     getVPNConnections() {
       this.loading = true;
       api
-        .get('/vpn_torrent/list/vpn', this.axiosConfig)
+        .get('/vpn/list/vpn', this.axiosConfig)
         .then((response) => {
           if (response.status == 200) {
-            this.vpnConnections = response.data.clients as VPNClientInfoType[];
+            this.vpnConnections = response.data.clients as VPNInfoType[];
             this.initialFetch = true;
             this.initialFetchSuccessful = true;
             this.loading = false;
@@ -735,7 +746,7 @@ export default defineComponent({
       if (
         this.vpnSetupInput.name.length < 1 ||
         (this.vpnSetupInput.autoKeyGeneration == false &&
-          this.vpnSetupInput.publicKey.length < 1)
+          this.vpnSetupInput.clientPublicKey.length < 1)
       ) {
         this.notify('negative', 'Please fill out all required fields.');
         return;
@@ -743,25 +754,26 @@ export default defineComponent({
 
       if (this.vpnSetupInput.autoKeyGeneration == true) {
         var keys = wireguard.generateKeypair();
-        this.vpnSetupInput.publicKey = keys.publicKey;
+        this.vpnSetupInput.clientPublicKey = keys.publicKey;
       }
 
       // don't transmit private key
-      var privateKey = this.vpnSetupInput.privateKey;
-      this.vpnSetupInput.privateKey = '';
+      var privateKey = this.vpnSetupInput.clientPrivateKey;
+      this.vpnSetupInput.clientPrivateKey = '';
 
       this.loading = true;
       api
-        .post('/vpn_torrent/create/vpn', this.vpnSetupInput, this.axiosConfig)
+        .post('/vpn/create/vpn', this.vpnSetupInput, this.axiosConfig)
         .then((response) => {
           if (response.status == 200) {
             this.vpnSetupConnection = response.data;
             if (this.vpnSetupInput.autoKeyGeneration == true) {
-              this.vpnSetupConnection.privateKey = keys.privateKey;
-              this.vpnSetupConnection.clientKey = keys.publicKey;
+              this.vpnSetupConnection.clientPrivateKey = keys.privateKey;
+              this.vpnSetupConnection.clientPublicKey = keys.publicKey;
             } else {
-              this.vpnSetupConnection.privateKey = privateKey;
-              this.vpnSetupConnection.clientKey = this.vpnSetupInput.publicKey;
+              this.vpnSetupConnection.clientPrivateKey = privateKey;
+              this.vpnSetupConnection.clientPublicKey =
+                this.vpnSetupInput.clientPublicKey;
             }
 
             this.setupVPNDialogSuccessful = true;

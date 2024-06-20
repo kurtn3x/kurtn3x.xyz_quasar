@@ -18,7 +18,7 @@ export const useLocalStore = defineStore('header', {
     isAuthenticated: (state) => state.authenticated,
     username: (state) => state.headerInfo.username,
     avatar: (state) => state.headerInfo.avatar,
-    isAdmin: (state) => state.headerInfo.is_admin,
+    isAdmin: (state) => state.headerInfo.isAdmin,
     darkmodeState: (state) => state.darkmode,
     themeState: (state) => state.theme,
   },
@@ -31,7 +31,7 @@ export const useLocalStore = defineStore('header', {
       this.headerInfo.username = data;
     },
     setHeaderInfoAdmin(data: boolean) {
-      this.headerInfo.is_admin = data;
+      this.headerInfo.isAdmin = data;
     },
     setHeaderInfo(info: HeaderInformationType) {
       this.headerInfo = info;

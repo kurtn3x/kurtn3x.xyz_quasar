@@ -212,7 +212,7 @@
               </q-input>
 
               <q-input
-                v-model="registerDataRequired.password2"
+                v-model="registerDataRequired.passwordConfirm"
                 label="Confirm Password"
                 outlined
                 input-style="font-size: 18px"
@@ -226,12 +226,12 @@
                 ]"
                 :type="isPwd2 ? 'password' : 'text'"
                 class="q-mt-sm"
-                ref="password2Input"
+                ref="passwordConfirmInput"
                 color="layout-text"
                 no-error-icon
                 dark
                 lazy-rules="ondemand"
-                @blur="isValidPassword2"
+                @blur="isValidPasswordConfirm"
               >
                 <template v-slot:prepend>
                   <q-icon color="layout-text" name="lock" />
@@ -249,7 +249,7 @@
                     flat
                     round
                     :tabindex="-1"
-                    v-if="!errorMap.password2Error"
+                    v-if="!errorMap.passwordConfirmError"
                     class="bg-white text-red q-ml-md"
                   >
                     <q-tooltip
@@ -271,7 +271,7 @@
                     flat
                     round
                     :tabindex="-1"
-                    v-if="errorMap.password2Error"
+                    v-if="errorMap.passwordConfirmError"
                     color="green"
                     class="no-pointer-events bg-white text-green q-ml-md"
                   />
@@ -392,7 +392,7 @@ export default {
     const registerDataRequired = ref({
       username: '',
       password: '',
-      password2: '',
+      passwordConfirm: '',
       email: '',
     });
 
@@ -423,7 +423,7 @@ export default {
         usernameError: ref(false),
         emailError: ref(false),
         passwordError: ref(false),
-        password2Error: ref(false),
+        passwordConfirmError: ref(false),
       }),
 
       checkErrorRequired: ref(true),
@@ -482,12 +482,12 @@ export default {
         this.testRequiredInformation();
       });
     },
-    async isValidPassword2() {
+    async isValidPasswordConfirm() {
       this.$nextTick(async () => {
         var val = await (
-          this.$refs.password2Input as InstanceType<typeof QInput>
+          this.$refs.passwordConfirmInput as InstanceType<typeof QInput>
         ).validate();
-        this.errorMap.password2Error = val;
+        this.errorMap.passwordConfirmError = val;
         this.testRequiredInformation();
       });
     },
@@ -497,7 +497,7 @@ export default {
         this.errorMap.usernameError &&
         this.errorMap.emailError &&
         this.errorMap.passwordError &&
-        this.errorMap.password2Error;
+        this.errorMap.passwordConfirmError;
       this.checkErrorRequired = !final;
     },
 
@@ -527,23 +527,20 @@ export default {
     },
 
     submitRegister() {
-      console.log(this.captchaData.value);
       if (this.checkErrorRequired) {
         this.$nextTick(() => {
           (this.$refs.errorText as HTMLElement).classList.add('shake');
         });
       } else {
         this.loading = true;
-        let form_data = new FormData();
-        form_data.append('username', this.registerDataRequired.username);
-        form_data.append('password', this.registerDataRequired.password);
-        form_data.append('password2', this.registerDataRequired.password2);
-        form_data.append('email', this.registerDataRequired.email);
-        form_data.append('captcha_uuid', this.captchaData.id);
-        form_data.append('captcha_value', this.captchaData.value);
+        const registerData = {
+          ...this.registerDataRequired,
+          captchaId: this.captchaData.id,
+          captchaValue: this.captchaData.value,
+        };
 
         api
-          .post('/auth/register', form_data, this.axiosConfig)
+          .post('/auth/register', registerData, this.axiosConfig)
           .then((response) => {
             if (response.status == 200) {
               this.registerSuccessful = true;

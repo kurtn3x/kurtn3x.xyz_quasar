@@ -35,7 +35,6 @@
             </template>
             <template v-slot:append>
               <q-icon
-                class="pw_icon"
                 :name="isPwd ? 'visibility' : 'visibility_off'"
                 @click="isPwd = !isPwd"
               />
@@ -416,7 +415,7 @@
                     Is Admin:
                   </q-item-section>
                   <q-item-section style="line-break: anywhere">
-                    {{ accountData.account.is_admin }}
+                    {{ accountData.account.isAdmin }}
                   </q-item-section>
                 </q-item>
 
@@ -427,7 +426,7 @@
                     Joined:
                   </q-item-section>
                   <q-item-section style="line-break: anywhere">
-                    {{ accountData.profile.date_joined }}
+                    {{ accountData.profile.dateJoined }}
                   </q-item-section>
                 </q-item>
 
@@ -483,7 +482,7 @@
                     >
                       <div class="row justify-center">
                         <q-input
-                          v-model="newEmail"
+                          v-model="updateEmailData.newEmail"
                           class="full-width"
                           style="max-width: 400px"
                           label="New Email"
@@ -510,7 +509,7 @@
                       </div>
                       <div class="row justify-center">
                         <q-input
-                          v-model="changeEmailPassword"
+                          v-model="updateEmailData.password"
                           class="q-mt-sm full-width"
                           style="max-width: 400px"
                           label="Current Password"
@@ -524,7 +523,6 @@
                           </template>
                           <template v-slot:append>
                             <q-icon
-                              class="pw_icon"
                               :name="isPwd2 ? 'visibility' : 'visibility_off'"
                               @click="isPwd2 = !isPwd2"
                             />
@@ -558,7 +556,7 @@
                     >
                       <div class="row justify-center">
                         <q-input
-                          v-model="newPassword"
+                          v-model="updatePasswordData.newPassword"
                           class="full-width"
                           style="max-width: 400px"
                           label="New Password"
@@ -592,7 +590,7 @@
                       </div>
                       <div class="row justify-center">
                         <q-input
-                          v-model="confirmNewPassword"
+                          v-model="updatePasswordData.newPasswordConfirm"
                           class="q-mt-sm full-width"
                           style="max-width: 400px"
                           label="Confirm New Password"
@@ -604,7 +602,8 @@
                           lazy-rules
                           :rules="[
                             (val) =>
-                              val == newPassword || 'Passwords do not match',
+                              val == updatePasswordData.newPassword ||
+                              'Passwords do not match',
                           ]"
                         >
                           <template v-slot:prepend>
@@ -614,7 +613,7 @@
                       </div>
                       <div class="row justify-center">
                         <q-input
-                          v-model="changePasswordPassword"
+                          v-model="updatePasswordData.password"
                           class="q-mt-sm full-width"
                           style="max-width: 400px"
                           label="Current Password"
@@ -628,7 +627,6 @@
                           </template>
                           <template v-slot:append>
                             <q-icon
-                              class="pw_icon"
                               :name="isPwd3 ? 'visibility' : 'visibility_off'"
                               @click="isPwd3 = !isPwd3"
                             />
@@ -713,20 +711,17 @@ export default {
       isPwd2: ref(true),
       isPwd3: ref(true),
 
-      // change password, username and email
-      newPassword: ref(''),
-      confirmNewPassword: ref(''),
-      newUsername: ref(''),
-      newEmail: ref(''),
-
       //fetch initialInformation
       initialFetch: ref(false),
       initialFetchSuccessful: ref(false),
 
       // password confirmations for change username, email & password
-      changeUsernamePassword: ref(''),
-      changeEmailPassword: ref(''),
-      changePasswordPassword: ref(''),
+      updateEmailData: ref({ newEmail: '', password: '' }),
+      updatePasswordData: ref({
+        newPassword: '',
+        newPasswordConfirm: '',
+        password: '',
+      }),
 
       // delete account dialog
       confirmDeleteAccountDialog: ref(false),
@@ -846,41 +841,16 @@ export default {
         });
     },
 
-    updateUsername() {
-      let data = {
-        new_username: this.newUsername,
-        password: this.changeUsernamePassword,
-      };
-      api
-        .put('/auth/update/username', data, this.axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
-            this.notify('positive', 'Username has been changed!');
-            this.getHeaderInfo();
-            this.getAccountInformation();
-          } else {
-            this.notify('negative', response.data.error);
-          }
-        })
-        .catch((error) => {
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            this.notify('negative', error.message);
-          }
-        });
-    },
-
     updatePassword() {
-      let data = {
-        new_password: this.newPassword,
-        password: this.changePasswordPassword,
-      };
       api
-        .put('/auth/update/password', data, this.axiosConfig)
+        .put('/auth/update', this.updatePasswordData, this.axiosConfig)
         .then((response) => {
           if (response.status == 200) {
-            this.clear_all();
+            this.updatePasswordData = {
+              newPassword: '',
+              newPasswordConfirm: '',
+              password: '',
+            };
           } else {
             this.notify('negative', response.data.error);
           }
@@ -895,16 +865,13 @@ export default {
     },
 
     updateEmail() {
-      let data = {
-        new_email: this.newEmail,
-        password: this.changeEmailPassword,
-      };
       api
-        .put('/auth/update/email', data, this.axiosConfig)
+        .put('/auth/update', this.updateEmailData, this.axiosConfig)
         .then((response) => {
           if (response.status == 200) {
             this.notify('positive', 'Email has been changed.');
             this.getAccountInformation();
+            this.updateEmailData = { newEmail: '', password: '' };
           } else {
             this.notify('negative', response.data.error);
           }
@@ -916,22 +883,6 @@ export default {
             this.notify('negative', error.message);
           }
         });
-    },
-
-    clear_all() {
-      api
-        .post('/auth/logout', '', this.axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
-            this.localStore.setAuthState(false);
-            LocalStorage.clear();
-            this.localStore.setHeaderInfo({} as HeaderInformationType);
-            LocalStorage.remove('header');
-            this.$router.push('/');
-            this.notify('positive', 'Password changed. Please login again.');
-          }
-        })
-        .catch();
     },
 
     onRejected() {

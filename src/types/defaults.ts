@@ -10,7 +10,7 @@ export function defaultUser() {
     description:
       'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore',
     location: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr',
-    date_joined: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr',
+    dateJoined: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr',
     avatar: 'https://media.kurtn3x.xyz/default.png',
     id: '',
   };
@@ -21,7 +21,7 @@ export function defaultUser() {
 export function defaultHeaderInformation() {
   const info: types.HeaderInformationType = {
     username: 'username',
-    is_admin: false,
+    isAdmin: false,
     avatar: 'https://media.kurtn3x.xyz/default.png',
   };
   return info;
@@ -37,13 +37,13 @@ export function defaultAccountSettings() {
       description: '',
       avatar: 'https://media.kurtn3x.xyz/default.png',
       role: '',
-      date_joined: '',
+      dateJoined: '',
       id: '',
     },
     account: {
       id: '',
       username: '',
-      is_admin: false,
+      isAdmin: false,
       email: '',
     },
   };
