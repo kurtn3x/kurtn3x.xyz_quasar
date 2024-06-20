@@ -21,7 +21,7 @@
       <div class="row q-mt-md">
         <div class="col-3 text-weight-bolder">Public Key</div>
         <div class="col">
-          {{ vpnClientInfo.client_publickey }}
+          {{ vpnClientInfo.clientPublicKey }}
         </div>
       </div>
     </div>

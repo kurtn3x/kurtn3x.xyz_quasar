@@ -61,7 +61,7 @@
             <div class="text-body1 q-mt-md row q-ml-sm">
               <div class="text-weight-bolder">Allow Read</div>
               <div class="q-ml-md">
-                {{ item.shared_allow_all_read }}
+                {{ item.sharedAllowAllRead }}
               </div>
             </div>
             <div class="text-body1 q-mt-md row q-ml-sm">
@@ -69,7 +69,7 @@
                 Allow Write
               </div>
               <div class="q-ml-md">
-                {{ item.shared_allow_all_write }}
+                {{ item.sharedAllowAllWrite }}
               </div>
             </div>
             <div class="text-body1 q-mt-md row q-ml-sm q-mb-sm">
@@ -77,7 +77,7 @@
                 Password Protected
               </div>
               <div class="q-ml-md">
-                {{ item.shared_password_protected }}
+                {{ item.sharedPasswordProtected }}
               </div>
             </div>
           </q-expansion-item>
@@ -101,12 +101,13 @@
   </q-card>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { defineProps } from 'vue';
+import { FolderEntryType } from 'src/types/index';
 
 const props = defineProps({
   propItem: Object,
 });
 
-var item = props.propItem;
+var item = props.propItem as FolderEntryType;
 </script>

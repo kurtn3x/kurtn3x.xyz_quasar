@@ -179,7 +179,7 @@ import { defineComponent, ref, Ref } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
-import { FileItemExtendedType } from 'src/types/index';
+import { SharedFileType } from 'src/types/index';
 import ViewerWrapper from 'src/components/Files/ViewerWrapper.vue';
 import { getIcon } from 'components/Files/mimeMap';
 
@@ -199,7 +199,7 @@ export default defineComponent({
       passwordOk: ref(false),
       password: ref(''),
       isPwd: ref(true),
-      item: ref({}) as Ref<FileItemExtendedType>,
+      item: ref({}) as Ref<SharedFileType>,
       filePreview: ref(false),
       itemInformationDialog: ref(false),
       getIcon,

@@ -136,7 +136,7 @@
         >
           <q-separator size="1px" :color="darkmode ? 'white' : 'dark'" />
           <q-tabs
-            v-model="profile_tab"
+            v-model="profileTab"
             align="justify"
             inline-label
             indicator-color="transparent"
@@ -164,7 +164,7 @@
             />
           </q-tabs>
           <q-separator size="1px" :color="darkmode ? 'white' : 'dark'" />
-          <q-tab-panels v-model="profile_tab" animated class="bg-transparent">
+          <q-tab-panels v-model="profileTab" animated class="bg-transparent">
             <q-tab-panel name="about">
               <q-card flat class="full-width full-height bg-transparent">
                 <div class="text-h5 text-weight-bold">About</div>
@@ -223,7 +223,7 @@
                       class="text-body1 items-center flex q-mt-sm"
                       style="height: 45px"
                     >
-                      {{ user.date_joined }}
+                      {{ user.dateJoined }}
                     </div>
                     <div
                       class="text-body1 items-center flex q-mt-sm"
@@ -299,7 +299,7 @@
           <q-separator size="1px" :color="darkmode ? 'white' : 'dark'" />
 
           <q-tabs
-            v-model="profile_tab"
+            v-model="profileTab"
             align="justify"
             inline-label
             indicator-color="transparent"
@@ -326,7 +326,7 @@
             />
           </q-tabs>
           <q-separator size="1px" :color="darkmode ? 'white' : 'dark'" />
-          <q-tab-panels v-model="profile_tab" animated class="bg-transparent">
+          <q-tab-panels v-model="profileTab" animated class="bg-transparent">
             <q-tab-panel name="about" class="bg-transparent">
               <q-card flat class="bg-transparent">
                 <q-card-section horizontal class="full-width bg-transparent">
@@ -350,7 +350,7 @@
                     <div class="text-body1 q-mt-sm">
                       <a class="text-weight-bolder">Joined</a>
                       <div style="line-break: anywhere" class="q-mb-sm">
-                        {{ user.date_joined }}
+                        {{ user.dateJoined }}
                       </div>
                     </div>
                     <q-separator />
@@ -417,9 +417,7 @@ export default {
       q,
       localStore,
       loading: ref(false),
-      profile_tab: ref('about'),
-      user_found: ref(false),
-      test: ref(false),
+      profileTab: ref('about'),
       userlink: ref('kurtn3x.xyz/id/'),
     };
   },

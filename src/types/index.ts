@@ -1,30 +1,27 @@
 import { CancelTokenSource } from 'axios';
 
-// this file includes all types used
-
-// Types for Files/ Folders
 export interface FolderEntryType {
   id: string;
   name: string;
   created: string;
   modified: string;
   shared: boolean;
-  shared_allow_all_read: boolean;
-  shared_allow_all_write: boolean;
-  shared_password_protected: boolean;
+  sharedAllowAllRead: boolean;
+  sharedAllowAllWrite: boolean;
+  sharedPasswordProtected: boolean;
   path: string;
   type: string;
   size: number;
   mime: string;
-  modified_iso: string;
-  created_iso: string;
-  size_bytes: number;
+  modifiedTimeIso: string;
+  createdTimeIso: string;
+  sizeBytes: number;
   // set on demand
   selected?: boolean;
-  drag_over?: boolean;
+  dragOver?: boolean;
 }
 
-export interface FileItemExtendedType {
+export interface SharedFileType {
   id: string;
   name: string;
   created: string;
@@ -55,8 +52,8 @@ export interface TraverseFolderMapType {
   id: number;
   name: string;
   entry?: FileSystemEntry;
-  parent_id: number;
-  folder_id?: number;
+  parentId: number;
+  folderId?: number;
 }
 // An Item in the UploadDialog,
 export interface UploadDialogEntryType {
@@ -86,9 +83,9 @@ export interface RawFolderContentType {
   name: string;
   modified: string;
   created: string;
-  shared_allow_all_read: boolean;
-  shared_allow_all_write: boolean;
-  shared_password_protected: boolean;
+  sharedAllowAllRead: boolean;
+  sharedAllowAllWrite: boolean;
+  sharedPasswordProtected: boolean;
   shared: boolean;
   parentid: string;
   path: string;
@@ -105,7 +102,7 @@ export interface AccountSettingsType {
 export interface AccountType {
   id: string;
   username: string;
-  is_admin: boolean;
+  isAdmin: boolean;
   email: string;
 }
 
@@ -114,7 +111,7 @@ export interface UserProfileType {
   role: string;
   username: string;
   name: string;
-  date_joined: string;
+  dateJoined: string;
   description: string;
   location: string;
   status: string;
@@ -124,36 +121,35 @@ export interface UserProfileType {
 
 export interface HeaderInformationType {
   username: string;
-  is_admin: boolean;
+  isAdmin: boolean;
   avatar: string;
 }
 
 // VPN
 
 export interface VPNSetupInputType {
-  publicKey: string;
+  clientPublicKey: string;
+  clientPrivateKey: string;
   name: string;
+  autoKeyGeneration: boolean;
 }
 
-export interface VPNSetupConnectionType {
+export interface VPNConnectionType {
   name: string;
   addresses: string;
-  // (Public Key of Client)
-  clientKey: string;
-  // Private Key of Client
-  privateKey: string;
-  // (Public Key of Server)
-  serverKey: string;
+  clientPublicKey: string;
+  clientPrivateKey: string;
+  serverPublicKey: string;
   presharedKey: string;
-  dnsServer: string;
-  allowedIPs: string;
+  dnsServers: string;
+  allowedIps: string;
   endpoint: string;
 }
 
-export interface VPNClientInfoType {
+export interface VPNInfoType {
   name: string;
   addresses: string;
-  client_publickey: string;
+  clientPublicKey: string;
   id: string;
   created: string;
   selected?: boolean;

@@ -33,7 +33,7 @@
       </q-toolbar>
       <div class="text-body1 text-center q-ma-sm">
         <q-input
-          v-model="sharingPasswordOptions.shared_password"
+          v-model="sharingPasswordOptions.sharedPassword"
           class="q-mt-sm full-width"
           style="max-width: 400px"
           label="Password"
@@ -83,7 +83,7 @@
           label="Copy"
           push
           class="bg-blue text-white col"
-          @click="copyToClipboard(sharingPasswordOptions.shared_password)"
+          @click="copyToClipboard(sharingPasswordOptions.sharedPassword)"
         />
       </q-card-actions>
       <q-separator />
@@ -94,7 +94,7 @@
           icon="close"
           label="Cancel"
           class="bg-red text-white col"
-          @click="sharingPasswordOptions.shared_password = ''"
+          @click="sharingPasswordOptions.sharedPassword = ''"
         />
         <q-btn
           push
@@ -103,7 +103,7 @@
           size="md"
           label="Set"
           @click="
-            sharingPasswordOptions.shared_password_protected = true;
+            sharingPasswordOptions.sharedPasswordProtected = true;
             updateSharingPassword();
           "
         />
@@ -148,7 +148,7 @@
           <q-item v-if="item.shared == true">
             <q-checkbox
               dense
-              v-model="sharingOptions.shared_allow_all_read"
+              v-model="sharingOptions.sharedAllowAllRead"
               color="green"
               label="Allow everyone to read"
               @click="updateSharing"
@@ -157,13 +157,13 @@
           <q-item v-if="item.shared == true">
             <q-checkbox
               dense
-              v-model="sharingOptions.shared_allow_all_write"
+              v-model="sharingOptions.sharedAllowAllWrite"
               color="green"
               label="Allow everyone to write"
               @click="updateSharing"
             />
           </q-item>
-          <q-item v-if="item.shared && item.shared_password_protected">
+          <q-item v-if="item.shared && item.sharedPasswordProtected">
             <q-item-section>
               <q-item-label
                 class="text-center text-green text-weight-bold"
@@ -183,7 +183,7 @@
                   icon="lock close"
                   class="col q-ml-sm bg-red text-white"
                   @click="
-                    sharingPasswordOptions.shared_password_protected = false;
+                    sharingPasswordOptions.sharedPasswordProtected = false;
                     updateSharingPassword();
                   "
                 />
@@ -191,9 +191,7 @@
             </q-item-section>
           </q-item>
           <q-item
-            v-if="
-              item.shared == true && item.shared_password_protected == false
-            "
+            v-if="item.shared == true && item.sharedPasswordProtected == false"
           >
             <q-btn
               push
@@ -335,17 +333,17 @@ export default defineComponent({
     var item = ref(props.propItem) as Ref<FolderEntryType>;
 
     var sharingOptions = ref({
-      item_id: item.value.id,
+      itemId: item.value.id,
       shared_recursive: true,
       shared: item.value.shared,
-      shared_allow_all_read: item.value.shared_allow_all_read,
-      shared_allow_all_write: item.value.shared_allow_all_write,
+      sharedAllowAllRead: item.value.sharedAllowAllRead,
+      sharedAllowAllWrite: item.value.sharedAllowAllWrite,
     });
 
     var sharingPasswordOptions = ref({
-      item_id: item.value.id,
-      shared_password_protected: item.value.shared_password_protected,
-      shared_password: '',
+      itemId: item.value.id,
+      sharedPasswordProtected: item.value.sharedPasswordProtected,
+      sharedPassword: '',
       isPwd: true,
     });
 
@@ -390,7 +388,7 @@ export default defineComponent({
       for (var i = 0, n = charset.length; i < length; ++i) {
         retVal += charset.charAt(Math.floor(Math.random() * n));
       }
-      this.sharingPasswordOptions.shared_password = retVal;
+      this.sharingPasswordOptions.sharedPassword = retVal;
     },
 
     copyToClipboard(text: string) {
@@ -472,7 +470,7 @@ export default defineComponent({
             // set item to sharingOptions values
             Object.assign(this.item, this.sharingPasswordOptions);
             this.notify('positive', 'Updated');
-            this.sharingPasswordOptions.shared_password = '';
+            this.sharingPasswordOptions.sharedPassword = '';
             this.sharingPasswordDialog = false;
           } else {
             this.notify('negative', response.data.error);

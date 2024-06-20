@@ -18,7 +18,7 @@
           <q-card-section align="center" class="q-mr-sm q-ml-sm">
             <q-form @submit="submitLogin">
               <q-input
-                v-model="loginUsername"
+                v-model="loginData.username"
                 outlined
                 label="Username"
                 input-style="font-size: 18px"
@@ -38,7 +38,7 @@
                 outlined
                 input-style="font-size: 18px;"
                 input-class="text-body1 text-layout-text"
-                v-model="loginPassword"
+                v-model="loginData.password"
                 label="Password"
                 :type="isPwd ? 'password' : 'text'"
                 class="q-mt-lg text-layout-text"
@@ -124,8 +124,10 @@ export default defineComponent({
       q,
       error: ref(false),
       loading: ref(false),
-      loginUsername: ref(''),
-      loginPassword: ref(''),
+      loginData: ref({
+        username: '',
+        password: '',
+      }),
       loginError: ref(false),
       loginErrorMessage: ref(''),
       isPwd: ref(true),
@@ -172,13 +174,8 @@ export default defineComponent({
     submitLogin() {
       this.loading = true;
 
-      const formData = {
-        username: this.loginUsername,
-        password: this.loginPassword,
-      };
-
       api
-        .post('/auth/login', formData, this.axiosConfig)
+        .post('/auth/login', this.loginData, this.axiosConfig)
         .then((response) => {
           if (response.status == 200) {
             this.localStore.loginUser(response.data);

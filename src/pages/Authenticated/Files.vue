@@ -203,59 +203,7 @@
               no-selection-unset
               no-results-label="No folder found"
               @update:selected="moveItemsUpdateSelectedLabel"
-            >
-              <!-- this is the add button in the tree, ugly af and annoying so removed for now -->
-              <!-- <template v-slot:default-body="prop">
-                <q-btn
-                  icon="add"
-                  v-if="(prop as any).node.temporary_show_input != true"
-                  @click="
-                    (prop as any).node.temporary_show_input = true;
-                    (prop as any).node.temporary_label = '';
-                  "
-                  push
-                  dense
-                  size="sm"
-                  color="green"
-                />
-                <q-input
-                  v-if="(prop as any).node.temporary_show_input==true"
-                  v-model="(prop as any).node.temporary_label"
-                  :rules="[
-                    (val) => !/\/|\x00/.test(val) || 'No slash or null char',
-                  ]"
-                  dense
-                  color="primary"
-                  filled
-                  autofocus
-                  hide-bottom-space
-                  @keyup.enter="createFolderMoveDialog(prop.node)"
-                  placeholder="Folder Name"
-                >
-                  <template v-slot:after>
-                    <q-btn
-                      icon="done"
-                      class="bg-green text-white"
-                      push
-                      size="sm"
-                      round
-                      @click="createFolderMoveDialog(prop.node)"
-                    />
-                    <q-btn
-                      icon="close"
-                      class="bg-red text-white"
-                      push
-                      size="sm"
-                      round
-                      @click="
-                        (prop as any).node.temporary_show_input = false;
-                        (prop as any).node.temporary_label = '';
-                      "
-                    />
-                  </template>
-                </q-input>
-              </template> -->
-            </q-tree>
+            />
           </q-scroll-area>
         </div>
         <q-separator />
@@ -1148,7 +1096,7 @@
                 v-droppable
                 v-draggable="['folder', item.id]"
                 :class="[
-                    (item as FolderEntryType).drag_over ? 'bg-indigo-11' : '',
+                    (item as FolderEntryType).dragOver ? 'bg-indigo-11' : '',
                     item.selected ? 'bg-cyan-14 text-white' : '',
                   ]"
                 @drag="showScroll"
@@ -1156,15 +1104,15 @@
                 @v-drag-enter="
                     (ev: string[]) => {
                       if (ev[1] != item.id) {
-                        (item as FolderEntryType).drag_over = true;
+                        (item as FolderEntryType).dragOver = true;
                       }
                     }
                   "
-                @v-drag-leave="(item as FolderEntryType).drag_over = false"
+                @v-drag-leave="(item as FolderEntryType).dragOver = false"
                 @v-drag-over="
                     (ev: string[]) => {
                       if (ev[1] != item.id) {
-                        (item as FolderEntryType).drag_over = true;
+                        (item as FolderEntryType).dragOver = true;
                       }
                     }
                   "
@@ -1174,7 +1122,7 @@
                       if (ev.dataTransfer!.items.length > 0) {
                         if (ev.dataTransfer!.items[0].kind == 'file') {
                           onFolderDrop(ev, item.id);
-                          (item as FolderEntryType).drag_over = false;
+                          (item as FolderEntryType).dragOver = false;
                         }
                       }
                     }
@@ -1183,7 +1131,7 @@
                     (ev: InputEvent) => {
                       if (ev.dataTransfer!.items.length > 0) {
                         if (ev.dataTransfer!.items[0].kind == 'file') {
-                          (item as FolderEntryType).drag_over = true;
+                          (item as FolderEntryType).dragOver = true;
                         }
                       }
                     }
@@ -1192,7 +1140,7 @@
                     (ev: InputEvent) => {
                       if (ev.dataTransfer!.items.length > 0) {
                         if (ev.dataTransfer!.items[0].kind == 'file') {
-                          (item as FolderEntryType).drag_over = true;
+                          (item as FolderEntryType).dragOver = true;
                         }
                       }
                     }
@@ -1201,7 +1149,7 @@
                     (ev: InputEvent) => {
                       if (ev.dataTransfer!.items.length > 0) {
                         if (ev.dataTransfer!.items[0].kind == 'file') {
-                          (item as FolderEntryType).drag_over = false;
+                          (item as FolderEntryType).dragOver = false;
                         }
                       }
                     }
@@ -1266,7 +1214,7 @@
                   class="row"
                 >
                   <q-item-label
-                    class="item_text ellipsis"
+                    class="itemText ellipsis"
                     :style="'--max-width: ' + itemTextWidth + 'px;'"
                   >
                     <q-icon name="share" v-if="item.shared" />
@@ -1385,7 +1333,7 @@
 
                 <q-item-section :style="'min-width:' + itemTextWidth + 'px;'">
                   <q-item-label
-                    class="item_text ellipsis"
+                    class="itemText ellipsis"
                     :style="'width: ' + itemTextWidth + 'px;'"
                   >
                     <q-icon name="share" v-if="item.shared" />
@@ -2094,8 +2042,8 @@ export default defineComponent({
      * @param   type - object: → name: string, value: number
      */
     sortRawFolderContent(type: { label: string; value: number }) {
-      var type_val = type.value;
-      if (type_val == 1) {
+      var typeVal = type.value;
+      if (typeVal == 1) {
         if (this.filterState.type == 1) {
           // reversed type (type is sorted alphabetically, just to group)
           this.rawFolderContent.children
@@ -2111,7 +2059,7 @@ export default defineComponent({
           this.resetFilterState();
           this.filterState.type = 1;
         }
-      } else if (type_val == 2) {
+      } else if (typeVal == 2) {
         if (this.filterState.name == 1) {
           // reversed alphabetically
           this.rawFolderContent.children
@@ -2132,12 +2080,12 @@ export default defineComponent({
 
           this.filterState.name = 1;
         }
-      } else if (type_val == 3) {
+      } else if (typeVal == 3) {
         if (this.filterState.created == 1) {
           // reversed created (item which was created first is shown first)
           this.rawFolderContent.children
             .sort((a: FolderEntryType, b: FolderEntryType) =>
-              a.created_iso.localeCompare(b.created_iso)
+              a.createdTimeIso.localeCompare(b.createdTimeIso)
             )
             .reverse();
           this.resetFilterState();
@@ -2146,19 +2094,19 @@ export default defineComponent({
           // created (item which was created last is shown first)
           this.rawFolderContent.children
             .sort((a: FolderEntryType, b: FolderEntryType) =>
-              a.created_iso.localeCompare(b.created_iso)
+              a.createdTimeIso.localeCompare(b.createdTimeIso)
             )
             .reverse();
           this.resetFilterState();
           this.filterState.created = 1;
         }
         this.resetFilterState();
-      } else if (type_val == 4) {
+      } else if (typeVal == 4) {
         if (this.filterState.modified == 1) {
           // by modified time reversed (oldest file is first)
           this.rawFolderContent.children.sort(
             (a: FolderEntryType, b: FolderEntryType) =>
-              a.modified_iso.localeCompare(b.modified_iso)
+              a.modifiedTimeIso.localeCompare(b.modifiedTimeIso)
           );
           this.resetFilterState();
 
@@ -2167,20 +2115,20 @@ export default defineComponent({
           // by modified time (newest file is first)
           this.rawFolderContent.children
             .sort((a: FolderEntryType, b: FolderEntryType) =>
-              a.modified_iso.localeCompare(b.modified_iso)
+              a.modifiedTimeIso.localeCompare(b.modifiedTimeIso)
             )
             .reverse();
           this.resetFilterState();
 
           this.filterState.modified = 1;
         }
-      } else if (type_val == 5) {
+      } else if (typeVal == 5) {
         if (this.filterState.size == 1) {
           // size, smallest first (folders are always 0, so first here)
           this.rawFolderContent.children
             .sort(
               (a: FolderEntryType, b: FolderEntryType) =>
-                a.size_bytes - b.size_bytes
+                a.sizeBytes - b.sizeBytes
             )
             .reverse();
           this.resetFilterState();
@@ -2190,13 +2138,13 @@ export default defineComponent({
           // size, largest first
           this.rawFolderContent.children.sort(
             (a: FolderEntryType, b: FolderEntryType) =>
-              a.size_bytes - b.size_bytes
+              a.sizeBytes - b.sizeBytes
           );
           this.resetFilterState();
 
           this.filterState.size = 1;
         }
-      } else if (type_val == 6) {
+      } else if (typeVal == 6) {
         if (this.filterState.shared == 1) {
           // shared reverse (not shared first)
           this.rawFolderContent.children.sort(
@@ -2294,8 +2242,8 @@ export default defineComponent({
                 type: 'folder',
                 id: this.uniqueFolderUploadId,
                 name: entry.name,
-                folder_id: uniqueFolderId,
-                parent_id: rememberParent,
+                folderId: uniqueFolderId,
+                parentId: rememberParent,
               };
               returnArray.push(folderStructure);
               // recursively call this function again to check for content
@@ -2308,7 +2256,7 @@ export default defineComponent({
                 id: this.uniqueFolderUploadId,
                 name: entry.name,
                 entry: entry,
-                parent_id: rememberParent,
+                parentId: rememberParent,
               };
               returnArray.push(fileEntity);
             }
@@ -2363,8 +2311,8 @@ export default defineComponent({
             type: 'folder',
             id: this.uniqueFolderUploadId,
             name: item.name,
-            folder_id: folderId,
-            parent_id: 0,
+            folderId: folderId,
+            parentId: 0,
           };
 
           var folderDirectory = [] as TraverseFolderMapType[];
@@ -2382,31 +2330,31 @@ export default defineComponent({
           var folderEntries = 0;
 
           // append the formData
-          let form_data = new FormData();
-          form_data.append('currentfolder', parentFolderId);
+          let formData = new FormData();
+          formData.append('currentfolder', parentFolderId);
           for (var thing of folderDirectory) {
             if (thing.type == 'folder') {
-              form_data.append(thing.id + '_type', 'folder');
-              form_data.append(thing.id + '_name', thing.name);
-              form_data.append(
+              formData.append(thing.id + '_type', 'folder');
+              formData.append(thing.id + '_name', thing.name);
+              formData.append(
                 thing.id + '_folderid',
-                (thing.folder_id as number).toString()
+                (thing.folderId as number).toString()
               );
-              form_data.append(
+              formData.append(
                 thing.id + '_parentid',
-                thing.parent_id.toString()
+                thing.parentId.toString()
               );
             } else {
               let file = (await this.getFile(
                 thing.entry as FileSystemFileEntry
               )) as File;
-              form_data.append(thing.id + '_type', 'file');
-              form_data.append(thing.id + '_name', thing.name);
-              form_data.append(thing.id + '_content', file as Blob);
-              form_data.append(thing.id + '_size', file.size.toString());
-              form_data.append(
+              formData.append(thing.id + '_type', 'file');
+              formData.append(thing.id + '_name', thing.name);
+              formData.append(thing.id + '_content', file as Blob);
+              formData.append(thing.id + '_size', file.size.toString());
+              formData.append(
                 thing.id + '_parentid',
-                thing.parent_id.toString()
+                thing.parentId.toString()
               );
               folderSizeByte += file.size;
             }
@@ -2455,7 +2403,7 @@ export default defineComponent({
           };
 
           var response = await api
-            .post('/files/upload/folder', form_data, config as any)
+            .post('/files/upload/folder', formData, config as any)
             .catch((error) => {
               folderProgress.status = 'error';
               folderProgress.statusColor = 'bg-red';
@@ -2473,14 +2421,14 @@ export default defineComponent({
             this.refreshFolder();
           }
         } else if (item.type == 'file' && item.content instanceof File) {
-          let form_data = new FormData();
+          let formData = new FormData();
           var file = item.content;
           var itemSize = file.size;
 
-          form_data.append('name', item.name);
-          form_data.append('parent_id', parentFolderId);
-          form_data.append('file', file);
-          form_data.append('size', itemSize.toString());
+          formData.append('name', item.name);
+          formData.append('parent_id', parentFolderId);
+          formData.append('file', file);
+          formData.append('size', itemSize.toString());
 
           let source = this.$axios.CancelToken.source();
 
@@ -2523,7 +2471,7 @@ export default defineComponent({
             },
           };
           var response = await api
-            .post('/files/upload/file', form_data, config as any)
+            .post('/files/upload/file', formData, config as any)
             .catch((error) => {
               fileProgress.status = 'error';
               fileProgress.statusColor = 'bg-red';
@@ -2756,13 +2704,11 @@ export default defineComponent({
     },
 
     // check if a name exists in current upload context (uploadFilesDialogUploadMap)
-    checkNameExistUploadContext(new_name: string, existing_name: string) {
-      if (new_name == existing_name) {
+    checkNameExistUploadContext(newName: string, existingName: string) {
+      if (newName == existingName) {
         return false;
       } else {
-        return this.uploadFilesDialogUploadMap.some(
-          (el) => el.name == new_name
-        );
+        return this.uploadFilesDialogUploadMap.some((el) => el.name == newName);
       }
     },
 
@@ -2871,64 +2817,6 @@ export default defineComponent({
     ///////////////////////////////////////////////////
     /////////// ADD / REMOVE OBJECTS //////////////////
     ///////////////////////////////////////////////////
-
-    // create Folder in move dialog, for better use this doesn't refetch
-    // allAvailableFolders, but instead appends to the existing object
-    createFolderMoveDialog(propNode: any) {
-      if (propNode.temporary_label.length < 1) {
-        this.notify('negative', 'Name must be at least 1 character long.');
-        return;
-      }
-      if (/\/|\x00/.test(propNode.temporary_label)) {
-        this.notify('negative', 'No slash or null char.');
-        return;
-      }
-
-      this.loading = true;
-
-      var parentId = propNode.id;
-
-      var data = {
-        parent_id: parentId,
-        name: propNode.temporary_label,
-      };
-
-      api
-        .post('/files/create/folder', data, this.axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
-            propNode.temporary_show_input = false;
-            propNode.temporary_label = '';
-            this.notify('positive', 'Created');
-            this.loading = false;
-            this.fetchAllAvailableFolders();
-            this.refreshFolder(true);
-
-            this.resetFilterState();
-            // if (this.allAvailableFolders[0].id == parentId ){
-            //   this.allAvailableFolders[0].children.push({
-
-            //   })
-            // }
-
-            // function findNode() {
-            //   return;
-            // }
-          } else {
-            this.notify('negative', response.data.error);
-            this.loading = false;
-          }
-        })
-        .catch((error) => {
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            this.notify('negative', error.message);
-          }
-          this.loading = false;
-        });
-    },
-
     // create folder
     createFolder() {
       if (this.newFolder.name.length < 1) {
@@ -2948,7 +2836,7 @@ export default defineComponent({
       this.loading = true;
 
       var data = {
-        parent_id: this.rawFolderContent.id,
+        parentId: this.rawFolderContent.id,
         name: this.newFolder.name,
       };
 
@@ -2993,19 +2881,14 @@ export default defineComponent({
       }
 
       this.loading = true;
-      var parts = [
-        new Blob(['you construct a file...'], { type: 'text/plain' }),
-        ' Same way as you do with blob',
-        new Uint16Array([33]),
-      ];
       var file = new File([''], this.newFile.name);
 
-      let form_data = new FormData();
-      form_data.append('file', file);
-      form_data.append('parent_id', this.rawFolderContent.id);
-      form_data.append('name', this.newFile.name);
-      form_data.append('mime', this.newFile.mime);
-      form_data.append('size', '0');
+      let formData = new FormData();
+      formData.append('file', file);
+      formData.append('parent_id', this.rawFolderContent.id);
+      formData.append('name', this.newFile.name);
+      formData.append('mime', this.newFile.mime);
+      formData.append('size', '0');
       let config = {
         withCredentials: true,
         headers: {
@@ -3014,7 +2897,7 @@ export default defineComponent({
         },
       };
       api
-        .post('/files/create/file', form_data, config)
+        .post('/files/create/file', formData, config)
         .then((response) => {
           if (response.status == 200) {
             this.createFileDialog = false;
@@ -3149,8 +3032,8 @@ export default defineComponent({
     // and when updating the parent of a single item
     updateItemParent(moveItemId: string, moveToId: string, type: string) {
       var data = {
-        item_id: moveItemId,
-        parent_id: moveToId,
+        itemId: moveItemId,
+        parentId: moveToId,
       };
       this.loading = true;
       api
@@ -3300,8 +3183,8 @@ export default defineComponent({
     createPermalink() {
       this.loading = true;
       var data = {
-        perm_link_name: 'wasd',
-        perm_link_type: 'wasd',
+        permLinkName: 'wasd',
+        permLinkType: 'wasd',
         id: 'wasd',
       };
       api
@@ -3335,8 +3218,8 @@ export default defineComponent({
       var itemtype = itemProps[0];
       var itemid = itemProps[1];
       var data = {
-        item_id: itemid,
-        parent_id: folderid,
+        itemId: itemid,
+        parentId: folderid,
       };
       if (folderid != itemid) {
         this.loading = true;
@@ -3371,7 +3254,7 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
-.item_text {
+.itemText {
   max-width: var(--max-width);
 }
 </style>
