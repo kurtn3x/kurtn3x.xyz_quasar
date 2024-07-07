@@ -169,7 +169,7 @@ function getFileContent() {
 
 function updateContent() {
   var data = {
-    item_id: item.value.id,
+    itemId: item.value.id,
     content: text.value,
   };
   api

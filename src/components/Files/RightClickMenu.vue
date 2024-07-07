@@ -334,7 +334,7 @@ export default defineComponent({
 
     var sharingOptions = ref({
       itemId: item.value.id,
-      shared_recursive: true,
+      sharedRecursive: true,
       shared: item.value.shared,
       sharedAllowAllRead: item.value.sharedAllowAllRead,
       sharedAllowAllWrite: item.value.sharedAllowAllWrite,
@@ -408,7 +408,7 @@ export default defineComponent({
 
       (this.$refs as any).inputMenu.hide();
       var data = {
-        item_id: this.item.id,
+        itemId: this.item.id,
         name: this.newName,
       };
       api

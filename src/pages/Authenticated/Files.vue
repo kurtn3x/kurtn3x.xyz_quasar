@@ -1659,7 +1659,7 @@ import { api } from 'boot/axios';
 import { draggable, selected } from 'components/Files/draggable.js';
 import { droppable } from 'components/Files/droppable.js';
 import RightClickMenu from 'components/Files/RightClickMenu.vue';
-import { FOLDER } from 'src/testdata/folder';
+// import { FOLDER } from 'src/testdata/folder';
 import ViewerWrapper from 'src/components/Files/ViewerWrapper.vue';
 import { getIcon } from 'src/components/Files/mimeMap';
 
@@ -1721,7 +1721,7 @@ export default defineComponent({
       initialFetchSuccessful: ref(false),
 
       // raw content including children of current folder
-      rawFolderContent: ref(FOLDER) as Ref<RawFolderContentType>,
+      rawFolderContent: ref({}) as Ref<RawFolderContentType>,
 
       // Dialog handlers when uploading files
       uploadFilesDialog: ref(false),
@@ -2235,7 +2235,7 @@ export default defineComponent({
             ) {
               // handle folders
 
-              // increment the parentid, which will result in a unique
+              // increment the parentId, which will result in a unique
               // id for each folder
               var uniqueFolderId = (parentId += 1);
               var folderStructure: TraverseFolderMapType = {
@@ -2271,10 +2271,10 @@ export default defineComponent({
     // if it is an folder, the folder is traversed and all child-elements are uploaded as well
     // because the data that is sent is FormData (flat array data)
     // an id is added to each file and folder, which maps them correctly to their parent element
-    // folders have folderids (their own id) and parentids (the folderid of the parent)
-    // files only have parentids (the folderid of the parent)
+    // folders have folderIds (their own id) and parentIds (the folderId of the parent)
+    // files only have parentIds (the folderId of the parent)
     // on top of that each folder and file has a unique id as well, which is needed to map the form-data correctly
-    // e.g. 1_name : hello.txt, 1_parentid = xyz, etc.
+    // e.g. 1_name : hello.txt, 1_parent_id = xyz, etc.
     async uploadFiles(
       uploadMap: UploadDialogEntryType[],
       parentFolderId: string
@@ -2331,17 +2331,17 @@ export default defineComponent({
 
           // append the formData
           let formData = new FormData();
-          formData.append('currentfolder', parentFolderId);
+          formData.append('current_folder', parentFolderId);
           for (var thing of folderDirectory) {
             if (thing.type == 'folder') {
               formData.append(thing.id + '_type', 'folder');
               formData.append(thing.id + '_name', thing.name);
               formData.append(
-                thing.id + '_folderid',
+                thing.id + '_folder_id',
                 (thing.folderId as number).toString()
               );
               formData.append(
-                thing.id + '_parentid',
+                thing.id + '_parent_id',
                 thing.parentId.toString()
               );
             } else {
@@ -2351,9 +2351,9 @@ export default defineComponent({
               formData.append(thing.id + '_type', 'file');
               formData.append(thing.id + '_name', thing.name);
               formData.append(thing.id + '_content', file as Blob);
-              formData.append(thing.id + '_size', file.size.toString());
+              formData.append(thing.id + '_size_bytes', file.size.toString());
               formData.append(
-                thing.id + '_parentid',
+                thing.id + '_parent_id',
                 thing.parentId.toString()
               );
               folderSizeByte += file.size;
@@ -2428,7 +2428,7 @@ export default defineComponent({
           formData.append('name', item.name);
           formData.append('parent_id', parentFolderId);
           formData.append('file', file);
-          formData.append('size', itemSize.toString());
+          formData.append('size_bytes', itemSize.toString());
 
           let source = this.$axios.CancelToken.source();
 
@@ -2471,7 +2471,7 @@ export default defineComponent({
             },
           };
           var response = await api
-            .post('/files/upload/file', formData, config as any)
+            .post('/files/create/file', formData, config as any)
             .catch((error) => {
               fileProgress.status = 'error';
               fileProgress.statusColor = 'bg-red';
@@ -2570,7 +2570,7 @@ export default defineComponent({
     // upload files by drag & dropping them on a folder object
     // this adds all items to be uploaded to a map and calls
     // the uploadfile function instantly
-    onFolderDrop(ev: InputEvent, itemid: string) {
+    onFolderDrop(ev: InputEvent, itemId: string) {
       var uploadMap = [];
       for (var item of (ev.dataTransfer as DataTransfer)
         .items as unknown as DataTransferItem[]) {
@@ -2599,7 +2599,7 @@ export default defineComponent({
         }
       }
 
-      this.uploadFiles(uploadMap, itemid);
+      this.uploadFiles(uploadMap, itemId);
     },
 
     // drag & drop when dropping files or folders on the
@@ -2787,10 +2787,10 @@ export default defineComponent({
     },
 
     // zip download caller
-    downloadAsZip(folderid: string) {
+    downloadAsZip(folderId: string) {
       window
         ?.open(
-          'https://api.kurtn3x.xyz/files/download/folder/' + folderid,
+          'https://api.kurtn3x.xyz/files/download/folder/' + folderId,
           '_blank'
         )
         ?.focus();
@@ -2888,7 +2888,7 @@ export default defineComponent({
       formData.append('parent_id', this.rawFolderContent.id);
       formData.append('name', this.newFile.name);
       formData.append('mime', this.newFile.mime);
-      formData.append('size', '0');
+      formData.append('size_bytes', '0');
       let config = {
         withCredentials: true,
         headers: {
@@ -3091,38 +3091,6 @@ export default defineComponent({
       }
     },
 
-    // go back navbar button
-    navGoBack() {
-      this.loading = true;
-      api
-        .get(
-          '/files/folder/' + this.rawFolderContent.parentid,
-          this.axiosConfig
-        )
-        .then((response) => {
-          if (response.status == 200) {
-            this.rawFolderContent = response.data;
-            this.navbarIndex.lastMovedItemId = '';
-            this.navbarIndex.navbarItems.pop();
-            this.selectedItems = [];
-            this.allSelected = false;
-            this.loading = false;
-            this.resetFilterState();
-          } else {
-            this.notify('negative', response.data.error);
-            this.loading = false;
-          }
-        })
-        .catch((error) => {
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            this.notify('negative', error.message);
-          }
-          this.loading = false;
-        });
-    },
-
     ///////////////////////////////////////////////////
     /////////// SCROLLBAR METHODS /////////////////////
     ///////////////////////////////////////////////////
@@ -3138,12 +3106,12 @@ export default defineComponent({
       this.mediaItem = item;
     },
 
-    // get Folder content with folderid
+    // get Folder content with folderId
     // used when clicking on a folder in the scrollarea
-    getFolderId(folderid: string, navbarAdd: boolean) {
+    getFolderId(folderId: string, navbarAdd: boolean) {
       this.loading = true;
       api
-        .get('/files/folder/' + folderid, this.axiosConfig)
+        .get('/files/folder/' + folderId, this.axiosConfig)
         .then((response) => {
           if (response.status == 200) {
             this.rawFolderContent = response.data;
@@ -3214,14 +3182,14 @@ export default defineComponent({
 
     // drag and drop update parent folder
     // used when dropping a scrollarea-item on a folder
-    changeParentDragNDrop(itemProps: (string | number)[], folderid: string) {
+    changeParentDragNDrop(itemProps: (string | number)[], folderId: string) {
       var itemtype = itemProps[0];
-      var itemid = itemProps[1];
+      var itemId = itemProps[1];
       var data = {
-        itemId: itemid,
-        parentId: folderid,
+        itemId: itemId,
+        parentId: folderId,
       };
-      if (folderid != itemid) {
+      if (folderId != itemId) {
         this.loading = true;
         api
           .put('/files/update/' + itemtype, data, this.axiosConfig)

@@ -145,7 +145,7 @@
             @update="
               (args) => {
                 item.size = args.size;
-                item.size_bytes = args.size_bytes;
+                item.sizeBytes = args.sizeBytes;
               }
             "
           />

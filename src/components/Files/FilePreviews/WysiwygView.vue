@@ -167,7 +167,7 @@ function getFileContent() {
 }
 function updateContent() {
   var data = {
-    item_id: item.value.id,
+    itemId: item.value.id,
     content: text.value,
   };
   api
@@ -183,7 +183,7 @@ function updateContent() {
           item.value.size = response.data.size;
         }
         if ('size_bytes' in response.data) {
-          item.value.size_bytes = response.data.size_bytes;
+          item.value.sizeBytes = response.data.sizeBytes;
         }
       } else {
         q.notify({

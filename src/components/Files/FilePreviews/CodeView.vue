@@ -312,7 +312,7 @@ function getFileContent() {
 
 function updateContent() {
   var data = {
-    item_id: item.value.id,
+    itemId: item.value.id,
     content: text.value,
   };
   api
@@ -327,8 +327,8 @@ function updateContent() {
         if ('size' in response.data) {
           item.value.size = response.data.size;
         }
-        if ('size_bytes' in response.data) {
-          item.value.size_bytes = response.data.size_bytes;
+        if ('sizeBytes' in response.data) {
+          item.value.sizeBytes = response.data.sizeBytes;
         }
       } else {
         q.notify({
@@ -349,7 +349,7 @@ function updateContent() {
 
 function updateSyntax(syntax) {
   var data = {
-    item_id: item.value.id,
+    itemId: item.value.id,
     mime: 'text/code-' + syntax,
   };
   api

@@ -32,8 +32,8 @@ export interface SharedFileType {
   mime: string;
   permissions: string;
   owner: string;
-  ownerid: string;
-  parentid: string;
+  ownerId: string;
+  parentId: string;
 }
 
 export interface UploadProgressEntryType {
@@ -87,7 +87,7 @@ export interface RawFolderContentType {
   sharedAllowAllWrite: boolean;
   sharedPasswordProtected: boolean;
   shared: boolean;
-  parentid: string;
+  parentId: string;
   path: string;
   type: string;
   children: FolderEntryType[];

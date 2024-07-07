@@ -673,7 +673,7 @@ import { useQuasar, LocalStorage } from 'quasar';
 import { api } from 'boot/axios';
 import { useLocalStore } from 'stores/localStore';
 import { defaultHeaderInformation } from 'src/types/defaults';
-import { AccountSettingsType, HeaderInformationType } from 'src/types/index';
+import { AccountSettingsType } from 'src/types/index';
 import { defaultAccountSettings } from '../../types/defaults';
 import { themes } from 'components/themes';
 
