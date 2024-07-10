@@ -577,7 +577,6 @@
 <script lang="ts">
 import { defineComponent, ref, Ref } from 'vue';
 import { useQuasar } from 'quasar';
-import { api } from 'boot/axios';
 import { useLocalStore } from 'stores/localStore';
 import {
   VPNConnectionType,
@@ -586,6 +585,7 @@ import {
 } from 'src/types/index';
 import VPNHelpDialog from 'components/VPN/VPNHelpDialog.vue';
 import VPNInformation from 'components/VPN/VPNInformation.vue';
+import { apiGet, apiPost, apiDelete } from 'src/apiWrapper';
 import * as wireguard from 'components/VPN/wireguard.js';
 
 export default defineComponent({
@@ -642,25 +642,16 @@ export default defineComponent({
 
   methods: {
     deleteVPNConnection(con: VPNInfoType) {
-      api
-        .delete('/vpn/delete/vpn/' + con.id, this.axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
-            this.notify('positive', 'Deleted.');
-            this.vpnInfoDialog = false;
-            this.vpnClientInfo = {} as VPNInfoType;
-            this.getVPNConnections();
-          } else {
-            this.notify('negative', response.data.error);
-          }
-        })
-        .catch((error) => {
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            this.notify('negative', error.message);
-          }
-        });
+      this.loading = true;
+      apiDelete('/vpn/client/' + con.id, this.axiosConfig).then((apiData) => {
+        if (apiData.error == false) {
+          this.notify('positive', 'Deleted.');
+          this.getVPNConnections();
+        } else {
+          this.notify('negative', apiData.errorMessage);
+        }
+        this.loading = false;
+      });
     },
 
     downloadConfiguration() {
@@ -717,29 +708,16 @@ export default defineComponent({
 
     getVPNConnections() {
       this.loading = true;
-      api
-        .get('/vpn/list/vpn', this.axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
-            this.vpnConnections = response.data.clients as VPNInfoType[];
-            this.initialFetch = true;
-            this.initialFetchSuccessful = true;
-            this.loading = false;
-          } else {
-            this.initialFetch = true;
-            this.notify('negative', response.data.error);
-            this.loading = false;
-          }
-        })
-        .catch((error) => {
+      apiGet('/vpn/client', this.axiosConfig).then((apiData) => {
+        if (apiData.error == false) {
+          this.vpnConnections = (apiData.data as any).clients as VPNInfoType[];
           this.initialFetch = true;
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            this.notify('negative', error.message);
-          }
-          this.loading = false;
-        });
+          this.initialFetchSuccessful = true;
+        } else {
+          this.notify('negative', apiData.errorMessage);
+        }
+        this.loading = false;
+      });
     },
 
     createVPNClient() {
@@ -762,48 +740,30 @@ export default defineComponent({
       this.vpnSetupInput.clientPrivateKey = '';
 
       this.loading = true;
-      api
-        .post('/vpn/create/vpn', this.vpnSetupInput, this.axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
-            this.vpnSetupConnection = response.data;
+      apiPost('/vpn/client', this.vpnSetupInput, this.axiosConfig).then(
+        (apiData) => {
+          if (apiData.error == false) {
+            this.vpnSetupConnection = apiData.data;
             if (this.vpnSetupInput.autoKeyGeneration == true) {
+              // use generated keys
               this.vpnSetupConnection.clientPrivateKey = keys.privateKey;
               this.vpnSetupConnection.clientPublicKey = keys.publicKey;
             } else {
+              // use keys from input
               this.vpnSetupConnection.clientPrivateKey = privateKey;
               this.vpnSetupConnection.clientPublicKey =
                 this.vpnSetupInput.clientPublicKey;
             }
-
             this.setupVPNDialogSuccessful = true;
             this.setupVPNDialog = false;
-            this.loading = false;
             this.getVPNConnections();
           } else {
-            this.notify('negative', response.data.error);
-            this.loading = false;
-          }
-        })
-        .catch((error) => {
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            this.notify('negative', error.message);
+            this.notify('negative', apiData.errorMessage);
           }
           this.loading = false;
-        });
+        }
+      );
     },
   },
 });
 </script>
-
-<style scoped>
-.disable-select {
-  user-select: none; /* supported by Chrome and Opera */
-  -webkit-user-select: none; /* Safari */
-  -khtml-user-select: none; /* Konqueror HTML */
-  -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* Internet Explorer/Edge */
-}
-</style>

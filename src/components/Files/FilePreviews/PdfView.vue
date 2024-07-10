@@ -117,7 +117,7 @@ import {
   onBeforeUnmount,
 } from 'vue';
 import { useQuasar } from 'quasar';
-import { api } from 'boot/axios';
+import { apiGet } from 'src/apiWrapper';
 import { toRaw } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
@@ -317,21 +317,21 @@ function toogleDarkmode() {
 }
 
 async function getPdfFile() {
-  await api
-    .get(
-      '/files/file-content/' +
-        item.value.id +
-        (props.password != '' ? '?password=' + props.password : ''),
-      axiosConfig
-    )
-    .then((response) => {
-      base64.value = 'data:application/pdf;base64,' + response.data.content;
+  await apiGet(
+    '/files/file-content/' +
+      item.value.id +
+      (props.password != '' ? '?password=' + props.password : ''),
+    axiosConfig
+  ).then((apiData) => {
+    if (apiData.error == false) {
+      base64.value = 'data:application/pdf;base64,' + apiData.data.content;
       error.value = false;
-    })
-    .catch(() => {
+      // do not abort loading here, as the pdf does still need to be loaded by the pdf library
+    } else {
       error.value = true;
       loading.value = false;
-    });
+    }
+  });
 }
 
 function onResize(size) {

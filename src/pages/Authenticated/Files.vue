@@ -2,10 +2,10 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="initialFetch && initialFetchSuccessful">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="initialFetch && !initialFetchSuccessful">
     <viewer-wrapper
       :propItem="mediaItem"
       :active="mediaPreview"
@@ -1659,9 +1659,9 @@ import { api } from 'boot/axios';
 import { draggable, selected } from 'components/Files/draggable.js';
 import { droppable } from 'components/Files/droppable.js';
 import RightClickMenu from 'components/Files/RightClickMenu.vue';
-// import { FOLDER } from 'src/testdata/folder';
 import ViewerWrapper from 'src/components/Files/ViewerWrapper.vue';
 import { getIcon } from 'src/components/Files/mimeMap';
+import { apiGet, apiPut, apiPost, apiDelete } from 'src/apiWrapper';
 
 import type { Ref } from 'vue';
 import type {
@@ -1920,11 +1920,6 @@ export default defineComponent({
       return this.localStore.darkmode;
     },
 
-    scrollAreaHeight() {
-      var height = this.q.screen.height - 200;
-      return { height: height + 'px' };
-    },
-
     navBarWidth() {
       var width = this.q.screen.width - 65;
       return { width: width + 'px' };
@@ -1974,40 +1969,19 @@ export default defineComponent({
       this.scrollShow.bottom = false;
     },
 
-    log(something: any) {
-      console.log(something);
-    },
-
     // get Home folder
     getHomeFolder() {
       this.loading = true;
-      api
-        .get('/files/home', this.axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
-            this.rawFolderContent = response.data;
-            this.navbarIndex.homeFolderId = response.data.id;
-            this.initialFetch = true;
-            this.initialFetchSuccessful = true;
-            this.loading = false;
-            this.selectedItems = [];
-            this.allSelected = false;
-            this.resetFilterState();
-          } else {
-            this.initialFetch = true;
-            this.notify('negative', response.data.error);
-            this.loading = false;
-          }
-        })
-        .catch((error) => {
-          this.initialFetch = true;
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            this.notify('negative', error.message);
-          }
-          this.loading = false;
-        });
+      apiGet('/files/folder/home', this.axiosConfig).then((apiData) => {
+        if (apiData.error == false) {
+          this.rawFolderContent = apiData.data as RawFolderContentType;
+          this.initialFetchSuccessful = true;
+        } else {
+          this.notify('negative', apiData.errorMessage);
+        }
+        this.initialFetch = true;
+        this.loading = false;
+      });
     },
 
     ///////////////////////////////////////////////////
@@ -2471,7 +2445,7 @@ export default defineComponent({
             },
           };
           var response = await api
-            .post('/files/create/file', formData, config as any)
+            .post('/files/file', formData, config as any)
             .catch((error) => {
               fileProgress.status = 'error';
               fileProgress.statusColor = 'bg-red';
@@ -2735,35 +2709,23 @@ export default defineComponent({
     },
 
     // universal function to refetch the current folder when any change is made
-    // contentOnly → if false, also clears anything else that might get bugged (100% clean refresh)
-    // if true actually only refreshes the content of the folder
-    refreshFolder(contentOnly = false) {
+    refreshFolder() {
       this.loading = true;
-      api
-        .get('/files/folder/' + this.rawFolderContent.id, this.axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
-            this.rawFolderContent = response.data;
-            this.loading = false;
-            if (contentOnly == false) {
-              this.allAvailableFolders = [];
-              this.selectedItems = [];
-              this.allSelected = false;
-              this.resetFilterState();
-            }
-          } else {
-            this.notify('negative', response.data.error);
-            this.loading = false;
-          }
-        })
-        .catch((error) => {
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            this.notify('negative', error.message);
-          }
-          this.loading = false;
-        });
+      apiGet(
+        '/files/folder/' + this.rawFolderContent.id,
+        this.axiosConfig
+      ).then((apiData) => {
+        if (apiData.error == false) {
+          this.rawFolderContent = apiData.data as RawFolderContentType;
+          this.allAvailableFolders = [];
+          this.selectedItems = [];
+          this.allSelected = false;
+          this.resetFilterState();
+        } else {
+          this.notify('negative', apiData.errorMessage);
+        }
+        this.loading = false;
+      });
     },
 
     fileSizeIEC(bytes: number) {
@@ -2833,36 +2795,24 @@ export default defineComponent({
         return;
       }
 
-      this.loading = true;
-
       var data = {
         parentId: this.rawFolderContent.id,
         name: this.newFolder.name,
       };
 
-      api
-        .post('/files/create/folder', data, this.axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
-            this.newFolder.name = '';
-            this.newFolder.show = false;
-            this.notify('positive', 'Created');
-            this.loading = false;
-            this.refreshFolder();
-            this.resetFilterState();
-          } else {
-            this.notify('negative', response.data.error);
-            this.loading = false;
-          }
-        })
-        .catch((error) => {
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            this.notify('negative', error.message);
-          }
-          this.loading = false;
-        });
+      this.loading = true;
+      apiPost('/files/folder', data, this.axiosConfig).then((apiData) => {
+        if (apiData.error == false) {
+          this.newFolder.name = '';
+          this.newFolder.show = false;
+          this.notify('positive', 'Created');
+          this.refreshFolder();
+          this.resetFilterState();
+        } else {
+          this.notify('negative', apiData.errorMessage);
+        }
+        this.loading = false;
+      });
     },
 
     createFile() {
@@ -2896,54 +2846,37 @@ export default defineComponent({
           'Content-Type': 'multipart/form-data',
         },
       };
-      api
-        .post('/files/create/file', formData, config)
-        .then((response) => {
-          if (response.status == 200) {
-            this.createFileDialog = false;
-            this.notify('positive', 'Created');
-            this.loading = false;
-            this.refreshFolder();
-            this.resetFilterState();
-          } else {
-            this.notify('negative', response.data.error);
-            this.loading = false;
-          }
-        })
-        .catch((error) => {
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            this.notify('negative', error.message);
-          }
-          this.loading = false;
-        });
+
+      this.loading = true;
+      apiPost('/files/folder', formData, config).then((apiData) => {
+        if (apiData.error == false) {
+          this.newFolder.name = '';
+          this.newFolder.show = false;
+          this.notify('positive', 'Created');
+          this.refreshFolder();
+          this.resetFilterState();
+        } else {
+          this.notify('negative', apiData.errorMessage);
+        }
+        this.loading = false;
+      });
     },
 
     // delete objects
     deleteObj(id: string, type: string) {
       this.loading = true;
-      api
-        .delete('/files/delete/' + type + '/' + id, this.axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
+      apiDelete('/files/' + type + '/' + id, this.axiosConfig).then(
+        (apiData) => {
+          if (apiData.error == false) {
             this.notify('positive', 'Deleted');
-            this.loading = false;
             this.refreshFolder();
             this.resetFilterState();
           } else {
-            this.notify('negative', response.data.error);
-            this.loading = false;
-          }
-        })
-        .catch((error) => {
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            this.notify('negative', error.message);
+            this.notify('negative', apiData.errorMessage);
           }
           this.loading = false;
-        });
+        }
+      );
     },
 
     // deleting all selected items
@@ -2969,23 +2902,21 @@ export default defineComponent({
     fetchAllAvailableFolders() {
       this.moveItemsExpanded = [];
       this.allAvailableFolders = [];
-      api
-        .get('/files/list_all_available_folders', this.axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
-            this.allAvailableFolders = response.data;
-            this.moveItemsExpanded.push(response.data[0].id);
-          } else {
-            this.notify('negative', response.data.error);
-          }
-        })
-        .catch((error) => {
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            this.notify('negative', error.message);
-          }
-        });
+      this.loading = true;
+      apiGet(
+        '/files/folder/' + this.rawFolderContent.id,
+        this.axiosConfig
+      ).then((apiData) => {
+        if (apiData.error == false) {
+          this.allAvailableFolders = apiData.data as AllAvailableFoldersType[];
+          this.moveItemsExpanded.push(
+            (apiData.data as AllAvailableFoldersType[])[0].id
+          );
+        } else {
+          this.notify('negative', apiData.errorMessage);
+        }
+        this.loading = false;
+      });
     },
 
     // when moving an item or items via the dialog, show the path of the selected folder
@@ -3031,32 +2962,23 @@ export default defineComponent({
     // update parent of an item, used by above moveSelection method
     // and when updating the parent of a single item
     updateItemParent(moveItemId: string, moveToId: string, type: string) {
+      this.loading = true;
       var data = {
         itemId: moveItemId,
         parentId: moveToId,
       };
-      this.loading = true;
-      api
-        .put('/files/update/' + type, data, this.axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
+      apiPut('/files/' + type + '/' + moveItemId, data, this.axiosConfig).then(
+        (apiData) => {
+          if (apiData.error == false) {
             this.notify('positive', 'Updated');
             this.refreshFolder();
             this.resetFilterState();
-            this.loading = false;
           } else {
-            this.notify('negative', response.data.error);
-            this.loading = false;
-          }
-        })
-        .catch((error) => {
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            this.notify('negative', error.message);
+            this.notify('negative', apiData.errorMessage);
           }
           this.loading = false;
-        });
+        }
+      );
     },
 
     ///////////////////////////////////////////////////
@@ -3110,70 +3032,23 @@ export default defineComponent({
     // used when clicking on a folder in the scrollarea
     getFolderId(folderId: string, navbarAdd: boolean) {
       this.loading = true;
-      api
-        .get('/files/folder/' + folderId, this.axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
-            this.rawFolderContent = response.data;
-
-            // push the data to the navbarindex map
-            if (navbarAdd == true) {
-              this.navbarIndex.navbarItems.push({
-                name: response.data.name,
-                id: response.data.id,
-              });
-            }
-
-            this.loading = false;
-            this.selectedItems = [];
-            this.allSelected = false;
-            this.resetFilterState();
-          } else {
-            this.notify('negative', response.data.error);
-            this.loading = false;
+      apiGet('/files/folder/' + folderId, this.axiosConfig).then((apiData) => {
+        if (apiData.error == false) {
+          this.rawFolderContent = apiData.data as RawFolderContentType;
+          if (navbarAdd == true) {
+            this.navbarIndex.navbarItems.push({
+              name: this.rawFolderContent.name,
+              id: this.rawFolderContent.id,
+            });
           }
-        })
-        .catch((error) => {
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            this.notify('negative', error.message);
-          }
-          this.loading = false;
-        });
-    },
-
-    ///////////////////////////////////////////////////
-    ///////////  METHODS //////////////////////////////
-    ///////////////////////////////////////////////////
-
-    // create new permalink
-    createPermalink() {
-      this.loading = true;
-      var data = {
-        permLinkName: 'wasd',
-        permLinkType: 'wasd',
-        id: 'wasd',
-      };
-      api
-        .post('/files/create/permalink', data, this.axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
-            this.notify('positive', 'OK.');
-            this.loading = false;
-          } else {
-            this.notify('negative', response.data.error);
-            this.loading = false;
-          }
-        })
-        .catch((error) => {
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            this.notify('negative', error.message);
-          }
-          this.loading = false;
-        });
+          this.selectedItems = [];
+          this.allSelected = false;
+          this.resetFilterState();
+        } else {
+          this.notify('negative', apiData.errorMessage);
+        }
+        this.loading = false;
+      });
     },
 
     ///////////////////////////////////////////////////
@@ -3183,7 +3058,7 @@ export default defineComponent({
     // drag and drop update parent folder
     // used when dropping a scrollarea-item on a folder
     changeParentDragNDrop(itemProps: (string | number)[], folderId: string) {
-      var itemtype = itemProps[0];
+      var itemType = itemProps[0];
       var itemId = itemProps[1];
       var data = {
         itemId: itemId,
@@ -3191,30 +3066,22 @@ export default defineComponent({
       };
       if (folderId != itemId) {
         this.loading = true;
-        api
-          .put('/files/update/' + itemtype, data, this.axiosConfig)
-          .then((response) => {
-            if (response.status == 200) {
-              this.notify('positive', 'Updated');
-              this.refreshFolder();
-              this.resetFilterState();
-
-              this.loading = false;
-              this.selectedItems = [];
-              this.allSelected = false;
-            } else {
-              this.notify('negative', response.data.error);
-              this.loading = false;
-            }
-          })
-          .catch((error) => {
-            if (error.response) {
-              this.notify('negative', error.response.data.error);
-            } else {
-              this.notify('negative', error.message);
-            }
-            this.loading = false;
-          });
+        apiPut(
+          '/files/' + itemType + '/' + itemId,
+          data,
+          this.axiosConfig
+        ).then((apiData) => {
+          if (apiData.error == false) {
+            this.notify('positive', 'Updated');
+            this.refreshFolder();
+            this.resetFilterState();
+            this.selectedItems = [];
+            this.allSelected = false;
+          } else {
+            this.notify('negative', apiData.errorMessage);
+          }
+          this.loading = false;
+        });
       }
     },
   },

@@ -112,7 +112,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { api } from 'boot/axios';
+import { apiGet, apiPut } from 'src/apiWrapper';
 import { defineProps, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { useLocalStore } from 'stores/localStore';
@@ -148,57 +148,48 @@ watch(
 );
 
 function getFileContent() {
-  api
-    .get(
-      '/files/file-content/' +
-        item.value.id +
-        (props.password != '' ? '?password=' + props.password : ''),
-      axiosConfig
-    )
-    .then((response) => {
-      text.value = response.data.content;
+  apiGet(
+    '/files/file-content/' +
+      item.value.id +
+      (props.password != '' ? '?password=' + props.password : ''),
+    axiosConfig
+  ).then((apiData) => {
+    if (apiData.error == false) {
+      text.value = apiData.data.content;
       loading.value = false;
       error.value = false;
-    })
-    .catch(() => {
+    } else {
       loading.value = false;
       error.value = true;
-    });
+    }
+  });
 }
 function updateContent() {
   var data = {
-    itemId: item.value.id,
     content: text.value,
   };
-  api
-    .put('/files/update-content/file', data, axiosConfig)
-    .then((response) => {
-      if (response.status == 200) {
+  apiPut('/files/file-content/' + item.value.id, data, axiosConfig).then(
+    (apiData) => {
+      if (apiData.error == false) {
         q.notify({
           type: 'positive',
           message: 'Saved.',
           progress: true,
         });
-        if ('size' in response.data) {
-          item.value.size = response.data.size;
+        if ('size' in apiData.data) {
+          item.value.size = apiData.data.size;
         }
-        if ('size_bytes' in response.data) {
-          item.value.sizeBytes = response.data.sizeBytes;
+        if ('sizeBytes' in apiData.data) {
+          item.value.sizeBytes = apiData.data.sizeBytes;
         }
       } else {
         q.notify({
           type: 'negative',
-          message: 'Something went wrong.',
+          message: apiData.errorMessage,
           progress: true,
         });
       }
-    })
-    .catch(() => {
-      q.notify({
-        type: 'negative',
-        message: 'Something went wrong.',
-        progress: true,
-      });
-    });
+    }
+  );
 }
 </script>

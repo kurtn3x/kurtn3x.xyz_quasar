@@ -124,7 +124,7 @@
 </template>
 
 <script setup>
-import { api } from 'boot/axios';
+import { apiPut, apiGet } from 'src/apiWrapper';
 import {
   defineProps,
   reactive,
@@ -287,64 +287,51 @@ onMounted(async () => {
 
 // functions
 function getFileContent() {
-  api
-    .get(
-      '/files/file-content/' +
-        item.value.id +
-        (props.password != '' ? '?password=' + props.password : ''),
-      axiosConfig
-    )
-    .then((response) => {
-      if (response.status == 200) {
-        text.value = response.data.content;
-        loading.value = false;
-        error.value = false;
-      } else {
-        loading.value = false;
-        error.value = true;
-      }
-    })
-    .catch(() => {
+  apiGet(
+    '/files/file-content/' +
+      item.value.id +
+      '/' +
+      (props.password != '' ? '?password=' + props.password : ''),
+    axiosConfig
+  ).then((apiData) => {
+    if (apiData.error == false) {
+      text.value = response.data.content;
+      loading.value = false;
+      error.value = false;
+    } else {
       loading.value = false;
       error.value = true;
-    });
+    }
+  });
 }
 
 function updateContent() {
   var data = {
-    itemId: item.value.id,
     content: text.value,
   };
-  api
-    .put('/files/update-content/file', data, axiosConfig)
-    .then((response) => {
-      if (response.status == 200) {
+  apiPut('/files/file-content/' + item.value.id, data, axiosConfig).then(
+    (apiData) => {
+      if (apiData.error == false) {
         q.notify({
           type: 'positive',
           message: 'Saved.',
           progress: true,
         });
-        if ('size' in response.data) {
-          item.value.size = response.data.size;
+        if ('size' in apiData.data) {
+          item.value.size = apiData.data.size;
         }
-        if ('sizeBytes' in response.data) {
-          item.value.sizeBytes = response.data.sizeBytes;
+        if ('sizeBytes' in apiData.data) {
+          item.value.sizeBytes = apiData.data.sizeBytes;
         }
       } else {
         q.notify({
           type: 'negative',
-          message: 'Something went wrong.',
+          message: apiData.errorMessage,
           progress: true,
         });
       }
-    })
-    .catch(() => {
-      q.notify({
-        type: 'negative',
-        message: 'Something went wrong.',
-        progress: true,
-      });
-    });
+    }
+  );
 }
 
 function updateSyntax(syntax) {
@@ -352,34 +339,25 @@ function updateSyntax(syntax) {
     itemId: item.value.id,
     mime: 'text/code-' + syntax,
   };
-  api
-    .put('/files/update/' + item.value.type, data, axiosConfig)
-    .then((response) => {
-      if (response.status == 200) {
-        q.notify({
-          type: 'positive',
-          message: 'Saved.',
-          progress: true,
-        });
-        item.value.mime = data.mime;
-      } else {
-        q.notify({
-          type: 'negative',
-          message: 'Something went wrong.',
-          progress: true,
-        });
-      }
-    })
-    .catch(() => {
+  apiPut('/files/file/' + item.value.id, data, axiosConfig).then((apiData) => {
+    if (apiData.error == false) {
       q.notify({
-        type: 'negative',
-        message: 'Something went wrong.',
+        type: 'positive',
+        message: 'Saved.',
         progress: true,
       });
-    });
+      item.value.mime = data.mime;
+    } else {
+      q.notify({
+        type: 'negative',
+        message: apiData.errorMessage,
+        progress: true,
+      });
+    }
+  });
 }
 
-function onResize(size) {
+function onResize() {
   var els = document.getElementsByClassName('q-scrollarea__container');
   for (var el of els) {
     el.classList.add('column', 'col');

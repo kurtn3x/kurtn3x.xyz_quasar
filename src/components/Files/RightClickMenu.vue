@@ -309,9 +309,9 @@
 import { defineComponent, ref, Ref } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
-import { api } from 'boot/axios';
 import { FolderEntryType } from 'src/types/index';
 import ItemInformation from './ItemInformation.vue';
+import { apiPut, apiGet, apiDelete } from 'src/apiWrapper';
 
 export default defineComponent({
   name: 'RightClickMenu',
@@ -408,84 +408,55 @@ export default defineComponent({
 
       (this.$refs as any).inputMenu.hide();
       var data = {
-        itemId: this.item.id,
         name: this.newName,
       };
-      api
-        .put('/files/update/' + this.item.type, data, this.axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
-            this.item.name = this.newName;
-            this.notify('positive', 'Updated');
-          } else {
-            this.notify('negative', response.data.error);
-          }
-        })
-        .catch((error) => {
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            this.notify('negative', error.message);
-          }
-        });
+
+      apiPut(
+        '/files/' + this.item.type + '/' + this.item.id,
+        data,
+        this.axiosConfig
+      ).then((apiData) => {
+        if (apiData.error == false) {
+          this.item.name = this.newName;
+          this.notify('positive', 'Updated');
+        } else {
+          this.notify('negative', apiData.errorMessage);
+        }
+      });
     },
 
     updateSharing() {
-      api
-        .put(
-          '/files/update/' + this.item.type,
-          this.sharingOptions,
-          this.axiosConfig
-        )
-        .then((response) => {
-          if (response.status == 200) {
-            // set item to sharingOptions values
-            Object.assign(this.item, this.sharingOptions);
-            this.notify('positive', 'Updated');
-          } else {
-            this.notify('negative', response.data.error);
-          }
-        })
-        .catch((error) => {
-          // reset sharingOptions to before values
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-            Object.assign(this.sharingOptions, this.item);
-          } else {
-            this.notify('negative', error.message);
-            Object.assign(this.sharingOptions, this.item);
-          }
-        });
+      apiPut(
+        '/files/' + this.item.type + '/' + this.item.id,
+        this.sharingOptions,
+        this.axiosConfig
+      ).then((apiData) => {
+        if (apiData.error == false) {
+          Object.assign(this.item, this.sharingOptions);
+          this.notify('positive', 'Updated');
+        } else {
+          Object.assign(this.sharingOptions, this.item);
+          this.notify('negative', apiData.errorMessage);
+        }
+      });
     },
 
     updateSharingPassword() {
-      api
-        .put(
-          '/files/update/' + this.item.type,
-          this.sharingPasswordOptions,
-          this.axiosConfig
-        )
-        .then((response) => {
-          if (response.status == 200) {
-            // set item to sharingOptions values
-            Object.assign(this.item, this.sharingPasswordOptions);
-            this.notify('positive', 'Updated');
-            this.sharingPasswordOptions.sharedPassword = '';
-            this.sharingPasswordDialog = false;
-          } else {
-            this.notify('negative', response.data.error);
-          }
-        })
-        .catch((error) => {
-          // reset sharingOptions to before values
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-            Object.assign(this.sharingPasswordOptions, this.item);
-          } else {
-            this.notify('negative', error.message);
-            Object.assign(this.sharingPasswordOptions, this.item);
-          }
-        });
+      apiPut(
+        '/files/' + this.item.type + '/' + this.item.id,
+        this.sharingPasswordOptions,
+        this.axiosConfig
+      ).then((apiData) => {
+        if (apiData.error == false) {
+          Object.assign(this.item, this.sharingPasswordOptions);
+          this.sharingPasswordOptions.sharedPassword = '';
+          this.sharingPasswordDialog = false;
+          this.notify('positive', 'Updated');
+        } else {
+          Object.assign(this.sharingPasswordOptions, this.item);
+          this.notify('negative', apiData.errorMessage);
+        }
+      });
     },
 
     moveItem() {
