@@ -398,11 +398,11 @@ export default defineComponent({
 
     updateName() {
       if (this.newName.length < 1) {
-        this.notify('negative', 'Please type something');
+        this.notify('negative', 'Name must be at least 1 character long.');
         return;
       }
       if (/\/|\x00/.test(this.newName)) {
-        this.notify('negative', 'No Slash or null char');
+        this.notify('negative', 'Name contains invalid characters.');
         return;
       }
 

@@ -82,14 +82,6 @@
               {{ loginErrorMessage }}
             </div>
           </div>
-
-          <div
-            class="layout-btn text-center text-body1 q-mt-md non-selectable q-mb-xl"
-          >
-            <router-link to="/forgot" class="text-layout-text"
-              >Forgot something?</router-link
-            >
-          </div>
         </q-card>
       </div>
     </div>
@@ -100,9 +92,9 @@
 import { defineComponent, ref } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
-import { api } from 'boot/axios';
 import ParticlesIndex from 'components/ParticlesIndex.vue';
 import { getThemeBackground } from 'components/themes';
+import { apiGet, apiPost } from 'src/apiWrapper';
 
 export default defineComponent({
   name: 'ForgotView',
@@ -173,31 +165,34 @@ export default defineComponent({
 
     submitLogin() {
       this.loading = true;
-
-      api
-        .post('/auth/login', this.loginData, this.axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
-            this.localStore.loginUser(response.data);
+      apiPost('/auth/login', this.loginData, this.axiosConfig).then(
+        (apiData) => {
+          if (apiData.error == false) {
+            this.localStore.loginUser(apiData.data);
             this.loginError = false;
             this.loading = false;
             this.$router.push('/');
             this.notify('positive', 'Logged in.');
-
-            api
-              .get('/auth/csrf_cookie', { withCredentials: true })
-              .then(() => {
-                this.axiosConfig = {
-                  withCredentials: true,
-                  headers: {
-                    'X-CSRFToken': this.q.cookies.get('csrftoken'),
-                  },
-                };
-              })
-              .catch();
+            apiGet('/auth/csrf_cookie', { withCredentials: true }).then(
+              (apiData) => {
+                if (apiData.error == false) {
+                  this.axiosConfig = {
+                    withCredentials: true,
+                    headers: {
+                      'X-CSRFToken': this.q.cookies.get('csrftoken'),
+                    },
+                  };
+                } else {
+                  this.notify(
+                    'negative',
+                    'Failed fetching CSRF-Cookie. Reload the site.'
+                  );
+                }
+              }
+            );
           } else {
             this.loginError = true;
-            this.loginErrorMessage = response.data.error;
+            this.loginErrorMessage = apiData.errorMessage;
             this.loading = false;
             this.localStore.setAuthState(false);
             this.$nextTick(() => {
@@ -205,21 +200,8 @@ export default defineComponent({
               console.log(this.$refs.errorText);
             });
           }
-        })
-        .catch((error) => {
-          this.loginError = true;
-          if (error.response) {
-            this.loginErrorMessage = error.response.data.error;
-          } else {
-            this.loginErrorMessage = error.message;
-          }
-          this.loading = false;
-          this.localStore.setAuthState(false);
-          this.$nextTick(() => {
-            (this.$refs.errorText as HTMLElement).classList.add('shake');
-            console.log(this.$refs.errorText);
-          });
-        });
+        }
+      );
     },
   },
 });
@@ -258,14 +240,6 @@ export default defineComponent({
   100% {
     opacity: 1;
   }
-}
-
-.stepper-dark {
-  background-color: #1d1d1d00;
-}
-
-.stepper-light {
-  background-color: #f4f4f47a;
 }
 
 .layout-btn {

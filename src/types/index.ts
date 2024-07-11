@@ -93,12 +93,6 @@ export interface RawFolderContentType {
   children: FolderEntryType[];
 }
 
-// Account / Profile Types
-export interface AccountSettingsType {
-  profile: UserProfileType;
-  account: AccountType;
-}
-
 export interface AccountType {
   id: string;
   username: string;

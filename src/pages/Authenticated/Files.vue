@@ -114,7 +114,7 @@
             icon="done"
             size="md"
             label="Continue"
-            @click="deleteSelection"
+            @click="deleteSelectedItems"
           />
         </q-card-actions>
       </q-card>
@@ -126,7 +126,7 @@
       @hide="
         moveItemsExpanded = [];
         moveItemsFilter = '';
-        moveItemsSelectedPath = '';
+        moveItemsSelectedName = '';
         moveItemsSelectedId = '';
       "
     >
@@ -211,7 +211,7 @@
         <q-card-actions class="q-mb-sm column">
           <div class="full-width">
             <a class="text-weight-bolder">New Folder: </a>
-            {{ moveItemsSelectedPath }}
+            {{ moveItemsSelectedName }}
           </div>
           <div class="row full-width q-mt-sm">
             <q-btn
@@ -334,7 +334,7 @@
           >
             <q-scroll-area class="row" style="height: 285px">
               <div
-                v-if="uploadFilesDialogUploadMap.length == 0"
+                v-if="uploadFilesDialogUploadList.length == 0"
                 class="text-center text-h6 q-mt-md"
               >
                 Select some Files or Folders or Drag & Drop them here.
@@ -347,7 +347,7 @@
 
               <q-list class="q-ma-xs">
                 <template
-                  v-for="file in uploadFilesDialogUploadMap"
+                  v-for="file in uploadFilesDialogUploadList"
                   :key="file"
                 >
                   <q-card class="bg-primary text-layout-text q-mt-sm" flat>
@@ -382,8 +382,8 @@
                           outline
                           class="bg-red text-white q-ml-sm"
                           @click="
-                            uploadFilesDialogUploadMap =
-                              uploadFilesDialogUploadMap.filter(
+                            uploadFilesDialogUploadList =
+                              uploadFilesDialogUploadList.filter(
                                 (item) => item.name !== file.name
                               )
                           "
@@ -475,12 +475,12 @@
             <div style="height: 25px; width: 35px">
               <q-btn
                 style="height: 25px; width: 35px"
-                @click="uploadFilesDialogUploadMap = []"
+                @click="uploadFilesDialogUploadList = []"
                 icon="delete"
                 size="xs"
                 class="bg-red text-white"
                 push
-                v-if="uploadFilesDialogUploadMap.length > 0"
+                v-if="uploadFilesDialogUploadList.length > 0"
               />
             </div>
           </div>
@@ -496,7 +496,7 @@
             label="Close"
             class="bg-red text-white col-4"
             style="height: 45px"
-            @click="uploadFilesDialogUploadMap = []"
+            @click="uploadFilesDialogUploadList = []"
           />
           <q-btn
             v-close-popup
@@ -506,8 +506,8 @@
             size="md"
             label="Upload"
             @click="
-              uploadFiles(uploadFilesDialogUploadMap, rawFolderContent.id);
-              uploadFilesDialogUploadMap = [];
+              uploadFiles(uploadFilesDialogUploadList, rawFolderContent.id);
+              uploadFilesDialogUploadList = [];
             "
             style="width: 210px; height: 45px"
           />
@@ -1181,7 +1181,7 @@
                     "
                     @deleteItem="
                       () => {
-                        deleteObj(item.id, item.type);
+                        deleteItem(item.id, item.type);
                       }
                     "
                   />
@@ -1256,7 +1256,7 @@
                         "
                         @deleteItem="
                           () => {
-                            deleteObj(item.id, item.type);
+                            deleteItem(item.id, item.type);
                           }
                         "
                       />
@@ -1304,7 +1304,7 @@
                     "
                     @deleteItem="
                       () => {
-                        deleteObj(item.id, item.type);
+                        deleteItem(item.id, item.type);
                       }
                     "
                   />
@@ -1374,7 +1374,7 @@
                         "
                         @deleteItem="
                           () => {
-                            deleteObj(item.id, item.type);
+                            deleteItem(item.id, item.type);
                           }
                         "
                       />
@@ -1652,17 +1652,6 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive } from 'vue';
-import { useLocalStore } from 'stores/localStore';
-import { useQuasar, scroll, QInput } from 'quasar';
-import { api } from 'boot/axios';
-import { draggable, selected } from 'components/Files/draggable.js';
-import { droppable } from 'components/Files/droppable.js';
-import RightClickMenu from 'components/Files/RightClickMenu.vue';
-import ViewerWrapper from 'src/components/Files/ViewerWrapper.vue';
-import { getIcon } from 'src/components/Files/mimeMap';
-import { apiGet, apiPut, apiPost, apiDelete } from 'src/apiWrapper';
-
 import type { Ref } from 'vue';
 import type {
   TraverseFolderMapType,
@@ -1673,6 +1662,15 @@ import type {
   AllAvailableFoldersType,
   RawFolderContentType,
 } from 'src/types/index';
+import { defineComponent, ref, reactive } from 'vue';
+import { useLocalStore } from 'stores/localStore';
+import { useQuasar, scroll } from 'quasar';
+import { draggable } from 'components/Files/lib/draggable.js';
+import { droppable } from 'components/Files/lib/droppable.js';
+import { getIcon } from 'src/components/Files/mimeMap';
+import { apiGet, apiPut, apiPost, apiDelete } from 'src/apiWrapper';
+import RightClickMenu from 'components/Files/RightClickMenu.vue';
+import ViewerWrapper from 'src/components/Files/ViewerWrapper.vue';
 
 export default defineComponent({
   name: 'FilesView',
@@ -1709,7 +1707,6 @@ export default defineComponent({
       // icons
 
       // general
-      selected,
       axiosConfig,
       localStore,
       q,
@@ -1725,7 +1722,7 @@ export default defineComponent({
 
       // Dialog handlers when uploading files
       uploadFilesDialog: ref(false),
-      uploadFilesDialogUploadMap: ref([]) as Ref<UploadDialogEntryType[]>,
+      uploadFilesDialogUploadList: ref([]) as Ref<UploadDialogEntryType[]>,
       uploadFilesDialogAreaDragover: ref(false),
       uploadFilesDialogFiles: ref(null),
 
@@ -1796,10 +1793,9 @@ export default defineComponent({
 
       // dialog for moving selections
       moveSelectedItemsDialog: ref(false),
-
       moveItemsExpanded: ref(['']),
       moveItemsFilter: ref(''),
-      moveItemsSelectedPath: ref(''),
+      moveItemsSelectedName: ref(''),
       moveItemsSelectedId: ref(''),
 
       // delete items
@@ -1976,6 +1972,8 @@ export default defineComponent({
         if (apiData.error == false) {
           this.rawFolderContent = apiData.data as RawFolderContentType;
           this.initialFetchSuccessful = true;
+          this.navbarIndex.menuItems = [];
+          this.navbarIndex.navbarItems = [];
         } else {
           this.notify('negative', apiData.errorMessage);
         }
@@ -2168,15 +2166,10 @@ export default defineComponent({
           type: 'file',
         };
 
-        this.uploadFilesDialogUploadMap.push(uploadMapObject);
+        this.uploadFilesDialogUploadList.push(uploadMapObject);
 
         this.uploadFilesDialogFiles = null;
       }
-    },
-
-    // get the real FileObject of an file
-    async getFile(fileEntry: FileSystemFileEntry) {
-      return new Promise((resolve, reject) => fileEntry.file(resolve, reject));
     },
 
     transferedPercentLabel(num: number) {
@@ -2241,7 +2234,7 @@ export default defineComponent({
     },
 
     // upload Files and Folders to parentFolderId
-    // takes an uploadMap, which is an array of files/folders to be uploaded
+    // takes an uploadFileList, which is an array of files/folders to be uploaded
     // if it is an folder, the folder is traversed and all child-elements are uploaded as well
     // because the data that is sent is FormData (flat array data)
     // an id is added to each file and folder, which maps them correctly to their parent element
@@ -2250,13 +2243,13 @@ export default defineComponent({
     // on top of that each folder and file has a unique id as well, which is needed to map the form-data correctly
     // e.g. 1_name : hello.txt, 1_parent_id = xyz, etc.
     async uploadFiles(
-      uploadMap: UploadDialogEntryType[],
+      uploadFileList: UploadDialogEntryType[],
       parentFolderId: string
     ) {
       this.progressPanel = true;
       this.progressSticky = true;
-      var copyOfUploadMap = uploadMap;
-      copyOfUploadMap.forEach(async (item) => {
+      var copyOfuploadFileList = uploadFileList;
+      copyOfuploadFileList.forEach(async (item) => {
         if (item.type == 'folder') {
           let source = this.$axios.CancelToken.source();
 
@@ -2319,12 +2312,18 @@ export default defineComponent({
                 thing.parentId.toString()
               );
             } else {
-              let file = (await this.getFile(
+              // getFile
+              async function getFile(fileEntry: FileSystemFileEntry) {
+                return new Promise((resolve, reject) =>
+                  fileEntry.file(resolve, reject)
+                ) as Promise<File>;
+              }
+              let file: File = await getFile(
                 thing.entry as FileSystemFileEntry
-              )) as File;
+              );
               formData.append(thing.id + '_type', 'file');
               formData.append(thing.id + '_name', thing.name);
-              formData.append(thing.id + '_content', file as Blob);
+              formData.append(thing.id + '_content', file);
               formData.append(thing.id + '_size_bytes', file.size.toString());
               formData.append(
                 thing.id + '_parent_id',
@@ -2334,7 +2333,7 @@ export default defineComponent({
             }
             folderEntries += 1;
           }
-          // don't upload folders larger than 500MiB
+          // don't upload folders if the total size is larger than 500MiB
           if (folderSizeByte > 524288000) {
             folderProgress.status = 'error';
             folderProgress.statusColor = 'bg-red';
@@ -2347,14 +2346,14 @@ export default defineComponent({
             return;
           }
           // dont upload folders that contain too many children
-          if (folderEntries > 1000) {
+          if (folderEntries > 500) {
             folderProgress.status = 'error';
             folderProgress.statusColor = 'bg-red';
             folderProgress.transferredPercent = 0.0;
-            folderProgress.message = 'Folder contains too many items (>1000).';
+            folderProgress.message = 'Folder contains too many items (>500).';
             this.notify(
               'negative',
-              'Folder exceeds the maximum entry limit of 1000 Files.'
+              'Folder exceeds the maximum entry limit of 500 Files.'
             );
             return;
           }
@@ -2376,24 +2375,21 @@ export default defineComponent({
             },
           };
 
-          var response = await api
-            .post('/files/upload/folder', formData, config as any)
-            .catch((error) => {
-              folderProgress.status = 'error';
-              folderProgress.statusColor = 'bg-red';
-              folderProgress.transferredPercent = 0.0;
-              if (error.response) {
-                folderProgress.message = error.response.data.error;
+          await apiPost('files/upload/folder', formData, config).then(
+            (apiData) => {
+              if (apiData.error == false) {
+                folderProgress.status = 'ok';
+                folderProgress.transferredPercent = 1.0;
+                folderProgress.statusColor = 'bg-green';
+                this.refreshFolder();
               } else {
-                folderProgress.message = error.message;
+                folderProgress.status = 'error';
+                folderProgress.statusColor = 'bg-red';
+                folderProgress.transferredPercent = 0.0;
+                folderProgress.message = apiData.errorMessage;
               }
-            });
-          if (response !== undefined) {
-            folderProgress.status = 'ok';
-            folderProgress.transferredPercent = 1.0;
-            folderProgress.statusColor = 'bg-green';
-            this.refreshFolder();
-          }
+            }
+          );
         } else if (item.type == 'file' && item.content instanceof File) {
           let formData = new FormData();
           var file = item.content;
@@ -2444,24 +2440,19 @@ export default defineComponent({
               'Content-Type': 'multipart/form-data',
             },
           };
-          var response = await api
-            .post('/files/file', formData, config as any)
-            .catch((error) => {
+          await apiPost('files/file', formData, config).then((apiData) => {
+            if (apiData.error == false) {
+              fileProgress.status = 'ok';
+              fileProgress.statusColor = 'bg-green';
+              fileProgress.transferredPercent = 1.0;
+              this.refreshFolder();
+            } else {
               fileProgress.status = 'error';
               fileProgress.statusColor = 'bg-red';
               fileProgress.transferredPercent = 0.0;
-              if (error.response) {
-                fileProgress.message = error;
-              } else {
-                fileProgress.message = error.message;
-              }
-            });
-          if (response !== undefined) {
-            fileProgress.status = 'ok';
-            fileProgress.statusColor = 'bg-green';
-            fileProgress.transferredPercent = 1.0;
-            this.refreshFolder();
-          }
+              fileProgress.message = apiData.errorMessage;
+            }
+          });
         }
       });
     },
@@ -2545,7 +2536,7 @@ export default defineComponent({
     // this adds all items to be uploaded to a map and calls
     // the uploadfile function instantly
     onFolderDrop(ev: InputEvent, itemId: string) {
-      var uploadMap = [];
+      var uploadList = [];
       for (var item of (ev.dataTransfer as DataTransfer)
         .items as unknown as DataTransferItem[]) {
         if (item.kind == 'file') {
@@ -2558,7 +2549,7 @@ export default defineComponent({
               type: 'file',
             };
 
-            uploadMap.push(uploadFileObject);
+            uploadList.push(uploadFileObject);
           } else if (item.webkitGetAsEntry()?.isDirectory) {
             const folder = item.webkitGetAsEntry() as FileSystemEntry;
 
@@ -2568,18 +2559,18 @@ export default defineComponent({
               type: 'folder',
             };
 
-            uploadMap.push(uploadFolderObject);
+            uploadList.push(uploadFolderObject);
           }
         }
       }
 
-      this.uploadFiles(uploadMap, itemId);
+      this.uploadFiles(uploadList, itemId);
     },
 
     // drag & drop when dropping files or folders on the
     // background of the scrollarea or the upload Dialog Area
     // only adds items to a map to showcase them, user has to
-    // press the actual upload buttom to upload these files
+    // press the actual upload button to upload these files
     async uploadFilesDialogAreaDrop(ev: DragEvent) {
       this.uploadFilesDialogAreaDragover = false;
       for (var item of (ev.dataTransfer as DataTransfer)
@@ -2604,7 +2595,7 @@ export default defineComponent({
               type: 'file',
             };
 
-            this.uploadFilesDialogUploadMap.push(uploadMapFile);
+            this.uploadFilesDialogUploadList.push(uploadMapFile);
           } else if ((item.webkitGetAsEntry() as FileSystemEntry).isDirectory) {
             const folder = item.webkitGetAsEntry() as FileSystemEntry;
 
@@ -2620,7 +2611,7 @@ export default defineComponent({
               type: 'folder',
             };
 
-            this.uploadFilesDialogUploadMap.push(uploadMapFolder);
+            this.uploadFilesDialogUploadList.push(uploadMapFolder);
           }
         }
       }
@@ -2677,12 +2668,14 @@ export default defineComponent({
       );
     },
 
-    // check if a name exists in current upload context (uploadFilesDialogUploadMap)
+    // check if a name exists in current upload context (uploadFilesDialogUploadList)
     checkNameExistUploadContext(newName: string, existingName: string) {
       if (newName == existingName) {
         return false;
       } else {
-        return this.uploadFilesDialogUploadMap.some((el) => el.name == newName);
+        return this.uploadFilesDialogUploadList.some(
+          (el) => el.name == newName
+        );
       }
     },
 
@@ -2748,16 +2741,6 @@ export default defineComponent({
       return bytes.toFixed(2) + ' ' + units[u];
     },
 
-    // zip download caller
-    downloadAsZip(folderId: string) {
-      window
-        ?.open(
-          'https://api.kurtn3x.xyz/files/download/folder/' + folderId,
-          '_blank'
-        )
-        ?.focus();
-    },
-
     // select all items
     selectAllItems() {
       if (this.allSelected == true) {
@@ -2786,12 +2769,12 @@ export default defineComponent({
         return;
       }
       if (/\/|\x00/.test(this.newFolder.name)) {
-        this.notify('negative', 'No slash or null char.');
+        this.notify('negative', 'Name contains invalid characters.');
         return;
       }
 
       if (this.checkNameExistFolderContext(this.newFolder.name) == true) {
-        this.notify('negative', 'Name already exists.');
+        this.notify('negative', 'Item with same name exists in this path.');
         return;
       }
 
@@ -2815,18 +2798,19 @@ export default defineComponent({
       });
     },
 
+    // create an empty file
     createFile() {
       if (this.newFile.name.length < 1) {
         this.notify('negative', 'Name must be at least 1 character long.');
         return;
       }
       if (/\/|\x00/.test(this.newFile.name)) {
-        this.notify('negative', 'No slash or null char.');
+        this.notify('negative', 'Name contains invalid characters.');
         return;
       }
 
       if (this.checkNameExistFolderContext(this.newFile.name) == true) {
-        this.notify('negative', 'Name already exists.');
+        this.notify('negative', 'Item with same name exists in this path.');
         return;
       }
 
@@ -2863,7 +2847,7 @@ export default defineComponent({
     },
 
     // delete objects
-    deleteObj(id: string, type: string) {
+    deleteItem(id: string, type: string) {
       this.loading = true;
       apiDelete('/files/' + type + '/' + id, this.axiosConfig).then(
         (apiData) => {
@@ -2880,9 +2864,9 @@ export default defineComponent({
     },
 
     // deleting all selected items
-    deleteSelection() {
+    deleteSelectedItems() {
       for (var item of this.selectedItems) {
-        this.deleteObj(item.id, item.type);
+        this.deleteItem(item.id, item.type);
       }
       this.selectedItems = [];
       this.allSelected = false;
@@ -2919,8 +2903,7 @@ export default defineComponent({
       });
     },
 
-    // when moving an item or items via the dialog, show the path of the selected folder
-    // this first flattens out the allAvailableFolders map and than looks trough the flat array
+    // find the name of the selected folder by its id
     moveItemsUpdateSelectedLabel() {
       function flatten(arr: any[]): any[] {
         let children: any[] = [];
@@ -2937,7 +2920,7 @@ export default defineComponent({
       }
 
       var flat = flatten(this.allAvailableFolders);
-      this.moveItemsSelectedPath = flat.find(
+      this.moveItemsSelectedName = flat.find(
         (o) => o.id == this.moveItemsSelectedId
       ).name;
     },
@@ -2961,13 +2944,12 @@ export default defineComponent({
 
     // update parent of an item, used by above moveSelection method
     // and when updating the parent of a single item
-    updateItemParent(moveItemId: string, moveToId: string, type: string) {
+    updateItemParent(itemId: string, parentId: string, itemType: string) {
       this.loading = true;
       var data = {
-        itemId: moveItemId,
-        parentId: moveToId,
+        parentId: parentId,
       };
-      apiPut('/files/' + type + '/' + moveItemId, data, this.axiosConfig).then(
+      apiPut('/files/' + itemType + '/' + itemId, data, this.axiosConfig).then(
         (apiData) => {
           if (apiData.error == false) {
             this.notify('positive', 'Updated');
@@ -2989,10 +2971,7 @@ export default defineComponent({
     getFolderNavbar(item: { name: string; id: string }, identifier: number) {
       // identifier: 0=home, 1=menu, 2=navbar
       if (identifier == 0) {
-        // home folder
-        // → clear the arrays
-        this.navbarIndex.menuItems = [];
-        this.navbarIndex.navbarItems = [];
+        // get home folder
         this.getHomeFolder();
       } else if (identifier == 1) {
         // menu items
@@ -3016,11 +2995,6 @@ export default defineComponent({
     ///////////////////////////////////////////////////
     /////////// SCROLLBAR METHODS /////////////////////
     ///////////////////////////////////////////////////
-
-    // used to focus input when newfolder.show
-    focusInput() {
-      (this.$refs.newItemInput as InstanceType<typeof QInput>).focus();
-    },
 
     // download a private-storage file
     openInNewTab(item: FolderEntryType) {
@@ -3093,3 +3067,4 @@ export default defineComponent({
   max-width: var(--max-width);
 }
 </style>
+src/components/Files/lib/draggable.jssrc/components/Files/lib/droppable.js

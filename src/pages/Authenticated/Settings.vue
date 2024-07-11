@@ -149,7 +149,7 @@
             name="profile"
             :class="darkmode ? 'text-white' : 'text-dark'"
           >
-            <q-card flat class="q-ma-sm bg-transparent" v-if="!small">
+            <q-card flat class="q-ma-sm bg-transparent lt-md">
               <div class="text-h4 text-center q-mt-lg">Profile Settings</div>
 
               <q-card-section class="q-mt-md">
@@ -161,7 +161,7 @@
                     <template v-slot:before>
                       <div class="float-right q-mr-lg">
                         <q-input
-                          v-model="accountData.profile.name"
+                          v-model="profileData.name"
                           style="width: 400px"
                           input-class="text-body1"
                           label="Name"
@@ -175,7 +175,7 @@
                         />
 
                         <q-input
-                          v-model="accountData.profile.location"
+                          v-model="profileData.location"
                           style="width: 400px"
                           input-class="text-body1"
                           label="Location"
@@ -189,7 +189,7 @@
                         />
 
                         <q-input
-                          v-model="accountData.profile.status"
+                          v-model="profileData.status"
                           style="width: 400px"
                           input-class="text-body1"
                           label="Status"
@@ -203,7 +203,7 @@
                         />
 
                         <q-input
-                          v-model="accountData.profile.description"
+                          v-model="profileData.description"
                           style="width: 400px"
                           input-class="text-body1"
                           label="Description"
@@ -265,7 +265,7 @@
                 </q-form>
               </q-card-section>
             </q-card>
-            <q-card flat class="bg-transparent q-ma-sm" v-if="small">
+            <q-card flat class="bg-transparent q-ma-sm gt-sm">
               <div class="text-h4 text-center q-mt-lg">Profile Settings</div>
               <q-card-section class="row justify-center">
                 <q-form
@@ -273,7 +273,7 @@
                   @submit.prevent="updateUserProfile"
                 >
                   <q-input
-                    v-model="accountData.profile.name"
+                    v-model="profileData.name"
                     input-class="text-body1"
                     label="Name"
                     :color="darkmode ? 'white' : 'black'"
@@ -285,7 +285,7 @@
                     style="max-width: 600px"
                   />
                   <q-input
-                    v-model="accountData.profile.location"
+                    v-model="profileData.location"
                     style="max-width: 600px"
                     input-class="text-body1"
                     label="Location"
@@ -298,7 +298,7 @@
                   />
 
                   <q-input
-                    v-model="accountData.profile.status"
+                    v-model="profileData.status"
                     style="max-width: 600px"
                     input-class="text-body1"
                     label="Status"
@@ -311,7 +311,7 @@
                   />
 
                   <q-input
-                    v-model="accountData.profile.description"
+                    v-model="profileData.description"
                     style="max-width: 600px"
                     label="Description"
                     input-class="text-body1"
@@ -383,7 +383,7 @@
                     Id:
                   </q-item-section>
                   <q-item-section style="line-break: anywhere">
-                    {{ accountData.account.id }}
+                    {{ accountData.id }}
                   </q-item-section>
                 </q-item>
                 <q-separator />
@@ -393,7 +393,7 @@
                     Username:
                   </q-item-section>
                   <q-item-section style="line-break: anywhere">
-                    {{ accountData.account.username }}
+                    {{ accountData.username }}
                   </q-item-section>
                 </q-item>
 
@@ -404,7 +404,7 @@
                     Email:
                   </q-item-section>
                   <q-item-section style="line-break: anywhere">
-                    {{ accountData.account.email }}
+                    {{ accountData.email }}
                   </q-item-section>
                 </q-item>
 
@@ -415,7 +415,7 @@
                     Is Admin:
                   </q-item-section>
                   <q-item-section style="line-break: anywhere">
-                    {{ accountData.account.isAdmin }}
+                    {{ accountData.isAdmin }}
                   </q-item-section>
                 </q-item>
 
@@ -426,7 +426,7 @@
                     Joined:
                   </q-item-section>
                   <q-item-section style="line-break: anywhere">
-                    {{ accountData.profile.dateJoined }}
+                    {{ profileData.dateJoined }}
                   </q-item-section>
                 </q-item>
 
@@ -437,7 +437,7 @@
                     Name:
                   </q-item-section>
                   <q-item-section style="line-break: anywhere">
-                    {{ accountData.profile.name }}
+                    {{ profileData.name }}
                   </q-item-section>
                 </q-item>
 
@@ -448,7 +448,7 @@
                     Location:
                   </q-item-section>
                   <q-item-section style="line-break: anywhere">
-                    {{ accountData.profile.location }}
+                    {{ profileData.location }}
                   </q-item-section>
                 </q-item>
 
@@ -459,7 +459,7 @@
                     Status:
                   </q-item-section>
                   <q-item-section style="line-break: anywhere">
-                    {{ accountData.profile.status }}
+                    {{ profileData.status }}
                   </q-item-section>
                 </q-item>
 
@@ -670,11 +670,14 @@
 <script lang="ts">
 import { Ref, ref } from 'vue';
 import { useQuasar, LocalStorage } from 'quasar';
-import { api } from 'boot/axios';
+import { apiGet, apiPut, apiDelete } from 'src/apiWrapper';
 import { useLocalStore } from 'stores/localStore';
 import { defaultHeaderInformation } from 'src/types/defaults';
-import { AccountSettingsType } from 'src/types/index';
-import { defaultAccountSettings } from '../../types/defaults';
+import {
+  AccountType,
+  UserProfileType,
+  HeaderInformationType,
+} from 'src/types/index';
 import { themes } from 'components/themes';
 
 export default {
@@ -703,7 +706,8 @@ export default {
       // data
       avatar: ref(null) as Ref<any | Blob | MediaSource | null>,
       avatarPreview: ref(null) as Ref<string | null>,
-      accountData: ref({}) as Ref<AccountSettingsType>,
+      accountData: ref({}) as Ref<AccountType>,
+      profileData: ref({}) as Ref<UserProfileType>,
 
       // show / hide password fields
       isPwd: ref(true),
@@ -743,13 +747,6 @@ export default {
     darkmode() {
       return this.localStore.darkmode;
     },
-    small() {
-      if (this.q.screen.width < 1024) {
-        return true;
-      } else {
-        return false;
-      }
-    },
   },
   watch: {
     darkmode(newVal) {
@@ -771,30 +768,20 @@ export default {
     },
 
     getHeaderInfo() {
-      const axiosConfig = {
+      const config = {
         withCredentials: true,
         headers: {
           'X-CSRFToken': this.q.cookies.get('csrftoken'),
         },
       };
-      api
-        .get('/profile/headerinfo', axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
-            var headerinfo = response.data;
-            this.localStore.setHeaderInfo(headerinfo);
-            this.localStore.setAuthState(true);
-          } else {
-            this.notify('negative', response.data.error);
-          }
-        })
-        .catch((error) => {
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            this.notify('negative', error.message);
-          }
-        });
+      apiGet('/profile/headerinfo', config).then((apiData) => {
+        if (apiData.error == false) {
+          this.localStore.setHeaderInfo(apiData.data as HeaderInformationType);
+          this.localStore.setAuthState(true);
+        } else {
+          this.notify('negative', apiData.errorMessage);
+        }
+      });
     },
 
     setTheme(theme: string) {
@@ -817,72 +804,46 @@ export default {
         },
         data: data,
       };
-      api
-        .delete('/auth/delete', config)
-        .then((response) => {
-          if (response.status == 200) {
-            this.notify('positive', 'Deleted your account');
-            this.localStore.setAuthState(false);
-            this.localStore.setHeaderInfo(defaultHeaderInformation());
-            this.$router.push('/');
-            LocalStorage.remove('header');
-          } else if (response.status == 244) {
-            this.notify('negative', 'Current Password is wrong.');
-          } else {
-            this.notify('negative', response.data.error);
-          }
-        })
-        .catch((error) => {
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            this.notify('negative', error.message);
-          }
-        });
+      apiDelete('/auth/account', config).then((apiData) => {
+        if (apiData.error == false) {
+          this.notify('positive', 'Deleted.');
+          this.localStore.setAuthState(false);
+          this.localStore.setHeaderInfo(defaultHeaderInformation());
+          this.$router.push('/');
+          LocalStorage.remove('header');
+        } else {
+          this.notify('negative', apiData.errorMessage);
+        }
+      });
     },
 
     updatePassword() {
-      api
-        .put('/auth/update', this.updatePasswordData, this.axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
+      apiPut('/auth/account', this.updatePasswordData, this.axiosConfig).then(
+        (apiData) => {
+          if (apiData.error == false) {
             this.updatePasswordData = {
               newPassword: '',
               newPasswordConfirm: '',
               password: '',
             };
           } else {
-            this.notify('negative', response.data.error);
+            this.notify('negative', apiData.errorMessage);
           }
-        })
-        .catch((error) => {
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            this.notify('negative', error.message);
-          }
-        });
+        }
+      );
     },
 
     updateEmail() {
-      api
-        .put('/auth/update', this.updateEmailData, this.axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
-            this.notify('positive', 'Email has been changed.');
+      apiPut('/auth/update', this.updateEmailData, this.axiosConfig).then(
+        (apiData) => {
+          if (apiData.error == false) {
             this.getAccountInformation();
             this.updateEmailData = { newEmail: '', password: '' };
           } else {
-            this.notify('negative', response.data.error);
+            this.notify('negative', apiData.errorMessage);
           }
-        })
-        .catch((error) => {
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            this.notify('negative', error.message);
-          }
-        });
+        }
+      );
     },
 
     onRejected() {
@@ -902,69 +863,51 @@ export default {
       };
       this.loading = true;
       let form_data = new FormData();
-      form_data.append('name', this.accountData.profile.name);
-      form_data.append('location', this.accountData.profile.location);
-      form_data.append('description', this.accountData.profile.description);
-      form_data.append('status', this.accountData.profile.status);
+      form_data.append('name', this.profileData.name);
+      form_data.append('location', this.profileData.location);
+      form_data.append('description', this.profileData.description);
+      form_data.append('status', this.profileData.status);
 
       if (this.avatar != null) {
         form_data.append('avatar', this.avatar as Blob);
       }
 
-      api
-        .put('/profile/update', form_data, config)
-        .then((response) => {
-          if (response.status == 200) {
-            this.getAccountInformation();
-            // set selections back to null
-            this.avatar = null;
-            this.loading = false;
-
-            this.notify('positive', 'Saved!');
-          } else {
-            this.loading = false;
-            this.notify('negative', response.data.error);
-          }
-        })
-        .catch((error) => {
+      apiPut('/profile/update', form_data, config).then((apiData) => {
+        if (apiData.error == false) {
+          this.getAccountInformation();
+          // set selections back to null
+          this.avatar = null;
           this.loading = false;
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            this.notify('negative', error.message);
-          }
-        });
+        } else {
+          this.notify('negative', apiData.errorMessage);
+        }
+      });
     },
 
     // get account settings
     getAccountInformation() {
-      api
-        .get('/profile/account', this.axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
-            this.accountData = response.data;
-            this.avatarPreview =
-              response.data.profile.avatar + '?' + Math.random();
-
-            this.initialFetch = true;
-            this.initialFetchSuccessful = true;
-          } else {
-            this.notify('negative', response.data.error);
-            this.initialFetch = true;
-            this.initialFetchSuccessful = false;
-            this.accountData = defaultAccountSettings();
-          }
-        })
-        .catch((error) => {
+      apiGet('/auth/account', this.axiosConfig).then((apiData) => {
+        if (apiData.error == false) {
+          this.accountData = apiData.data as AccountType;
+          apiGet('/profile/profile', this.axiosConfig).then((apiData) => {
+            if (apiData.error == false) {
+              this.profileData = apiData.data as UserProfileType;
+              this.avatarPreview =
+                this.profileData.avatar + '?' + Math.random();
+              this.initialFetch = true;
+              this.initialFetchSuccessful = true;
+            } else {
+              this.notify('negative', apiData.errorMessage);
+              this.initialFetch = true;
+              this.initialFetchSuccessful = false;
+            }
+          });
+        } else {
+          this.notify('negative', apiData.errorMessage);
           this.initialFetch = true;
           this.initialFetchSuccessful = false;
-          this.accountData = defaultAccountSettings();
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            this.notify('negative', error.message);
-          }
-        });
+        }
+      });
     },
   },
 };

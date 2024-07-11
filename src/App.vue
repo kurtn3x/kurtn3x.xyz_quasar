@@ -14,7 +14,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { useQuasar, LocalStorage } from 'quasar';
-import { api } from 'boot/axios';
+import { apiGet } from 'src/apiWrapper';
 import { useLocalStore } from 'stores/localStore';
 
 export default defineComponent({
@@ -62,7 +62,8 @@ export default defineComponent({
       document.body.setAttribute('data-theme', this.localStore.theme);
     }
 
-    api.get('/auth/csrf_cookie', { withCredentials: true }).catch();
+    await apiGet('/auth/csrf_cookie', { withCredentials: true });
+
     let config = {
       withCredentials: true,
       headers: {
@@ -70,21 +71,17 @@ export default defineComponent({
       },
     };
 
-    await api
-      .get('/auth/authenticated', config)
-      .then((response) => {
-        if (response.status == 200) {
-          this.localStore.setAuthState(true);
-          this.prefetch = true;
-        } else {
-          this.localStore.setAuthState(false);
-          this.prefetch = true;
-        }
-      })
-      .catch((error) => {
+    await apiGet('/auth/authenticated', config).then((apiData) => {
+      if (apiData.error == false) {
+        this.localStore.setAuthState(
+          (apiData.data as any).isAuthenticated as boolean
+        );
+        this.prefetch = true;
+      } else {
         this.localStore.setAuthState(false);
         this.prefetch = true;
-      });
+      }
+    });
   },
 
   computed: {

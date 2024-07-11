@@ -6,34 +6,24 @@ const routes: RouteRecordRaw[] = [
     component: () => import('layouts/MainLayout.vue'),
 
     children: [
-      { path: '/', component: () => import('pages/Public/Start/Home.vue') },
+      { path: '/', component: () => import('pages/Public/Home.vue') },
       {
         path: 'login',
-        component: () => import('pages/Public/Start/Login.vue'),
-      },
-      {
-        path: 'user/:username',
-        component: () => import('pages/Public/Profile/UserProfile.vue'),
-      },
-      {
-        path: 'id/:id',
-        component: () =>
-          import('pages/Public/Profile/UserProfileIDReferrer.vue'),
+        component: () => import('pages/Public/Login.vue'),
       },
       {
         name: 'register',
         path: 'register',
-        component: () => import('pages/Public/Start/Register.vue'),
+        component: () => import('pages/Public/Register.vue'),
       },
-      {
-        path: 'forgot',
-        component: () => import('pages/Public/Start/Forgot.vue'),
-      },
-
       {
         name: 'privacy',
         path: 'privacy',
-        component: () => import('pages/Public/Start/PrivacyPolicy.vue'),
+        component: () => import('pages/Public/PrivacyPolicy.vue'),
+      },
+      {
+        path: 'user/:username',
+        component: () => import('pages/Public/UserProfile.vue'),
       },
     ],
   },
@@ -63,7 +53,7 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: 'home',
-        component: () => import('pages/Public/Start/Home.vue'),
+        component: () => import('pages/Public/Home.vue'),
       },
       {
         path: 'settings',
@@ -84,25 +74,6 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'torrent',
         component: () => import('src/pages/Authenticated/Torrent.vue'),
-      },
-    ],
-  },
-
-  {
-    path: '/api',
-    component: () => import('layouts/APIReferrersLayout.vue'),
-    children: [
-      {
-        path: 'reset_password',
-        component: () => import('pages/APIReferrers/ResetPassword.vue'),
-      },
-      {
-        path: 'accepted',
-        component: () => import('pages/APIReferrers/Accepted.vue'),
-      },
-      {
-        path: 'declined',
-        component: () => import('pages/APIReferrers/Declined.vue'),
       },
     ],
   },

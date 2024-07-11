@@ -2,10 +2,6 @@ import Common from './common';
 
 const dataMap = new WeakMap();
 
-var selected = [];
-
-export var selected;
-
 function updateDragData(el, binding) {
   dataMap.set(el, binding.modifiers.image ? binding.value.data : binding.value);
 }

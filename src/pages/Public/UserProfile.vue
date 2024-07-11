@@ -390,10 +390,9 @@
 <script lang="ts">
 import { ref, Ref } from 'vue';
 import { useQuasar } from 'quasar';
-import { api } from 'boot/axios';
+import { apiGet } from 'src/apiWrapper';
 import { useLocalStore } from 'stores/localStore';
 import { UserProfileType } from 'src/types/index';
-import { defaultUser } from 'src/types/defaults';
 
 export default {
   name: 'UserProfile',
@@ -418,7 +417,7 @@ export default {
       localStore,
       loading: ref(false),
       profileTab: ref('about'),
-      userlink: ref('kurtn3x.xyz/id/'),
+      userlink: ref('kurtn3x.xyz/user/'),
     };
   },
 
@@ -452,31 +451,19 @@ export default {
     },
 
     getUser() {
-      var user = this.$route.params.username;
-      api
-        .get('/profile/user/' + user, this.axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
-            this.user = response.data;
-            this.userlink = 'kurtn3x.xyz/id/' + this.user.id;
-            this.initialFetch = true;
-            this.initialFetchSuccessful = true;
-          } else {
-            this.notify('negative', response.data.error);
-            this.initialFetch = true;
-            this.initialFetchSuccessful = false;
-          }
-        })
-        .catch((error) => {
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            console.log(error);
-          }
+      var userParam = this.$route.params.username;
+      apiGet('/profile/user/' + userParam, this.axiosConfig).then((apiData) => {
+        if (apiData.error == false) {
+          this.user = apiData.data as UserProfileType;
+          this.userlink = 'kurtn3x.xyz/user/' + this.user.id;
+          this.initialFetch = true;
+          this.initialFetchSuccessful = true;
+        } else {
+          this.notify('negative', apiData.errorMessage);
           this.initialFetch = true;
           this.initialFetchSuccessful = false;
-          this.user = defaultUser();
-        });
+        }
+      });
     },
   },
 };

@@ -372,7 +372,7 @@
 <script lang="ts">
 import { ref } from 'vue';
 import { useQuasar, QInput } from 'quasar';
-import { api } from 'boot/axios';
+import { apiPost, apiGet } from 'src/apiWrapper';
 import { useLocalStore } from 'stores/localStore';
 import ParticlesIndex from 'components/ParticlesIndex.vue';
 import { getThemeBackground } from 'components/themes';
@@ -504,26 +504,17 @@ export default {
     getCaptcha() {
       this.captchaData.value = '';
       this.captchaData.loading = true;
-      api
-        .get('/auth/captcha', this.axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
-            this.captchaData.img =
-              'data:image/png;base64,' + response.data.captcha;
-            this.captchaData.id = response.data.id;
-            this.captchaData.loading = false;
-          }
-        })
-        .catch((error) => {
+      apiGet('/auth/captcha', this.axiosConfig).then((apiData) => {
+        if (apiData.error == false) {
+          Object.assign(this.captchaData, apiData.data);
+          this.captchaData.loading = false;
+        } else {
           this.loading = false;
           this.captchaData.error = true;
           this.captchaData.loading = false;
-          if (error.response) {
-            this.errorMessage = error.response.data.error;
-          } else {
-            this.errorMessage = error.message;
-          }
-        });
+          this.errorMessage = apiData.errorMessage;
+        }
+      });
     },
 
     submitRegister() {
@@ -538,36 +529,22 @@ export default {
           captchaId: this.captchaData.id,
           captchaValue: this.captchaData.value,
         };
-
-        api
-          .post('/auth/register', registerData, this.axiosConfig)
-          .then((response) => {
-            if (response.status == 200) {
+        apiPost('/auth/register', registerData, this.axiosConfig).then(
+          (apiData) => {
+            if (apiData.error == false) {
               this.registerSuccessful = true;
               this.loading = false;
             } else {
               this.loading = false;
               this.serverError = true;
-              this.errorMessage = response.data.error;
+              this.errorMessage = apiData.errorMessage;
               this.$nextTick(() => {
                 (this.$refs.errorText as HTMLElement).classList.add('shake');
               });
               this.getCaptcha();
             }
-          })
-          .catch((error) => {
-            this.loading = false;
-            if (error.response) {
-              this.errorMessage = error.response.data.error;
-            } else {
-              this.errorMessage = error.message;
-            }
-            this.getCaptcha();
-            this.serverError = true;
-            this.$nextTick(() => {
-              (this.$refs.errorText as HTMLElement).classList.add('shake');
-            });
-          });
+          }
+        );
       }
     },
   },
