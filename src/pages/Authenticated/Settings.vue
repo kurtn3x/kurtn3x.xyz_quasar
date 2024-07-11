@@ -826,6 +826,7 @@ export default {
               newPasswordConfirm: '',
               password: '',
             };
+            this.notify('positive', 'Saved.');
           } else {
             this.notify('negative', apiData.errorMessage);
           }
@@ -834,11 +835,12 @@ export default {
     },
 
     updateEmail() {
-      apiPut('/auth/update', this.updateEmailData, this.axiosConfig).then(
+      apiPut('/auth/account', this.updateEmailData, this.axiosConfig).then(
         (apiData) => {
           if (apiData.error == false) {
             this.getAccountInformation();
             this.updateEmailData = { newEmail: '', password: '' };
+            this.notify('positive', 'Saved.');
           } else {
             this.notify('negative', apiData.errorMessage);
           }
@@ -849,7 +851,7 @@ export default {
     onRejected() {
       this.notify(
         'negative',
-        'Something went wrong when uploading the picture. Check the requirements.'
+        "Selected Picture doesn't meet the requirements."
       );
     },
 
@@ -872,12 +874,13 @@ export default {
         form_data.append('avatar', this.avatar as Blob);
       }
 
-      apiPut('/profile/update', form_data, config).then((apiData) => {
+      apiPut('/profile/user', form_data, config).then((apiData) => {
         if (apiData.error == false) {
           this.getAccountInformation();
           // set selections back to null
           this.avatar = null;
           this.loading = false;
+          this.notify('positive', 'Saved.');
         } else {
           this.notify('negative', apiData.errorMessage);
         }
@@ -889,7 +892,7 @@ export default {
       apiGet('/auth/account', this.axiosConfig).then((apiData) => {
         if (apiData.error == false) {
           this.accountData = apiData.data as AccountType;
-          apiGet('/profile/profile', this.axiosConfig).then((apiData) => {
+          apiGet('/profile/user', this.axiosConfig).then((apiData) => {
             if (apiData.error == false) {
               this.profileData = apiData.data as UserProfileType;
               this.avatarPreview =

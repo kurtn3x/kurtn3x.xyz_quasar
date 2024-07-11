@@ -165,7 +165,7 @@ function updateContent() {
   var data = {
     content: text.value,
   };
-  apiPut('/files/file-content/' + item.value.id, data, axiosConfig).then(
+  apiPut('/files/file-content/' + item.value.id + '/', data, axiosConfig).then(
     (apiData) => {
       if (apiData.error == false) {
         q.notify({

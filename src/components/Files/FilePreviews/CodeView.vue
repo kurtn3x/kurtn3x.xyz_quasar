@@ -309,7 +309,7 @@ function updateContent() {
   var data = {
     content: text.value,
   };
-  apiPut('/files/file-content/' + item.value.id, data, axiosConfig).then(
+  apiPut('/files/file-content/' + item.value.id + '/', data, axiosConfig).then(
     (apiData) => {
       if (apiData.error == false) {
         q.notify({
@@ -339,22 +339,24 @@ function updateSyntax(syntax) {
     itemId: item.value.id,
     mime: 'text/code-' + syntax,
   };
-  apiPut('/files/file/' + item.value.id, data, axiosConfig).then((apiData) => {
-    if (apiData.error == false) {
-      q.notify({
-        type: 'positive',
-        message: 'Saved.',
-        progress: true,
-      });
-      item.value.mime = data.mime;
-    } else {
-      q.notify({
-        type: 'negative',
-        message: apiData.errorMessage,
-        progress: true,
-      });
+  apiPut('/files/file/' + item.value.id + '/', data, axiosConfig).then(
+    (apiData) => {
+      if (apiData.error == false) {
+        q.notify({
+          type: 'positive',
+          message: 'Saved.',
+          progress: true,
+        });
+        item.value.mime = data.mime;
+      } else {
+        q.notify({
+          type: 'negative',
+          message: apiData.errorMessage,
+          progress: true,
+        });
+      }
     }
-  });
+  );
 }
 
 function onResize() {

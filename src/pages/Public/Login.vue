@@ -2,7 +2,7 @@
   <q-page class="bg row justify-center items-center" :class="theme">
     <ParticlesIndex />
 
-    <div class="column fade-in-text" :class="mobile ? 'q-pa-xs' : 'q-pa-lg'">
+    <div class="column fade-in-text q-pa-xs">
       <div class="row">
         <q-card
           style="max-width: 400px"

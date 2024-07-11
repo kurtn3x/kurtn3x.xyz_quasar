@@ -5,7 +5,7 @@
     </q-toolbar>
     <q-separator size="1px" />
 
-    <q-card>
+    <q-card style="max-width: 400px">
       <ol>
         <li class="text-body1">
           <a
@@ -19,28 +19,15 @@
           Generate a Public and Private-Keypair (automatically or do it
           yourself).
         </li>
+        <li class="text-body1 q-mt-sm">Download the configuration.</li>
         <li class="text-body1 q-mt-sm">
-          Either use a GUI-Application to import the Config (e.g. Wireguird) or
-          copy the Configuration (wg0.conf) to /etc/wireguard/.
+          <a class="text-weight-bold text-underline">Windows/Mobile:</a> Import
+          the configuration in the Wireguard-GUI and enable it.
         </li>
         <li class="text-body1 q-mt-sm">
-          Activate the connection. If you copied it to /etc/wireguard/ activate
-          it with
-          <div class="q-mt-sm bg-grey-8 row items-center">
-            <a
-              style="font-family: 'Courier New'"
-              class="text-white q-ma-xs text-body2"
-              >sudo wg-quick up wg0</a
-            >
-            <q-space />
-            <q-btn
-              push
-              class="bg-blue text-white q-ma-xs"
-              icon="content_copy"
-              size="sm"
-              @click="copyToClipboard('sudo wg-quick up wg0')"
-            />
-          </div>
+          <a class="text-weight-bold text-underline">Linux with Terminal:</a>
+          Copy the configuration (wg0.conf) to /etc/wireguard/ and start it with
+          'sudo wg-quick up wg0'. Disable it with 'sudo wg-quick down wg0'.
         </li>
       </ol>
     </q-card>
@@ -59,49 +46,3 @@
     </q-card-actions>
   </q-card>
 </template>
-
-<script lang="ts">
-import { defineComponent, ref } from 'vue';
-import {
-  mdiLinux,
-  mdiMicrosoftWindows,
-  mdiAndroid,
-} from '@quasar/extras/mdi-v6';
-import { useQuasar } from 'quasar';
-
-export default defineComponent({
-  name: 'VPNView',
-  setup() {
-    const linuxCommand =
-      'wg genkey | (umask 0077 && tee peer_A.key) | wg pubkey > peer_A.pub && cat peer_A.pub';
-    const q = useQuasar();
-    return {
-      q,
-      linuxCommand,
-      mdiLinux,
-      mdiAndroid,
-      mdiMicrosoftWindows,
-      helpVPNDialogTabs: ref('windows'),
-    };
-  },
-  methods: {
-    copyToClipboard(text: string) {
-      navigator.clipboard.writeText(text);
-      this.q.notify({
-        type: 'positive',
-        message: 'Copied',
-      });
-    },
-  },
-});
-</script>
-
-<style scoped>
-.disable-select {
-  user-select: none; /* supported by Chrome and Opera */
-  -webkit-user-select: none; /* Safari */
-  -khtml-user-select: none; /* Konqueror HTML */
-  -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* Internet Explorer/Edge */
-}
-</style>

@@ -2,10 +2,10 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="initialFetch && !initialFetchSuccessful">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="initialFetch && initialFetchSuccessful">
     <viewer-wrapper
       :propItem="mediaItem"
       :active="mediaPreview"
@@ -2949,18 +2949,20 @@ export default defineComponent({
       var data = {
         parentId: parentId,
       };
-      apiPut('/files/' + itemType + '/' + itemId, data, this.axiosConfig).then(
-        (apiData) => {
-          if (apiData.error == false) {
-            this.notify('positive', 'Updated');
-            this.refreshFolder();
-            this.resetFilterState();
-          } else {
-            this.notify('negative', apiData.errorMessage);
-          }
-          this.loading = false;
+      apiPut(
+        '/files/' + itemType + '/' + itemId + '/',
+        data,
+        this.axiosConfig
+      ).then((apiData) => {
+        if (apiData.error == false) {
+          this.notify('positive', 'Updated');
+          this.refreshFolder();
+          this.resetFilterState();
+        } else {
+          this.notify('negative', apiData.errorMessage);
         }
-      );
+        this.loading = false;
+      });
     },
 
     ///////////////////////////////////////////////////
@@ -3041,7 +3043,7 @@ export default defineComponent({
       if (folderId != itemId) {
         this.loading = true;
         apiPut(
-          '/files/' + itemType + '/' + itemId,
+          '/files/' + itemType + '/' + itemId + '/',
           data,
           this.axiosConfig
         ).then((apiData) => {
