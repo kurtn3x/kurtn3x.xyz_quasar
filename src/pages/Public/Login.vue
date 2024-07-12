@@ -92,9 +92,9 @@
 import { defineComponent, ref } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
-import ParticlesIndex from 'components/ParticlesIndex.vue';
-import { getThemeBackground } from 'components/themes';
-import { apiGet, apiPost } from 'src/apiWrapper';
+import ParticlesIndex from 'components/Style/ParticlesIndex.vue';
+import { getThemeBackground } from 'components/Style/themes';
+import { apiGet, apiPost } from 'src/components/apiWrapper';
 
 export default defineComponent({
   name: 'ForgotView',

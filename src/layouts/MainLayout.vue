@@ -290,7 +290,7 @@ import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { useLocalStore } from 'stores/localStore';
 import { defaultHeaderInformation } from 'src/types/defaults';
-import { themes } from 'components/themes';
+import { themes } from 'components/Style/themes';
 
 export default {
   setup() {

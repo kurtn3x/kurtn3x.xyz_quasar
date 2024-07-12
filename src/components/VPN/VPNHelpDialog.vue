@@ -1,11 +1,11 @@
 <template>
-  <q-card bordered class="full-width">
+  <q-card bordered style="max-width: 400px">
     <q-toolbar class="bg-layout-bg text-layout-text text-center">
       <q-toolbar-title class="q-ma-sm">VPN Setup Help</q-toolbar-title>
     </q-toolbar>
     <q-separator size="1px" />
 
-    <q-card style="max-width: 400px">
+    <q-card>
       <ol>
         <li class="text-body1">
           <a
@@ -17,17 +17,28 @@
         </li>
         <li class="text-body1 q-mt-sm">
           Generate a Public and Private-Keypair (automatically or do it
-          yourself).
+          yourself) and create the client.
         </li>
-        <li class="text-body1 q-mt-sm">Download the configuration.</li>
+        <li class="text-body1 q-mt-sm">Download the resulting config.</li>
         <li class="text-body1 q-mt-sm">
-          <a class="text-weight-bold text-underline">Windows/Mobile:</a> Import
-          the configuration in the Wireguard-GUI and enable it.
+          <a class="text-weight-bolder" style="text-decoration: underline"
+            >Windows/Mobile/GUI:</a
+          >
+          Import the config in the Wireguard-GUI and enable it.
         </li>
         <li class="text-body1 q-mt-sm">
-          <a class="text-weight-bold text-underline">Linux with Terminal:</a>
-          Copy the configuration (wg0.conf) to /etc/wireguard/ and start it with
-          'sudo wg-quick up wg0'. Disable it with 'sudo wg-quick down wg0'.
+          <a class="text-weight-bolder" style="text-decoration: underline"
+            >Linux with Terminal:</a
+          >
+          Copy the config (wg0.conf) to /etc/wireguard/.
+          <div>
+            Enable it with
+            <a class="text-italic text-weight-bold">sudo wg-quick up wg0</a>
+          </div>
+          <div>
+            Disable it with
+            <a class="text-italic text-weight-bold">sudo wg-quick down wg0</a>
+          </div>
         </li>
       </ol>
     </q-card>

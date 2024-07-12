@@ -117,7 +117,7 @@ import {
   onBeforeUnmount,
 } from 'vue';
 import { useQuasar } from 'quasar';
-import { apiGet } from 'src/apiWrapper';
+import { apiGet } from 'src/components/apiWrapper';
 import { toRaw } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';

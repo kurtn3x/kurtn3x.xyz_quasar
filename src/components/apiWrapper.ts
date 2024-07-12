@@ -15,15 +15,26 @@ export async function apiGet(endpoint: string, axiosConfig: any) {
       } else {
         returnData.error = true;
         returnData.errorMessage = response.data;
+        if (returnData.errorMessage == '') {
+          returnData.errorMessage =
+            'API Error returned code ' + response.status + '.';
+        }
       }
     })
     .catch((error) => {
       if (error.response) {
         returnData.error = true;
         returnData.errorMessage = error.response.data.error;
+        if (returnData.errorMessage == '') {
+          returnData.errorMessage =
+            'API Error returned code ' + error.response.status + '.';
+        }
       } else {
         returnData.error = true;
         returnData.errorMessage = error.message;
+        if (returnData.errorMessage == '') {
+          returnData.errorMessage = 'Encountered error during request.';
+        }
       }
     });
 
@@ -45,15 +56,26 @@ export async function apiDelete(endpoint: string, axiosConfig: any) {
       } else {
         returnData.error = true;
         returnData.errorMessage = response.data;
+        if (returnData.errorMessage == '') {
+          returnData.errorMessage =
+            'API Error returned code ' + response.status + '.';
+        }
       }
     })
     .catch((error) => {
       if (error.response) {
         returnData.error = true;
         returnData.errorMessage = error.response.data.error;
+        if (returnData.errorMessage == '') {
+          returnData.errorMessage =
+            'API Error returned code ' + error.response.status + '.';
+        }
       } else {
         returnData.error = true;
         returnData.errorMessage = error.message;
+        if (returnData.errorMessage == '') {
+          returnData.errorMessage = 'Encountered error during request.';
+        }
       }
     });
 
@@ -75,15 +97,26 @@ export async function apiPost(endpoint: string, data: any, axiosConfig: any) {
       } else {
         returnData.error = true;
         returnData.errorMessage = response.data;
+        if (returnData.errorMessage == '') {
+          returnData.errorMessage =
+            'API Error returned code ' + response.status + '.';
+        }
       }
     })
     .catch((error) => {
       if (error.response) {
         returnData.error = true;
         returnData.errorMessage = error.response.data.error;
+        if (returnData.errorMessage == '') {
+          returnData.errorMessage =
+            'API Error returned code ' + error.response.status + '.';
+        }
       } else {
         returnData.error = true;
         returnData.errorMessage = error.message;
+        if (returnData.errorMessage == '') {
+          returnData.errorMessage = 'Encountered error during request.';
+        }
       }
     });
 
@@ -105,15 +138,26 @@ export async function apiPut(endpoint: string, data: any, axiosConfig: any) {
       } else {
         returnData.error = true;
         returnData.errorMessage = response.data;
+        if (returnData.errorMessage == '') {
+          returnData.errorMessage =
+            'API Error returned code ' + response.status + '.';
+        }
       }
     })
     .catch((error) => {
       if (error.response) {
         returnData.error = true;
         returnData.errorMessage = error.response.data.error;
+        if (returnData.errorMessage == '') {
+          returnData.errorMessage =
+            'API Error returned code ' + error.response.status + '.';
+        }
       } else {
         returnData.error = true;
         returnData.errorMessage = error.message;
+        if (returnData.errorMessage == '') {
+          returnData.errorMessage = 'Encountered error during request.';
+        }
       }
     });
 

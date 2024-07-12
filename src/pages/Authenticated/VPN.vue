@@ -585,7 +585,7 @@ import {
 } from 'src/types/index';
 import VPNHelpDialog from 'components/VPN/VPNHelpDialog.vue';
 import VPNInformation from 'components/VPN/VPNInformation.vue';
-import { apiGet, apiPost, apiDelete } from 'src/apiWrapper';
+import { apiGet, apiPost, apiDelete } from 'src/components/apiWrapper';
 import * as wireguard from 'components/VPN/wireguard.js';
 
 export default defineComponent({
@@ -643,15 +643,17 @@ export default defineComponent({
   methods: {
     deleteVPNConnection(con: VPNInfoType) {
       this.loading = true;
-      apiDelete('/vpn/client/' + con.id, this.axiosConfig).then((apiData) => {
-        if (apiData.error == false) {
-          this.notify('positive', 'Deleted.');
-          this.getVPNConnections();
-        } else {
-          this.notify('negative', apiData.errorMessage);
+      apiDelete('/vpn/client/' + con.id + '/', this.axiosConfig).then(
+        (apiData) => {
+          if (apiData.error == false) {
+            this.notify('positive', 'Deleted.');
+            this.getVPNConnections();
+          } else {
+            this.notify('negative', apiData.errorMessage);
+          }
+          this.loading = false;
         }
-        this.loading = false;
-      });
+      );
     },
 
     downloadConfiguration() {
@@ -715,6 +717,7 @@ export default defineComponent({
           this.initialFetchSuccessful = true;
         } else {
           this.notify('negative', apiData.errorMessage);
+          this.initialFetch = true;
         }
         this.loading = false;
       });

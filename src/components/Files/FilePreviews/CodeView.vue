@@ -124,7 +124,7 @@
 </template>
 
 <script setup>
-import { apiPut, apiGet } from 'src/apiWrapper';
+import { apiPut, apiGet } from 'src/components/apiWrapper';
 import {
   defineProps,
   reactive,
@@ -317,12 +317,20 @@ function updateContent() {
           message: 'Saved.',
           progress: true,
         });
-        if ('size' in apiData.data) {
-          item.value.size = apiData.data.size;
-        }
-        if ('sizeBytes' in apiData.data) {
-          item.value.sizeBytes = apiData.data.sizeBytes;
-        }
+        apiGet('/files/file/' + item.value.id + '/', axiosConfig).then(
+          (apiData) => {
+            if (apiData.error == false) {
+              item.value.size = apiData.data.size;
+              item.value.sizeBytes = apiData.data.sizeBytes;
+            } else {
+              q.notify({
+                type: 'negative',
+                message: apiData.errorMessage,
+                progress: true,
+              });
+            }
+          }
+        );
       } else {
         q.notify({
           type: 'negative',

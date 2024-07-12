@@ -372,10 +372,10 @@
 <script lang="ts">
 import { ref } from 'vue';
 import { useQuasar, QInput } from 'quasar';
-import { apiPost, apiGet } from 'src/apiWrapper';
+import { apiPost, apiGet } from 'src/components/apiWrapper';
 import { useLocalStore } from 'stores/localStore';
-import ParticlesIndex from 'components/ParticlesIndex.vue';
-import { getThemeBackground } from 'components/themes';
+import ParticlesIndex from 'components/Style/ParticlesIndex.vue';
+import { getThemeBackground } from 'components/Style/themes';
 
 export default {
   name: 'RegisterView',

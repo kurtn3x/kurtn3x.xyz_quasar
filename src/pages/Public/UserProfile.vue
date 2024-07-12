@@ -390,7 +390,7 @@
 <script lang="ts">
 import { ref, Ref } from 'vue';
 import { useQuasar } from 'quasar';
-import { apiGet } from 'src/apiWrapper';
+import { apiGet } from 'src/components/apiWrapper';
 import { useLocalStore } from 'stores/localStore';
 import { UserProfileType } from 'src/types/index';
 

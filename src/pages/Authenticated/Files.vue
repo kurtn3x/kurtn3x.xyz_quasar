@@ -1668,7 +1668,7 @@ import { useQuasar, scroll } from 'quasar';
 import { draggable } from 'components/Files/lib/draggable.js';
 import { droppable } from 'components/Files/lib/droppable.js';
 import { getIcon } from 'src/components/Files/mimeMap';
-import { apiGet, apiPut, apiPost, apiDelete } from 'src/apiWrapper';
+import { apiGet, apiPut, apiPost, apiDelete } from 'src/components/apiWrapper';
 import RightClickMenu from 'components/Files/RightClickMenu.vue';
 import ViewerWrapper from 'src/components/Files/ViewerWrapper.vue';
 
@@ -1972,6 +1972,9 @@ export default defineComponent({
         if (apiData.error == false) {
           this.rawFolderContent = apiData.data as RawFolderContentType;
           this.initialFetchSuccessful = true;
+          this.navbarIndex.homeFolderId = (
+            apiData.data as RawFolderContentType
+          ).id;
           this.navbarIndex.menuItems = [];
           this.navbarIndex.navbarItems = [];
         } else {

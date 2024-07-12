@@ -66,8 +66,8 @@
 <script>
 import { defineComponent } from 'vue';
 import { useLocalStore } from 'stores/localStore';
-import ParticlesIndex from 'components/ParticlesIndex.vue';
-import { getThemeBackground } from 'components/themes';
+import ParticlesIndex from 'components/Style/ParticlesIndex.vue';
+import { getThemeBackground } from 'components/Style/themes';
 
 export default defineComponent({
   name: 'PrivacyPolicyView',

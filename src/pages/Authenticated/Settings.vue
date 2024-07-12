@@ -670,7 +670,7 @@
 <script lang="ts">
 import { Ref, ref } from 'vue';
 import { useQuasar, LocalStorage } from 'quasar';
-import { apiGet, apiPut, apiDelete } from 'src/apiWrapper';
+import { apiGet, apiPut, apiDelete } from 'src/components/apiWrapper';
 import { useLocalStore } from 'stores/localStore';
 import { defaultHeaderInformation } from 'src/types/defaults';
 import {
@@ -678,7 +678,7 @@ import {
   UserProfileType,
   HeaderInformationType,
 } from 'src/types/index';
-import { themes } from 'components/themes';
+import { themes } from 'components/Style/themes';
 
 export default {
   name: 'SettingsView',

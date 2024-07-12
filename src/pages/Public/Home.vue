@@ -23,8 +23,8 @@
 import { defineComponent, ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { useLocalStore } from 'stores/localStore';
-import ParticlesIndex from 'components/ParticlesIndex.vue';
-import { getThemeBackground } from 'components/themes';
+import ParticlesIndex from 'components/Style/ParticlesIndex.vue';
+import { getThemeBackground } from 'components/Style/themes';
 
 export default defineComponent({
   name: 'IndexPage',

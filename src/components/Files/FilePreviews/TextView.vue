@@ -94,7 +94,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { apiPut, apiGet } from 'src/apiWrapper';
+import { apiPut, apiGet } from 'src/components/apiWrapper';
 import { defineProps, computed, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { useLocalStore } from 'stores/localStore';
@@ -173,12 +173,20 @@ function updateContent() {
           message: 'Saved.',
           progress: true,
         });
-        if ('size' in apiData.data) {
-          item.value.size = apiData.data.size;
-        }
-        if ('sizeBytes' in apiData.data) {
-          item.value.size_bytes = apiData.data.size_bytes;
-        }
+        apiGet('/files/file/' + item.value.id + '/', axiosConfig).then(
+          (apiData) => {
+            if (apiData.error == false) {
+              item.value.size = apiData.data.size;
+              item.value.sizeBytes = apiData.data.sizeBytes;
+            } else {
+              q.notify({
+                type: 'negative',
+                message: apiData.errorMessage,
+                progress: true,
+              });
+            }
+          }
+        );
       } else {
         q.notify({
           type: 'negative',

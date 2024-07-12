@@ -14,7 +14,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { useQuasar, LocalStorage } from 'quasar';
-import { apiGet } from 'src/apiWrapper';
+import { apiGet } from 'src/components/apiWrapper';
 import { useLocalStore } from 'stores/localStore';
 
 export default defineComponent({

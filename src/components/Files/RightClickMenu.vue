@@ -311,7 +311,7 @@ import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
 import { FolderEntryType } from 'src/types/index';
 import ItemInformation from './ItemInformation.vue';
-import { apiPut, apiGet, apiDelete } from 'src/apiWrapper';
+import { apiPut, apiGet, apiDelete } from 'src/components/apiWrapper';
 
 export default defineComponent({
   name: 'RightClickMenu',
