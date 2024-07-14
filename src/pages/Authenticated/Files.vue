@@ -2,236 +2,53 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="initialFetch && initialFetchSuccessful">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="initialFetch && !initialFetchSuccessful">
     <viewer-wrapper
       :propItem="mediaItem"
       :active="mediaPreview"
       @close="mediaPreview = false"
     />
-    <!-- createFileDialog -->
-    <q-dialog
-      v-model="createFileDialog"
-      @hide="
-        newFile.name = '';
-        newFile.mime = 'Unknown';
+    <CreateFileDialog
+      :active="showCreateFileDialog"
+      @close="showCreateFileDialog = false"
+      @create="
+        (newFile) => {
+          createFile(newFile);
+        }
       "
-    >
-      <q-card bordered style="width: 350px">
-        <q-toolbar class="bg-layout-bg text-layout-text text-center">
-          <q-toolbar-title class="q-ma-sm">Create new File</q-toolbar-title>
-        </q-toolbar>
-        <div class="text-body1 text-center q-ma-md">
-          <q-input
-            :color="darkmode ? 'white' : 'black'"
-            v-model="newFile.name"
-            dense
-            outlined
-            label="Name"
-            class="text-primary text-body1 col"
-            style="height: 45px"
-            @keyup.enter="createFile"
-          />
-        </div>
-        <div class="q-ml-md">
-          <a class="text-h6"> Type:</a>
-          <q-option-group
-            v-model="newFile.mime"
-            :options="mimeOptions"
-            color="primary"
-            class="q-mt-xs text-body1"
-          />
-        </div>
-        <q-separator class="q-mt-md" />
-        <q-card-actions align="center" class="row q-mt-sm q-mb-sm">
-          <q-btn
-            v-close-popup
-            push
-            icon="close"
-            label="Cancel"
-            class="bg-red text-white col"
-          />
-          <q-btn
-            push
-            class="bg-green text-white col"
-            icon="done"
-            size="md"
-            label="Create"
-            @click="createFile"
-          />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
-
-    <!-- delteSelectedItemsDialog (Confirmation) -->
-    <q-dialog v-model="deleteItemsDialog">
-      <q-card bordered style="width: 350px">
-        <q-toolbar class="bg-layout-bg text-layout-text text-center">
-          <q-toolbar-title class="q-ma-sm"
-            >Delete selected Items</q-toolbar-title
-          >
-        </q-toolbar>
-        <div class="text-body1 text-center q-ma-md">
-          This will delete all selected items and all their subitems.
-        </div>
-        <div class="row justify-center q-ma-md">
-          <q-btn
-            push
-            icon="expand_more"
-            :label="selectedItems.length + ' Items'"
-            class="bg-blue text-white q-ml-sm text-body2"
-          >
-            <q-menu anchor="bottom middle" self="top middle" class="no-shadow">
-              <q-card bordered flat style="max-width: 200px; max-height: 250px">
-                <template v-for="item in selectedItems" :key="item">
-                  <div class="ellipsis text-body1 q-ma-sm">
-                    <q-icon
-                      :name="item.type == 'folder' ? 'folder' : 'file_present'"
-                    />
-                    <a class="q-ml-sm"> {{ item.name }} </a>
-                  </div>
-                  <q-separator />
-                </template>
-              </q-card>
-            </q-menu>
-          </q-btn>
-        </div>
-        <q-separator class="q-mt-sm" />
-        <q-card-actions align="center" class="row q-mt-sm q-mb-sm">
-          <q-btn
-            v-close-popup
-            push
-            icon="close"
-            label="Cancel"
-            class="bg-red text-white col"
-          />
-          <q-btn
-            v-close-popup
-            push
-            class="bg-green text-white col"
-            icon="done"
-            size="md"
-            label="Continue"
-            @click="deleteSelectedItems"
-          />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
-
-    <!-- moveSelectedItemsDialog -->
-    <q-dialog
-      v-model="moveSelectedItemsDialog"
-      @hide="
-        moveItemsExpanded = [];
-        moveItemsFilter = '';
-        moveItemsSelectedName = '';
-        moveItemsSelectedId = '';
+    />
+    <MoveSelectedItemsDialog
+      :propItem="selectedItems"
+      :active="showMoveSelectedItemsDialog"
+      @close="showMoveSelectedItemsDialog = false"
+      @move="
+        (newParentId) => {
+          moveSelection(newParentId);
+        }
       "
-    >
-      <q-card bordered style="min-width: 350px">
-        <q-toolbar class="bg-layout-bg text-layout-text text-center">
-          <q-toolbar-title class="q-ma-sm"
-            >Move Items to new Folder</q-toolbar-title
-          >
-        </q-toolbar>
-        <div
-          v-if="allAvailableFolders.length == 0"
-          class="q-ma-md row justify-center items-center"
-          style="height: 375px"
-        >
-          <q-spinner size="10em" />
-        </div>
-        <div class="q-ma-sm" v-if="allAvailableFolders.length != 0">
-          <div class="row">
-            <q-input
-              :color="darkmode ? 'white' : 'black'"
-              v-model="moveItemsFilter"
-              dense
-              outlined
-              label="Search"
-              class="text-primary text-body1 col"
-              style="height: 45px; max-width: 300px"
-            />
+    />
 
-            <q-btn
-              icon="expand_more"
-              :label="selectedItems.length + ' Items'"
-              class="bg-blue text-white q-ml-sm text-body2 col"
-              push
-              dense
-              style="height: 40px; max-width: 130px"
-            >
-              <q-menu
-                anchor="bottom middle"
-                self="top middle"
-                class="no-shadow"
-              >
-                <q-card
-                  flat
-                  bordered
-                  style="max-width: 200px; max-height: 250px"
-                >
-                  <template v-for="item in selectedItems" :key="item">
-                    <div class="ellipsis text-body1 q-ma-sm">
-                      <q-icon
-                        :name="
-                          item.type == 'folder' ? 'folder' : 'file_present'
-                        "
-                      />
-                      <a class="q-ml-sm"> {{ item.name }} </a>
-                    </div>
-                    <q-separator />
-                  </template>
-                </q-card>
-              </q-menu>
-            </q-btn>
-          </div>
-          <q-separator />
-          <q-scroll-area style="height: 350px">
-            <q-tree
-              :nodes="allAvailableFolders"
-              v-model:selected="moveItemsSelectedId"
-              v-model:expanded="moveItemsExpanded"
-              :filter="moveItemsFilter"
-              node-key="id"
-              label-key="name"
-              selected-color="green"
-              class="text-body1"
-              no-transition
-              no-selection-unset
-              no-results-label="No folder found"
-              @update:selected="moveItemsUpdateSelectedLabel"
-            />
-          </q-scroll-area>
-        </div>
-        <q-separator />
+    <DeleteSelectedItemsDialog
+      :propItem="selectedItems"
+      :active="showDeleteSelectedItemsDialog"
+      @close="showDeleteSelectedItemsDialog = false"
+      @deleteItems="deleteSelectedItems"
+    />
 
-        <q-card-actions class="q-mb-sm column">
-          <div class="full-width">
-            <a class="text-weight-bolder">New Folder: </a>
-            {{ moveItemsSelectedName }}
-          </div>
-          <div class="row full-width q-mt-sm">
-            <q-btn
-              v-close-popup
-              push
-              icon="close"
-              label="Cancel"
-              class="bg-red text-white col q-mr-xs"
-            />
-            <q-btn
-              push
-              class="bg-green text-white col q-ml-xs"
-              icon="done"
-              label="Move"
-              @click="moveSelection"
-            />
-          </div>
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
+    <UploadFilesDialog
+      :propItem="rawFolderContent"
+      :active="showUploadFilesDialog"
+      :initialEvent="uploadFilesDialogInitialEvent"
+      @close="showUploadFilesDialog = false"
+      @upload="
+        (params: [UploadDialogEntryType[], string]) => {
+          uploadFiles(...params);
+        }
+      "
+    />
 
     <!-- filterDialog -->
     <q-page-sticky v-if="filterDialog" position="top" style="z-index: 100">
@@ -291,229 +108,6 @@
         </div>
       </q-card>
     </q-page-sticky>
-
-    <q-dialog v-model="uploadFilesDialog" persistent>
-      <q-card bordered style="width: 350px; height: 500px">
-        <q-toolbar class="bg-layout-bg text-layout-text text-center">
-          <q-toolbar-title class="q-ma-sm">Upload Files </q-toolbar-title>
-        </q-toolbar>
-
-        <div class="q-ma-md">
-          <div
-            style="border: 2px dashed lightblue; height: 290px"
-            class="q-mt-md"
-            @drop.prevent="uploadFilesDialogAreaDrop"
-            @dragover.prevent="
-              (ev: DragEvent) => {
-                if (ev.dataTransfer!.items.length > 0) {
-                  if (ev.dataTransfer!.items[0].kind == 'file') {
-                    uploadFilesDialogAreaDragover = true;
-                  }
-                }
-              }
-            "
-            @dragenter.self="
-              (ev: DragEvent) => {
-                if (ev.dataTransfer!.items.length > 0) {
-                  if (ev.dataTransfer!.items[0].kind == 'file') {
-                    uploadFilesDialogAreaDragover = true;
-                  }
-                }
-              }
-            "
-            @dragleave.prevent="
-              (ev: DragEvent) => {
-                if (ev.dataTransfer!.items.length > 0) {
-                  if (ev.dataTransfer!.items[0].kind == 'file') {
-                    uploadFilesDialogAreaDragover = false;
-                  }
-                }
-              }
-            "
-            :class="uploadFilesDialogAreaDragover ? 'bg-blue' : ''"
-          >
-            <q-scroll-area class="row" style="height: 285px">
-              <div
-                v-if="uploadFilesDialogUploadList.length == 0"
-                class="text-center text-h6 q-mt-md"
-              >
-                Select some Files or Folders or Drag & Drop them here.
-                <q-icon
-                  name="ads_click"
-                  :size="uploadFilesDialogAreaDragover ? '100px' : '50px'"
-                  class="absolute-center q-mt-md"
-                />
-              </div>
-
-              <q-list class="q-ma-xs">
-                <template
-                  v-for="file in uploadFilesDialogUploadList"
-                  :key="file"
-                >
-                  <q-card class="bg-primary text-layout-text q-mt-sm" flat>
-                    <q-item
-                      dense
-                      clickable
-                      @click="
-                        file.temp = file.name;
-                        file.edit = !file.edit;
-                      "
-                      class="bg-primary text-layout-text"
-                    >
-                      <q-item-section avatar class="q-pa-none">
-                        <q-icon
-                          :name="
-                            file.type == 'file' ? 'file_present' : 'folder'
-                          "
-                        />
-                      </q-item-section>
-                      <q-item-section class="q-pa-none">
-                        <q-item-label class="ellipsis" style="width: 165px">
-                          {{ file.name }}
-                        </q-item-label>
-                      </q-item-section>
-                      <q-item-section side>
-                        <q-btn
-                          size="xs"
-                          style="height: 10px"
-                          icon="delete"
-                          round
-                          unelevated
-                          outline
-                          class="bg-red text-white q-ml-sm"
-                          @click="
-                            uploadFilesDialogUploadList =
-                              uploadFilesDialogUploadList.filter(
-                                (item) => item.name !== file.name
-                              )
-                          "
-                        />
-                      </q-item-section>
-                    </q-item>
-                    <div v-if="file.edit">
-                      <q-input
-                        v-model="file.temp"
-                        :rules="[
-                          (val) =>
-                            !/\/|\x00/.test(val) || 'No slash or null char',
-                        ]"
-                        dense
-                        color="layout-text"
-                        filled
-                        autofocus
-                        input-class="text-layout-text"
-                        hide-bottom-space
-                      >
-                        <template v-slot:append>
-                          <q-btn
-                            icon="done"
-                            class="bg-green text-white"
-                            unelevated
-                            outline
-                            size="xs"
-                            round
-                            @click="
-                              if (!/\/|\x00/.test(file.temp as string)) {
-                                if (
-                                  checkNameExistFolderContext(
-                                    file.temp as string
-                                  ) == false &&
-                                  checkNameExistUploadContext(
-                                    file.temp as string,
-                                    file.name
-                                  ) == false
-                                ) {
-                                  file.name = file.temp as string;
-                                  file.edit = false;
-                                } else {
-                                  notify('negative', 'Name already exists');
-                                }
-                              }
-                            "
-                          />
-                          <q-btn
-                            icon="close"
-                            class="bg-red text-white"
-                            unelevated
-                            outline
-                            size="xs"
-                            round
-                            @click="
-                              file.edit = false;
-                              file.temp = '';
-                            "
-                          />
-                        </template>
-                      </q-input>
-                    </div>
-                  </q-card>
-                </template>
-              </q-list>
-            </q-scroll-area>
-          </div>
-          <div class="row justify-between q-mt-sm">
-            <div class="row">
-              <q-file
-                unelevated
-                dense
-                label-slot
-                multiple
-                v-model="uploadFilesDialogFiles"
-                @update:model-value="appendFiles"
-                color="white"
-                class="bg-primary text-layout-text rounded-borders q-mr-md"
-                label-color="white"
-              >
-                <template v-slot:label>
-                  <div class="text-body1 q-ml-sm items-center">
-                    <q-icon name="add" size="24px" />
-                    <a class="q-ml-sm">Select Files</a>
-                  </div>
-                </template>
-              </q-file>
-            </div>
-            <div style="height: 25px; width: 35px">
-              <q-btn
-                style="height: 25px; width: 35px"
-                @click="uploadFilesDialogUploadList = []"
-                icon="delete"
-                size="xs"
-                class="bg-red text-white"
-                push
-                v-if="uploadFilesDialogUploadList.length > 0"
-              />
-            </div>
-          </div>
-        </div>
-
-        <q-separator class="q-mt-sm" />
-
-        <q-card-actions align="evenly" class="q-mt-sm q-mb-sm row">
-          <q-btn
-            v-close-popup
-            push
-            icon="close"
-            label="Close"
-            class="bg-red text-white col-4"
-            style="height: 45px"
-            @click="uploadFilesDialogUploadList = []"
-          />
-          <q-btn
-            v-close-popup
-            push
-            class="bg-green text-white col"
-            icon="done"
-            size="md"
-            label="Upload"
-            @click="
-              uploadFiles(uploadFilesDialogUploadList, rawFolderContent.id);
-              uploadFilesDialogUploadList = [];
-            "
-            style="width: 210px; height: 45px"
-          />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
 
     <q-page class="column q-mr-xs q-ml-xs" :style-fn="styleFn">
       <div class="q-mt-sm" @dragover.stop.prevent="" @drop.prevent="">
@@ -669,7 +263,7 @@
                 text-color="white"
                 icon="note_add"
                 label="New File"
-                @click="createFileDialog = true"
+                @click="showCreateFileDialog = true"
                 style="width: 180px"
               />
               <q-fab-action
@@ -683,7 +277,7 @@
               />
               <q-fab-action
                 push
-                @click="uploadFilesDialog = true"
+                @click="showUploadFilesDialog = true"
                 icon="file_upload"
                 label="Upload Files"
                 class="text-body1 bg-light-green"
@@ -749,10 +343,7 @@
                   outline
                   label="Move"
                   icon="trending_flat"
-                  @click="
-                    moveSelectedItemsDialog = true;
-                    fetchAllAvailableFolders();
-                  "
+                  @click="showMoveSelectedItemsDialog = true"
                   style="width: 150px"
                 />
                 <q-fab-action
@@ -761,7 +352,7 @@
                   outline
                   icon="close"
                   label="Delete"
-                  @click="deleteItemsDialog = true"
+                  @click="showDeleteSelectedItemsDialog = true"
                   style="width: 150px"
                 />
               </q-fab>
@@ -785,7 +376,7 @@
                 outline
                 icon="note_add"
                 label="New File"
-                @click="createFileDialog = true"
+                @click="showCreateFileDialog = true"
                 style="width: 180px"
                 padding="sm"
               />
@@ -802,7 +393,7 @@
               />
 
               <q-fab-action
-                @click="uploadFilesDialog = true"
+                @click="showUploadFilesDialog = true"
                 icon="file_upload"
                 label="Upload Files"
                 class="text-body1 bg-light-green"
@@ -860,10 +451,7 @@
                   outline
                   label="Move"
                   icon="trending_flat"
-                  @click="
-                    moveSelectedItemsDialog = true;
-                    fetchAllAvailableFolders();
-                  "
+                  @click="showMoveSelectedItemsDialog = true"
                   style="width: 110px"
                 />
                 <q-fab-action
@@ -872,7 +460,7 @@
                   outline
                   icon="close"
                   label="Delete"
-                  @click="deleteItemsDialog = true"
+                  @click="showDeleteSelectedItemsDialog = true"
                   style="width: 110px"
                 />
               </q-fab>
@@ -987,8 +575,8 @@
             (ev: DragEvent) => {
               if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
                 if (ev.dataTransfer.items[0].kind == 'file') {
-                  uploadFilesDialogAreaDrop(ev);
-                  uploadFilesDialog = true;
+                  uploadFilesDialogInitialEvent = ev;
+                  showUploadFilesDialog = true;
                   scrollAreaDragover = false;
                 }
               }
@@ -1174,8 +762,7 @@
                     @moveItem="
                       () => {
                         clearSelectedItems();
-                        fetchAllAvailableFolders();
-                        moveSelectedItemsDialog = true;
+                        showMoveSelectedItemsDialog = true;
                         selectedItems.push(item);
                       }
                     "
@@ -1249,8 +836,7 @@
                         @moveItem="
                           () => {
                             clearSelectedItems();
-                            fetchAllAvailableFolders();
-                            moveSelectedItemsDialog = true;
+                            showMoveSelectedItemsDialog = true;
                             selectedItems.push(item);
                           }
                         "
@@ -1297,8 +883,7 @@
                     @moveItem="
                       () => {
                         clearSelectedItems();
-                        fetchAllAvailableFolders();
-                        moveSelectedItemsDialog = true;
+                        showMoveSelectedItemsDialog = true;
                         selectedItems.push(item);
                       }
                     "
@@ -1367,8 +952,7 @@
                         @moveItem="
                           () => {
                             clearSelectedItems();
-                            fetchAllAvailableFolders();
-                            moveSelectedItemsDialog = true;
+                            showMoveSelectedItemsDialog = true;
                             selectedItems.push(item);
                           }
                         "
@@ -1659,7 +1243,6 @@ import type {
   FolderEntryType,
   UploadDialogEntryType,
   NavbarIndexType,
-  AllAvailableFoldersType,
   RawFolderContentType,
 } from 'src/types/index';
 import { defineComponent, ref, reactive } from 'vue';
@@ -1667,10 +1250,16 @@ import { useLocalStore } from 'stores/localStore';
 import { useQuasar, scroll } from 'quasar';
 import { draggable } from 'components/Files/lib/draggable.js';
 import { droppable } from 'components/Files/lib/droppable.js';
-import { getIcon } from 'src/components/Files/mimeMap';
+import { getIcon } from 'src/components/Files/lib/mimeMap';
 import { apiGet, apiPut, apiPost, apiDelete } from 'src/components/apiWrapper';
-import RightClickMenu from 'components/Files/RightClickMenu.vue';
+import { folderData } from 'src/testdata/folder';
+
+import RightClickMenu from 'src/components/Files/RightClickMenu.vue';
 import ViewerWrapper from 'src/components/Files/ViewerWrapper.vue';
+import CreateFileDialog from 'src/components/Files/Dialogs/CreateFileDialog.vue';
+import MoveSelectedItemsDialog from 'src/components/Files/Dialogs/MoveSelectedItemsDialog.vue';
+import DeleteSelectedItemsDialog from 'src/components/Files/Dialogs/DeleteSelectedItemsDialog.vue';
+import UploadFilesDialog from 'src/components/Files/Dialogs/UploadFilesDialog.vue';
 
 export default defineComponent({
   name: 'FilesView',
@@ -1679,7 +1268,14 @@ export default defineComponent({
     droppable,
   },
 
-  components: { RightClickMenu, ViewerWrapper },
+  components: {
+    RightClickMenu,
+    ViewerWrapper,
+    CreateFileDialog,
+    MoveSelectedItemsDialog,
+    DeleteSelectedItemsDialog,
+    UploadFilesDialog,
+  },
 
   setup() {
     const localStore = useLocalStore();
@@ -1718,13 +1314,7 @@ export default defineComponent({
       initialFetchSuccessful: ref(false),
 
       // raw content including children of current folder
-      rawFolderContent: ref({}) as Ref<RawFolderContentType>,
-
-      // Dialog handlers when uploading files
-      uploadFilesDialog: ref(false),
-      uploadFilesDialogUploadList: ref([]) as Ref<UploadDialogEntryType[]>,
-      uploadFilesDialogAreaDragover: ref(false),
-      uploadFilesDialogFiles: ref(null),
+      rawFolderContent: ref(folderData) as Ref<RawFolderContentType>,
 
       // Bottom Progress Panel handlers when files are being uploaded -> shows state
       progressSticky: ref(false),
@@ -1788,57 +1378,24 @@ export default defineComponent({
       scrollAreaDragover: ref(false),
       scrollShow: ref({ top: false, bottom: false }),
 
-      // map of all folders the user has, used when moving items (given into q-tree)
-      allAvailableFolders: ref([]) as Ref<AllAvailableFoldersType[]>,
-
-      // dialog for moving selections
-      moveSelectedItemsDialog: ref(false),
-      moveItemsExpanded: ref(['']),
-      moveItemsFilter: ref(''),
-      moveItemsSelectedName: ref(''),
-      moveItemsSelectedId: ref(''),
-
-      // delete items
-      deleteItemsDialog: ref(false),
-
-      // delete folder
-      folderToDeleteUUID: ref(''),
-      folderDeleteDialog: ref(false),
-
       // new folder handler
       newFolder: ref({
         show: false,
         name: '',
       }),
 
-      // new file handler
-      createFileDialog: ref(false),
-      newFile: ref({
-        name: '',
-        mime: 'Unknown',
-      }),
-      mimeOptions: [
-        {
-          label: 'Text',
-          value: 'text/plain',
-        },
-        {
-          label: 'WYSIWYG (Rich Text Editor)',
-          value: 'text/wysiwyg',
-        },
-        {
-          label: 'Code',
-          value: 'text/code',
-        },
-        {
-          label: 'Unknown',
-          value: 'Unknown',
-        },
-      ],
-
       // media preview
       mediaPreview: ref(false),
       mediaItem: ref({}) as Ref<FolderEntryType>,
+
+      // Dialogs
+      showCreateFileDialog: ref(false),
+      showMoveSelectedItemsDialog: ref(false),
+      showDeleteSelectedItemsDialog: ref(false),
+      showUploadFilesDialog: ref(false),
+      uploadFilesDialogInitialEvent: ref(undefined) as Ref<
+        undefined | DragEvent
+      >,
     };
   },
 
@@ -2152,29 +1709,6 @@ export default defineComponent({
       progress.status = 'ok';
     },
 
-    // picking files via the pick files selector and adding it to the uploadMap
-    appendFiles(files: File[]) {
-      for (var file of files) {
-        var fileName = file.name;
-
-        var returnVal = this.findValidName(fileName, 'file');
-
-        while (returnVal[0] != 0) {
-          returnVal = this.findValidName(returnVal[1], 'file');
-        }
-
-        var uploadMapObject: UploadDialogEntryType = {
-          name: returnVal[1],
-          content: file,
-          type: 'file',
-        };
-
-        this.uploadFilesDialogUploadList.push(uploadMapObject);
-
-        this.uploadFilesDialogFiles = null;
-      }
-    },
-
     transferedPercentLabel(num: number) {
       if (num > 0.99) {
         return '100%';
@@ -2460,81 +1994,6 @@ export default defineComponent({
       });
     },
 
-    // find a valid name for a file being uploaded in the current folder and uploadMap context
-    // if a filename is doubled, add a parenthesis with a number e.g. test(1)
-    // number is counted up if multiple double names
-    findValidName(name: string, type: string): [number, string] {
-      // check existance of name, return 0 if everything is Ok
-      if (
-        this.checkNameExistFolderContext(name) == false &&
-        this.checkNameExistUploadContext(name, '') == false
-      ) {
-        return [0, name];
-      }
-
-      var returnName = '';
-
-      if (type == 'file') {
-        var paranthesisNumberRegex = /\(\d+\)/;
-
-        // get the file name without the extension
-        var nameWithoutExtension;
-        var extension = '';
-        // check if and where the dot is
-        // if there is a dot and it is not the first char,
-        // recognize everything after the dot as the extension
-        if (name.indexOf('.') > -1 && name.charAt(0) != '.') {
-          extension = name.slice(((name.lastIndexOf('.') - 1) >>> 0) + 1);
-          nameWithoutExtension = name.split(extension)[0];
-        } else {
-          nameWithoutExtension = name;
-        }
-
-        let paranthesisNumber =
-          paranthesisNumberRegex.exec(nameWithoutExtension);
-
-        // check if there is a number inside a paranthesis at the end of the filename
-        // like helloworld(1).txt would match this
-        if (paranthesisNumber != null) {
-          // get the number
-          let numberRegex = /\d+/;
-          // parse it and add one
-          let num =
-            parseInt(
-              (numberRegex.exec(paranthesisNumber[0]) as RegExpExecArray)[0]
-            ) + 1;
-          // put everything back together
-          nameWithoutExtension = nameWithoutExtension.replace(
-            paranthesisNumber[0],
-            '(' + num + ')'
-          );
-          returnName = nameWithoutExtension + extension;
-          return [1, returnName];
-        } else {
-          // add a paranthesis with a number
-          returnName = nameWithoutExtension + '(1)' + extension;
-          return [1, returnName];
-        }
-      } else {
-        // if its a folder, don't need to check extensions otherwise everything same as above
-        var paranthesisNumberRegex = /\(\d+\)/;
-        let paranthesisNumber = paranthesisNumberRegex.exec(name);
-
-        if (paranthesisNumber != null) {
-          let numberRegex = /\d+/;
-          let num =
-            parseInt(
-              (numberRegex.exec(paranthesisNumber[0]) as RegExpExecArray)[0]
-            ) + 1;
-          returnName = name.replace(paranthesisNumber[0], '(' + num + ')');
-          return [1, returnName];
-        } else {
-          returnName = name + '(1)';
-          return [1, returnName];
-        }
-      }
-    },
-
     // upload files by drag & dropping them on a folder object
     // this adds all items to be uploaded to a map and calls
     // the uploadfile function instantly
@@ -2570,88 +2029,6 @@ export default defineComponent({
       this.uploadFiles(uploadList, itemId);
     },
 
-    // drag & drop when dropping files or folders on the
-    // background of the scrollarea or the upload Dialog Area
-    // only adds items to a map to showcase them, user has to
-    // press the actual upload button to upload these files
-    async uploadFilesDialogAreaDrop(ev: DragEvent) {
-      this.uploadFilesDialogAreaDragover = false;
-      for (var item of (ev.dataTransfer as DataTransfer)
-        .items as unknown as DataTransferItem[]) {
-        if (item.kind == 'file') {
-          if ((item.webkitGetAsEntry() as FileSystemEntry).isFile) {
-            const validFile = item.getAsFile();
-
-            if (validFile == null) {
-              return;
-            }
-
-            var returnVal = this.findValidName(validFile.name, 'file');
-
-            while (returnVal[0] != 0) {
-              returnVal = this.findValidName(returnVal[1] as string, 'file');
-            }
-
-            var uploadMapFile = {
-              name: returnVal[1] as string,
-              content: validFile as File,
-              type: 'file',
-            };
-
-            this.uploadFilesDialogUploadList.push(uploadMapFile);
-          } else if ((item.webkitGetAsEntry() as FileSystemEntry).isDirectory) {
-            const folder = item.webkitGetAsEntry() as FileSystemEntry;
-
-            var returnVal = this.findValidName(folder.name, 'folder');
-
-            while (returnVal[0] != 0) {
-              returnVal = this.findValidName(returnVal[1] as string, 'folder');
-            }
-
-            var uploadMapFolder = {
-              name: returnVal[1] as string,
-              content: folder,
-              type: 'folder',
-            };
-
-            this.uploadFilesDialogUploadList.push(uploadMapFolder);
-          }
-        }
-      }
-    },
-
-    async folderUploadDrop(ev: InputEvent, folderId: string) {
-      var uploadMap: {
-        name: string;
-        content: File | FileSystemEntry;
-        type: string;
-      }[] = [];
-      for (var item of ev.dataTransfer
-        ?.items as unknown as DataTransferItem[]) {
-        if (item.kind == 'file') {
-          if (item.webkitGetAsEntry()?.isFile) {
-            const validFile = item.getAsFile() as File;
-            var uploadFileObject = {
-              name: validFile?.name,
-              content: validFile,
-              type: 'file',
-            };
-            uploadMap.push(uploadFileObject);
-          } else if (item.webkitGetAsEntry()?.isDirectory) {
-            const folder = item.webkitGetAsEntry() as FileSystemEntry;
-            var uploadFolderObject = {
-              name: folder.name,
-              content: folder,
-              type: 'folder',
-            };
-            uploadMap.push(uploadFolderObject);
-          }
-        }
-      }
-
-      this.uploadFiles(uploadMap, folderId);
-    },
-
     ///////////////////////////////////////////////////
     /////////// GENERAL METHODS ///////////////////////
     ///////////////////////////////////////////////////
@@ -2664,22 +2041,8 @@ export default defineComponent({
       this.selectedItems = [];
     },
 
-    // check if a name exists in current folder context (rawFoldercontent.children)
-    checkNameExistFolderContext(name: string) {
-      return this.rawFolderContent.children.some(
-        (el: FolderEntryType) => el.name == name
-      );
-    },
-
-    // check if a name exists in current upload context (uploadFilesDialogUploadList)
-    checkNameExistUploadContext(newName: string, existingName: string) {
-      if (newName == existingName) {
-        return false;
-      } else {
-        return this.uploadFilesDialogUploadList.some(
-          (el) => el.name == newName
-        );
-      }
+    checkNameExistFolderContext(name: string, folder: RawFolderContentType) {
+      return folder.children.some((el: FolderEntryType) => el.name == name);
     },
 
     // copy a text to clipboard
@@ -2713,7 +2076,6 @@ export default defineComponent({
       ).then((apiData) => {
         if (apiData.error == false) {
           this.rawFolderContent = apiData.data as RawFolderContentType;
-          this.allAvailableFolders = [];
           this.selectedItems = [];
           this.allSelected = false;
           this.resetFilterState();
@@ -2776,7 +2138,12 @@ export default defineComponent({
         return;
       }
 
-      if (this.checkNameExistFolderContext(this.newFolder.name) == true) {
+      if (
+        this.checkNameExistFolderContext(
+          this.newFolder.name,
+          this.rawFolderContent
+        ) == true
+      ) {
         this.notify('negative', 'Item with same name exists in this path.');
         return;
       }
@@ -2802,29 +2169,32 @@ export default defineComponent({
     },
 
     // create an empty file
-    createFile() {
-      if (this.newFile.name.length < 1) {
+    createFile(newFile: { name: string; mime: string }) {
+      if (newFile.name.length < 1) {
         this.notify('negative', 'Name must be at least 1 character long.');
         return;
       }
-      if (/\/|\x00/.test(this.newFile.name)) {
+      if (/\/|\x00/.test(newFile.name)) {
         this.notify('negative', 'Name contains invalid characters.');
         return;
       }
 
-      if (this.checkNameExistFolderContext(this.newFile.name) == true) {
+      if (
+        this.checkNameExistFolderContext(newFile.name, this.rawFolderContent) ==
+        true
+      ) {
         this.notify('negative', 'Item with same name exists in this path.');
         return;
       }
 
       this.loading = true;
-      var file = new File([''], this.newFile.name);
+      var file = new File([''], newFile.name);
 
       let formData = new FormData();
       formData.append('file', file);
       formData.append('parent_id', this.rawFolderContent.id);
-      formData.append('name', this.newFile.name);
-      formData.append('mime', this.newFile.mime);
+      formData.append('name', newFile.name);
+      formData.append('mime', newFile.mime);
       formData.append('size_bytes', '0');
       let config = {
         withCredentials: true,
@@ -2837,8 +2207,7 @@ export default defineComponent({
       this.loading = true;
       apiPost('/files/folder', formData, config).then((apiData) => {
         if (apiData.error == false) {
-          this.newFolder.name = '';
-          this.newFolder.show = false;
+          this.showCreateFileDialog = false;
           this.notify('positive', 'Created');
           this.refreshFolder();
           this.resetFilterState();
@@ -2882,64 +2251,17 @@ export default defineComponent({
     /////////// MOVE ITEM(S) //////////////////////////
     ///////////////////////////////////////////////////
 
-    // fetch information of all available folders
-    // used when opening the move item dialog
-    // this fetches all folders in a defined hierarchy
-    // automatically appends the home folder id to moveItemsExpanded so this folder is already expanded by default
-    fetchAllAvailableFolders() {
-      this.moveItemsExpanded = [];
-      this.allAvailableFolders = [];
-      this.loading = true;
-      apiGet(
-        '/files/folder/' + this.rawFolderContent.id,
-        this.axiosConfig
-      ).then((apiData) => {
-        if (apiData.error == false) {
-          this.allAvailableFolders = apiData.data as AllAvailableFoldersType[];
-          this.moveItemsExpanded.push(
-            (apiData.data as AllAvailableFoldersType[])[0].id
-          );
-        } else {
-          this.notify('negative', apiData.errorMessage);
-        }
-        this.loading = false;
-      });
-    },
-
-    // find the name of the selected folder by its id
-    moveItemsUpdateSelectedLabel() {
-      function flatten(arr: any[]): any[] {
-        let children: any[] = [];
-        const flatArr = arr.map((m) => {
-          if (m.children && m.children.length) {
-            children = [...children, ...m.children];
-          }
-          return m;
-        });
-
-        return flatArr.concat(
-          children.length ? flatten(children) : children
-        ) as any[];
-      }
-
-      var flat = flatten(this.allAvailableFolders);
-      this.moveItemsSelectedName = flat.find(
-        (o) => o.id == this.moveItemsSelectedId
-      ).name;
-    },
-
-    // moving all selected items to a new folder
-    moveSelection() {
+    moveSelection(newParentId: string) {
       for (var item of this.selectedItems) {
-        if (item.id != this.moveItemsSelectedId) {
-          this.updateItemParent(item.id, this.moveItemsSelectedId, item.type);
+        if (item.id != newParentId) {
+          this.updateItemParent(item.id, newParentId, item.type);
         } else {
           this.notify('negative', "Can't move a folder into itself.");
         }
       }
       this.selectedItems = [];
       this.allSelected = false;
-      this.moveSelectedItemsDialog = false;
+      this.showMoveSelectedItemsDialog = false;
       for (var item of this.rawFolderContent.children as FolderEntryType[]) {
         item.selected = false;
       }

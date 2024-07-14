@@ -1,7 +1,9 @@
 <template>
-  <q-dialog v-model="itemInformationDialog">
-    <ItemInformation :prop-item="propItem" />
-  </q-dialog>
+  <ItemInformationDialog
+    :propItem="propItem"
+    :active="showItemInformationDialog"
+    @close="showItemInformationDialog = false"
+  />
 
   <q-dialog v-model="sharingPasswordDialog">
     <q-card bordered style="width: 350px">
@@ -294,7 +296,7 @@
         <q-item-label>Delete</q-item-label>
       </q-item-section>
     </q-item>
-    <q-item clickable @click="itemInformationDialog = true">
+    <q-item clickable @click="showItemInformationDialog = true">
       <q-item-section avatar>
         <q-icon name="info" />
       </q-item-section>
@@ -310,12 +312,12 @@ import { defineComponent, ref, Ref } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
 import { FolderEntryType } from 'src/types/index';
-import ItemInformation from './ItemInformation.vue';
+import ItemInformationDialog from 'components/Files/Dialogs/ItemInformationDialog.vue';
 import { apiPut, apiGet, apiDelete } from 'src/components/apiWrapper';
 
 export default defineComponent({
   name: 'RightClickMenu',
-  components: { ItemInformation },
+  components: { ItemInformationDialog },
   props: {
     propItem: Object,
   },
@@ -358,7 +360,7 @@ export default defineComponent({
       sharingOptions,
       sharingPasswordDialog: ref(false),
       sharingPasswordOptions,
-      itemInformationDialog: ref(false),
+      showItemInformationDialog: ref(false),
     };
   },
 

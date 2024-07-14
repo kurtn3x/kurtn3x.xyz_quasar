@@ -149,7 +149,7 @@
             name="profile"
             :class="darkmode ? 'text-white' : 'text-dark'"
           >
-            <q-card flat class="q-ma-sm bg-transparent lt-md">
+            <q-card flat class="q-ma-sm bg-transparent gt-sm">
               <div class="text-h4 text-center q-mt-lg">Profile Settings</div>
 
               <q-card-section class="q-mt-md">
@@ -265,7 +265,7 @@
                 </q-form>
               </q-card-section>
             </q-card>
-            <q-card flat class="bg-transparent q-ma-sm gt-sm">
+            <q-card flat class="bg-transparent q-ma-sm lt-md">
               <div class="text-h4 text-center q-mt-lg">Profile Settings</div>
               <q-card-section class="row justify-center">
                 <q-form

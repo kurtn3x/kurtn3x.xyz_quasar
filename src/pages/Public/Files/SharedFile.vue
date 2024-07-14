@@ -181,7 +181,7 @@ import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { SharedFileType } from 'src/types/index';
 import ViewerWrapper from 'src/components/Files/ViewerWrapper.vue';
-import { getIcon } from 'components/Files/mimeMap';
+import { getIcon } from 'components/Files/lib/mimeMap';
 
 export default defineComponent({
   name: 'FileView',

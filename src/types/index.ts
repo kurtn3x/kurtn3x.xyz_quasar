@@ -62,6 +62,7 @@ export interface UploadDialogEntryType {
   content: File | FileSystemEntry;
   temp?: string;
   edit?: boolean;
+  error?: boolean;
 }
 
 export interface NavbarIndexType {
@@ -76,6 +77,7 @@ export interface AllAvailableFoldersType {
   name: string;
   path: string;
   children: AllAvailableFoldersType[];
+  type: string;
 }
 
 export interface RawFolderContentType {

@@ -1,7 +1,9 @@
 <template>
-  <q-dialog v-model="itemInformationDialog">
-    <ItemInformation :prop-item="propItem" />
-  </q-dialog>
+  <ItemInformationDialog
+    :propItem="item"
+    :active="showItemInformationDialog"
+    @close="showItemInformationDialog = false"
+  />
   <q-dialog
     v-model="showDialog"
     :maximized="maximizedToggle"
@@ -114,7 +116,7 @@
           flat
           icon="question_mark"
           class="text-weight-bold text-caption"
-          @click="itemInformationDialog = true"
+          @click="showItemInformationDialog = true"
         />
       </div>
       <q-separator :color="darkmode ? 'white' : 'dark'" />
@@ -171,33 +173,33 @@ import { defineComponent, ref, Ref, defineAsyncComponent } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
 import { FolderEntryType } from 'src/types/index';
-import ItemInformation from './ItemInformation.vue';
-import { mimeMap } from 'components/Files/mimeMap';
+import { mimeMap } from 'components/Files/lib/mimeMap';
+import ItemInformationDialog from 'components/Files/Dialogs/ItemInformationDialog.vue';
 
 const VideoView = defineAsyncComponent(
-  () => import('./FilePreviews/VideoView.vue')
+  () => import('src/components/Files/FilePreviews/VideoView.vue')
 );
 const WysiwygView = defineAsyncComponent(
-  () => import('./FilePreviews/WysiwygView.vue')
+  () => import('src/components/Files/FilePreviews/WysiwygView.vue')
 );
 const TextView = defineAsyncComponent(
-  () => import('./FilePreviews/TextView.vue')
+  () => import('src/components/Files/FilePreviews/TextView.vue')
 );
 const PdfView = defineAsyncComponent(
-  () => import('./FilePreviews/PdfView.vue')
+  () => import('src/components/Files/FilePreviews/PdfView.vue')
 );
 const ImageView = defineAsyncComponent(
-  () => import('./FilePreviews/ImageView.vue')
+  () => import('src/components/Files/FilePreviews/ImageView.vue')
 );
 const CodeView = defineAsyncComponent(
-  () => import('./FilePreviews/CodeView.vue')
+  () => import('src/components/Files/FilePreviews/CodeView.vue')
 );
 
 export default defineComponent({
   name: 'ViewerWrapper',
   components: {
     VideoView,
-    ItemInformation,
+    ItemInformationDialog,
     WysiwygView,
     TextView,
     PdfView,
@@ -233,7 +235,6 @@ export default defineComponent({
       localStore,
       q,
       showDialog,
-      itemInformationDialog: ref(false),
       maximizedToggle: ref(true),
       dialogPos: ref({
         x: 0,
@@ -270,6 +271,7 @@ export default defineComponent({
         code: false,
         wysiwyg: false,
       }),
+      showItemInformationDialog: ref(false),
     };
   },
 
