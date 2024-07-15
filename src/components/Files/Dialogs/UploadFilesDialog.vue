@@ -206,7 +206,7 @@
           label="Close"
           class="bg-red text-white col-4"
           style="height: 45px"
-          @click="uploadFilesDialogUploadList = []"
+          @click="close"
         />
         <q-btn
           v-close-popup
@@ -215,7 +215,7 @@
           icon="done"
           size="md"
           label="Upload"
-          @click="uploadFilesDialogUploadList = []"
+          @click="uploadFiles"
           style="width: 210px; height: 45px"
         />
       </q-card-actions>
@@ -267,12 +267,14 @@ export default defineComponent({
     close() {
       this.$emit('close', true);
       this.showDialog = false;
+      this.uploadFilesDialogUploadList = [];
     },
     uploadFiles() {
       this.$emit('upload', [
         this.uploadFilesDialogUploadList,
         (this.rawFolderContent as RawFolderContentType).id,
       ]);
+      this.uploadFilesDialogUploadList = [];
     },
 
     appendFiles(files: File[]) {

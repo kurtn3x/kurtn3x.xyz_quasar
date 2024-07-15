@@ -162,6 +162,17 @@ var width = computed(() => {
   return defWidth.value * pdfZoom.value;
 });
 var base64 = ref('');
+
+var args = '';
+if (props.password != '') {
+  args += '?password=' + props.password;
+  args += '&attachment=0';
+} else {
+  args += '?attachment=0';
+}
+var src = ref(
+  'https://api.kurtn3x.xyz/files/download/file/' + props.item.id + '/' + args
+);
 // TESTING
 // import { pdfsample } from './samples';
 // base64.value = 'data:application/pdf;base64,' + pdfsample;
@@ -184,8 +195,8 @@ watch([width, pdfCurrentPage], async () => {
 watch(
   () => item.value.id,
   async () => {
-    await getPdfFile();
-    const doc = await load(base64.value);
+    // await getPdfFile();
+    const doc = await load(src.value);
     console.log('loading of pdf done');
     await render(doc);
     console.log('rendering of pdf done');
@@ -197,7 +208,10 @@ watch(
 );
 
 async function load(src) {
-  const loadingTask = getDocument(src);
+  const loadingTask = getDocument({
+    url: encodeURI(src),
+    withCredentials: true,
+  });
   const doc = await loadingTask.promise;
   pdfDoc.value = doc;
   return doc;
@@ -273,8 +287,8 @@ onBeforeUnmount(async () => {
 });
 
 onMounted(async () => {
-  await getPdfFile();
-  const doc = await load(base64.value);
+  // await getPdfFile();
+  const doc = await load(src.value);
   console.log('loading of pdf done');
   await render(doc);
   console.log('rendering of pdf done');

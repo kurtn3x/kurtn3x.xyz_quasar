@@ -2,14 +2,14 @@
   <div v-if="!initialFetch" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="initialFetch && !initialFetchSuccessful">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
-    <viewer-wrapper
-      :propItem="mediaItem"
-      :active="mediaPreview"
-      @close="mediaPreview = false"
+  <div v-if="initialFetch && initialFetchSuccessful">
+    <FilePreviewDialog
+      :propItem="filePreviewItem"
+      :active="showFilePreviewDialog"
+      @close="showFilePreviewDialog = false"
     />
     <CreateFileDialog
       :active="showCreateFileDialog"
@@ -122,7 +122,7 @@
               white-space: nowrap;
               display: inline;
             "
-            :style="navBarWidth"
+            :style="'width:' + (screenWidth - 65) + 'px;'"
             class="row"
             ref="navbar"
           >
@@ -150,7 +150,11 @@
                 class="full-width full-height no-pointer-events"
               />
             </q-item>
-            <a v-if="navbarIndex.menuItems.length != 0">/</a>
+            <a
+              class="text-weight-bolder text-primary"
+              v-if="navbarIndex.menuItems.length != 0"
+              >/</a
+            >
             <q-item
               clickable
               flat
@@ -210,11 +214,11 @@
               </q-menu>
             </q-item>
             <template v-for="item in navbarIndex.navbarItems" :key="item">
-              <a class="text-weight-bolder">/</a>
+              <a class="text-weight-bolder text-primary">/</a>
               <q-item
                 clickable
                 flat
-                class="rounded-borders text-primary text-weight-bold text-h5"
+                class="rounded-borders text-primary text-weight-bold text-h5 items-center"
                 @click="getFolderNavbar(item, 2)"
                 @v-drag-enter="
                   (e: any, x: any, y: any) => y.target.classList.add('bg-indigo-11')
@@ -229,9 +233,14 @@
                 v-droppable
                 style="display: inline-block"
               >
-                <a class="no-pointer-events ellipsis">
-                  {{ item.name }}
-                </a>
+                <q-item-section>
+                  <a
+                    class="no-pointer-events ellipsis"
+                    :style="'max-width:' + (screenWidth - 215) + 'px;'"
+                  >
+                    {{ item.name }}
+                  </a>
+                </q-item-section>
               </q-item>
             </template>
           </div>
@@ -286,7 +295,14 @@
                 outline
               />
             </q-fab>
-
+            <!-- <q-btn
+              push
+              dense
+              icon="add"
+              class="bg-primary text-white"
+              @click="addItemToNavbar"
+              style="height: 40px; width: 65px"
+            /> -->
             <q-space />
 
             <q-input
@@ -859,7 +875,10 @@
                 clickable
                 class="rounded-borders full-width"
                 v-draggable="['file', item.id]"
-                @click="openInNewTab(item)"
+                @click="
+                  showFilePreviewDialog = true;
+                  filePreviewItem = item;
+                "
                 :class="item.selected ? 'bg-cyan-14 text-white' : ''"
                 @drag="showScroll"
                 @dragend="hideScroll"
@@ -1255,7 +1274,7 @@ import { apiGet, apiPut, apiPost, apiDelete } from 'src/components/apiWrapper';
 import { folderData } from 'src/testdata/folder';
 
 import RightClickMenu from 'src/components/Files/RightClickMenu.vue';
-import ViewerWrapper from 'src/components/Files/ViewerWrapper.vue';
+import FilePreviewDialog from 'src/components/Files/Dialogs/FilePreviewDialog.vue';
 import CreateFileDialog from 'src/components/Files/Dialogs/CreateFileDialog.vue';
 import MoveSelectedItemsDialog from 'src/components/Files/Dialogs/MoveSelectedItemsDialog.vue';
 import DeleteSelectedItemsDialog from 'src/components/Files/Dialogs/DeleteSelectedItemsDialog.vue';
@@ -1270,7 +1289,7 @@ export default defineComponent({
 
   components: {
     RightClickMenu,
-    ViewerWrapper,
+    FilePreviewDialog,
     CreateFileDialog,
     MoveSelectedItemsDialog,
     DeleteSelectedItemsDialog,
@@ -1384,10 +1403,6 @@ export default defineComponent({
         name: '',
       }),
 
-      // media preview
-      mediaPreview: ref(false),
-      mediaItem: ref({}) as Ref<FolderEntryType>,
-
       // Dialogs
       showCreateFileDialog: ref(false),
       showMoveSelectedItemsDialog: ref(false),
@@ -1396,6 +1411,9 @@ export default defineComponent({
       uploadFilesDialogInitialEvent: ref(undefined) as Ref<
         undefined | DragEvent
       >,
+      // media preview
+      showFilePreviewDialog: ref(false),
+      filePreviewItem: ref({}) as Ref<FolderEntryType>,
     };
   },
 
@@ -1473,9 +1491,8 @@ export default defineComponent({
       return this.localStore.darkmode;
     },
 
-    navBarWidth() {
-      var width = this.q.screen.width - 65;
-      return { width: width + 'px' };
+    screenWidth() {
+      return this.q.screen.width;
     },
 
     itemTextWidth() {
@@ -1485,6 +1502,22 @@ export default defineComponent({
   },
 
   methods: {
+    addItemToNavbar() {
+      var length = 100;
+      let result = '';
+      const characters =
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      const charactersLength = characters.length;
+      let counter = 0;
+      while (counter < length) {
+        result += characters.charAt(
+          Math.floor(Math.random() * charactersLength)
+        );
+        counter += 1;
+      }
+      this.navbarIndex.navbarItems.push({ name: result, id: result });
+    },
+
     // mainScrollArea
     scrollUp() {
       var scrollArea = this.$refs.mainScrollArea as any;
@@ -2322,12 +2355,6 @@ export default defineComponent({
     ///////////////////////////////////////////////////
     /////////// SCROLLBAR METHODS /////////////////////
     ///////////////////////////////////////////////////
-
-    // download a private-storage file
-    openInNewTab(item: FolderEntryType) {
-      this.mediaPreview = true;
-      this.mediaItem = item;
-    },
 
     // get Folder content with folderId
     // used when clicking on a folder in the scrollarea

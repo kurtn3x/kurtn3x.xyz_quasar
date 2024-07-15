@@ -196,7 +196,7 @@ const CodeView = defineAsyncComponent(
 );
 
 export default defineComponent({
-  name: 'ViewerWrapper',
+  name: 'FilePreviewDialog',
   components: {
     VideoView,
     ItemInformationDialog,

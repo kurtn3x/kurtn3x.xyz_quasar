@@ -148,7 +148,7 @@
         label="Open in File Viewer"
         class="cursor-pointer bg-light-blue-6 text-white q-mt-lg"
         push
-        @click="filePreview = true"
+        @click="showFilePreviewDialog = true"
         size="xl"
         style="width: 380px"
       />
@@ -165,11 +165,11 @@
       />
     </div>
 
-    <viewer-wrapper
+    <FilePreviewDialog
       :propItem="item"
-      :active="filePreview"
+      :active="showFilePreviewDialog"
       :password="password"
-      @close="filePreview = false"
+      @close="showFilePreviewDialog = false"
     />
   </div>
 </template>
@@ -180,12 +180,12 @@ import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import { SharedFileType } from 'src/types/index';
-import ViewerWrapper from 'src/components/Files/ViewerWrapper.vue';
+import FilePreviewDialog from 'src/components/Files/Dialogs/FilePreviewDialog.vue';
 import { getIcon } from 'components/Files/lib/mimeMap';
 
 export default defineComponent({
   name: 'FileView',
-  components: { ViewerWrapper },
+  components: { FilePreviewDialog },
   setup() {
     const localStore = useLocalStore();
     const q = useQuasar();
@@ -200,7 +200,7 @@ export default defineComponent({
       password: ref(''),
       isPwd: ref(true),
       item: ref({}) as Ref<SharedFileType>,
-      filePreview: ref(false),
+      showFilePreviewDialog: ref(false),
       itemInformationDialog: ref(false),
       getIcon,
     };
