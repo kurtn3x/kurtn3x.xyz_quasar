@@ -134,6 +134,7 @@ const axiosConfig = {
   withCredentials: true,
   headers: {
     'X-CSRFToken': q.cookies.get('csrftoken'),
+    'X-FILE-PASSWORD': props.password,
   },
 };
 var darkmode = ref(localStore.darkmodeState);
@@ -148,27 +149,24 @@ watch(
 );
 
 function getFileContent() {
-  apiGet(
-    '/files/file-content/' +
-      item.value.id +
-      (props.password != '' ? '?password=' + props.password : ''),
-    axiosConfig
-  ).then((apiData) => {
-    if (apiData.error == false) {
-      text.value = apiData.data.content;
-      loading.value = false;
-      error.value = false;
-    } else {
-      loading.value = false;
-      error.value = true;
+  apiGet('/files/file-content/' + item.value.id, axiosConfig).then(
+    (apiData) => {
+      if (apiData.error == false) {
+        text.value = apiData.data.content;
+        loading.value = false;
+        error.value = false;
+      } else {
+        loading.value = false;
+        error.value = true;
+      }
     }
-  });
+  );
 }
 function updateContent() {
   var data = {
     content: text.value,
   };
-  apiPut('/files/file-content/' + item.value.id + '/', data, axiosConfig).then(
+  apiPut('/files/file-content/' + item.value.id, data, axiosConfig).then(
     (apiData) => {
       if (apiData.error == false) {
         q.notify({
@@ -176,20 +174,18 @@ function updateContent() {
           message: 'Saved.',
           progress: true,
         });
-        apiGet('/files/file/' + item.value.id + '/', axiosConfig).then(
-          (apiData) => {
-            if (apiData.error == false) {
-              item.value.size = apiData.data.size;
-              item.value.sizeBytes = apiData.data.sizeBytes;
-            } else {
-              q.notify({
-                type: 'negative',
-                message: apiData.errorMessage,
-                progress: true,
-              });
-            }
+        apiGet('/files/file/' + item.value.id, axiosConfig).then((apiData) => {
+          if (apiData.error == false) {
+            item.value.size = apiData.data.size;
+            item.value.sizeBytes = apiData.data.sizeBytes;
+          } else {
+            q.notify({
+              type: 'negative',
+              message: apiData.errorMessage,
+              progress: true,
+            });
           }
-        );
+        });
       } else {
         q.notify({
           type: 'negative',

@@ -117,7 +117,6 @@ import {
   onBeforeUnmount,
 } from 'vue';
 import { useQuasar } from 'quasar';
-import { apiGet } from 'src/components/apiWrapper';
 import { toRaw } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
@@ -161,21 +160,12 @@ var defWidth = ref(0);
 var width = computed(() => {
   return defWidth.value * pdfZoom.value;
 });
-var base64 = ref('');
 
-var args = '';
-if (props.password != '') {
-  args += '?password=' + props.password;
-  args += '&attachment=0';
-} else {
-  args += '?attachment=0';
-}
 var src = ref(
-  'https://api.kurtn3x.xyz/files/download/file/' + props.item.id + '/' + args
+  'https://api.kurtn3x.xyz/files/download/file/' +
+    props.item.id +
+    '/?attachment=0'
 );
-// TESTING
-// import { pdfsample } from './samples';
-// base64.value = 'data:application/pdf;base64,' + pdfsample;
 
 watch(pdfSiteView, async (n, o) => {
   if (n == true) {
@@ -195,7 +185,6 @@ watch([width, pdfCurrentPage], async () => {
 watch(
   () => item.value.id,
   async () => {
-    // await getPdfFile();
     const doc = await load(src.value);
     console.log('loading of pdf done');
     await render(doc);
@@ -211,6 +200,9 @@ async function load(src) {
   const loadingTask = getDocument({
     url: encodeURI(src),
     withCredentials: true,
+    httpHeaders: {
+      'X-FILE-PASSWORD': props.password,
+    },
   });
   const doc = await loadingTask.promise;
   pdfDoc.value = doc;
@@ -287,7 +279,6 @@ onBeforeUnmount(async () => {
 });
 
 onMounted(async () => {
-  // await getPdfFile();
   const doc = await load(src.value);
   console.log('loading of pdf done');
   await render(doc);
@@ -328,24 +319,6 @@ function toogleDarkmode() {
     pdfviewer.value.style.filter = '';
     darkmode.value = false;
   }
-}
-
-async function getPdfFile() {
-  await apiGet(
-    '/files/file-content/' +
-      item.value.id +
-      (props.password != '' ? '?password=' + props.password : ''),
-    axiosConfig
-  ).then((apiData) => {
-    if (apiData.error == false) {
-      base64.value = 'data:application/pdf;base64,' + apiData.data.content;
-      error.value = false;
-      // do not abort loading here, as the pdf does still need to be loaded by the pdf library
-    } else {
-      error.value = true;
-      loading.value = false;
-    }
-  });
 }
 
 function onResize(size) {

@@ -202,6 +202,7 @@ export default defineComponent({
       item: ref({}) as Ref<SharedFileType>,
       showFilePreviewDialog: ref(false),
       itemInformationDialog: ref(false),
+
       getIcon,
     };
   },
@@ -239,16 +240,12 @@ export default defineComponent({
         withCredentials: true,
         headers: {
           'X-CSRFToken': this.q.cookies.get('csrftoken'),
+          'X-FILE-PASSWORD': this.password,
         },
       };
 
-      var url = '/files/file/' + this.fileId;
-      if (this.passwordSet == true) {
-        url += '?password=' + this.password;
-      }
-
       api
-        .get(url, axiosConfig)
+        .get('/files/file/' + this.fileId, axiosConfig)
         .then((response) => {
           if (response.status == 200) {
             this.initialFetchSuccessful = true;
@@ -256,13 +253,6 @@ export default defineComponent({
             this.passwordOk = true;
             this.item = response.data;
           } else if (response.status == 290) {
-            // file is password protected but no password has been given → Prompt password input
-            this.initialFetchSuccessful = true;
-            this.initialFetch = true;
-            this.passwordSet = true;
-            this.passwordOk = false;
-          } else if (response.status == 291) {
-            // wrong password
             this.initialFetchSuccessful = true;
             this.initialFetch = true;
             this.passwordSet = true;

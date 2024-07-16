@@ -422,10 +422,13 @@ export default defineComponent({
     },
 
     downloadFile(id: string) {
-      var url =
-        'https://api.kurtn3x.xyz/files/download/file/' +
-        id +
-        (this.$props.password != '' ? '?password=' + this.$props.password : '');
+      const cookieOptions = {
+        path: '/',
+        secure: true,
+        sameSite: 'Strict',
+      };
+      this.q.cookies.set('file-password', 'dsanmdoisanofn', cookieOptions);
+      var url = 'https://api.kurtn3x.xyz/files/download/file/' + id;
       window?.open(url, '_blank')?.focus();
     },
   },

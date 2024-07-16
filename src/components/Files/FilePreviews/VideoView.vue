@@ -43,16 +43,10 @@ const props = defineProps({
 var loading = ref(true);
 var error = ref(false);
 
-var args = '';
-if (props.password != '') {
-  args += '?password=' + props.password;
-  args += '&attachment=0';
-} else {
-  args += '?attachment=0';
-}
-
 var src = ref(
-  'https://api.kurtn3x.xyz/files/download/file/' + props.item.id + '/' + args
+  'https://api.kurtn3x.xyz/files/download/file/' +
+    props.item.id +
+    '/?attachment=0'
 );
 
 var videoOptions = ref({

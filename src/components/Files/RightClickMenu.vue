@@ -313,7 +313,7 @@ import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
 import { FolderEntryType } from 'src/types/index';
 import ItemInformationDialog from 'components/Files/Dialogs/ItemInformationDialog.vue';
-import { apiPut, apiGet, apiDelete } from 'src/components/apiWrapper';
+import { apiPut } from 'src/components/apiWrapper';
 
 export default defineComponent({
   name: 'RightClickMenu',
@@ -414,7 +414,7 @@ export default defineComponent({
       };
 
       apiPut(
-        '/files/' + this.item.type + '/' + this.item.id + '/',
+        '/files/' + this.item.type + '/' + this.item.id,
         data,
         this.axiosConfig
       ).then((apiData) => {
@@ -429,7 +429,7 @@ export default defineComponent({
 
     updateSharing() {
       apiPut(
-        '/files/' + this.item.type + '/' + this.item.id + '/',
+        '/files/' + this.item.type + '/' + this.item.id,
         this.sharingOptions,
         this.axiosConfig
       ).then((apiData) => {
@@ -445,7 +445,7 @@ export default defineComponent({
 
     updateSharingPassword() {
       apiPut(
-        '/files/' + this.item.type + '/' + this.item.id + '/',
+        '/files/' + this.item.type + '/' + this.item.id,
         this.sharingPasswordOptions,
         this.axiosConfig
       ).then((apiData) => {

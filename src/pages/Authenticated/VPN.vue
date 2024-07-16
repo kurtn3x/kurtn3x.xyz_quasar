@@ -643,17 +643,15 @@ export default defineComponent({
   methods: {
     deleteVPNConnection(con: VPNInfoType) {
       this.loading = true;
-      apiDelete('/vpn/client/' + con.id + '/', this.axiosConfig).then(
-        (apiData) => {
-          if (apiData.error == false) {
-            this.notify('positive', 'Deleted.');
-            this.getVPNConnections();
-          } else {
-            this.notify('negative', apiData.errorMessage);
-          }
-          this.loading = false;
+      apiDelete('/vpn/client/' + con.id, this.axiosConfig).then((apiData) => {
+        if (apiData.error == false) {
+          this.notify('positive', 'Deleted.');
+          this.getVPNConnections();
+        } else {
+          this.notify('negative', apiData.errorMessage);
         }
-      );
+        this.loading = false;
+      });
     },
 
     downloadConfiguration() {

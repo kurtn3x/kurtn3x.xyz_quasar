@@ -168,6 +168,7 @@ const axiosConfig = {
   withCredentials: true,
   headers: {
     'X-CSRFToken': q.cookies.get('csrftoken'),
+    'X-FILE-PASSWORD': props.password,
   },
 };
 var loading = ref(true);
@@ -287,29 +288,25 @@ onMounted(async () => {
 
 // functions
 function getFileContent() {
-  apiGet(
-    '/files/file-content/' +
-      item.value.id +
-      '/' +
-      (props.password != '' ? '?password=' + props.password : ''),
-    axiosConfig
-  ).then((apiData) => {
-    if (apiData.error == false) {
-      text.value = response.data.content;
-      loading.value = false;
-      error.value = false;
-    } else {
-      loading.value = false;
-      error.value = true;
+  apiGet('/files/file-content/' + item.value.id, axiosConfig).then(
+    (apiData) => {
+      if (apiData.error == false) {
+        text.value = response.data.content;
+        loading.value = false;
+        error.value = false;
+      } else {
+        loading.value = false;
+        error.value = true;
+      }
     }
-  });
+  );
 }
 
 function updateContent() {
   var data = {
     content: text.value,
   };
-  apiPut('/files/file-content/' + item.value.id + '/', data, axiosConfig).then(
+  apiPut('/files/file-content/' + item.value.id, data, axiosConfig).then(
     (apiData) => {
       if (apiData.error == false) {
         q.notify({
@@ -317,20 +314,18 @@ function updateContent() {
           message: 'Saved.',
           progress: true,
         });
-        apiGet('/files/file/' + item.value.id + '/', axiosConfig).then(
-          (apiData) => {
-            if (apiData.error == false) {
-              item.value.size = apiData.data.size;
-              item.value.sizeBytes = apiData.data.sizeBytes;
-            } else {
-              q.notify({
-                type: 'negative',
-                message: apiData.errorMessage,
-                progress: true,
-              });
-            }
+        apiGet('/files/file/' + item.value.id, axiosConfig).then((apiData) => {
+          if (apiData.error == false) {
+            item.value.size = apiData.data.size;
+            item.value.sizeBytes = apiData.data.sizeBytes;
+          } else {
+            q.notify({
+              type: 'negative',
+              message: apiData.errorMessage,
+              progress: true,
+            });
           }
-        );
+        });
       } else {
         q.notify({
           type: 'negative',
@@ -347,24 +342,22 @@ function updateSyntax(syntax) {
     itemId: item.value.id,
     mime: 'text/code-' + syntax,
   };
-  apiPut('/files/file/' + item.value.id + '/', data, axiosConfig).then(
-    (apiData) => {
-      if (apiData.error == false) {
-        q.notify({
-          type: 'positive',
-          message: 'Saved.',
-          progress: true,
-        });
-        item.value.mime = data.mime;
-      } else {
-        q.notify({
-          type: 'negative',
-          message: apiData.errorMessage,
-          progress: true,
-        });
-      }
+  apiPut('/files/file/' + item.value.id, data, axiosConfig).then((apiData) => {
+    if (apiData.error == false) {
+      q.notify({
+        type: 'positive',
+        message: 'Saved.',
+        progress: true,
+      });
+      item.value.mime = data.mime;
+    } else {
+      q.notify({
+        type: 'negative',
+        message: apiData.errorMessage,
+        progress: true,
+      });
     }
-  );
+  });
 }
 
 function onResize() {
