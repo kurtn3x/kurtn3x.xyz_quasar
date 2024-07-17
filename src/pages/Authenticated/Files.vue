@@ -3,7 +3,7 @@
     <q-spinner color="primary" size="10em" />
   </div>
   <div v-if="!initialFetch.loading && initialFetch.error">
-    <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
+    <ErrorPage :error-message="initialFetch.errorMessage" />
   </div>
   <div v-if="!initialFetch.loading && !initialFetch.error">
     <FilePreviewDialog
@@ -1279,6 +1279,7 @@ import CreateFileDialog from 'src/components/Files/Dialogs/CreateFileDialog.vue'
 import MoveSelectedItemsDialog from 'src/components/Files/Dialogs/MoveSelectedItemsDialog.vue';
 import DeleteSelectedItemsDialog from 'src/components/Files/Dialogs/DeleteSelectedItemsDialog.vue';
 import UploadFilesDialog from 'src/components/Files/Dialogs/UploadFilesDialog.vue';
+import ErrorPage from 'src/components/ErrorPage.vue';
 
 export default defineComponent({
   name: 'FilesView',
@@ -1294,6 +1295,7 @@ export default defineComponent({
     MoveSelectedItemsDialog,
     DeleteSelectedItemsDialog,
     UploadFilesDialog,
+    ErrorPage,
   },
 
   setup() {

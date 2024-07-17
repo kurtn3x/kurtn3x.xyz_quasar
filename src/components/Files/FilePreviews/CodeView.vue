@@ -168,7 +168,6 @@ const axiosConfig = {
   withCredentials: true,
   headers: {
     'X-CSRFToken': q.cookies.get('csrftoken'),
-    'X-FILE-PASSWORD': props.password,
   },
 };
 var loading = ref(true);
@@ -288,10 +287,16 @@ onMounted(async () => {
 
 // functions
 function getFileContent() {
-  apiGet('/files/file-content/' + item.value.id, axiosConfig).then(
+  var args = '';
+  if (props.password != '') {
+    args += '?password=' + props.password + '&attachment=0';
+  } else {
+    args += '?attachment=0';
+  }
+  apiGet('/files/file-content/' + item.value.id + args, axiosConfig).then(
     (apiData) => {
       if (apiData.error == false) {
-        text.value = response.data.content;
+        text.value = apiData.data.content;
         loading.value = false;
         error.value = false;
       } else {

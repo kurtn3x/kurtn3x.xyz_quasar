@@ -302,7 +302,7 @@
                   <div class="fit" v-if="captchaData.loading">
                     <q-spinner color="blue" size="2em" />
                   </div>
-                  <div class="fit text-red" v-if="captchaData.error">
+                  <div class="text-red text-body2" v-if="captchaData.error">
                     Failed to load Captcha.
                   </div>
                 </q-img>

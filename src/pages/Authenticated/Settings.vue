@@ -3,7 +3,7 @@
     <q-spinner color="primary" size="10em" />
   </div>
   <div v-if="!initialFetch.loading && initialFetch.error">
-    <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
+    <ErrorPage :error-message="initialFetch.errorMessage" />
   </div>
   <div v-if="!initialFetch.loading && !initialFetch.error">
     <q-dialog
@@ -679,9 +679,13 @@ import {
   HeaderInformationType,
 } from 'src/types/index';
 import { themes } from 'components/Style/themes';
+import ErrorPage from 'src/components/ErrorPage.vue';
 
 export default {
   name: 'SettingsView',
+  components: {
+    ErrorPage,
+  },
   setup() {
     const localStore = useLocalStore();
     const q = useQuasar();

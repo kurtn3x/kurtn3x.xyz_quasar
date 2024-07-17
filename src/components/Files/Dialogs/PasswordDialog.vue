@@ -3,25 +3,38 @@
     v-model="showDialog"
     @hide="close"
     persistent
-    backdrop-filter="brightness(10%)"
+    backdrop-filter="brightness(0%)"
   >
     <q-card bordered style="width: 350px">
       <q-toolbar class="bg-layout-bg text-layout-text text-center">
         <q-toolbar-title class="q-ma-sm">Password Required</q-toolbar-title>
       </q-toolbar>
-      <div class="text-body1 text-center q-ma-md">
+      <div class="text-body1 text-center q-ml-md q-mr-md q-mt-lg q-mb-sm">
         <q-input
           :color="darkmode ? 'white' : 'black'"
           v-model="password"
-          dense
           outlined
           label="Password"
           class="text-primary text-body1 col"
-          style="height: 45px"
           @keyup.enter="submitPassword"
-        />
+          :type="isPwd ? 'password' : 'text'"
+          input-style="font-size: 18px"
+          input-class="text-body1 text-layout-text"
+          :loading="loading"
+          :error="error"
+          :error-message="errorMessage"
+        >
+          <template v-slot:append>
+            <q-icon
+              color="layout-text"
+              class="pw_icon"
+              :name="isPwd ? 'visibility' : 'visibility_off'"
+              @click="isPwd = !isPwd"
+            />
+          </template>
+        </q-input>
       </div>
-      <q-separator class="q-mt-md" />
+      <q-separator />
       <q-card-actions align="center" class="row q-mt-sm q-mb-sm">
         <q-btn
           v-close-popup
@@ -35,7 +48,8 @@
           class="bg-green text-white col"
           icon="done"
           size="md"
-          label="Create"
+          label="Submit"
+          :loading="loading"
           @click="submitPassword"
         />
       </q-card-actions>
@@ -68,6 +82,10 @@ export default defineComponent({
       q,
       showDialog,
       password: ref(''),
+      isPwd: ref(true),
+      loading: ref(false),
+      error: ref(false),
+      errorMessage: ref(''),
       item,
     };
   },
@@ -90,6 +108,7 @@ export default defineComponent({
       this.showDialog = false;
     },
     submitPassword() {
+      this.loading = true;
       var data = {
         id: this.item.id,
         type: this.item.type,
@@ -110,6 +129,8 @@ export default defineComponent({
         } else {
           if (apiData.returnCode == 290) {
             // wrong password
+            this.error = true;
+            this.errorMessage = 'Wrong Password';
             this.q.notify({
               type: 'negative',
               message: 'Wrong Password.',
@@ -117,6 +138,9 @@ export default defineComponent({
               multiLine: false,
             });
           } else {
+            this.error = true;
+            this.errorMessage = apiData.errorMessage;
+
             this.q.notify({
               type: 'negative',
               message: apiData.errorMessage,
@@ -125,6 +149,7 @@ export default defineComponent({
             });
           }
         }
+        this.loading = false;
       });
     },
   },

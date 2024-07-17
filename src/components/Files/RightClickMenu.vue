@@ -9,29 +9,6 @@
     <q-card bordered style="width: 350px">
       <q-toolbar class="bg-layout-bg text-layout-text text-center">
         <q-toolbar-title class="q-ma-sm">Set new Password</q-toolbar-title>
-
-        <div class="absolute-right row items-center q-mr-sm">
-          <q-btn
-            icon="question_mark"
-            push
-            class="bg-blue text-white"
-            round
-            size="sm"
-            style="height: 15px; width: 15px"
-          >
-            <q-tooltip
-              class="text-body2 bg-layout-bg text-layout-text text-center"
-              style="width: 250px"
-              anchor="bottom left"
-              self="top middle"
-            >
-              <div class="q-ma-xs">
-                Passwords set for files are handled unsecurely. Don't use
-                personal Passwords here. (Password Generator recommended)
-              </div>
-            </q-tooltip>
-          </q-btn>
-        </div>
       </q-toolbar>
       <div class="text-body1 text-center q-ma-sm">
         <q-input

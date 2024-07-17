@@ -161,10 +161,14 @@ var width = computed(() => {
   return defWidth.value * pdfZoom.value;
 });
 
+var args = '';
+if (props.password != '') {
+  args += '?password=' + props.password + '&attachment=0';
+} else {
+  args += '?attachment=0';
+}
 var src = ref(
-  'https://api.kurtn3x.xyz/files/download/file/' +
-    props.item.id +
-    '/?attachment=0'
+  'https://api.kurtn3x.xyz/files/download/file/' + props.item.id + args
 );
 
 watch(pdfSiteView, async (n, o) => {
@@ -200,9 +204,6 @@ async function load(src) {
   const loadingTask = getDocument({
     url: encodeURI(src),
     withCredentials: true,
-    httpHeaders: {
-      'X-FILE-PASSWORD': props.password,
-    },
   });
   const doc = await loadingTask.promise;
   pdfDoc.value = doc;
@@ -288,9 +289,6 @@ onMounted(async () => {
       'invert(70%) contrast(200%) brightness(100%) hue-rotate(180deg)';
   }
   loading.value = false;
-  // TESTING
-  // loading.value = false;
-  // error.value = false;
 });
 
 // styling

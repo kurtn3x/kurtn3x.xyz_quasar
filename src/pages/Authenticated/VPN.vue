@@ -3,7 +3,7 @@
     <q-spinner color="primary" size="10em" />
   </div>
   <div v-if="!initialFetch.loading && initialFetch.error">
-    <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
+    <ErrorPage :error-message="initialFetch.errorMessage" />
   </div>
   <div v-if="!initialFetch.loading && !initialFetch.error">
     <q-dialog v-model="helpVPNDialog">
@@ -587,10 +587,11 @@ import VPNHelpDialog from 'components/VPN/VPNHelpDialog.vue';
 import VPNInformation from 'components/VPN/VPNInformation.vue';
 import { apiGet, apiPost, apiDelete } from 'src/components/apiWrapper';
 import * as wireguard from 'components/VPN/wireguard.js';
+import ErrorPage from 'src/components/ErrorPage.vue';
 
 export default defineComponent({
   name: 'VPNView',
-  components: { VPNHelpDialog, VPNInformation },
+  components: { VPNHelpDialog, VPNInformation, ErrorPage },
 
   setup() {
     const localStore = useLocalStore();

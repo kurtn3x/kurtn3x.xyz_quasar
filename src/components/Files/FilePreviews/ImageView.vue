@@ -25,9 +25,6 @@
 
 <script setup>
 import { defineProps, ref } from 'vue';
-import { apiGet } from 'src/components/apiWrapper';
-import { useQuasar } from 'quasar';
-const q = useQuasar();
 
 const props = defineProps({
   item: Object,
@@ -40,33 +37,13 @@ const props = defineProps({
 var error = ref(false);
 var loading = ref(true);
 
-const axiosConfig = {
-  withCredentials: true,
-  responseType: 'blob',
-  headers: {
-    'X-CSRFToken': q.cookies.get('csrftoken'),
-    'X-FILE-PASSWORD': props.password,
-  },
-};
-
-var src = ref('');
-
-apiGet(
-  '/files/download/file/' + props.item.id + '/?attachment=0',
-  axiosConfig
-).then((apiData) => {
-  if (apiData.error == false) {
-    var reader = new window.FileReader();
-    reader.readAsDataURL(apiData.data);
-    reader.onload = function () {
-      src.value = reader.result;
-    };
-    console.log(src.value);
-    loading.value = false;
-    error.value = false;
-  } else {
-    loading.value = false;
-    error.value = true;
-  }
-});
+var args = '';
+if (props.password != '') {
+  args += '?password=' + props.password + '&attachment=0';
+} else {
+  args += '?attachment=0';
+}
+var src = ref(
+  'https://api.kurtn3x.xyz/files/download/file/' + props.item.id + args
+);
 </script>

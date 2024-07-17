@@ -3,7 +3,7 @@
     <q-spinner color="primary" size="10em" />
   </div>
   <div v-if="!initialFetch.loading && initialFetch.error">
-    <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
+    <ErrorPage :error-message="initialFetch.errorMessage" />
   </div>
   <div
     v-if="
@@ -12,6 +12,7 @@
       !initialFetch.error
     "
   >
+    <ErrorPage error-message="Password required" v-if="!showPasswordDialog" />
     <PasswordDialog
       :prop-item="item"
       :active="showPasswordDialog"
@@ -95,10 +96,16 @@ import { apiGet } from 'src/components/apiWrapper';
 import FilePreviewDialog from 'src/components/Files/Dialogs/FilePreviewDialog.vue';
 import ItemInformationDialog from 'src/components/Files/Dialogs/ItemInformationDialog.vue';
 import PasswordDialog from 'src/components/Files/Dialogs/PasswordDialog.vue';
+import ErrorPage from 'src/components/ErrorPage.vue';
 
 export default defineComponent({
   name: 'FileView',
-  components: { FilePreviewDialog, ItemInformationDialog, PasswordDialog },
+  components: {
+    FilePreviewDialog,
+    ItemInformationDialog,
+    PasswordDialog,
+    ErrorPage,
+  },
   setup() {
     const localStore = useLocalStore();
     const q = useQuasar();

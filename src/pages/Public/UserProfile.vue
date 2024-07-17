@@ -2,13 +2,8 @@
   <div v-if="initialFetch.loading" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div
-    v-if="!initialFetch.loading && initialFetch.error"
-    class="text-center q-pa-md flex flex-center"
-  >
-    <div>
-      <div class="text-h5 q-mt-md">User not found.</div>
-    </div>
+  <div v-if="!initialFetch.loading && initialFetch.error">
+    <ErrorPage :error-message="initialFetch.errorMessage" />
   </div>
   <div v-if="!initialFetch.loading && !initialFetch.error">
     <q-page class="column">
@@ -393,10 +388,11 @@ import { useQuasar } from 'quasar';
 import { apiGet } from 'src/components/apiWrapper';
 import { useLocalStore } from 'stores/localStore';
 import { UserProfileType } from 'src/types/index';
+import ErrorPage from 'src/components/ErrorPage.vue';
 
 export default {
   name: 'UserProfile',
-
+  components: { ErrorPage },
   setup() {
     const localStore = useLocalStore();
     const q = useQuasar();
