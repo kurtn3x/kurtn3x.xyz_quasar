@@ -1,11 +1,5 @@
 <template>
-  <div v-if="!initialFetch" class="absolute-center">
-    <q-spinner color="primary" size="10em" />
-  </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
-    <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
-  </div>
-  <div v-if="initialFetch && initialFetchSuccessful"></div>
+  <div></div>
 </template>
 
 <script>
@@ -30,8 +24,6 @@ export default defineComponent({
       axiosConfig,
       localStore,
       q,
-      initialFetch: ref(false),
-      initialFetchSuccessful: ref(false),
       loading: ref(false),
     };
   },

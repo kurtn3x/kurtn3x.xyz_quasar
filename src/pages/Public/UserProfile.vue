@@ -1,16 +1,16 @@
 <template>
-  <div v-if="!initialFetch" class="absolute-center">
+  <div v-if="initialFetch.loading" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
   <div
-    v-if="initialFetch && !initialFetchSuccessful"
+    v-if="!initialFetch.loading && initialFetch.error"
     class="text-center q-pa-md flex flex-center"
   >
     <div>
       <div class="text-h5 q-mt-md">User not found.</div>
     </div>
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="!initialFetch.loading && !initialFetch.error">
     <q-page class="column">
       <div class="gt-sm q-ma-sm">
         <q-card
@@ -409,8 +409,11 @@ export default {
 
     return {
       splitter: ref(50),
-      initialFetch: ref(false),
-      initialFetchSuccessful: ref(false),
+      initialFetch: ref({
+        loading: true,
+        error: false,
+        errorMessage: '',
+      }),
       axiosConfig,
       user: ref({}) as Ref<UserProfileType>,
       q,
@@ -456,13 +459,13 @@ export default {
         if (apiData.error == false) {
           this.user = apiData.data as UserProfileType;
           this.userlink = 'kurtn3x.xyz/user/' + this.user.id;
-          this.initialFetch = true;
-          this.initialFetchSuccessful = true;
+          this.initialFetch.error = false;
         } else {
           this.notify('negative', apiData.errorMessage);
-          this.initialFetch = true;
-          this.initialFetchSuccessful = false;
+          this.initialFetch.error = true;
+          this.initialFetch.errorMessage = apiData.errorMessage;
         }
+        this.initialFetch.loading = false;
       });
     },
   },

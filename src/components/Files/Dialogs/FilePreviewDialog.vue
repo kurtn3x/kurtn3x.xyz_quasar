@@ -1,6 +1,6 @@
 <template>
   <ItemInformationDialog
-    :propItem="item"
+    :prop-item="item"
     :active="showItemInformationDialog"
     @close="showItemInformationDialog = false"
   />
@@ -422,13 +422,16 @@ export default defineComponent({
     },
 
     downloadFile(id: string) {
-      const cookieOptions = {
-        path: '/',
-        secure: true,
-        sameSite: 'Strict',
-      };
-      this.q.cookies.set('file-password', 'dsanmdoisanofn', cookieOptions);
-      var url = 'https://api.kurtn3x.xyz/files/download/file/' + id;
+      var args = '';
+      if (this.$props.password != '') {
+        args +=
+          '/?password=' +
+          encodeURIComponent(this.$props.password) +
+          '&attachment=1';
+      } else {
+        args += '/?attachment=1';
+      }
+      var url = 'https://api.kurtn3x.xyz/files/download/file/' + id + args;
       window?.open(url, '_blank')?.focus();
     },
   },

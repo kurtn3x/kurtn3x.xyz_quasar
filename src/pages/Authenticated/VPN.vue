@@ -1,16 +1,16 @@
 <template>
-  <div v-if="!initialFetch" class="absolute-center">
+  <div v-if="initialFetch.loading" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="!initialFetch.loading && initialFetch.error">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="!initialFetch.loading && !initialFetch.error">
     <q-dialog v-model="helpVPNDialog">
       <VPNHelpDialog />
     </q-dialog>
     <q-dialog v-model="vpnInfoDialog">
-      <VPNInformation :propItem="vpnClientInfo" />
+      <VPNInformation :prop-item="vpnClientInfo" />
     </q-dialog>
 
     <q-dialog
@@ -607,8 +607,11 @@ export default defineComponent({
       axiosConfig,
       localStore,
       q,
-      initialFetch: ref(false),
-      initialFetchSuccessful: ref(false),
+      initialFetch: ref({
+        loading: true,
+        error: false,
+        errorMessage: '',
+      }),
       loading: ref(false),
 
       vpnInfoDialog: ref(false),
@@ -707,17 +710,16 @@ export default defineComponent({
     },
 
     getVPNConnections() {
-      this.loading = true;
       apiGet('/vpn/client', this.axiosConfig).then((apiData) => {
         if (apiData.error == false) {
           this.vpnConnections = (apiData.data as any).clients as VPNInfoType[];
-          this.initialFetch = true;
-          this.initialFetchSuccessful = true;
+          this.initialFetch.error = false;
         } else {
           this.notify('negative', apiData.errorMessage);
-          this.initialFetch = true;
+          this.initialFetch.error = true;
+          this.initialFetch.errorMessage = apiData.errorMessage;
         }
-        this.loading = false;
+        this.initialFetch.loading = false;
       });
     },
 

@@ -1,130 +1,47 @@
 <template>
-  <div v-if="!initialFetch" class="absolute-center">
+  <div v-if="initialFetch.loading" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="!initialFetch.loading && initialFetch.error">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
   <div
-    v-if="initialFetch && initialFetchSuccessful && passwordSet && !passwordOk"
+    v-if="
+      !initialFetch.loading &&
+      !initialFetch.passwordValidated &&
+      !initialFetch.error
+    "
   >
-    <div class="text-h6 text-center text-weight-bolder q-mt-lg">
-      Password required
-    </div>
-    <div class="row justify-center">
-      <q-input
-        autofocus
-        v-model="password"
-        :color="darkmode ? 'white' : 'dark'"
-        label="Password"
-        :type="isPwd ? 'password' : 'text'"
-        outlined
-        class="q-mt-md"
-        input-class="text-body1"
-      >
-        <template v-slot:prepend>
-          <q-icon name="lock" />
-        </template>
-        <template v-slot:append>
-          <q-icon
-            class="pw_icon"
-            :name="isPwd ? 'visibility' : 'visibility_off'"
-            @click="isPwd = !isPwd"
-          />
-        </template>
-      </q-input>
-    </div>
-    <div class="row justify-center q-mt-lg">
-      <q-btn
-        push
-        class="bg-green text-white"
-        label="OK"
-        icon="done"
-        size="lg"
-        style="width: 250px"
-        @click="getFile"
-      />
-    </div>
+    <PasswordDialog
+      :prop-item="item"
+      :active="showPasswordDialog"
+      @close="showPasswordDialog = false"
+      @password-received="
+        (encryptedPassword) => {
+          getFileWithPassword(encryptedPassword);
+        }
+      "
+    />
   </div>
   <div
     v-if="
-      initialFetch && initialFetchSuccessful && (!passwordSet || passwordOk)
+      !initialFetch.loading &&
+      !initialFetch.error &&
+      initialFetch.passwordValidated
     "
   >
-    <q-dialog v-model="itemInformationDialog">
-      <q-card bordered style="width: 350px">
-        <q-toolbar class="bg-layout-bg text-layout-text text-center">
-          <q-toolbar-title class="q-ma-sm">{{ item.name }}</q-toolbar-title>
-          <q-tooltip class="text-body1 bg-layout-bg text-layout-text">
-            {{ item.name }}
-          </q-tooltip>
-        </q-toolbar>
-        <div class="q-ma-md">
-          <div class="text-body1 q-mt-md row">
-            <div class="text-weight-bolder col-3">Owner</div>
-            <div class="col q-ml-sm">
-              <a
-                :href="'https://www.kurtn3x.xyz/user/' + item.owner"
-                class="text-blue"
-              >
-                {{ item.owner }}
-              </a>
-            </div>
-          </div>
-          <div class="text-body1 q-mt-md row">
-            <div class="text-weight-bolder col-3">Type</div>
-            <div class="col q-ml-sm">{{ item.type }}</div>
-          </div>
+    <FilePreviewDialog
+      :prop-item="item"
+      :active="showFilePreviewDialog"
+      :password="password"
+      @close="showFilePreviewDialog = false"
+    />
+    <ItemInformationDialog
+      :prop-item="item"
+      :active="showItemInformationDialog"
+      @close="showItemInformationDialog = false"
+    />
 
-          <div v-if="item.type != 'folder'">
-            <div class="text-body1 q-mt-md row">
-              <div class="text-weight-bolder col-3">Mime</div>
-              <div class="col q-ml-sm" style="line-break: anywhere">
-                {{ item.mime }}
-              </div>
-            </div>
-
-            <div class="text-body1 q-mt-md row">
-              <div class="text-weight-bolder col-3">Size</div>
-              <div class="col q-ml-sm">
-                {{ item.size }}
-              </div>
-            </div>
-          </div>
-
-          <div class="text-body1 q-mt-md row">
-            <div class="text-weight-bolder col-3">Created</div>
-            <div class="col q-ml-sm">{{ item.created }}</div>
-          </div>
-
-          <div class="text-body1 q-mt-md row">
-            <div class="text-weight-bolder col-3">Modified</div>
-            <div class="col q-ml-sm">{{ item.modified }}</div>
-          </div>
-
-          <div class="text-body1 q-mt-md row">
-            <div class="text-weight-bolder col-3">Folder</div>
-            <div class="col q-ml-sm" style="line-break: anywhere">
-              {{ item.path }}
-            </div>
-          </div>
-        </div>
-
-        <q-separator class="q-mt-sm" />
-
-        <q-card-actions align="center" class="q-mt-sm q-mb-sm">
-          <q-btn
-            v-close-popup
-            push
-            class="bg-green text-white col"
-            icon="done"
-            size="md"
-            label="OK"
-            style="max-width: 130px"
-          />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
     <div
       class="text-primary text-h4 text-center q-mt-lg ellipsis text-weight-bolder"
     >
@@ -159,18 +76,11 @@
         icon="question_mark"
         class="cursor-pointer q-mt-lg bg-blue-8 text-white"
         push
-        @click="itemInformationDialog = true"
+        @click="showItemInformationDialog = true"
         size="xl"
         style="width: 380px"
       />
     </div>
-
-    <FilePreviewDialog
-      :propItem="item"
-      :active="showFilePreviewDialog"
-      :password="password"
-      @close="showFilePreviewDialog = false"
-    />
   </div>
 </template>
 
@@ -178,14 +88,17 @@
 import { defineComponent, ref, Ref } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
-import { api } from 'boot/axios';
 import { SharedFileType } from 'src/types/index';
-import FilePreviewDialog from 'src/components/Files/Dialogs/FilePreviewDialog.vue';
 import { getIcon } from 'components/Files/lib/mimeMap';
+import { apiGet } from 'src/components/apiWrapper';
+
+import FilePreviewDialog from 'src/components/Files/Dialogs/FilePreviewDialog.vue';
+import ItemInformationDialog from 'src/components/Files/Dialogs/ItemInformationDialog.vue';
+import PasswordDialog from 'src/components/Files/Dialogs/PasswordDialog.vue';
 
 export default defineComponent({
   name: 'FileView',
-  components: { FilePreviewDialog },
+  components: { FilePreviewDialog, ItemInformationDialog, PasswordDialog },
   setup() {
     const localStore = useLocalStore();
     const q = useQuasar();
@@ -193,16 +106,17 @@ export default defineComponent({
       localStore,
       q,
       fileId: ref(''),
-      initialFetch: ref(true),
-      initialFetchSuccessful: ref(false),
-      passwordSet: ref(false),
-      passwordOk: ref(false),
       password: ref(''),
-      isPwd: ref(true),
+      initialFetch: ref({
+        loading: true,
+        passwordValidated: false,
+        error: false,
+        errorMessage: '',
+      }),
       item: ref({}) as Ref<SharedFileType>,
       showFilePreviewDialog: ref(false),
-      itemInformationDialog: ref(false),
-
+      showItemInformationDialog: ref(false),
+      showPasswordDialog: ref(false),
       getIcon,
     };
   },
@@ -217,8 +131,10 @@ export default defineComponent({
   methods: {
     downloadFile(id: string) {
       var url = 'https://api.kurtn3x.xyz/files/download/file/' + id;
-      if (this.passwordSet == true) {
-        url += '?password=' + this.password;
+      if (this.password != '') {
+        url += '?password=' + this.password + '&attachment=1';
+      } else {
+        url += '?attachment=1';
       }
       window?.open(url, '_blank')?.focus();
     },
@@ -240,38 +156,62 @@ export default defineComponent({
         withCredentials: true,
         headers: {
           'X-CSRFToken': this.q.cookies.get('csrftoken'),
-          'X-FILE-PASSWORD': this.password,
         },
       };
 
-      api
-        .get('/files/file/' + this.fileId, axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
-            this.initialFetchSuccessful = true;
-            this.initialFetch = true;
-            this.passwordOk = true;
-            this.item = response.data;
-          } else if (response.status == 290) {
-            this.initialFetchSuccessful = true;
-            this.initialFetch = true;
-            this.passwordSet = true;
-            this.passwordOk = false;
-            this.notify('negative', response.data.error);
+      apiGet('/files/file/' + this.fileId, axiosConfig).then((apiData) => {
+        if (apiData.error == false) {
+          this.initialFetch.error = false;
+          this.initialFetch.passwordValidated = true;
+          this.item = apiData.data as SharedFileType;
+        } else {
+          if (apiData.returnCode == 290) {
+            this.showPasswordDialog = true;
+            this.initialFetch.passwordValidated = false;
+            this.item = {
+              id: this.fileId,
+              type: 'file',
+            } as SharedFileType;
           } else {
-            this.initialFetch = true;
-            this.initialFetchSuccessful = false;
+            this.notify('negative', apiData.errorMessage);
+            this.initialFetch.error = true;
+            this.initialFetch.errorMessage = apiData.errorMessage;
           }
-        })
-        .catch((error) => {
-          if (error.response) {
-            this.notify('negative', error.response.data.error);
-          } else {
-            this.notify('negative', error.message);
-          }
-          this.initialFetch = true;
-          this.initialFetchSuccessful = false;
-        });
+        }
+        this.initialFetch.loading = false;
+      });
+    },
+
+    getFileWithPassword(encryptedPassword: string) {
+      if (this.fileId == '') {
+        this.fileId = this.$route.params.id as string;
+      }
+
+      this.password = encryptedPassword;
+
+      const axiosConfig = {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': this.q.cookies.get('csrftoken'),
+        },
+      };
+
+      var passwordParameter = '?password=' + this.password;
+
+      apiGet(
+        '/files/file/' + this.fileId + passwordParameter,
+        axiosConfig
+      ).then((apiData) => {
+        if (apiData.error == false) {
+          this.initialFetch.passwordValidated = true;
+          this.showPasswordDialog = false;
+          this.item = apiData.data as SharedFileType;
+        } else {
+          this.notify('negative', apiData.errorMessage);
+          this.initialFetch.error = true;
+          this.initialFetch.errorMessage = apiData.errorMessage;
+        }
+      });
     },
   },
 });

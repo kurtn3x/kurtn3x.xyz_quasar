@@ -1,11 +1,11 @@
 <template>
-  <div v-if="!initialFetch" class="absolute-center">
+  <div v-if="initialFetch.loading" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="!initialFetch.loading && initialFetch.error">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="!initialFetch.loading && !initialFetch.error">
     <q-dialog
       v-model="confirmDeleteAccountDialog"
       @hide="
@@ -716,8 +716,11 @@ export default {
       isPwd3: ref(true),
 
       //fetch initialInformation
-      initialFetch: ref(false),
-      initialFetchSuccessful: ref(false),
+      initialFetch: ref({
+        loading: true,
+        error: false,
+        errorMessage: '',
+      }),
 
       // password confirmations for change username, email & password
       updateEmailData: ref({ newEmail: '', password: '' }),
@@ -897,19 +900,19 @@ export default {
               this.profileData = apiData.data as UserProfileType;
               this.avatarPreview =
                 this.profileData.avatar + '?' + Math.random();
-              this.initialFetch = true;
-              this.initialFetchSuccessful = true;
+              this.initialFetch.error = false;
             } else {
               this.notify('negative', apiData.errorMessage);
-              this.initialFetch = true;
-              this.initialFetchSuccessful = false;
+              this.initialFetch.error = true;
+              this.initialFetch.errorMessage = apiData.errorMessage;
             }
           });
         } else {
           this.notify('negative', apiData.errorMessage);
-          this.initialFetch = true;
-          this.initialFetchSuccessful = false;
+          this.initialFetch.error = true;
+          this.initialFetch.errorMessage = apiData.errorMessage;
         }
+        this.initialFetch.loading = false;
       });
     },
   },

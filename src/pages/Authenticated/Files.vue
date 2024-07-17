@@ -1,13 +1,13 @@
 <template>
-  <div v-if="!initialFetch" class="absolute-center">
+  <div v-if="initialFetch.loading" class="absolute-center">
     <q-spinner color="primary" size="10em" />
   </div>
-  <div v-if="initialFetch && !initialFetchSuccessful">
+  <div v-if="!initialFetch.loading && initialFetch.error">
     <div class="text-center text-h5 q-mt-md">Something went wrong.</div>
   </div>
-  <div v-if="initialFetch && initialFetchSuccessful">
+  <div v-if="!initialFetch.loading && !initialFetch.error">
     <FilePreviewDialog
-      :propItem="filePreviewItem"
+      :prop-item="filePreviewItem"
       :active="showFilePreviewDialog"
       @close="showFilePreviewDialog = false"
     />
@@ -21,7 +21,7 @@
       "
     />
     <MoveSelectedItemsDialog
-      :propItem="selectedItems"
+      :prop-item="selectedItems"
       :active="showMoveSelectedItemsDialog"
       @close="showMoveSelectedItemsDialog = false"
       @move="
@@ -32,16 +32,16 @@
     />
 
     <DeleteSelectedItemsDialog
-      :propItem="selectedItems"
+      :prop-item="selectedItems"
       :active="showDeleteSelectedItemsDialog"
       @close="showDeleteSelectedItemsDialog = false"
-      @deleteItems="deleteSelectedItems"
+      @delete-items="deleteSelectedItems"
     />
 
     <UploadFilesDialog
-      :propItem="rawFolderContent"
+      :prop-item="rawFolderContent"
       :active="showUploadFilesDialog"
-      :initialEvent="uploadFilesDialogInitialEvent"
+      :initial-event="uploadFilesDialogInitialEvent"
       @close="showUploadFilesDialog = false"
       @upload="
         (params: [UploadDialogEntryType[], string]) => {
@@ -774,15 +774,15 @@
                   "
                 >
                   <RightClickMenu
-                    :propItem="item"
-                    @moveItem="
+                    :prop-item="item"
+                    @move-item="
                       () => {
                         clearSelectedItems();
                         showMoveSelectedItemsDialog = true;
                         selectedItems.push(item);
                       }
                     "
-                    @deleteItem="
+                    @delete-item="
                       () => {
                         deleteItem(item.id, item.type);
                       }
@@ -848,15 +848,15 @@
                   >
                     <q-menu>
                       <RightClickMenu
-                        :propItem="item"
-                        @moveItem="
+                        :prop-item="item"
+                        @move-item="
                           () => {
                             clearSelectedItems();
                             showMoveSelectedItemsDialog = true;
                             selectedItems.push(item);
                           }
                         "
-                        @deleteItem="
+                        @delete-item="
                           () => {
                             deleteItem(item.id, item.type);
                           }
@@ -898,15 +898,15 @@
                   "
                 >
                   <RightClickMenu
-                    :propItem="item"
-                    @moveItem="
+                    :prop-item="item"
+                    @move-item="
                       () => {
                         clearSelectedItems();
                         showMoveSelectedItemsDialog = true;
                         selectedItems.push(item);
                       }
                     "
-                    @deleteItem="
+                    @delete-item="
                       () => {
                         deleteItem(item.id, item.type);
                       }
@@ -967,15 +967,15 @@
                   >
                     <q-menu>
                       <RightClickMenu
-                        :propItem="item"
-                        @moveItem="
+                        :prop-item="item"
+                        @move-item="
                           () => {
                             clearSelectedItems();
                             showMoveSelectedItemsDialog = true;
                             selectedItems.push(item);
                           }
                         "
-                        @deleteItem="
+                        @delete-item="
                           () => {
                             deleteItem(item.id, item.type);
                           }
@@ -1329,8 +1329,11 @@ export default defineComponent({
 
       // loading / initial load
       loading: ref(false),
-      initialFetch: ref(false),
-      initialFetchSuccessful: ref(false),
+      initialFetch: ref({
+        loading: true,
+        error: false,
+        errorMessage: '',
+      }),
 
       // raw content including children of current folder
       rawFolderContent: ref(folderData) as Ref<RawFolderContentType>,
@@ -1561,16 +1564,18 @@ export default defineComponent({
       apiGet('/files/folder/home', this.axiosConfig).then((apiData) => {
         if (apiData.error == false) {
           this.rawFolderContent = apiData.data as RawFolderContentType;
-          this.initialFetchSuccessful = true;
           this.navbarIndex.homeFolderId = (
             apiData.data as RawFolderContentType
           ).id;
           this.navbarIndex.menuItems = [];
           this.navbarIndex.navbarItems = [];
+          this.initialFetch.error = false;
         } else {
           this.notify('negative', apiData.errorMessage);
+          this.initialFetch.error = true;
+          this.initialFetch.errorMessage = apiData.errorMessage;
         }
-        this.initialFetch = true;
+        this.initialFetch.loading = false;
         this.loading = false;
       });
     },

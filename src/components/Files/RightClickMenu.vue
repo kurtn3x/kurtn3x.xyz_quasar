@@ -1,6 +1,6 @@
 <template>
   <ItemInformationDialog
-    :propItem="propItem"
+    :prop-item="propItem"
     :active="showItemInformationDialog"
     @close="showItemInformationDialog = false"
   />
