@@ -1,14 +1,5 @@
 <template>
-  <router-view
-    v-if="prefetch"
-    class="font"
-    :key="$route.fullPath"
-    :class="
-      darkmode
-        ? 'bg-background-dark text-light'
-        : 'bg-background-light text-dark'
-    "
-  />
+  <router-view v-if="prefetch" class="font" :key="$route.fullPath" />
 </template>
 
 <script lang="ts">

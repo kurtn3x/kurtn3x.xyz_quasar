@@ -2245,7 +2245,7 @@ export default defineComponent({
       };
 
       this.loading = true;
-      apiPost('/files/folder', formData, config).then((apiData) => {
+      apiPost('/files/file', formData, config).then((apiData) => {
         if (apiData.error == false) {
           this.showCreateFileDialog = false;
           this.notify('positive', 'Created');

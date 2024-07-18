@@ -289,9 +289,7 @@ onMounted(async () => {
 function getFileContent() {
   var args = '';
   if (props.password != '') {
-    args += '?password=' + props.password + '&attachment=0';
-  } else {
-    args += '?attachment=0';
+    args += '?password=' + props.password;
   }
   apiGet('/files/file-content/' + item.value.id + args, axiosConfig).then(
     (apiData) => {
@@ -319,7 +317,10 @@ function updateContent() {
           message: 'Saved.',
           progress: true,
         });
-        apiGet('/files/file/' + item.value.id, axiosConfig).then((apiData) => {
+        apiGet(
+          '/files/file-content/' + item.value.id + '?only_size=1',
+          axiosConfig
+        ).then((apiData) => {
           if (apiData.error == false) {
             item.value.size = apiData.data.size;
             item.value.sizeBytes = apiData.data.sizeBytes;

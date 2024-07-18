@@ -64,7 +64,7 @@ export default defineComponent({
     var showDialog = ref(props.active) as Ref<boolean>;
     var newFile = ref({
       name: '',
-      mime: '',
+      mime: 'Unknown',
     });
     const mimeOptions = [
       {
@@ -111,6 +111,8 @@ export default defineComponent({
     },
     createFile() {
       this.$emit('create', this.newFile);
+      this.newFile.name = '';
+      this.newFile.mime = 'Unknown';
     },
   },
 });

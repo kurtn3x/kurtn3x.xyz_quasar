@@ -2,7 +2,7 @@
   <q-page class="bg row justify-center items-center" :class="theme">
     <ParticlesIndex />
 
-    <div class="column fade-in-text q-pa-xs">
+    <div class="column fade-in-text q-pa-md">
       <div class="row">
         <q-card
           style="max-width: 400px"
@@ -11,7 +11,7 @@
           class="no-shadow bg-transparent"
         >
           <div
-            class="text3d-primary text-weight-bolder text-h3 text-center q-mt-lg non-selectable"
+            class="text3d-primary text-weight-bolder text-h3 text-center non-selectable"
           >
             Login
           </div>

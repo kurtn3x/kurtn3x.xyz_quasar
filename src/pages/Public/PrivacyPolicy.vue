@@ -14,7 +14,7 @@
         class="full-width text-center"
         expand-icon-class="text-layout-text"
       >
-        <q-list bordered class="q-ml-sm q-mr-sm">
+        <q-list bordered class="q-ma-sm">
           <div
             class="text-center text-body1 q-mr-lg q-ml-lg q-mt-sm q-mb-sm text-layout-text"
           >
@@ -31,14 +31,11 @@
         class="full-width text-center"
         expand-icon-class="text-layout-text"
       >
-        <q-list bordered class="q-mr-sm q-ml-sm">
+        <q-list bordered class="q-ma-sm">
           <div
             class="text-center text-body1 q-mr-lg q-ml-lg q-mt-sm q-mb-md text-layout-text"
           >
-            No data besides Account-Data is stored. No data is shared to 3rd
-            parties. Only Username & Password are needed to access an account,
-            any other info is optional. (A correct E-Mail is recommended for
-            recovery)
+            Only data related to an account is stored. No logs are saved.
           </div>
         </q-list>
       </q-expansion-item>
@@ -50,12 +47,16 @@
         class="full-width text-center"
         expand-icon-class="text-layout-text"
       >
-        <q-list bordered class="q-mr-sm q-ml-sm">
+        <q-list bordered class="q-ma-sm">
           <div
             class="text-center text-body1 q-mr-lg q-ml-lg q-mt-sm q-mb-md text-layout-text"
           >
-            Mail: kurtn3x@proton.me <br />
-            Discord: nex1233 <br />
+            <a
+              href="https://about.kurtn3x.xyz"
+              target="_blank"
+              class="text-layout-text"
+              >about.kurtn3x.xyz</a
+            >
           </div>
         </q-list>
       </q-expansion-item>

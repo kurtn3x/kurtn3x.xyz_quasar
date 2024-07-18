@@ -1,6 +1,6 @@
 <template>
   <q-card
-    style="margin-top: 50px; z-index: 1; filter: sepia(0.6)"
+    style="margin-top: 50px; z-index: 1; filter: sepia(0.3)"
     bordered
     class="bg-layout-bg text-center fullscreen items-center"
   >
@@ -11,7 +11,7 @@
       <div class="q-ma-md text-layout-text text-h6 q-mt-lg">
         Something went wrong.
       </div>
-      <div class="q-ma-md text-layout-text text-h6" style="max-width: 450px">
+      <div class="q-ma-md text-layout-text text-h6">
         The error was: {{ error }}
       </div>
     </div>
