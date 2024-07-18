@@ -55,7 +55,7 @@
         icon="file_download"
         class="cursor-pointer bg-green text-white q-mt-lg"
         push
-        @click="downloadFile(item.id)"
+        @click="downloadFile"
         size="xl"
         style="width: 380px"
       />
@@ -81,6 +81,14 @@
         size="xl"
         style="width: 380px"
       />
+    </div>
+    <div class="q-mt-lg text-center">
+      <router-link
+        :to="'/user/' + item.owner"
+        class="text-indigo-5 text-weight-bold text-h5"
+      >
+        Owner: {{ item.owner }}
+      </router-link>
     </div>
   </div>
 </template>
@@ -136,14 +144,21 @@ export default defineComponent({
     this.getFile();
   },
   methods: {
-    downloadFile(id: string) {
-      var url = 'https://api.kurtn3x.xyz/files/download/file/' + id;
+    downloadFile() {
+      var args = '';
       if (this.password != '') {
-        url += '?password=' + this.password + '&attachment=1';
+        args += '?password=' + this.password + '&attachment=1';
       } else {
-        url += '?attachment=1';
+        args += '?attachment=1';
       }
-      window?.open(url, '_blank')?.focus();
+      var url =
+        'https://api.kurtn3x.xyz/files/download/file/' + this.item.id + args;
+      var link = document.createElement('a');
+      link.setAttribute('download', '');
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     },
 
     notify(type: string, message: string) {

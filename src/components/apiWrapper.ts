@@ -17,7 +17,10 @@ export async function apiGet(endpoint: string, axiosConfig: any) {
       } else {
         returnData.error = true;
         returnData.errorMessage = response.data;
-        if (returnData.errorMessage == '') {
+        if (
+          returnData.errorMessage == '' ||
+          returnData.errorMessage == undefined
+        ) {
           returnData.errorMessage =
             'API Error returned code ' + response.status + '.';
         }
@@ -26,17 +29,22 @@ export async function apiGet(endpoint: string, axiosConfig: any) {
     .catch((error) => {
       returnData.returnCode = 1;
       if (error.response) {
+        returnData.returnCode = error.response.status;
         returnData.error = true;
         returnData.errorMessage = error.response.data.error;
-        if (returnData.errorMessage == '') {
+        if (
+          returnData.errorMessage == '' ||
+          returnData.errorMessage == undefined
+        ) {
           returnData.errorMessage =
-            'API Error returned code ' + error.response.status + '.';
+            'API returned code ' + error.response.status.toString();
+          returnData.errorMessage += ' ' + error.response.statusText;
         }
       } else {
         returnData.error = true;
         returnData.errorMessage = error.message;
-        if (returnData.errorMessage == '') {
-          returnData.errorMessage = 'Encountered error during request.';
+        if (returnData.errorMessage == '' || error.message == undefined) {
+          returnData.errorMessage = 'Error during request.';
         }
       }
     });
@@ -61,7 +69,10 @@ export async function apiDelete(endpoint: string, axiosConfig: any) {
       } else {
         returnData.error = true;
         returnData.errorMessage = response.data;
-        if (returnData.errorMessage == '') {
+        if (
+          returnData.errorMessage == '' ||
+          returnData.errorMessage == undefined
+        ) {
           returnData.errorMessage =
             'API Error returned code ' + response.status + '.';
         }
@@ -70,17 +81,22 @@ export async function apiDelete(endpoint: string, axiosConfig: any) {
     .catch((error) => {
       returnData.returnCode = 1;
       if (error.response) {
+        returnData.returnCode = error.response.status;
         returnData.error = true;
         returnData.errorMessage = error.response.data.error;
-        if (returnData.errorMessage == '') {
+        if (
+          returnData.errorMessage == '' ||
+          returnData.errorMessage == undefined
+        ) {
           returnData.errorMessage =
-            'API Error returned code ' + error.response.status + '.';
+            'API returned code ' + error.response.status.toString();
+          returnData.errorMessage += ' ' + error.response.statusText;
         }
       } else {
         returnData.error = true;
         returnData.errorMessage = error.message;
-        if (returnData.errorMessage == '') {
-          returnData.errorMessage = 'Encountered error during request.';
+        if (returnData.errorMessage == '' || error.message == undefined) {
+          returnData.errorMessage = 'Error during request.';
         }
       }
     });
@@ -105,7 +121,10 @@ export async function apiPost(endpoint: string, data: any, axiosConfig: any) {
       } else {
         returnData.error = true;
         returnData.errorMessage = response.data;
-        if (returnData.errorMessage == '') {
+        if (
+          returnData.errorMessage == '' ||
+          returnData.errorMessage == undefined
+        ) {
           returnData.errorMessage =
             'API Error returned code ' + response.status + '.';
         }
@@ -114,17 +133,22 @@ export async function apiPost(endpoint: string, data: any, axiosConfig: any) {
     .catch((error) => {
       returnData.returnCode = 1;
       if (error.response) {
+        returnData.returnCode = error.response.status;
         returnData.error = true;
         returnData.errorMessage = error.response.data.error;
-        if (returnData.errorMessage == '') {
+        if (
+          returnData.errorMessage == '' ||
+          returnData.errorMessage == undefined
+        ) {
           returnData.errorMessage =
-            'API Error returned code ' + error.response.status + '.';
+            'API returned code ' + error.response.status.toString();
+          returnData.errorMessage += ' ' + error.response.statusText;
         }
       } else {
         returnData.error = true;
         returnData.errorMessage = error.message;
-        if (returnData.errorMessage == '') {
-          returnData.errorMessage = 'Encountered error during request.';
+        if (returnData.errorMessage == '' || error.message == undefined) {
+          returnData.errorMessage = 'Error during request.';
         }
       }
     });
@@ -149,7 +173,10 @@ export async function apiPut(endpoint: string, data: any, axiosConfig: any) {
       } else {
         returnData.error = true;
         returnData.errorMessage = response.data;
-        if (returnData.errorMessage == '') {
+        if (
+          returnData.errorMessage == '' ||
+          returnData.errorMessage == undefined
+        ) {
           returnData.errorMessage =
             'API Error returned code ' + response.status + '.';
         }
@@ -158,17 +185,22 @@ export async function apiPut(endpoint: string, data: any, axiosConfig: any) {
     .catch((error) => {
       returnData.returnCode = 1;
       if (error.response) {
+        returnData.returnCode = error.response.status;
         returnData.error = true;
         returnData.errorMessage = error.response.data.error;
-        if (returnData.errorMessage == '') {
+        if (
+          returnData.errorMessage == '' ||
+          returnData.errorMessage == undefined
+        ) {
           returnData.errorMessage =
-            'API Error returned code ' + error.response.status + '.';
+            'API returned code ' + error.response.status.toString();
+          returnData.errorMessage += ' ' + error.response.statusText;
         }
       } else {
         returnData.error = true;
         returnData.errorMessage = error.message;
-        if (returnData.errorMessage == '') {
-          returnData.errorMessage = 'Encountered error during request.';
+        if (returnData.errorMessage == '' || error.message == undefined) {
+          returnData.errorMessage = 'Error during request.';
         }
       }
     });

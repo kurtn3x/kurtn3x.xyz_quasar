@@ -66,7 +66,7 @@
           icon="download"
           :label="'(' + item.size + ')'"
           class="text-weight-bold text-caption"
-          @click="downloadFile(item.id)"
+          @click="downloadFile"
         />
         <q-separator vertical :color="darkmode ? 'white' : 'dark'" />
 
@@ -421,18 +421,22 @@ export default defineComponent({
       }
     },
 
-    downloadFile(id: string) {
+    downloadFile() {
       var args = '';
       if (this.$props.password != '') {
-        args +=
-          '/?password=' +
-          encodeURIComponent(this.$props.password) +
-          '&attachment=1';
+        args += '?password=' + this.$props.password + '&attachment=1';
       } else {
-        args += '/?attachment=1';
+        args += '?attachment=1';
       }
-      var url = 'https://api.kurtn3x.xyz/files/download/file/' + id + args;
-      window?.open(url, '_blank')?.focus();
+      var url =
+        'https://api.kurtn3x.xyz/files/download/file/' + this.item.id + args;
+      var link = document.createElement('a');
+      link.setAttribute('download', '');
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      // window?.open(url, '_blank')?.focus();
     },
   },
 });

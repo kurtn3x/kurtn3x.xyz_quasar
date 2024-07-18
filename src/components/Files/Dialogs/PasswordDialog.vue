@@ -122,10 +122,8 @@ export default defineComponent({
       };
       apiPost('/files/password', data, axiosConfig).then((apiData) => {
         if (apiData.error == false) {
-          this.$emit(
-            'passwordReceived',
-            encodeURIComponent(apiData.data.encryptedPassword)
-          );
+          var pw = encodeURIComponent(apiData.data.encryptedPassword);
+          this.$emit('passwordReceived', pw);
         } else {
           if (apiData.returnCode == 290) {
             // wrong password

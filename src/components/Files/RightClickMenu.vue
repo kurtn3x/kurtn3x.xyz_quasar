@@ -447,15 +447,21 @@ export default defineComponent({
     },
 
     downloadItem() {
-      (
-        window.open(
-          'https://api.kurtn3x.xyz/files/download/' +
-            this.item.type +
-            '/' +
-            this.item.id,
-          '_blank'
-        ) as Window
-      ).focus();
+      var args = '';
+      args += '?attachment=1';
+
+      var url =
+        'https://api.kurtn3x.xyz/files/download/+' +
+        this.item.type +
+        '/' +
+        this.item.id +
+        args;
+      var link = document.createElement('a');
+      link.setAttribute('download', '');
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     },
   },
 });
