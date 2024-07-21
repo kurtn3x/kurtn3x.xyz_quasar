@@ -1,4 +1,17 @@
 {
   "singleQuote": true,
-  "semi": true
+  "semi": true,
+  "htmlWhitespaceSensitivity": "ignore",
+  "useTabs": false,
+  "bracketSameLine": false,
+  "singleAttributePerLine": true,
+  "arrowParens": "always",
+  "overrides": [
+    {
+      "files": "*.vue",
+      "options": {
+        "tabWidth": 2
+      }
+    }
+  ]
 }

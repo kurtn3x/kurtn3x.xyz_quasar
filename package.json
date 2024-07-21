@@ -30,9 +30,10 @@
     "pinia": "^2.1.7",
     "quasar": "^2.16.6",
     "video.js": "^7.21.6",
-    "vue": "^3.0.0",
+    "vue": "^3.4.33",
     "vue-codemirror": "^6.1.1",
-    "vue-router": "^4.4.0"
+    "vue-router": "^4.4.0",
+    "vue3-selecto": "^1.12.3"
   },
   "devDependencies": {
     "@quasar/app-vite": "^1.9.3",

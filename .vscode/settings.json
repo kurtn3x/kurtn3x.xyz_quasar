@@ -4,6 +4,11 @@
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.codeActionsOnSave": ["source.fixAll.eslint"],
+  "editor.language.brackets": [
+    ["(", ")"],
+    ["{", "}"],
+    ["[", "]"]
+  ],
   "eslint.validate": ["javascript", "javascriptreact", "typescript", "vue"],
   "typescript.tsdk": "node_modules/typescript/lib",
   "vue.codeActions.enabled": false,

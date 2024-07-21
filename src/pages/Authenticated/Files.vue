@@ -1,13 +1,19 @@
 <template>
-  <div v-if="initialFetch.loading" class="absolute-center">
-    <q-spinner color="primary" size="10em" />
-  </div>
-  <div v-if="!initialFetch.loading && initialFetch.error">
-    <ErrorPage :error-message="initialFetch.errorMessage" />
+  <div
+    v-if="initialFetch.loading"
+    class="absolute-center"
+  >
+    <q-spinner
+      color="primary"
+      size="10em"
+    />
   </div>
   <div v-if="!initialFetch.loading && !initialFetch.error">
+    <ErrorPage :error-message="initialFetch.errorMessage" />
+  </div>
+  <div v-if="!initialFetch.loading && initialFetch.error">
     <FilePreviewDialog
-      :prop-item="filePreviewItem"
+      :prop-item="filePreviewDialogItem"
       :active="showFilePreviewDialog"
       @close="showFilePreviewDialog = false"
     />
@@ -43,16 +49,23 @@
       :active="showUploadFilesDialog"
       :initial-event="uploadFilesDialogInitialEvent"
       @close="showUploadFilesDialog = false"
-      @upload="
-        (params: [UploadDialogEntryType[], string]) => {
-          uploadFiles(...params);
-        }
-      "
+      @upload="(params: [UploadDialogEntryType[], string]) => {
+        uploadFiles(...params);
+      }
+        "
     />
 
     <!-- filterDialog -->
-    <q-page-sticky v-if="filterDialog" position="top" style="z-index: 100">
-      <q-card bordered flat style="width: 350px">
+    <q-page-sticky
+      v-if="filterDialog"
+      position="top"
+      style="z-index: 100"
+    >
+      <q-card
+        bordered
+        flat
+        style="width: 350px"
+      >
         <div class="q-ma-md">
           <q-input
             :color="darkmode ? 'white' : 'black'"
@@ -65,7 +78,10 @@
             dense
           >
             <template v-slot:append>
-              <q-icon v-if="filterSearch === ''" name="search" />
+              <q-icon
+                v-if="filterSearch === ''"
+                name="search"
+              />
               <q-icon
                 v-else
                 name="clear"
@@ -109,8 +125,15 @@
       </q-card>
     </q-page-sticky>
 
-    <q-page class="column q-mr-xs q-ml-xs" :style-fn="styleFn">
-      <div class="q-mt-sm" @dragover.stop.prevent="" @drop.prevent="">
+    <q-page
+      class="column"
+      :style-fn="styleFn"
+    >
+      <div
+        class="q-mt-sm"
+        @dragover.stop.prevent=""
+        @drop.prevent=""
+      >
         <q-toolbar class="q-pa-none">
           <!-- navbar toolbar -->
 
@@ -123,7 +146,7 @@
               display: inline;
             "
             :style="'width:' + (screenWidth - 65) + 'px;'"
-            class="row"
+            class="row q-ml-sm"
             ref="navbar"
           >
             <q-item
@@ -131,17 +154,27 @@
               flat
               class="rounded-borders text-primary text-weight-bold text-h5 q-ml-sm"
               @click="getFolderNavbar({ name: '', id: '' }, 0)"
-              @v-drag-enter="
-               (e: any, x: any, y: any) => y.target.classList.add('bg-indigo-11')
-              "
-              @v-drag-over="(e: any, x: any, y: any) => y.target.classList.add('bg-indigo-11')"
-              @v-drag-leave="
-                (e: any, x: any, y: any) => y.target.classList.remove('bg-indigo-11')
-              "
-              @v-drag-drop="
-                changeParentDragNDrop($event, navbarIndex.homeFolderId)
-              "
-              v-droppable
+              @drop.prevent.self.stop="(ev: InputEvent) => {
+                if (ev.dataTransfer!.items.length > 0) {
+                  // FileItem
+                  if (ev.dataTransfer!.items[0].type == 'id') {
+                      moveSelection(navbarIndex.homeFolderId)
+                  }
+                }
+                (ev.target as HTMLElement).classList.remove('dragover')
+              }"
+              @dragenter.prevent.stop="(ev: DragEvent) => {
+                if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
+                  if (ev.dataTransfer.items[0].type == 'id' && ev.target)
+                    (ev.target as HTMLElement).classList.add('dragover')
+                }
+              }"
+              @dragleave.prevent.stop="(ev: DragEvent) => {
+                if (ev.target) {
+                  (ev.target as HTMLElement).classList.remove('dragover')
+                }
+              }"
+              @dragover.prevent.self.stop
               style="display: inline-block"
             >
               <q-icon
@@ -153,8 +186,9 @@
             <a
               class="text-weight-bolder text-primary"
               v-if="navbarIndex.menuItems.length != 0"
-              >/</a
             >
+              /
+            </a>
             <q-item
               clickable
               flat
@@ -164,7 +198,7 @@
               @dragover="navbarOverflowMenuHover = true"
               @dragstop="navbarOverflowMenuHover = false"
             >
-              <a class="no-pointer-events"> ... </a>
+              <a class="no-pointer-events">...</a>
               <q-menu
                 v-model="navbarOverflowMenuHover"
                 @mouseleave="navbarOverflowMenuHover = false"
@@ -179,22 +213,35 @@
                     size="1px"
                     :color="darkmode ? 'white' : 'dark'"
                   />
-                  <template v-for="item in navbarIndex.menuItems" :key="item">
+                  <template
+                    v-for="item in navbarIndex.menuItems"
+                    :key="item"
+                  >
                     <q-item
                       clickable
                       class="text-primary text-weight-bold text-h6"
                       @click="getFolderNavbar(item, 1)"
-                      @v-drag-enter="
-                       (e: any, x: any, y: any) => y.target.classList.add('bg-indigo-11')
-                      "
-                      @v-drag-over="
-                        (e: any, x: any, y: any) => y.target.classList.add('bg-indigo-11')
-                      "
-                      @v-drag-leave="
-                        (e: any, x: any, y: any) => y.target.classList.remove('bg-indigo-11')
-                      "
-                      @v-drag-drop="changeParentDragNDrop($event, item.id)"
-                      v-droppable
+                      @drop.prevent.self.stop="(ev: InputEvent) => {
+                        if (ev.dataTransfer!.items.length > 0) {
+                          // FileItem
+                          if (ev.dataTransfer!.items[0].type == 'id') {
+                              moveSelection(item.id)
+                          }
+                        }
+                        (ev.target as HTMLElement).classList.remove('dragover')
+                      }"
+                      @dragenter.prevent.stop="(ev: DragEvent) => {
+                        if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
+                          if (ev.dataTransfer.items[0].type == 'id' && ev.target)
+                            (ev.target as HTMLElement).classList.add('dragover')
+                        }
+                      }"
+                      @dragleave.prevent.stop="(ev: DragEvent) => {
+                        if (ev.target) {
+                          (ev.target as HTMLElement).classList.remove('dragover')
+                        }
+                      }"
+                      @dragover.prevent.self.stop
                     >
                       <div class="no-pointer-events ellipsis">
                         {{ item.name }}
@@ -213,24 +260,37 @@
                 </q-card>
               </q-menu>
             </q-item>
-            <template v-for="item in navbarIndex.navbarItems" :key="item">
+            <template
+              v-for="item in navbarIndex.navbarItems"
+              :key="item"
+            >
               <a class="text-weight-bolder text-primary">/</a>
               <q-item
                 clickable
                 flat
                 class="rounded-borders text-primary text-weight-bold text-h5 items-center"
                 @click="getFolderNavbar(item, 2)"
-                @v-drag-enter="
-                  (e: any, x: any, y: any) => y.target.classList.add('bg-indigo-11')
-                "
-                @v-drag-over="
-                  (e: any, x: any, y: any) => y.target.classList.add('bg-indigo-11')
-                "
-                @v-drag-leave="
-                  (e: any, x: any, y: any) => y.target.classList.remove('bg-indigo-11')
-                "
-                @v-drag-drop="changeParentDragNDrop($event, item.id)"
-                v-droppable
+                @drop.prevent.self.stop="(ev: InputEvent) => {
+                  if (ev.dataTransfer!.items.length > 0) {
+                    // FileItem
+                    if (ev.dataTransfer!.items[0].type == 'id') {
+                        moveSelection(item.id)
+                    }
+                  }
+                  (ev.target as HTMLElement).classList.remove('dragover')
+                }"
+                @dragenter.prevent.stop="(ev: DragEvent) => {
+                  if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
+                    if (ev.dataTransfer.items[0].type == 'id' && ev.target)
+                      (ev.target as HTMLElement).classList.add('dragover')
+                  }
+                }"
+                @dragleave.prevent.stop="(ev: DragEvent) => {
+                  if (ev.target) {
+                    (ev.target as HTMLElement).classList.remove('dragover')
+                  }
+                }"
+                @dragover.prevent.self.stop
                 style="display: inline-block"
               >
                 <q-item-section>
@@ -245,11 +305,12 @@
             </template>
           </div>
         </q-toolbar>
+
         <q-toolbar class="q-mt-sm">
           <q-checkbox
             v-model="allSelected"
             color="green"
-            class="q-ml-xs"
+            class="q-ml-xs q-ml-sm"
             @click="selectAllItems"
           />
 
@@ -264,7 +325,7 @@
               color="light-green"
               round
               padding="none"
-              style="height: 40px; width: 40px; z-index: 1"
+              style="height: 40px; width: 40px; z-index: 3"
             >
               <q-fab-action
                 outline
@@ -273,7 +334,7 @@
                 icon="note_add"
                 label="New File"
                 @click="showCreateFileDialog = true"
-                style="width: 180px"
+                style="width: 180px; z-index: 3"
               />
               <q-fab-action
                 outline
@@ -282,7 +343,7 @@
                 icon="create_new_folder"
                 label="New Folder"
                 @click="newFolder.show = true"
-                style="width: 180px"
+                style="width: 180px; z-index: 3"
               />
               <q-fab-action
                 push
@@ -291,7 +352,7 @@
                 label="Upload Files"
                 class="text-body1 bg-light-green"
                 text-color="white"
-                style="width: 180px"
+                style="width: 180px; z-index: 3"
                 outline
               />
             </q-fab>
@@ -316,7 +377,10 @@
               style="max-width: 400px"
             >
               <template v-slot:append>
-                <q-icon v-if="filterSearch === ''" name="search" />
+                <q-icon
+                  v-if="filterSearch === ''"
+                  name="search"
+                />
                 <q-icon
                   v-else
                   name="clear"
@@ -337,7 +401,10 @@
             </q-input>
 
             <q-space />
-            <div style="width: 130px" class="q-ml-md q-mr-sm">
+            <div
+              style="width: 130px"
+              class="q-ml-md q-mr-sm"
+            >
               <q-fab
                 push
                 icon="check_box"
@@ -351,7 +418,7 @@
                 "
                 v-if="selectedItems.length > 0"
                 padding="none"
-                style="height: 40px; width: 140px; z-index: 1"
+                style="height: 40px; width: 140px; z-index: 3"
               >
                 <q-fab-action
                   class="text-body1 bg-blue"
@@ -360,7 +427,7 @@
                   label="Move"
                   icon="trending_flat"
                   @click="showMoveSelectedItemsDialog = true"
-                  style="width: 150px"
+                  style="width: 150px; z-index: 3"
                 />
                 <q-fab-action
                   class="text-body1 bg-red"
@@ -369,7 +436,7 @@
                   icon="close"
                   label="Delete"
                   @click="showDeleteSelectedItemsDialog = true"
-                  style="width: 150px"
+                  style="width: 150px; z-index: 3"
                 />
               </q-fab>
             </div>
@@ -384,7 +451,7 @@
               class="q-mr-sm q-ml-md"
               color="light-green"
               padding="sm"
-              style="z-index: 1"
+              style="z-index: 3"
             >
               <q-fab-action
                 class="text-body1 bg-light-green"
@@ -393,7 +460,7 @@
                 icon="note_add"
                 label="New File"
                 @click="showCreateFileDialog = true"
-                style="width: 180px"
+                style="width: 180px; z-index: 3"
                 padding="sm"
               />
 
@@ -404,7 +471,7 @@
                 icon="create_new_folder"
                 label="New Folder"
                 @click="newFolder.show = true"
-                style="width: 180px"
+                style="width: 180px; z-index: 3"
                 padding="sm"
               />
 
@@ -414,7 +481,7 @@
                 label="Upload Files"
                 class="text-body1 bg-light-green"
                 text-color="white"
-                style="width: 180px"
+                style="width: 180px; z-index: 3"
                 outline
                 padding="sm"
               />
@@ -429,7 +496,10 @@
               dense
             >
               <template v-slot:append>
-                <q-icon v-if="filterSearch === ''" name="search" />
+                <q-icon
+                  v-if="filterSearch === ''"
+                  name="search"
+                />
                 <q-icon
                   v-else
                   name="clear"
@@ -449,7 +519,10 @@
               </template>
             </q-input>
 
-            <div class="q-ml-md q-mr-sm" style="width: 80px">
+            <div
+              class="q-ml-md q-mr-sm"
+              style="width: 80px"
+            >
               <q-fab
                 push
                 icon="check_box"
@@ -459,7 +532,7 @@
                 color="cyan-14"
                 v-if="selectedItems.length > 0"
                 padding="none"
-                style="height: 40px; width: 80px; z-index: 1"
+                style="height: 40px; width: 80px; z-index: 3"
               >
                 <q-fab-action
                   class="text-body1 bg-blue"
@@ -468,7 +541,7 @@
                   label="Move"
                   icon="trending_flat"
                   @click="showMoveSelectedItemsDialog = true"
-                  style="width: 110px"
+                  style="width: 110px; z-index: 3"
                 />
                 <q-fab-action
                   class="text-body1 bg-red"
@@ -477,7 +550,7 @@
                   icon="close"
                   label="Delete"
                   @click="showDeleteSelectedItemsDialog = true"
-                  style="width: 110px"
+                  style="width: 110px; z-index: 3"
                 />
               </q-fab>
             </div>
@@ -485,8 +558,11 @@
         </q-toolbar>
 
         <!-- column descriptions/sorting on large screens only -->
-        <div class="row gt-xs">
-          <q-item-section avatar class="q-ml-lg" />
+        <div class="row gt-xs q-ml-md">
+          <q-item-section
+            avatar
+            class="q-ml-lg"
+          />
           <q-item-section avatar>
             <q-btn
               align="left"
@@ -565,30 +641,43 @@
             </q-btn>
           </q-item-section>
 
-          <q-item-section side class="q-mr-md">
+          <q-item-section
+            side
+            class="q-mr-md"
+          >
             <div style="width: 50px" />
           </q-item-section>
         </div>
 
-        <q-separator size="2px" color="primary" />
-      </div>
-      <div class="row justify-center" v-if="scrollShow.top">
-        <q-btn
-          icon="arrow_upward"
-          size="lg"
+        <q-separator
+          size="2px"
           color="primary"
-          round
-          class="absolute"
-          style="z-index: 50; width: 60px; height: 60px"
-          @dragover.prevent="scrollUp"
+          inset
         />
       </div>
-      <q-scroll-area
-        class="col"
+
+      <div
+        class="col column scroll"
         ref="mainScrollArea"
-        :class="scrollAreaDragover ? 'bg-cyan-14' : ''"
-        @drop.prevent.stop="
-            (ev: DragEvent) => {
+      >
+        <div class="col column selectoContainer">
+          <div class="row justify-center q-mt-xs">
+            <div
+              class="full-width bg-transparent fixed"
+              style="height: 20px; z-index: 2"
+              @dragenter.self="scrollUp(true)"
+              @dragleave.self="scrollUp(false)"
+              @dragover.prevent
+              @drop.prevent.stop="scrollUp(false)"
+            />
+          </div>
+          <div style="height: 10px" />
+
+          <div
+            class="col q-ml-md q-mr-md"
+            @scroll="onScrollerScroll"
+            :class="scrollAreaDragover ? 'bg-cyan-14' : ''"
+            @drop.prevent.stop="(ev: DragEvent) => {
               if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
                 if (ev.dataTransfer.items[0].kind == 'file') {
                   uploadFilesDialogInitialEvent = ev;
@@ -597,212 +686,42 @@
                 }
               }
             }
-          "
-        @dragover.prevent="
-            (ev: DragEvent) => {
-              if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
-                if (ev.dataTransfer.items[0].kind == 'file') {
-                  scrollAreaDragover = true;
+              "
+            @dragover.prevent="(ev: DragEvent) => {
+                if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
+                  if (ev.dataTransfer.items[0].kind == 'file') {
+                    scrollAreaDragover = true;
+                  }
                 }
               }
-            }
-          "
-        @dragenter.self="
-            (ev: DragEvent) => {
-              if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
-                if (ev.dataTransfer.items[0].kind == 'file') {
-                  scrollAreaDragover = true;
+                "
+            @dragenter.self="(ev: DragEvent) => {
+                  if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
+                    if (ev.dataTransfer.items[0].kind == 'file') {
+                      scrollAreaDragover = true;
+                    }
+                  }
                 }
-              }
-            }
-          "
-        @dragleave.prevent="
-            (ev: DragEvent) => {
-              if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
-                if (ev.dataTransfer.items[0].kind == 'file') {
-                  scrollAreaDragover = false;
-                }
-              }
-            }
-          "
-      >
-        <div v-if="newFolder.show">
-          <q-item
-            class="full-width rounded-borders"
-            style="background-color: rgba(60, 177, 60, 0.801)"
-          >
-            <q-item-section avatar top class="no-pointer-events">
-              <q-avatar
-                icon="folder"
-                color="transparent"
-                text-color="primary"
-                size="4.5em"
-                style="height: 40px"
-              />
-            </q-item-section>
-
-            <q-item-section>
-              <q-input
-                dark
-                outlined
-                dense
-                color="white"
-                v-model="newFolder.name"
-                label="New Folder Name"
-                class="text-body1 q-ml-md"
-                input-class="text-body2"
-                clearable
-                @keyup.enter="createFolder"
-                ref="newItemInput"
-                hide-bottom-space
-                autofocus
-              >
-              </q-input>
-            </q-item-section>
-            <q-item-section side>
-              <div class="row">
-                <q-btn
-                  icon="done"
-                  class="q-ml-md bg-green text-white"
-                  round
-                  flat
-                  @click="createFolder"
-                />
-                <q-btn
-                  icon="close"
-                  class="q-ml-md bg-red text-white"
-                  round
-                  flat
-                  @click="
-                    newFolder.show = false;
-                    newFolder.name = '';
                   "
-                />
-              </div>
-            </q-item-section>
-          </q-item>
-          <q-separator size="2px" color="light-green" />
-        </div>
-        <template v-for="item in rawFolderContent.children" :key="item">
-          <!--  Search filtering, only by name for now -->
-          <div
-            v-if="
-              filterSearch == '' ||
-              item.name.toLowerCase().includes(filterSearch)
-            "
+            @dragleave.prevent="(ev: DragEvent) => {
+                if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
+                  if (ev.dataTransfer.items[0].kind == 'file') {
+                    scrollAreaDragover = false;
+                  }
+                }
+              }
+                "
           >
-            <!-- Folder Items -->
-            <div v-if="item.type == 'folder'">
+            <div v-if="newFolder.show">
               <q-item
-                clickable
-                @click="getFolderId(item.id, true)"
-                class="rounded-borders full-width"
-                v-droppable
-                v-draggable="['folder', item.id]"
-                :class="[
-                    (item as FolderEntryType).dragOver ? 'bg-indigo-11' : '',
-                    item.selected ? 'bg-cyan-14 text-white' : '',
-                  ]"
-                @drag="showScroll"
-                @dragend="hideScroll"
-                @v-drag-enter="
-                    (ev: string[]) => {
-                      if (ev[1] != item.id) {
-                        (item as FolderEntryType).dragOver = true;
-                      }
-                    }
-                  "
-                @v-drag-leave="(item as FolderEntryType).dragOver = false"
-                @v-drag-over="
-                    (ev: string[]) => {
-                      if (ev[1] != item.id) {
-                        (item as FolderEntryType).dragOver = true;
-                      }
-                    }
-                  "
-                @v-drag-drop="changeParentDragNDrop($event, item.id)"
-                @drop.prevent.self.stop="
-                    (ev: InputEvent) => {
-                      if (ev.dataTransfer!.items.length > 0) {
-                        if (ev.dataTransfer!.items[0].kind == 'file') {
-                          onFolderDrop(ev, item.id);
-                          (item as FolderEntryType).dragOver = false;
-                        }
-                      }
-                    }
-                  "
-                @dragover.prevent.self.stop="
-                    (ev: InputEvent) => {
-                      if (ev.dataTransfer!.items.length > 0) {
-                        if (ev.dataTransfer!.items[0].kind == 'file') {
-                          (item as FolderEntryType).dragOver = true;
-                        }
-                      }
-                    }
-                  "
-                @dragenter.prevent="
-                    (ev: InputEvent) => {
-                      if (ev.dataTransfer!.items.length > 0) {
-                        if (ev.dataTransfer!.items[0].kind == 'file') {
-                          (item as FolderEntryType).dragOver = true;
-                        }
-                      }
-                    }
-                  "
-                @dragleave.prevent="
-                    (ev: InputEvent) => {
-                      if (ev.dataTransfer!.items.length > 0) {
-                        if (ev.dataTransfer!.items[0].kind == 'file') {
-                          (item as FolderEntryType).dragOver = false;
-                        }
-                      }
-                    }
-                  "
+                class="full-width rounded-borders"
+                style="background-color: rgba(60, 177, 60, 0.801)"
               >
-                <q-popup-proxy
-                  context-menu
-                  :breakpoint="0"
-                  @before-show="
-                    clearSelectedItems();
-                    allSelected = false;
-                    item.selected = true;
-                  "
-                  @before-hide="
-                    selectedItems.indexOf(item) == -1
-                      ? (item.selected = false)
-                      : (item.selected = true)
-                  "
+                <q-item-section
+                  avatar
+                  top
+                  class="no-pointer-events"
                 >
-                  <RightClickMenu
-                    :prop-item="item"
-                    @move-item="
-                      () => {
-                        clearSelectedItems();
-                        showMoveSelectedItemsDialog = true;
-                        selectedItems.push(item);
-                      }
-                    "
-                    @delete-item="
-                      () => {
-                        deleteItem(item.id, item.type);
-                      }
-                    "
-                  />
-                </q-popup-proxy>
-
-                <q-item-section avatar>
-                  <q-checkbox
-                    v-model="selectedItems"
-                    :val="item"
-                    color="green"
-                    @click="
-                      selectedItems.indexOf(item) == -1
-                        ? (item.selected = false)
-                        : (item.selected = true)
-                    "
-                  />
-                </q-item-section>
-                <q-item-section avatar top style="pointer-events: none">
                   <q-avatar
                     icon="folder"
                     color="transparent"
@@ -811,161 +730,123 @@
                     style="height: 40px"
                   />
                 </q-item-section>
-                <q-item-section
-                  :style="'min-width:' + itemTextWidth + 'px;'"
-                  style="pointer-events: none"
-                  class="row"
-                >
-                  <q-item-label
-                    class="itemText ellipsis"
-                    :style="'--max-width: ' + itemTextWidth + 'px;'"
-                  >
-                    <q-icon name="share" v-if="item.shared" />
-                    {{ item.name }}</q-item-label
-                  >
+
+                <q-item-section>
+                  <q-input
+                    dark
+                    outlined
+                    dense
+                    color="white"
+                    v-model="newFolder.name"
+                    label="New Folder Name"
+                    class="text-body1 q-ml-md"
+                    input-class="text-body2"
+                    clearable
+                    @keyup.enter="createFolder"
+                    ref="newItemInput"
+                    hide-bottom-space
+                    autofocus
+                  ></q-input>
                 </q-item-section>
-
-                <q-item-section
-                  class="text-caption gt-xs"
-                  style="pointer-events: none"
-                  >-</q-item-section
-                >
-
-                <q-item-section
-                  class="text-caption gt-xs"
-                  style="pointer-events: none"
-                >
-                  {{ item.modified }}
-                </q-item-section>
-
                 <q-item-section side>
-                  <q-btn
-                    icon="more_vert"
-                    flat
-                    :loading="loading"
-                    @click.prevent.stop
-                    round
-                  >
-                    <q-menu>
-                      <RightClickMenu
-                        :prop-item="item"
-                        @move-item="
-                          () => {
-                            clearSelectedItems();
-                            showMoveSelectedItemsDialog = true;
-                            selectedItems.push(item);
-                          }
-                        "
-                        @delete-item="
-                          () => {
-                            deleteItem(item.id, item.type);
-                          }
-                        "
-                      />
-                    </q-menu>
-                  </q-btn>
+                  <div class="row">
+                    <q-btn
+                      icon="done"
+                      class="q-ml-md bg-green text-white"
+                      round
+                      flat
+                      @click="createFolder"
+                    />
+                    <q-btn
+                      icon="close"
+                      class="q-ml-md bg-red text-white"
+                      round
+                      flat
+                      @click="
+                        newFolder.show = false;
+                        newFolder.name = '';
+                      "
+                    />
+                  </div>
                 </q-item-section>
               </q-item>
+              <q-separator
+                size="2px"
+                color="light-green"
+              />
             </div>
-
-            <!-- File Items -->
-
-            <div v-else>
-              <q-item
-                clickable
-                class="rounded-borders full-width"
-                v-draggable="['file', item.id]"
-                @click="
-                  showFilePreviewDialog = true;
-                  filePreviewItem = item;
+            <template
+              v-for="(item, index) in rawFolderContent.children"
+              :key="item.id"
+            >
+              <!--  Search filtering, only by name for now -->
+              <div
+                v-if="
+                  filterSearch == '' ||
+                  item.name.toLowerCase().includes(filterSearch)
                 "
-                :class="item.selected ? 'bg-cyan-14 text-white' : ''"
-                @drag="showScroll"
-                @dragend="hideScroll"
               >
-                <q-popup-proxy
-                  context-menu
-                  :breakpoint="0"
-                  @before-show="
-                    clearSelectedItems();
-                    allSelected = false;
-                    item.selected = true;
-                  "
-                  @before-hide="
-                    selectedItems.indexOf(item) == -1
-                      ? (item.selected = false)
-                      : (item.selected = true)
-                  "
-                >
-                  <RightClickMenu
-                    :prop-item="item"
-                    @move-item="
-                      () => {
+                <!-- Folder Items -->
+                <div v-if="item.type == 'folder'">
+                  <q-item
+                    clickable
+                    :id="index"
+                    @click="getFolderId(item.id, true)"
+                    class="rounded-borders full-width selecto-target"
+                    :class="[
+                      item.dragOver ? 'dragover' : '',
+                      item.selected ? 'selected' : '',
+                    ]"
+                    :draggable="true"
+                    @dragstart="startDrag($event, item)"
+                    @drop.prevent.self.stop="(ev: InputEvent) => {
+                      if (ev.dataTransfer!.items.length > 0) {
+                        // real file from filesystem
+                        if (ev.dataTransfer!.items[0].kind == 'file') {
+                          onFolderDrop(ev, item.id);
+                        }
+                        // FileItem
+                        if (ev.dataTransfer!.items[0].type == 'id') {
+                          if (ev.dataTransfer!.getData('id') != item.id && selectedItems.indexOf(item) == -1) {
+                            moveSelection(item.id)
+                          }
+                        }
+                      }
+                      item.dragOver = false;
+                    }
+                      "
+                    @dragenter.prevent.stop="(ev: InputEvent) => {
+                        if (ev.dataTransfer!.items.length > 0) {
+                          // real file from filesystem
+                          if (ev.dataTransfer!.items[0].kind == 'file') {
+                            item.dragOver = true;
+                          }
+                          // FileItem
+                          if (ev.dataTransfer!.items[0].type == 'id') {
+                            if (ev.dataTransfer!.getData('id') != item.id && selectedItems.indexOf(item) == -1) {
+                              item.dragOver = true;
+                            }
+                          }
+                        }
+                      }
+                        "
+                    @dragleave.prevent.stop="item.dragOver = false"
+                    @dragover.prevent.self.stop
+                  >
+                    <q-popup-proxy
+                      context-menu
+                      :breakpoint="0"
+                      @before-show="
                         clearSelectedItems();
-                        showMoveSelectedItemsDialog = true;
-                        selectedItems.push(item);
-                      }
-                    "
-                    @delete-item="
-                      () => {
-                        deleteItem(item.id, item.type);
-                      }
-                    "
-                  />
-                </q-popup-proxy>
-                <q-item-section avatar>
-                  <q-checkbox
-                    v-model="selectedItems"
-                    :val="item"
-                    color="green"
-                    @click="
-                      selectedItems.indexOf(item) == -1
-                        ? (item.selected = false)
-                        : (item.selected = true)
-                    "
-                  />
-                </q-item-section>
-                <q-item-section avatar top>
-                  <q-avatar
-                    :icon="getIcon(item.mime)"
-                    color="transparent"
-                    text-color="primary"
-                    size="4.5em"
-                    style="height: 40px"
-                  />
-                </q-item-section>
-
-                <q-item-section :style="'min-width:' + itemTextWidth + 'px;'">
-                  <q-item-label
-                    class="itemText ellipsis"
-                    :style="'width: ' + itemTextWidth + 'px;'"
-                  >
-                    <q-icon name="share" v-if="item.shared" />
-                    {{ item.name }}</q-item-label
-                  >
-                </q-item-section>
-                <q-item-section
-                  class="text-caption gt-xs"
-                  style="pointer-events: none"
-                >
-                  {{ (item as FolderEntryType).size }}
-                </q-item-section>
-                <q-item-section
-                  class="text-caption gt-xs"
-                  style="pointer-events: none"
-                >
-                  {{ item.modified }}
-                </q-item-section>
-
-                <q-item-section side>
-                  <q-btn
-                    icon="more_vert"
-                    flat
-                    round
-                    :loading="loading"
-                    @click.prevent.stop
-                  >
-                    <q-menu>
+                        allSelected = false;
+                        item.selected = true;
+                      "
+                      @before-hide="
+                        selectedItems.indexOf(item) == -1
+                          ? (item.selected = false)
+                          : (item.selected = true)
+                      "
+                    >
                       <RightClickMenu
                         :prop-item="item"
                         @move-item="
@@ -977,45 +858,266 @@
                         "
                         @delete-item="
                           () => {
-                            deleteItem(item.id, item.type);
+                            deleteItem(item.type, item.id);
                           }
                         "
                       />
-                    </q-menu>
-                  </q-btn>
-                </q-item-section>
-              </q-item>
-            </div>
-            <q-separator
-              @drop.stop.prevent=""
-              @dragover.stop.prevent=""
-              @dragenter.stop.prevent=""
+                    </q-popup-proxy>
+
+                    <q-item-section avatar>
+                      <q-checkbox
+                        v-model="selectedItems"
+                        :val="item"
+                        color="green"
+                        @click="
+                          selectedItems.indexOf(item) == -1
+                            ? (item.selected = false)
+                            : (item.selected = true)
+                        "
+                      />
+                    </q-item-section>
+                    <q-item-section
+                      avatar
+                      top
+                      style="pointer-events: none"
+                    >
+                      <q-avatar
+                        icon="folder"
+                        color="transparent"
+                        text-color="primary"
+                        size="4.5em"
+                        style="height: 40px"
+                      />
+                    </q-item-section>
+                    <q-item-section
+                      :style="'min-width:' + itemTextWidth + 'px;'"
+                      style="pointer-events: none"
+                      class="row"
+                    >
+                      <q-item-label
+                        class="itemText ellipsis"
+                        :style="'--max-width: ' + itemTextWidth + 'px;'"
+                      >
+                        <q-icon
+                          name="share"
+                          v-if="item.shared"
+                        />
+                        {{ item.name }}
+                      </q-item-label>
+                    </q-item-section>
+
+                    <q-item-section
+                      class="text-caption gt-xs"
+                      style="pointer-events: none"
+                    >
+                      -
+                    </q-item-section>
+
+                    <q-item-section
+                      class="text-caption gt-xs"
+                      style="pointer-events: none"
+                    >
+                      {{ item.modified }}
+                    </q-item-section>
+
+                    <q-item-section side>
+                      <q-btn
+                        icon="more_vert"
+                        flat
+                        :loading="loading"
+                        @click.prevent.stop
+                        round
+                      >
+                        <q-menu>
+                          <RightClickMenu
+                            :prop-item="item"
+                            @move-item="
+                              () => {
+                                clearSelectedItems();
+                                showMoveSelectedItemsDialog = true;
+                                selectedItems.push(item);
+                              }
+                            "
+                            @delete-item="
+                              () => {
+                                deleteItem(item.type, item.id);
+                              }
+                            "
+                          />
+                        </q-menu>
+                      </q-btn>
+                    </q-item-section>
+                  </q-item>
+                </div>
+
+                <!-- File Items -->
+
+                <div v-else>
+                  <q-item
+                    clickable
+                    @click="
+                      showFilePreviewDialog = true;
+                      filePreviewDialogItem = item;
+                    "
+                    :id="index"
+                    class="rounded-borders full-width selecto-target"
+                    :class="item.selected ? 'selected' : ''"
+                    :draggable="true"
+                    @dragstart="startDrag($event, item)"
+                  >
+                    <q-popup-proxy
+                      context-menu
+                      :breakpoint="0"
+                      @before-show="
+                        clearSelectedItems();
+                        allSelected = false;
+                        item.selected = true;
+                      "
+                      @before-hide="
+                        selectedItems.indexOf(item) == -1
+                          ? (item.selected = false)
+                          : (item.selected = true)
+                      "
+                    >
+                      <RightClickMenu
+                        :prop-item="item"
+                        @move-item="
+                          () => {
+                            clearSelectedItems();
+                            showMoveSelectedItemsDialog = true;
+                            selectedItems.push(item);
+                          }
+                        "
+                        @delete-item="
+                          () => {
+                            deleteItem(item.type, item.id);
+                          }
+                        "
+                      />
+                    </q-popup-proxy>
+                    <q-item-section avatar>
+                      <q-checkbox
+                        v-model="selectedItems"
+                        :val="item"
+                        color="green"
+                        @click="
+                          selectedItems.indexOf(item) == -1
+                            ? (item.selected = false)
+                            : (item.selected = true)
+                        "
+                      />
+                    </q-item-section>
+                    <q-item-section
+                      avatar
+                      top
+                    >
+                      <q-avatar
+                        :icon="getIcon(item.mime)"
+                        color="transparent"
+                        text-color="primary"
+                        size="4.5em"
+                        style="height: 40px"
+                      />
+                    </q-item-section>
+
+                    <q-item-section
+                      :style="'min-width:' + itemTextWidth + 'px;'"
+                    >
+                      <q-item-label
+                        class="itemText ellipsis"
+                        :style="'width: ' + itemTextWidth + 'px;'"
+                      >
+                        <q-icon
+                          name="share"
+                          v-if="item.shared"
+                        />
+                        {{ item.name }}
+                      </q-item-label>
+                    </q-item-section>
+                    <q-item-section
+                      class="text-caption gt-xs"
+                      style="pointer-events: none"
+                    >
+                      {{ (item as FolderEntryType).size }}
+                    </q-item-section>
+                    <q-item-section
+                      class="text-caption gt-xs"
+                      style="pointer-events: none"
+                    >
+                      {{ item.modified }}
+                    </q-item-section>
+
+                    <q-item-section side>
+                      <q-btn
+                        icon="more_vert"
+                        flat
+                        round
+                        :loading="loading"
+                        @click.prevent.stop
+                      >
+                        <q-menu>
+                          <RightClickMenu
+                            :prop-item="item"
+                            @move-item="
+                              () => {
+                                clearSelectedItems();
+                                showMoveSelectedItemsDialog = true;
+                                selectedItems.push(item);
+                              }
+                            "
+                            @delete-item="
+                              () => {
+                                deleteItem(item.type, item.id);
+                              }
+                            "
+                          />
+                        </q-menu>
+                      </q-btn>
+                    </q-item-section>
+                  </q-item>
+                </div>
+                <q-separator
+                  @drop.stop.prevent=""
+                  @dragover.stop.prevent=""
+                  @dragenter.stop.prevent=""
+                />
+              </div>
+            </template>
+            <div style="height: 20px" />
+          </div>
+          <div class="row justify-center">
+            <div
+              class="full-width bg-transparent bg-transparent fixed-bottom"
+              style="height: 20px"
+              @dragenter.self="scrollDown(true)"
+              @dragleave.self="scrollDown(false)"
+              @dragover.prevent
+              @drop.prevent.stop="scrollDown(false)"
             />
           </div>
-        </template>
-      </q-scroll-area>
+        </div>
+      </div>
 
-      <q-btn
-        v-if="scrollShow.bottom"
-        icon="arrow_downward"
-        size="lg"
-        class="absolute-bottom"
-        color="primary"
-        round
-        @dragover.prevent="scrollDown"
-        style="
-          z-index: 10000000;
-          position: absolute;
-          left: 50%;
-          margin-left: -30px;
-          width: 60px;
-          height: 60px;
-        "
+      <VueSelecto
+        ref="selecto"
+        dragContainer=".selectoContainer"
+        :selectableTargets="['.selecto-target']"
+        :selectByClick="false"
+        :selectFromInside="false"
+        :continueSelect="false"
+        :toggleContinueSelect="'shift'"
+        :keyContainer="window"
+        :hitRate="0"
+        @select="onSelect"
+        @scroll="onScroll"
+        :scrollOptions="scrollOptions as any"
+        v-if="!mobile"
       />
 
-      <!-- Bottom Right Upload Progress -->
-
-      <q-page-sticky position="bottom-right" style="z-index: 100">
+      <q-page-sticky
+        position="bottom-right"
+        style="z-index: 100"
+      >
         <q-btn
           icon="analytics"
           class="bg-primary text-white"
@@ -1027,17 +1129,24 @@
             progressPanel = true;
           "
         />
-        <q-card bordered style="width: 325px" v-if="progressSticky">
+        <q-card
+          bordered
+          style="width: 325px"
+          v-if="progressSticky"
+        >
           <q-item
             class="bg-layout-bg text-layout-text row justify-center items-center"
             clickable
             dense
             @click="progressPanel = !progressPanel"
           >
-            <q-icon color="layout-text" name="analytics" />
-            <a class="text-layout-text q-ml-sm text-weight-bold"
-              >Upload Progress</a
-            >
+            <q-icon
+              color="layout-text"
+              name="analytics"
+            />
+            <a class="text-layout-text q-ml-sm text-weight-bold">
+              Upload Progress
+            </a>
             <div class="absolute-top-right">
               <q-btn
                 icon="minimize"
@@ -1067,21 +1176,33 @@
                   (obj) => obj.status == 'loading'
                 ).length
               }}
-              <q-icon name="hourglass_bottom" size="18px" class="q-ml-xs" />
+              <q-icon
+                name="hourglass_bottom"
+                size="18px"
+                class="q-ml-xs"
+              />
             </div>
             <div class="q-ml-md text-green">
               {{
                 progressPanelProgressMap.filter((obj) => obj.status == 'ok')
                   .length
               }}
-              <q-icon name="done" size="18px" class="q-ml-xs" />
+              <q-icon
+                name="done"
+                size="18px"
+                class="q-ml-xs"
+              />
             </div>
             <div class="q-ml-md text-red">
               {{
                 progressPanelProgressMap.filter((obj) => obj.status == 'error')
                   .length
               }}
-              <q-icon name="warning" size="18px" class="q-ml-xs" />
+              <q-icon
+                name="warning"
+                size="18px"
+                class="q-ml-xs"
+              />
             </div>
             <q-space />
             <q-btn
@@ -1102,9 +1223,15 @@
             class="q-pa-none q-ma-none"
             v-if="progressPanel"
           >
-            <q-separator size="2px" color="layout-bg" />
+            <q-separator
+              size="2px"
+              color="layout-bg"
+            />
             <div class="q-ma-sm">
-              <q-scroll-area class="row" style="height: 305px">
+              <q-scroll-area
+                class="row"
+                style="height: 305px"
+              >
                 <q-list>
                   <template
                     v-for="progress in progressPanelProgressMap"
@@ -1117,7 +1244,10 @@
                         style="height: 10px"
                       >
                         <q-item-section avatar>
-                          <q-icon :name="progress.typeIcon" size="sm" />
+                          <q-icon
+                            :name="progress.typeIcon"
+                            size="sm"
+                          />
                           <div
                             class="q-ml-md text-body1 ellipsis"
                             style="width: 100px"
@@ -1202,7 +1332,10 @@
                           </q-linear-progress>
                         </q-item-section>
 
-                        <q-item-section side class="q-ml-md">
+                        <q-item-section
+                          side
+                          class="q-ml-md"
+                        >
                           <q-btn
                             v-if="progress.status == 'loading'"
                             icon="close"
@@ -1242,7 +1375,10 @@
                         </q-item-section>
                       </q-item>
                     </div>
-                    <q-separator color="white" size="2px" />
+                    <q-separator
+                      color="white"
+                      size="2px"
+                    />
                   </template>
                 </q-list>
               </q-scroll-area>
@@ -1255,6 +1391,7 @@
 </template>
 
 <script lang="ts">
+// w
 import type { Ref } from 'vue';
 import type {
   TraverseFolderMapType,
@@ -1272,6 +1409,7 @@ import { droppable } from 'components/Files/lib/droppable.js';
 import { getIcon } from 'src/components/Files/lib/mimeMap';
 import { apiGet, apiPut, apiPost, apiDelete } from 'src/components/apiWrapper';
 import { folderData } from 'src/testdata/folder';
+import { VueSelecto } from 'vue3-selecto';
 
 import RightClickMenu from 'src/components/Files/RightClickMenu.vue';
 import FilePreviewDialog from 'src/components/Files/Dialogs/FilePreviewDialog.vue';
@@ -1296,6 +1434,7 @@ export default defineComponent({
     DeleteSelectedItemsDialog,
     UploadFilesDialog,
     ErrorPage,
+    VueSelecto,
   },
 
   setup() {
@@ -1319,15 +1458,22 @@ export default defineComponent({
       lastMovedItemId: '',
     });
 
-    return {
-      getIcon,
-      // icons
+    const mainScrollArea = ref(null);
 
+    var mobile = q.platform.is.mobile;
+    if (mobile == undefined) {
+      mobile = false;
+    }
+
+    return {
       // general
       axiosConfig,
       localStore,
       q,
+      window: window,
+      mobile,
       setVerticalScrollPosition,
+      getIcon,
 
       // loading / initial load
       loading: ref(false),
@@ -1371,7 +1517,7 @@ export default defineComponent({
           value: 3,
         },
         {
-          label: 'Last Changed',
+          label: 'Modified',
           value: 4,
         },
         {
@@ -1399,9 +1545,15 @@ export default defineComponent({
       allSelected: ref(false),
 
       // dragover
+      mainScrollArea,
       scrollAreaDragover: ref(false),
-      scrollShow: ref({ top: false, bottom: false }),
-
+      scrollIntervalBottom: {},
+      scrollIntervalTop: {},
+      scrollOptions: ref({
+        container: mainScrollArea,
+        throttleTime: 30,
+        threshold: 0,
+      }),
       // new folder handler
       newFolder: ref({
         show: false,
@@ -1418,7 +1570,7 @@ export default defineComponent({
       >,
       // media preview
       showFilePreviewDialog: ref(false),
-      filePreviewItem: ref({}) as Ref<FolderEntryType>,
+      filePreviewDialogItem: ref({}) as Ref<FolderEntryType>,
     };
   },
 
@@ -1501,12 +1653,71 @@ export default defineComponent({
     },
 
     itemTextWidth() {
-      var width = this.q.screen.width / 3;
+      var width = this.q.screen.width / 2.5;
       return width;
     },
   },
 
   methods: {
+    blabla(event) {
+      console.log(event);
+    },
+    onScroll(e) {
+      (this.mainScrollArea as any).scrollBy(
+        e.direction[0] * 10,
+        e.direction[1] * 10
+      );
+    },
+    onScrollerScroll() {
+      this.$refs.selecto.checkScroll();
+    },
+
+    startDrag(event: any, item: FolderEntryType) {
+      if (this.selectedItems.indexOf(item) == -1) {
+        item.selected = true;
+        this.selectedItems.push(item);
+      }
+      event.dataTransfer.dropEffect = 'move';
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('id', item.id);
+      event.dataTransfer.setData('type', item.type);
+
+      // set drag image
+      var elem = document.createElement('div');
+      elem.id = 'drag-ghost';
+      elem.innerHTML =
+        this.selectedItems.length +
+        ' Item' +
+        (this.selectedItems.length == 1 ? '' : 's');
+      elem.style.position = 'absolute';
+      elem.style.top = '-1000px';
+      elem.classList.add('text-body1');
+      elem.classList.add('q-pa-sm');
+      elem.classList.add('bg-layout-bg');
+      elem.classList.add('text-layout-text');
+      elem.classList.add('text-weight-bold');
+      document.body.appendChild(elem);
+      event.dataTransfer.setDragImage(elem, 0, 0);
+    },
+
+    onSelect(e: any) {
+      e.added.forEach((el: any) => {
+        var item = this.rawFolderContent.children[el.id];
+        if (this.selectedItems.indexOf(item) == -1) {
+          item.selected = true;
+          this.selectedItems.push(item);
+        }
+      });
+      e.removed.forEach((el: any) => {
+        var item = this.rawFolderContent.children[el.id];
+        item.selected = false;
+        var index = this.selectedItems.indexOf(item);
+        if (index > -1) {
+          this.selectedItems.splice(index, 1);
+        }
+      });
+    },
+
     addItemToNavbar() {
       var length = 100;
       let result = '';
@@ -1524,40 +1735,26 @@ export default defineComponent({
     },
 
     // mainScrollArea
-    scrollUp() {
-      var scrollArea = this.$refs.mainScrollArea as any;
-      var currentPos = scrollArea.getScrollPosition().top;
-      scrollArea.setScrollPosition('vertical', currentPos - 25);
-    },
-
-    scrollDown() {
-      var scrollArea = this.$refs.mainScrollArea as any;
-      var currentPos = scrollArea.getScrollPosition().top;
-      scrollArea.setScrollPosition('vertical', currentPos + 25);
-    },
-
-    showScroll() {
-      var scrollArea = this.$refs.mainScrollArea as any;
-      var scrollPercent = scrollArea.getScrollPercentage().top;
-      var scrollState = scrollArea.getScroll();
-      if (scrollState.verticalSize == scrollState.verticalContainerSize) {
-        this.scrollShow.top = false;
-        this.scrollShow.bottom = false;
-      } else if (scrollPercent == 1) {
-        this.scrollShow.top = true;
-        this.scrollShow.bottom = false;
-      } else if (scrollPercent == 0) {
-        this.scrollShow.top = false;
-        this.scrollShow.bottom = true;
+    scrollUp(active: boolean) {
+      if (active == true) {
+        (this.scrollIntervalTop as any) = setInterval(
+          () => ((this.mainScrollArea as any).scrollTop -= 2),
+          10
+        );
       } else {
-        this.scrollShow.top = true;
-        this.scrollShow.bottom = true;
+        clearInterval(this.scrollIntervalTop as any);
       }
     },
 
-    hideScroll() {
-      this.scrollShow.top = false;
-      this.scrollShow.bottom = false;
+    scrollDown(active: boolean) {
+      if (active == true) {
+        (this.scrollIntervalBottom as any) = setInterval(
+          () => ((this.mainScrollArea as any).scrollTop += 2),
+          10
+        );
+      } else {
+        clearInterval(this.scrollIntervalBottom as any);
+      }
     },
 
     // get Home folder
@@ -2034,39 +2231,46 @@ export default defineComponent({
       });
     },
 
-    // upload files by drag & dropping them on a folder object
-    // this adds all items to be uploaded to a map and calls
-    // the uploadfile function instantly
+    /**
+     * Upload files from the computer filesystem per drag & drop to this folder
+     * Instantly uploads the dropped files.
+     * @param {InputEvent} ev The event that triggered this function.
+     * @param {string} itemId The ID of the folder this file is uploaded to.
+     */
     onFolderDrop(ev: InputEvent, itemId: string) {
-      var uploadList = [];
-      for (var item of (ev.dataTransfer as DataTransfer)
-        .items as unknown as DataTransferItem[]) {
-        if (item.kind == 'file') {
-          if (item.webkitGetAsEntry()?.isFile) {
-            const validFile = item.getAsFile() as File;
+      if (ev.dataTransfer!.items.length > 0) {
+        if (ev.dataTransfer!.items[0].kind != 'file') {
+          return;
+        }
+        var uploadList = [];
+        for (var item of (ev.dataTransfer as DataTransfer)
+          .items as unknown as DataTransferItem[]) {
+          if (item.kind == 'file') {
+            if (item.webkitGetAsEntry()?.isFile) {
+              const validFile = item.getAsFile() as File;
 
-            var uploadFileObject = {
-              name: validFile.name,
-              content: validFile,
-              type: 'file',
-            };
+              var uploadFileObject = {
+                name: validFile.name,
+                content: validFile,
+                type: 'file',
+              };
 
-            uploadList.push(uploadFileObject);
-          } else if (item.webkitGetAsEntry()?.isDirectory) {
-            const folder = item.webkitGetAsEntry() as FileSystemEntry;
+              uploadList.push(uploadFileObject);
+            } else if (item.webkitGetAsEntry()?.isDirectory) {
+              const folder = item.webkitGetAsEntry() as FileSystemEntry;
 
-            var uploadFolderObject = {
-              name: folder.name,
-              content: folder,
-              type: 'folder',
-            };
+              var uploadFolderObject = {
+                name: folder.name,
+                content: folder,
+                type: 'folder',
+              };
 
-            uploadList.push(uploadFolderObject);
+              uploadList.push(uploadFolderObject);
+            }
           }
         }
+        this.uploadFiles(uploadList, itemId);
       }
-
-      this.uploadFiles(uploadList, itemId);
     },
 
     ///////////////////////////////////////////////////
@@ -2258,10 +2462,28 @@ export default defineComponent({
       });
     },
 
-    // delete objects
-    deleteItem(id: string, type: string) {
+    /**
+     * Delete all items from this.selectedItems
+     */
+    deleteSelectedItems() {
+      for (var item of this.selectedItems) {
+        this.deleteItem(item.type, item.id);
+      }
+      this.selectedItems = [];
+      this.allSelected = false;
+      for (var item of this.rawFolderContent.children as FolderEntryType[]) {
+        item.selected = false;
+      }
+    },
+
+    /**
+     * Delete an item.
+     * @param itemType type of the item (folder/file)
+     * @param itemId ID of the item
+     */
+    deleteItem(itemType: string, itemId: string) {
       this.loading = true;
-      apiDelete('/files/' + type + '/' + id, this.axiosConfig).then(
+      apiDelete('/files/' + itemType + '/' + itemId, this.axiosConfig).then(
         (apiData) => {
           if (apiData.error == false) {
             this.notify('positive', 'Deleted');
@@ -2275,64 +2497,11 @@ export default defineComponent({
       );
     },
 
-    // deleting all selected items
-    deleteSelectedItems() {
-      for (var item of this.selectedItems) {
-        this.deleteItem(item.id, item.type);
-      }
-      this.selectedItems = [];
-      this.allSelected = false;
-      for (var item of this.rawFolderContent.children as FolderEntryType[]) {
-        item.selected = false;
-      }
-    },
-
-    ///////////////////////////////////////////////////
-    /////////// MOVE ITEM(S) //////////////////////////
-    ///////////////////////////////////////////////////
-
-    moveSelection(newParentId: string) {
-      for (var item of this.selectedItems) {
-        if (item.id != newParentId) {
-          this.updateItemParent(item.id, newParentId, item.type);
-        } else {
-          this.notify('negative', "Can't move a folder into itself.");
-        }
-      }
-      this.selectedItems = [];
-      this.allSelected = false;
-      this.showMoveSelectedItemsDialog = false;
-      for (var item of this.rawFolderContent.children as FolderEntryType[]) {
-        item.selected = false;
-      }
-    },
-
-    // update parent of an item, used by above moveSelection method
-    // and when updating the parent of a single item
-    updateItemParent(itemId: string, parentId: string, itemType: string) {
-      this.loading = true;
-      var data = {
-        parentId: parentId,
-      };
-      apiPut('/files/' + itemType + '/' + itemId, data, this.axiosConfig).then(
-        (apiData) => {
-          if (apiData.error == false) {
-            this.notify('positive', 'Updated');
-            this.refreshFolder();
-            this.resetFilterState();
-          } else {
-            this.notify('negative', apiData.errorMessage);
-          }
-          this.loading = false;
-        }
-      );
-    },
-
-    ///////////////////////////////////////////////////
-    /////////// TOOLBAR NAVIGATION METHODS ////////////
-    ///////////////////////////////////////////////////
-
-    // handle navbar folder click
+    /**
+     * Handles folder navigation via the navbar.
+     * @param item Name/ID of the folder in the navbar.
+     * @param identifier In which part of the navbar this item is located. (0=home folder, 1=menu items, 2=navbar items)
+     */
     getFolderNavbar(item: { name: string; id: string }, identifier: number) {
       // identifier: 0=home, 1=menu, 2=navbar
       if (identifier == 0) {
@@ -2357,12 +2526,11 @@ export default defineComponent({
       }
     },
 
-    ///////////////////////////////////////////////////
-    /////////// SCROLLBAR METHODS /////////////////////
-    ///////////////////////////////////////////////////
-
-    // get Folder content with folderId
-    // used when clicking on a folder in the scrollarea
+    /**
+     * Get the content of a folder by ID.
+     * @param folderId The id of the folder.
+     * @param navbarAdd If the folder should be appended to the top navigation bar.
+     */
     getFolderId(folderId: string, navbarAdd: boolean) {
       this.loading = true;
       apiGet('/files/folder/' + folderId, this.axiosConfig).then((apiData) => {
@@ -2384,20 +2552,31 @@ export default defineComponent({
       });
     },
 
-    ///////////////////////////////////////////////////
-    /////////// DRAG & DROP METHODS ///////////////////
-    ///////////////////////////////////////////////////
+    /**
+     * Moves all items from this.selectedItems to a new folder.
+     * @param newParentId The ID of the folder these items are moved to.
+     */
+    moveSelection(newParentId: string) {
+      for (var item of this.selectedItems) {
+        this.updateParent(item.type, item.id, newParentId);
+      }
+      this.showMoveSelectedItemsDialog = false;
+      for (var item of this.rawFolderContent.children as FolderEntryType[]) {
+        item.selected = false;
+      }
+      this.selectedItems = [];
+    },
 
-    // drag and drop update parent folder
-    // used when dropping a scrollarea-item on a folder
-    changeParentDragNDrop(itemProps: (string | number)[], folderId: string) {
-      var itemType = itemProps[0];
-      var itemId = itemProps[1];
+    /**
+     * Update the parent folder of an item.
+     * @param itemType A List that contains the item type (folder/file) in index1 and the itemid in index2
+     * @param newParentId The ID of the folder this item is moved to.
+     */
+    updateParent(itemType: string, itemId: string, newParentId: string) {
       var data = {
-        itemId: itemId,
-        parentId: folderId,
+        parentId: newParentId,
       };
-      if (folderId != itemId) {
+      if (newParentId != itemId) {
         this.loading = true;
         apiPut(
           '/files/' + itemType + '/' + itemId,
@@ -2425,5 +2604,24 @@ export default defineComponent({
 .itemText {
   max-width: var(--max-width);
 }
+
+.scroll {
+  overflow: auto;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  scrollbar-width: auto;
+  scrollbar-gutter: stable both-edges;
+}
+
+.selected {
+  background: #2196f3 !important;
+  color: #fff;
+}
+
+.dragover {
+  background: #304ffe !important;
+  color: #fff;
+}
 </style>
-src/components/Files/lib/draggable.jssrc/components/Files/lib/droppable.js
