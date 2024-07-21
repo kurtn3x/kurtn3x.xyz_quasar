@@ -8,10 +8,10 @@
       size="10em"
     />
   </div>
-  <div v-if="!initialFetch.loading && !initialFetch.error">
+  <div v-if="!initialFetch.loading && initialFetch.error">
     <ErrorPage :error-message="initialFetch.errorMessage" />
   </div>
-  <div v-if="!initialFetch.loading && initialFetch.error">
+  <div v-if="!initialFetch.loading && !initialFetch.error">
     <FilePreviewDialog
       :prop-item="filePreviewDialogItem"
       :active="showFilePreviewDialog"
@@ -52,7 +52,7 @@
       @upload="(params: [UploadDialogEntryType[], string]) => {
         uploadFiles(...params);
       }
-        "
+      "
     />
 
     <!-- filterDialog -->
@@ -156,7 +156,6 @@
               @click="getFolderNavbar({ name: '', id: '' }, 0)"
               @drop.prevent.self.stop="(ev: InputEvent) => {
                 if (ev.dataTransfer!.items.length > 0) {
-                  // FileItem
                   if (ev.dataTransfer!.items[0].type == 'id') {
                       moveSelection(navbarIndex.homeFolderId)
                   }
@@ -223,7 +222,6 @@
                       @click="getFolderNavbar(item, 1)"
                       @drop.prevent.self.stop="(ev: InputEvent) => {
                         if (ev.dataTransfer!.items.length > 0) {
-                          // FileItem
                           if (ev.dataTransfer!.items[0].type == 'id') {
                               moveSelection(item.id)
                           }
@@ -272,7 +270,6 @@
                 @click="getFolderNavbar(item, 2)"
                 @drop.prevent.self.stop="(ev: InputEvent) => {
                   if (ev.dataTransfer!.items.length > 0) {
-                    // FileItem
                     if (ev.dataTransfer!.items[0].type == 'id') {
                         moveSelection(item.id)
                     }
@@ -659,6 +656,37 @@
       <div
         class="col column scroll"
         ref="mainScrollArea"
+        :class="scrollAreaDragover ? 'bg-teal-5' : ''"
+        @drop.prevent.stop="(ev: DragEvent) => {
+          if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
+            if (ev.dataTransfer.items[0].kind == 'file') {
+              uploadFilesDialogInitialEvent = ev;
+              showUploadFilesDialog = true;
+              scrollAreaDragover = false;
+            }
+          }
+        }"
+        @dragover.prevent="(ev: DragEvent) => {
+          if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
+            if (ev.dataTransfer.items[0].kind == 'file') {
+              scrollAreaDragover = true;
+            }
+          }
+        }"
+        @dragenter.self="(ev: DragEvent) => {
+          if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
+            if (ev.dataTransfer.items[0].kind == 'file') {
+              scrollAreaDragover = true;
+            }
+          }
+        }"
+        @dragleave.prevent="(ev: DragEvent) => {
+          if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
+            if (ev.dataTransfer.items[0].kind == 'file') {
+              scrollAreaDragover = false;
+            }
+          }
+        }"
       >
         <div class="col column selectoContainer">
           <div class="row justify-center q-mt-xs">
@@ -676,41 +704,6 @@
           <div
             class="col q-ml-md q-mr-md"
             @scroll="onScrollerScroll"
-            :class="scrollAreaDragover ? 'bg-cyan-14' : ''"
-            @drop.prevent.stop="(ev: DragEvent) => {
-              if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
-                if (ev.dataTransfer.items[0].kind == 'file') {
-                  uploadFilesDialogInitialEvent = ev;
-                  showUploadFilesDialog = true;
-                  scrollAreaDragover = false;
-                }
-              }
-            }
-              "
-            @dragover.prevent="(ev: DragEvent) => {
-                if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
-                  if (ev.dataTransfer.items[0].kind == 'file') {
-                    scrollAreaDragover = true;
-                  }
-                }
-              }
-                "
-            @dragenter.self="(ev: DragEvent) => {
-                  if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
-                    if (ev.dataTransfer.items[0].kind == 'file') {
-                      scrollAreaDragover = true;
-                    }
-                  }
-                }
-                  "
-            @dragleave.prevent="(ev: DragEvent) => {
-                if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
-                  if (ev.dataTransfer.items[0].kind == 'file') {
-                    scrollAreaDragover = false;
-                  }
-                }
-              }
-                "
           >
             <div v-if="newFolder.show">
               <q-item
@@ -813,23 +806,21 @@
                         }
                       }
                       item.dragOver = false;
-                    }
-                      "
+                    }"
                     @dragenter.prevent.stop="(ev: InputEvent) => {
-                        if (ev.dataTransfer!.items.length > 0) {
-                          // real file from filesystem
-                          if (ev.dataTransfer!.items[0].kind == 'file') {
+                      if (ev.dataTransfer!.items.length > 0) {
+                        // real file from filesystem
+                        if (ev.dataTransfer!.items[0].kind == 'file') {
+                          item.dragOver = true;
+                        }
+                        // FileItem
+                        if (ev.dataTransfer!.items[0].type == 'id') {
+                          if (ev.dataTransfer!.getData('id') != item.id && selectedItems.indexOf(item) == -1) {
                             item.dragOver = true;
-                          }
-                          // FileItem
-                          if (ev.dataTransfer!.items[0].type == 'id') {
-                            if (ev.dataTransfer!.getData('id') != item.id && selectedItems.indexOf(item) == -1) {
-                              item.dragOver = true;
-                            }
                           }
                         }
                       }
-                        "
+                    }"
                     @dragleave.prevent.stop="item.dragOver = false"
                     @dragover.prevent.self.stop
                   >
@@ -1404,8 +1395,6 @@ import type {
 import { defineComponent, ref, reactive } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { useQuasar, scroll } from 'quasar';
-import { draggable } from 'components/Files/lib/draggable.js';
-import { droppable } from 'components/Files/lib/droppable.js';
 import { getIcon } from 'src/components/Files/lib/mimeMap';
 import { apiGet, apiPut, apiPost, apiDelete } from 'src/components/apiWrapper';
 import { folderData } from 'src/testdata/folder';
@@ -1421,10 +1410,6 @@ import ErrorPage from 'src/components/ErrorPage.vue';
 
 export default defineComponent({
   name: 'FilesView',
-  directives: {
-    draggable,
-    droppable,
-  },
 
   components: {
     RightClickMenu,
@@ -1738,7 +1723,7 @@ export default defineComponent({
     scrollUp(active: boolean) {
       if (active == true) {
         (this.scrollIntervalTop as any) = setInterval(
-          () => ((this.mainScrollArea as any).scrollTop -= 2),
+          () => ((this.mainScrollArea as any).scrollTop -= 5),
           10
         );
       } else {
@@ -1749,7 +1734,7 @@ export default defineComponent({
     scrollDown(active: boolean) {
       if (active == true) {
         (this.scrollIntervalBottom as any) = setInterval(
-          () => ((this.mainScrollArea as any).scrollTop += 2),
+          () => ((this.mainScrollArea as any).scrollTop += 5),
           10
         );
       } else {
