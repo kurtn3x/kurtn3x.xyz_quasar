@@ -8,10 +8,10 @@
       size="10em"
     />
   </div>
-  <div v-if="!initialFetch.loading && initialFetch.error">
+  <div v-if="!initialFetch.loading && !initialFetch.error">
     <ErrorPage :error-message="initialFetch.errorMessage" />
   </div>
-  <div v-if="!initialFetch.loading && !initialFetch.error">
+  <div v-if="!initialFetch.loading && initialFetch.error">
     <FilePreviewDialog
       :prop-item="filePreviewDialogItem"
       :active="showFilePreviewDialog"
@@ -677,32 +677,41 @@
           mobile ? 'scroll' : 'scrollmobile',
         ]"
         @drop.prevent.stop="(ev: DragEvent) => {
-          if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
-            if (ev.dataTransfer.items[0].kind == 'file') {
-              uploadFilesDialogInitialEvent = ev;
-              showUploadFilesDialog = true;
-              scrollAreaDragover = false;
+          // disable file drag&drop for mobile
+          if (!mobile){
+            if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
+              if (ev.dataTransfer.items[0].kind == 'file') {
+                uploadFilesDialogInitialEvent = ev;
+                showUploadFilesDialog = true;
+                scrollAreaDragover = false;
+              }
             }
           }
         }"
         @dragover.prevent="(ev: DragEvent) => {
-          if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
-            if (ev.dataTransfer.items[0].kind == 'file') {
-              scrollAreaDragover = true;
+          if (!mobile){
+            if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
+              if (ev.dataTransfer.items[0].kind == 'file') {
+                scrollAreaDragover = true;
+              }
             }
           }
         }"
         @dragenter.self="(ev: DragEvent) => {
-          if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
-            if (ev.dataTransfer.items[0].kind == 'file') {
-              scrollAreaDragover = true;
+          if (!mobile){
+            if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
+              if (ev.dataTransfer.items[0].kind == 'file') {
+                scrollAreaDragover = true;
+              }
             }
           }
         }"
         @dragleave.prevent="(ev: DragEvent) => {
-          if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
-            if (ev.dataTransfer.items[0].kind == 'file') {
-              scrollAreaDragover = false;
+          if(!mobile){
+            if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
+              if (ev.dataTransfer.items[0].kind == 'file') {
+                scrollAreaDragover = false;
+              }
             }
           }
         }"
@@ -827,16 +836,22 @@
                       item.dragOver = false;
                     }"
                     @dragenter.prevent.stop="(ev: InputEvent) => {
-                      if (ev.dataTransfer!.items.length > 0) {
-                        // real file from filesystem
-                        if (ev.dataTransfer!.items[0].kind == 'file') {
-                          item.dragOver = true;
-                        }
-                        // FileItem
-                        if (ev.dataTransfer!.items[0].type == 'id') {
-                          if (ev.dataTransfer!.getData('id') != item.id && selectedItems.indexOf(item) == -1) {
+                      if (!mobile){
+                        if (ev.dataTransfer!.items.length > 0) {
+                          // real file from filesystem
+                          if (ev.dataTransfer!.items[0].kind == 'file') {
                             item.dragOver = true;
                           }
+                          // FileItem
+                          if (ev.dataTransfer!.items[0].type == 'id') {
+                            if (ev.dataTransfer!.getData('id') != item.id && selectedItems.indexOf(item) == -1) {
+                              item.dragOver = true;
+                            }
+                          }
+                        }
+                      } else {
+                        if ((ev.dataTransfer as any)._data != undefined){
+
                         }
                       }
                     }"
@@ -1415,7 +1430,7 @@ import type {
 } from 'src/types/index';
 import { defineComponent, ref, reactive } from 'vue';
 import { useLocalStore } from 'stores/localStore';
-import { useQuasar, scroll } from 'quasar';
+import { useQuasar, scroll, Platform } from 'quasar';
 import { getIcon } from 'src/components/Files/lib/mimeMap';
 import { apiGet, apiPut, apiPost, apiDelete } from 'src/components/apiWrapper';
 import { folderData } from 'src/testdata/folder';
@@ -1428,6 +1443,10 @@ import MoveSelectedItemsDialog from 'src/components/Files/Dialogs/MoveSelectedIt
 import DeleteSelectedItemsDialog from 'src/components/Files/Dialogs/DeleteSelectedItemsDialog.vue';
 import UploadFilesDialog from 'src/components/Files/Dialogs/UploadFilesDialog.vue';
 import ErrorPage from 'src/components/ErrorPage.vue';
+
+if (Platform.is.mobile == true) {
+  import('src/components/Files/lib/DragDropTouch');
+}
 
 export default defineComponent({
   name: 'FilesView',
