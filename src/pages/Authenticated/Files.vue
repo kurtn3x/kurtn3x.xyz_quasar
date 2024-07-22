@@ -64,7 +64,7 @@
       <q-card
         bordered
         flat
-        style="width: 350px"
+        style="width: 300px"
       >
         <div class="q-ma-md">
           <q-input
@@ -100,12 +100,12 @@
               dense
               popup-content-style="z-index: 101"
               @update:model-value="sortRawFolderContent"
-              style="width: 260px"
+              style="width: 200px"
             />
             <q-btn
               icon="swap_vert"
               push
-              class="bg-blue text-white q-ml-sm"
+              class="bg-blue text-white q-ml-md"
               style="width: 40px; height: 40px"
               @click="sortRawFolderContent(filterSortBy as any)"
             />
@@ -492,6 +492,7 @@
               class="text-body1 col q-ml-sm"
               outlined
               dense
+              v-if="q.screen.width > 400"
             >
               <template v-slot:append>
                 <q-icon
@@ -516,6 +517,20 @@
                 />
               </template>
             </q-input>
+            <div
+              v-else
+              class="col q-ml-md"
+            >
+              <q-btn
+                push
+                dense
+                icon="search"
+                class="bg-primary text-white"
+                @click="filterDialog = !filterDialog"
+                style="height: 40px; width: 100px"
+              />
+              <q-space />
+            </div>
 
             <div
               class="q-ml-md q-mr-sm"
@@ -658,7 +673,7 @@
         class="col column"
         ref="mainScrollArea"
         :class="[
-          scrollAreaDragover ? 'bg-teal-5' : '',
+          scrollAreaDragover ? 'scrolldragover' : '',
           mobile ? 'scroll' : 'scrollmobile',
         ]"
         @drop.prevent.stop="(ev: DragEvent) => {
@@ -841,6 +856,7 @@
                           ? (item.selected = false)
                           : (item.selected = true)
                       "
+                      v-if="!mobile"
                     >
                       <RightClickMenu
                         :prop-item="item"
@@ -973,6 +989,7 @@
                           ? (item.selected = false)
                           : (item.selected = true)
                       "
+                      v-if="!mobile"
                     >
                       <RightClickMenu
                         :prop-item="item"
@@ -1429,6 +1446,8 @@ export default defineComponent({
   setup() {
     const localStore = useLocalStore();
     const q = useQuasar();
+    q.screen.setSizes({ sm: 300, md: 500, lg: 1000, xl: 2000 });
+
     const axiosConfig = {
       withCredentials: true,
       headers: {
@@ -1642,7 +1661,7 @@ export default defineComponent({
     },
 
     itemTextWidth() {
-      var width = this.q.screen.width / 2.5;
+      var width = this.q.screen.width / 3;
       return width;
     },
   },
@@ -2601,7 +2620,7 @@ export default defineComponent({
   -ms-user-select: none;
   user-select: none;
   scrollbar-width: auto;
-  scrollbar-gutter: stable both-edges;
+  scrollbar-gutter: auto;
 }
 
 .scrollmobile {
@@ -2614,12 +2633,16 @@ export default defineComponent({
 }
 
 .selected {
-  background: #2196f3 !important;
+  background: #00b8d4 !important;
   color: #fff;
 }
 
 .dragover {
-  background: #304ffe !important;
+  background: #304ffeb0 !important;
   color: #fff;
+}
+
+.scrolldragover {
+  background: #00bfa5b0 !important;
 }
 </style>

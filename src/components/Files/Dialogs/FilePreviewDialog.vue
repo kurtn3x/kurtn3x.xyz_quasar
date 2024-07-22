@@ -7,8 +7,6 @@
   <q-dialog
     v-model="showDialog"
     :maximized="maximizedToggle"
-    transition-show="slide-up"
-    transition-hide="slide-down"
     @hide="close"
     seamless
   >

@@ -1,6 +1,12 @@
 <template>
-  <div v-if="initialFetch.loading" class="absolute-center">
-    <q-spinner color="primary" size="10em" />
+  <div
+    v-if="initialFetch.loading"
+    class="absolute-center"
+  >
+    <q-spinner
+      color="primary"
+      size="10em"
+    />
   </div>
   <div v-if="!initialFetch.loading && initialFetch.error">
     <ErrorPage :error-message="initialFetch.errorMessage" />
@@ -13,7 +19,11 @@
         isPwd = true;
       "
     >
-      <q-card bordered flat style="max-width: 350px">
+      <q-card
+        bordered
+        flat
+        style="max-width: 350px"
+      >
         <q-toolbar class="bg-layout-bg text-layout-text text-center">
           <q-toolbar-title class="q-ma-sm">Delete Account</q-toolbar-title>
         </q-toolbar>
@@ -44,7 +54,10 @@
 
         <q-separator class="q-mt-sm" />
 
-        <q-card-actions align="center" class="q-mt-sm q-mb-sm row">
+        <q-card-actions
+          align="center"
+          class="q-mt-sm q-mb-sm row"
+        >
           <q-btn
             v-close-popup
             push
@@ -64,8 +77,15 @@
       </q-card>
     </q-dialog>
     <q-page class="column">
-      <q-card bordered flat class="q-ma-sm bg-transparent">
-        <q-separator size="1px" :color="darkmode ? 'white' : 'dark'" />
+      <q-card
+        bordered
+        flat
+        class="q-ma-sm bg-transparent"
+      >
+        <q-separator
+          size="1px"
+          :color="darkmode ? 'white' : 'dark'"
+        />
         <q-tabs
           inline-label
           v-model="tab"
@@ -81,31 +101,53 @@
             :color="darkmode ? 'white' : 'dark'"
           />
 
-          <q-tab name="site" icon="settings_applications" label="Site" />
+          <q-tab
+            name="site"
+            icon="settings_applications"
+            label="Site"
+          />
           <q-separator
             vertical
             size="1px"
             :color="darkmode ? 'white' : 'dark'"
           />
 
-          <q-tab name="profile" icon="person" label="Profile" />
+          <q-tab
+            name="profile"
+            icon="person"
+            label="Profile"
+          />
           <q-separator
             vertical
             size="1px"
             :color="darkmode ? 'white' : 'dark'"
           />
 
-          <q-tab name="account" icon="admin_panel_settings" label="Account" />
+          <q-tab
+            name="account"
+            icon="admin_panel_settings"
+            label="Account"
+          />
           <q-separator
             vertical
             size="1px"
             :color="darkmode ? 'white' : 'dark'"
           />
         </q-tabs>
-        <q-separator size="1px" :color="darkmode ? 'white' : 'dark'" />
+        <q-separator
+          size="1px"
+          :color="darkmode ? 'white' : 'dark'"
+        />
 
-        <q-tab-panels v-model="tab" animated class="bg-transparent">
-          <q-tab-panel name="site" class="q-pa-none q-ma-none">
+        <q-tab-panels
+          v-model="tab"
+          animated
+          class="bg-transparent"
+        >
+          <q-tab-panel
+            name="site"
+            class="q-pa-none q-ma-none"
+          >
             <div class="q-ma-md">
               <div class="text-h4 text-center q-mt-lg">Site Settings</div>
               <q-separator class="q-mt-md" />
@@ -131,8 +173,14 @@
                 <div class="text-center text-h5">Theme</div>
 
                 <div class="row justify-center q-mt-md">
-                  <q-list bordered style="width: 300px">
-                    <template v-for="theme in themes" :key="theme.name">
+                  <q-list
+                    bordered
+                    style="width: 300px"
+                  >
+                    <template
+                      v-for="theme in themes"
+                      :key="theme.name"
+                    >
                       <q-item
                         clickable
                         @click="setTheme(theme.name)"
@@ -149,7 +197,10 @@
             name="profile"
             :class="darkmode ? 'text-white' : 'text-dark'"
           >
-            <q-card flat class="q-ma-sm bg-transparent gt-sm">
+            <q-card
+              flat
+              class="q-ma-sm bg-transparent gt-sm"
+            >
               <div class="text-h4 text-center q-mt-lg">Profile Settings</div>
 
               <q-card-section class="q-mt-md">
@@ -157,7 +208,10 @@
                   class="q-gutter-sm text-grey"
                   @submit.prevent="updateUserProfile"
                 >
-                  <q-splitter :model-value="50" disable>
+                  <q-splitter
+                    :model-value="50"
+                    disable
+                  >
                     <template v-slot:before>
                       <div class="float-right q-mr-lg">
                         <q-input
@@ -219,7 +273,10 @@
                       </div>
                     </template>
                     <template v-slot:after>
-                      <div style="overflow: hidden" class="q-ml-lg">
+                      <div
+                        style="overflow: hidden"
+                        class="q-ml-lg"
+                      >
                         <q-file
                           v-model="avatar"
                           style="width: 400px"
@@ -265,7 +322,10 @@
                 </q-form>
               </q-card-section>
             </q-card>
-            <q-card flat class="bg-transparent q-ma-sm lt-md">
+            <q-card
+              flat
+              class="bg-transparent q-ma-sm lt-md"
+            >
               <div class="text-h4 text-center q-mt-lg">Profile Settings</div>
               <q-card-section class="row justify-center">
                 <q-form
@@ -350,7 +410,8 @@
                   <div class="text-caption2 text-center q-mt-md">
                     Allowed Images: .jpg, .png, .gif, .jpeg, less than 2mb
                     <br />
-                    Recommended Profile Picture Aspect Ratio: Square <br />
+                    Recommended Profile Picture Aspect Ratio: Square
+                    <br />
                   </div>
 
                   <div class="row justify-center q-mt-lg">
@@ -374,12 +435,18 @@
             style="background: transparent"
             name="account"
           >
-            <q-card flat class="no-shadow q-ma-md bg-transparent">
+            <q-card
+              flat
+              class="no-shadow q-ma-md bg-transparent"
+            >
               <div class="text-h4 text-center q-mt-lg">Account Settings</div>
 
               <q-card-section class="full-width text-body1">
                 <q-item>
-                  <q-item-section side style="width: 100px">
+                  <q-item-section
+                    side
+                    style="width: 100px"
+                  >
                     Id:
                   </q-item-section>
                   <q-item-section style="line-break: anywhere">
@@ -389,7 +456,10 @@
                 <q-separator />
 
                 <q-item>
-                  <q-item-section side style="width: 100px">
+                  <q-item-section
+                    side
+                    style="width: 100px"
+                  >
                     Username:
                   </q-item-section>
                   <q-item-section style="line-break: anywhere">
@@ -400,7 +470,10 @@
                 <q-separator />
 
                 <q-item>
-                  <q-item-section side style="width: 100px">
+                  <q-item-section
+                    side
+                    style="width: 100px"
+                  >
                     Email:
                   </q-item-section>
                   <q-item-section style="line-break: anywhere">
@@ -411,7 +484,10 @@
                 <q-separator />
 
                 <q-item>
-                  <q-item-section side style="width: 100px">
+                  <q-item-section
+                    side
+                    style="width: 100px"
+                  >
                     Is Admin:
                   </q-item-section>
                   <q-item-section style="line-break: anywhere">
@@ -422,7 +498,10 @@
                 <q-separator />
 
                 <q-item>
-                  <q-item-section side style="width: 100px">
+                  <q-item-section
+                    side
+                    style="width: 100px"
+                  >
                     Joined:
                   </q-item-section>
                   <q-item-section style="line-break: anywhere">
@@ -433,7 +512,10 @@
                 <q-separator />
 
                 <q-item>
-                  <q-item-section side style="width: 100px">
+                  <q-item-section
+                    side
+                    style="width: 100px"
+                  >
                     Name:
                   </q-item-section>
                   <q-item-section style="line-break: anywhere">
@@ -444,7 +526,10 @@
                 <q-separator />
 
                 <q-item>
-                  <q-item-section side style="width: 100px">
+                  <q-item-section
+                    side
+                    style="width: 100px"
+                  >
                     Location:
                   </q-item-section>
                   <q-item-section style="line-break: anywhere">
@@ -455,7 +540,10 @@
                 <q-separator />
 
                 <q-item>
-                  <q-item-section side style="width: 100px">
+                  <q-item-section
+                    side
+                    style="width: 100px"
+                  >
                     Status:
                   </q-item-section>
                   <q-item-section style="line-break: anywhere">
@@ -467,7 +555,11 @@
               </q-card-section>
 
               <q-card-actions class="justify-center">
-                <q-list bordered class="full-width" style="max-width: 750px">
+                <q-list
+                  bordered
+                  class="full-width"
+                  style="max-width: 750px"
+                >
                   <q-expansion-item
                     class="full-width text-center"
                     label="Change E-Mail"
@@ -654,8 +746,9 @@
                       outline
                       class="q-mt-md"
                       @click="confirmDeleteAccountDialog = true"
-                      >Delete Account</q-btn
                     >
+                      Delete Account
+                    </q-btn>
                   </div>
                 </q-list>
               </q-card-actions>
