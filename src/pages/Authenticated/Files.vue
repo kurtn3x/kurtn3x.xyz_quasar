@@ -130,7 +130,7 @@
       :style-fn="styleFn"
     >
       <div
-        class="q-mt-sm"
+        :class="q.screen.gt.xs ? 'q-mt-sm' : 'q-mt-xs'"
         @dragover.stop.prevent=""
         @drop.prevent=""
       >
@@ -146,7 +146,8 @@
               display: inline;
             "
             :style="'width:' + (screenWidth - 65) + 'px;'"
-            class="row q-ml-sm"
+            class="row"
+            :class="q.screen.gt.xs ? 'q-ml-sm' : ''"
             ref="navbar"
           >
             <q-item
@@ -307,7 +308,7 @@
           <q-checkbox
             v-model="allSelected"
             color="green"
-            class="q-ml-xs q-ml-sm"
+            :class="q.screen.gt.xs ? 'q-ml-sm' : ''"
             @click="selectAllItems"
           />
 
@@ -654,9 +655,12 @@
       </div>
 
       <div
-        class="col column scroll"
+        class="col column"
         ref="mainScrollArea"
-        :class="scrollAreaDragover ? 'bg-teal-5' : ''"
+        :class="[
+          scrollAreaDragover ? 'bg-teal-5' : '',
+          mobile ? 'scroll' : 'scrollmobile',
+        ]"
         @drop.prevent.stop="(ev: DragEvent) => {
           if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
             if (ev.dataTransfer.items[0].kind == 'file') {
@@ -692,17 +696,17 @@
           <div class="row justify-center q-mt-xs">
             <div
               class="full-width bg-transparent fixed"
-              style="height: 20px; z-index: 2"
+              style="height: 15px; z-index: 2"
               @dragenter.self="scrollUp(true)"
               @dragleave.self="scrollUp(false)"
               @dragover.prevent
               @drop.prevent.stop="scrollUp(false)"
             />
           </div>
-          <div style="height: 10px" />
-
+          <div style="height: 15px" />
           <div
-            class="col q-ml-md q-mr-md"
+            class="col"
+            :class="q.screen.gt.xs ? 'q-ml-md q-mr-md' : ''"
             @scroll="onScrollerScroll"
           >
             <div v-if="newFolder.show">
@@ -1074,12 +1078,12 @@
                 />
               </div>
             </template>
-            <div style="height: 20px" />
+            <div style="height: 15px" />
           </div>
           <div class="row justify-center">
             <div
               class="full-width bg-transparent bg-transparent fixed-bottom"
-              style="height: 20px"
+              style="height: 15px"
               @dragenter.self="scrollDown(true)"
               @dragleave.self="scrollDown(false)"
               @dragover.prevent
@@ -2598,6 +2602,15 @@ export default defineComponent({
   user-select: none;
   scrollbar-width: auto;
   scrollbar-gutter: stable both-edges;
+}
+
+.scrollmobile {
+  overflow: auto;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  scrollbar-width: auto;
 }
 
 .selected {

@@ -1,6 +1,12 @@
 <template>
-  <q-dialog v-model="showDialog" @hide="close">
-    <q-card bordered style="width: 350px">
+  <q-dialog
+    v-model="showDialog"
+    @hide="close"
+  >
+    <q-card
+      bordered
+      style="width: 350px"
+    >
       <q-toolbar class="bg-layout-bg text-layout-text text-center">
         <q-toolbar-title class="q-ma-sm">{{ item.name }}</q-toolbar-title>
         <q-tooltip class="text-body1 bg-layout-bg text-layout-text">
@@ -17,7 +23,10 @@
           <div v-if="item.type != 'folder'">
             <div class="text-body1 q-mt-md row">
               <div class="text-weight-bolder col-3">Mime</div>
-              <div class="col q-ml-sm" style="line-break: anywhere">
+              <div
+                class="col q-ml-sm"
+                style="line-break: anywhere"
+              >
                 {{ item.mime }}
               </div>
             </div>
@@ -42,16 +51,27 @@
 
           <div class="text-body1 q-mt-md row">
             <div class="text-weight-bolder col-3">Folder</div>
-            <div class="col q-ml-sm" style="line-break: anywhere">
+            <div
+              class="col q-ml-sm"
+              style="line-break: anywhere"
+            >
               {{ item.path }}
             </div>
           </div>
 
-          <div class="text-body1 q-mt-md row" v-if="item.shared == false">
+          <div
+            class="text-body1 q-mt-md row"
+            v-if="item.shared == false"
+          >
             <div class="text-weight-bolder col-3">Shared</div>
             <div class="col q-ml-sm">{{ item.shared }}</div>
           </div>
-          <q-card class="q-mt-md" bordered flat v-if="item.shared == true">
+          <q-card
+            class="q-mt-md"
+            bordered
+            flat
+            v-if="item.shared == true"
+          >
             <q-expansion-item
               icon="shared"
               label="Shared"
@@ -88,7 +108,10 @@
 
       <q-separator class="q-mt-sm" />
 
-      <q-card-actions align="center" class="q-mt-sm q-mb-sm">
+      <q-card-actions
+        align="center"
+        class="q-mt-sm q-mb-sm"
+      >
         <q-btn
           v-close-popup
           push
@@ -131,6 +154,9 @@ export default defineComponent({
   watch: {
     active(newVal, oldVal) {
       this.showDialog = newVal;
+    },
+    propItem(newVal, oldVal) {
+      this.item = newVal;
     },
   },
   methods: {

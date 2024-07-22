@@ -53,13 +53,23 @@
         >
           <q-tooltip v-if="!maximizedToggle">Maximize</q-tooltip>
         </q-btn>
-        <q-btn size="sm" flat stretch icon="close" @click="close" class="close">
+        <q-btn
+          size="sm"
+          flat
+          stretch
+          icon="close"
+          @click="close"
+          class="close"
+        >
           <q-tooltip>Close</q-tooltip>
         </q-btn>
       </q-toolbar>
       <q-separator :color="darkmode ? 'white' : 'dark'" />
 
-      <div class="row" style="height: 31px">
+      <div
+        class="row"
+        style="height: 31px"
+      >
         <q-btn
           stretch
           flat
@@ -68,7 +78,10 @@
           class="text-weight-bold text-caption"
           @click="downloadFile"
         />
-        <q-separator vertical :color="darkmode ? 'white' : 'dark'" />
+        <q-separator
+          vertical
+          :color="darkmode ? 'white' : 'dark'"
+        />
 
         <div
           v-if="
@@ -85,10 +98,16 @@
             icon-right="expand_more"
             class="text-weight-bold text-caption"
           >
-            <q-menu class="no-shadow" style="width: 140px">
+            <q-menu
+              class="no-shadow"
+              style="width: 140px"
+            >
               <q-card bordered>
                 <q-separator :color="darkmode ? 'white' : 'dark'" />
-                <template v-for="value in availablePreviews" v-bind:key="value">
+                <template
+                  v-for="value in availablePreviews"
+                  v-bind:key="value"
+                >
                   <div v-if="value.available">
                     <q-item
                       clickable
@@ -106,10 +125,16 @@
               </q-card>
             </q-menu>
           </q-btn>
-          <q-separator vertical :color="darkmode ? 'white' : 'dark'" />
+          <q-separator
+            vertical
+            :color="darkmode ? 'white' : 'dark'"
+          />
         </div>
         <q-space />
-        <q-separator vertical :color="darkmode ? 'white' : 'dark'" />
+        <q-separator
+          vertical
+          :color="darkmode ? 'white' : 'dark'"
+        />
 
         <q-btn
           stretch
@@ -126,21 +151,51 @@
         style="min-height: 250px; min-width: 250px"
       >
         <div v-if="mimePreview.video">
-          <VideoView :item="item" :password="$props.password" />
+          <VideoView
+            :item="item"
+            :password="$props.password"
+          />
         </div>
-        <div v-else-if="mimePreview.image" class="col column">
-          <ImageView :item="item" :password="$props.password" />
+        <div
+          v-else-if="mimePreview.image"
+          class="col column"
+        >
+          <ImageView
+            :item="item"
+            :password="$props.password"
+          />
         </div>
-        <div v-else-if="mimePreview.code" class="col column">
-          <CodeView :item="item" :password="$props.password" />
+        <div
+          v-else-if="mimePreview.code"
+          class="col column"
+        >
+          <CodeView
+            :item="item"
+            :password="$props.password"
+          />
         </div>
-        <div v-else-if="mimePreview.text" class="col column">
-          <TextView :item="item" :password="$props.password" />
+        <div
+          v-else-if="mimePreview.text"
+          class="col column"
+        >
+          <TextView
+            :item="item"
+            :password="$props.password"
+          />
         </div>
-        <div v-else-if="mimePreview.wysiwyg" class="col column">
-          <WysiwygView :item="item" :password="$props.password" />
+        <div
+          v-else-if="mimePreview.wysiwyg"
+          class="col column"
+        >
+          <WysiwygView
+            :item="item"
+            :password="$props.password"
+          />
         </div>
-        <div v-else-if="mimePreview.pdf" class="col column">
+        <div
+          v-else-if="mimePreview.pdf"
+          class="col column"
+        >
           <PdfView
             :item="item"
             :password="$props.password"
