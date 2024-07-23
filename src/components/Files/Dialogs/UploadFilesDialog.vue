@@ -1,8 +1,15 @@
 <template>
-  <q-dialog v-model="showDialog" @hide="close" persistent>
-    <q-card bordered style="width: 350px; height: 500px">
+  <q-dialog
+    v-model="showDialog"
+    @hide="close"
+    persistent
+  >
+    <q-card
+      bordered
+      style="width: 350px; height: 500px"
+    >
       <q-toolbar class="bg-layout-bg text-layout-text text-center">
-        <q-toolbar-title class="q-ma-sm">Upload Files </q-toolbar-title>
+        <q-toolbar-title class="q-ma-sm">Upload Files</q-toolbar-title>
       </q-toolbar>
 
       <div class="q-ma-md">
@@ -39,7 +46,10 @@
             "
           :class="uploadFilesDialogAreaDragover ? 'bg-blue' : ''"
         >
-          <q-scroll-area class="row" style="height: 285px">
+          <q-scroll-area
+            class="row"
+            style="height: 285px"
+          >
             <div
               v-if="uploadFilesDialogUploadList.length == 0"
               class="text-center text-h6 q-mt-md"
@@ -53,8 +63,14 @@
             </div>
 
             <q-list class="q-ma-xs">
-              <template v-for="file in uploadFilesDialogUploadList" :key="file">
-                <q-card class="bg-primary text-layout-text q-mt-sm" flat>
+              <template
+                v-for="file in uploadFilesDialogUploadList"
+                :key="file"
+              >
+                <q-card
+                  class="bg-primary text-layout-text q-mt-sm"
+                  flat
+                >
                   <q-item
                     dense
                     clickable
@@ -64,13 +80,19 @@
                     "
                     class="bg-primary text-layout-text"
                   >
-                    <q-item-section avatar class="q-pa-none">
+                    <q-item-section
+                      avatar
+                      class="q-pa-none"
+                    >
                       <q-icon
                         :name="file.type == 'file' ? 'file_present' : 'folder'"
                       />
                     </q-item-section>
                     <q-item-section class="q-pa-none">
-                      <q-item-label class="ellipsis" style="width: 165px">
+                      <q-item-label
+                        class="ellipsis"
+                        style="width: 165px"
+                      >
                         {{ file.name }}
                       </q-item-label>
                     </q-item-section>
@@ -106,6 +128,7 @@
                       input-class="text-layout-text"
                       hide-bottom-space
                       :error="file.error"
+                      v-on:keyup.enter="changeFileName(file)"
                     >
                       <template v-slot:error>
                         <div class="text-caption text-weight-bold">
@@ -120,26 +143,7 @@
                           outline
                           size="xs"
                           round
-                          @click="
-                            if (!/\/|\x00/.test(file.temp as string)) {
-                              if (
-                                checkNameExistFolderContext(
-                                  file.temp as string,
-                                  rawFolderContent as RawFolderContentType
-                                ) == false &&
-                                checkNameExistUploadContext(
-                                  file.temp as string,
-                                  file.name
-                                ) == false
-                              ) {
-                                file.name = file.temp as string;
-                                file.edit = false;
-                                file.error = false;
-                              } else {
-                                file.error = true;
-                              }
-                            }
-                          "
+                          @click="changeFileName(file)"
                         />
                         <q-btn
                           icon="close"
@@ -176,7 +180,10 @@
             >
               <template v-slot:label>
                 <div class="text-body1 q-ml-sm items-center">
-                  <q-icon name="add" size="24px" />
+                  <q-icon
+                    name="add"
+                    size="24px"
+                  />
                   <a class="q-ml-sm">Select Files</a>
                 </div>
               </template>
@@ -198,7 +205,10 @@
 
       <q-separator class="q-mt-sm" />
 
-      <q-card-actions align="evenly" class="q-mt-sm q-mb-sm row">
+      <q-card-actions
+        align="evenly"
+        class="q-mt-sm q-mb-sm row"
+      >
         <q-btn
           v-close-popup
           push
@@ -269,12 +279,32 @@ export default defineComponent({
       this.showDialog = false;
       this.uploadFilesDialogUploadList = [];
     },
+
     uploadFiles() {
       this.$emit('upload', [
         this.uploadFilesDialogUploadList,
         (this.rawFolderContent as RawFolderContentType).id,
       ]);
       this.uploadFilesDialogUploadList = [];
+    },
+
+    changeFileName(file: any) {
+      if (!/\/|\x00/.test(file.temp as string)) {
+        if (
+          this.checkNameExistFolderContext(
+            file.temp as string,
+            this.rawFolderContent as RawFolderContentType
+          ) == false &&
+          this.checkNameExistUploadContext(file.temp as string, file.name) ==
+            false
+        ) {
+          file.name = file.temp as string;
+          file.edit = false;
+          file.error = false;
+        } else {
+          file.error = true;
+        }
+      }
     },
 
     appendFiles(files: File[]) {

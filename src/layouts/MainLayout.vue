@@ -1,8 +1,15 @@
 <template>
   <q-layout view="hHh LpR fff">
     <!-- HEADER -->
-    <q-header reveal height-hint="98" class="bg-layout-bg text-layout-text">
-      <q-toolbar class="q-pa-none" v-if="localStore.isAuthenticated">
+    <q-header
+      reveal
+      height-hint="98"
+      class="bg-layout-bg text-layout-text"
+    >
+      <q-toolbar
+        class="q-pa-none"
+        v-if="localStore.isAuthenticated"
+      >
         <q-btn
           flat
           stretch
@@ -17,16 +24,36 @@
         />
         <q-space />
 
-        <q-btn stretch flat class="button_hover">
-          <q-avatar class="q-mr-sm" size="26px" rounded>
+        <q-btn
+          stretch
+          flat
+          class="button_hover"
+        >
+          <q-avatar
+            class="q-mr-sm"
+            size="26px"
+            rounded
+          >
             <img :src="headerInfo.avatar" />
           </q-avatar>
-          <a class="text-body2 q-mr-sm text-weight-bold">{{
-            headerInfo.username
-          }}</a>
-          <q-icon name="arrow_drop_down" size="sm" />
-          <q-menu dark anchor="bottom left" self="top left">
-            <q-card class="bg-layout-bg" bordered dark style="width: 240px">
+          <a class="text-body2 q-mr-sm text-weight-bold">
+            {{ headerInfo.username }}
+          </a>
+          <q-icon
+            name="arrow_drop_down"
+            size="sm"
+          />
+          <q-menu
+            dark
+            anchor="bottom left"
+            self="top left"
+          >
+            <q-card
+              class="bg-layout-bg"
+              bordered
+              dark
+              style="width: 240px"
+            >
               <div class="q-mt-sm">
                 <div class="row justify-center q-ma-xs">
                   <q-btn
@@ -36,14 +63,20 @@
                     align="left"
                     style="font-size: 14px; width: 220px"
                   >
-                    <q-avatar rounded size="20px">
+                    <q-avatar
+                      rounded
+                      size="20px"
+                    >
                       <img :src="headerInfo.avatar" />
                     </q-avatar>
                     <div class="q-ml-md ellipsis">My Profile</div>
                   </q-btn>
                 </div>
 
-                <q-separator color="layout-text" inset />
+                <q-separator
+                  color="layout-text"
+                  inset
+                />
                 <div class="row justify-center q-ma-xs">
                   <q-btn
                     flat
@@ -55,7 +88,10 @@
                     align="left"
                   />
                 </div>
-                <q-separator color="layout-text" inset />
+                <q-separator
+                  color="layout-text"
+                  inset
+                />
                 <div class="row justify-center q-ma-xs">
                   <q-btn
                     flat
@@ -68,7 +104,10 @@
                   />
                 </div>
               </div>
-              <q-separator inset color="layout-text" />
+              <q-separator
+                inset
+                color="layout-text"
+              />
               <div class="q-mb-sm">
                 <div class="row q-ma-xs justify-center">
                   <q-btn-dropdown
@@ -80,7 +119,12 @@
                     menu-self="top middle"
                     style="width: 100px"
                   >
-                    <q-card class="bg-transparent no-shadow" flat bordered dark>
+                    <q-card
+                      class="bg-transparent no-shadow"
+                      flat
+                      bordered
+                      dark
+                    >
                       <div>
                         <q-btn
                           flat
@@ -92,8 +136,14 @@
                       </div>
                       <q-separator color="layout-text" />
 
-                      <div class="row justify-evenly" style="width: 155px">
-                        <template v-for="theme in themes" :key="theme.name">
+                      <div
+                        class="row justify-evenly"
+                        style="width: 155px"
+                      >
+                        <template
+                          v-for="theme in themes"
+                          :key="theme.name"
+                        >
                           <q-btn
                             outline
                             color="layout-text"
@@ -129,8 +179,17 @@
         </q-btn>
       </q-toolbar>
 
-      <q-toolbar class="q-pa-none q-ma-none" v-if="!localStore.isAuthenticated">
-        <q-btn unelevated stretch icon="home" size="md" to="/" />
+      <q-toolbar
+        class="q-pa-none q-ma-none"
+        v-if="!localStore.isAuthenticated"
+      >
+        <q-btn
+          unelevated
+          stretch
+          icon="home"
+          size="md"
+          to="/"
+        />
         <q-btn
           icon="settings"
           class="bg-transparent text-layout-text"
@@ -138,7 +197,12 @@
           stretch
         >
           <q-menu class="bg-layout-bg no-shadow">
-            <q-card class="bg-transparent no-shadow" flat bordered dark>
+            <q-card
+              class="bg-transparent no-shadow"
+              flat
+              bordered
+              dark
+            >
               <div>
                 <q-btn
                   flat
@@ -150,8 +214,14 @@
               </div>
               <q-separator color="layout-text" />
 
-              <div class="row justify-evenly" style="width: 155px">
-                <template v-for="theme in themes" :key="theme.name">
+              <div
+                class="row justify-evenly"
+                style="width: 155px"
+              >
+                <template
+                  v-for="theme in themes"
+                  :key="theme.name"
+                >
                   <q-btn
                     outline
                     color="layout-text"
@@ -171,22 +241,22 @@
           stretch
           unelevated
           icon="login"
-          label="Login"
+          :label="q.screen.gt.xs ? 'Login' : ''"
           class="text-body1 text-weight-bold"
           size="md"
           to="/login"
-          style="width: 140px"
+          :style="q.screen.gt.xs ? 'width: 140px' : 'width: 80px'"
         />
 
         <q-btn
           stretch
           flat
           icon="add"
-          label="Register"
+          :label="q.screen.gt.xs ? 'Register' : ''"
           to="/register"
           class="text-body1 text-weight-bold q-ml-xs"
           size="md"
-          style="width: 140px"
+          :style="q.screen.gt.xs ? 'width: 140px' : 'width: 80px'"
         />
       </q-toolbar>
     </q-header>
@@ -195,13 +265,17 @@
     <q-drawer
       dark
       v-model="navDrawer"
+      no-swipe-open
       mini-to-overlay
       side="left"
       :mini="miniState"
       class="bg-layout-bg text-layout-text column justify-between"
       v-if="localStore.isAuthenticated"
     >
-      <q-list padding class="q-pa-none">
+      <q-list
+        padding
+        class="q-pa-none"
+      >
         <q-item
           clickable
           v-ripple
@@ -213,7 +287,7 @@
             <q-icon name="home" />
           </q-item-section>
 
-          <q-item-section> Home </q-item-section>
+          <q-item-section>Home</q-item-section>
         </q-item>
         <q-separator color="layout-text" />
 
@@ -228,7 +302,7 @@
             <q-icon name="folder" />
           </q-item-section>
 
-          <q-item-section> My Files </q-item-section>
+          <q-item-section>My Files</q-item-section>
         </q-item>
         <q-separator color="layout-text" />
 
@@ -242,7 +316,7 @@
           <q-item-section avatar>
             <q-icon name="cloud" />
           </q-item-section>
-          <q-item-section> VPN </q-item-section>
+          <q-item-section>VPN</q-item-section>
         </q-item>
         <q-separator color="layout-text" />
 
@@ -256,7 +330,7 @@
           <q-item-section avatar>
             <q-icon name="cloud_download" />
           </q-item-section>
-          <q-item-section> Torrents </q-item-section>
+          <q-item-section>Torrents</q-item-section>
         </q-item>
         <q-separator color="layout-text" />
         <q-item
@@ -269,7 +343,7 @@
           <q-item-section avatar>
             <q-icon name="settings" />
           </q-item-section>
-          <q-item-section> Settings </q-item-section>
+          <q-item-section>Settings</q-item-section>
         </q-item>
         <q-separator color="layout-text" />
       </q-list>

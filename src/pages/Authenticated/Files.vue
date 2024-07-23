@@ -8,10 +8,10 @@
       size="10em"
     />
   </div>
-  <div v-if="!initialFetch.loading && !initialFetch.error">
+  <div v-if="!initialFetch.loading && initialFetch.error">
     <ErrorPage :error-message="initialFetch.errorMessage" />
   </div>
-  <div v-if="!initialFetch.loading && initialFetch.error">
+  <div v-if="!initialFetch.loading && !initialFetch.error">
     <FilePreviewDialog
       :prop-item="filePreviewDialogItem"
       :active="showFilePreviewDialog"
@@ -136,7 +136,6 @@
       >
         <q-toolbar class="q-pa-none">
           <!-- navbar toolbar -->
-
           <div
             style="
               font-size: 20px;
@@ -156,21 +155,40 @@
               class="rounded-borders text-primary text-weight-bold text-h5 q-ml-sm"
               @click="getFolderNavbar({ name: '', id: '' }, 0)"
               @drop.prevent.self.stop="(ev: InputEvent) => {
-                if (ev.dataTransfer!.items.length > 0) {
-                  if (ev.dataTransfer!.items[0].type == 'id') {
+                if (!mobile){
+                  if (ev.dataTransfer!.items.length > 0) {
+                    if (ev.dataTransfer!.items[0].type == 'id') {
+                        moveSelection(navbarIndex.homeFolderId)
+                    }
+                  }
+                } else {
+                  if ((ev.dataTransfer as any)._data != undefined){
+                    if ((ev.dataTransfer as any)._data.id != undefined) {
                       moveSelection(navbarIndex.homeFolderId)
+                    }
                   }
                 }
-                (ev.target as HTMLElement).classList.remove('dragover')
+                if (ev.target != undefined){
+                  (ev.target as HTMLElement).classList.remove('dragover')
+                }
               }"
               @dragenter.prevent.stop="(ev: DragEvent) => {
-                if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
-                  if (ev.dataTransfer.items[0].type == 'id' && ev.target)
-                    (ev.target as HTMLElement).classList.add('dragover')
+                if (!mobile){
+                  if (ev.dataTransfer && ev.dataTransfer.items.length > 0 && ev.target != undefined) {
+                    if (ev.dataTransfer.items[0].type == 'id'){
+                      (ev.target as HTMLElement).classList.add('dragover')
+                    }
+                  }
+                } else {
+                  if ((ev.dataTransfer as any)._data != undefined && ev.target != undefined){
+                    if ((ev.dataTransfer as any)._data.id != undefined) {
+                      (ev.target as HTMLElement).classList.add('dragover')
+                    }
+                  }
                 }
               }"
               @dragleave.prevent.stop="(ev: DragEvent) => {
-                if (ev.target) {
+                if (ev.target != undefined) {
                   (ev.target as HTMLElement).classList.remove('dragover')
                 }
               }"
@@ -222,21 +240,40 @@
                       class="text-primary text-weight-bold text-h6"
                       @click="getFolderNavbar(item, 1)"
                       @drop.prevent.self.stop="(ev: InputEvent) => {
-                        if (ev.dataTransfer!.items.length > 0) {
-                          if (ev.dataTransfer!.items[0].type == 'id') {
+                        if (!mobile){
+                          if (ev.dataTransfer!.items.length > 0) {
+                            if (ev.dataTransfer!.items[0].type == 'id') {
+                                moveSelection(item.id)
+                            }
+                          }
+                        } else {
+                          if ((ev.dataTransfer as any)._data != undefined){
+                            if ((ev.dataTransfer as any)._data.id != undefined) {
                               moveSelection(item.id)
+                            }
                           }
                         }
-                        (ev.target as HTMLElement).classList.remove('dragover')
+                        if (ev.target != undefined){
+                          (ev.target as HTMLElement).classList.remove('dragover')
+                        }
                       }"
                       @dragenter.prevent.stop="(ev: DragEvent) => {
-                        if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
-                          if (ev.dataTransfer.items[0].type == 'id' && ev.target)
-                            (ev.target as HTMLElement).classList.add('dragover')
+                        if (!mobile){
+                          if (ev.dataTransfer && ev.dataTransfer.items.length > 0 && ev.target != undefined) {
+                            if (ev.dataTransfer.items[0].type == 'id'){
+                              (ev.target as HTMLElement).classList.add('dragover')
+                            }
+                          }
+                        } else {
+                          if ((ev.dataTransfer as any)._data != undefined && ev.target != undefined){
+                            if ((ev.dataTransfer as any)._data.id != undefined) {
+                              (ev.target as HTMLElement).classList.add('dragover')
+                            }
+                          }
                         }
                       }"
                       @dragleave.prevent.stop="(ev: DragEvent) => {
-                        if (ev.target) {
+                        if (ev.target != undefined) {
                           (ev.target as HTMLElement).classList.remove('dragover')
                         }
                       }"
@@ -270,28 +307,47 @@
                 class="rounded-borders text-primary text-weight-bold text-h5 items-center"
                 @click="getFolderNavbar(item, 2)"
                 @drop.prevent.self.stop="(ev: InputEvent) => {
-                  if (ev.dataTransfer!.items.length > 0) {
-                    if (ev.dataTransfer!.items[0].type == 'id') {
+                  if (!mobile){
+                    if (ev.dataTransfer!.items.length > 0) {
+                      if (ev.dataTransfer!.items[0].type == 'id') {
+                          moveSelection(item.id)
+                      }
+                    }
+                  } else {
+                    if ((ev.dataTransfer as any)._data != undefined){
+                      if ((ev.dataTransfer as any)._data.id != undefined) {
                         moveSelection(item.id)
+                      }
                     }
                   }
-                  (ev.target as HTMLElement).classList.remove('dragover')
+                  if (ev.target != undefined){
+                    (ev.target as HTMLElement).classList.remove('dragover')
+                  }
                 }"
                 @dragenter.prevent.stop="(ev: DragEvent) => {
-                  if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
-                    if (ev.dataTransfer.items[0].type == 'id' && ev.target)
-                      (ev.target as HTMLElement).classList.add('dragover')
+                  if (!mobile){
+                    if (ev.dataTransfer && ev.dataTransfer.items.length > 0 && ev.target != undefined) {
+                      if (ev.dataTransfer.items[0].type == 'id'){
+                        (ev.target as HTMLElement).classList.add('dragover')
+                      }
+                    }
+                  } else {
+                    if ((ev.dataTransfer as any)._data != undefined && ev.target != undefined){
+                      if ((ev.dataTransfer as any)._data.id != undefined) {
+                        (ev.target as HTMLElement).classList.add('dragover')
+                      }
+                    }
                   }
                 }"
                 @dragleave.prevent.stop="(ev: DragEvent) => {
-                  if (ev.target) {
+                  if (ev.target != undefined) {
                     (ev.target as HTMLElement).classList.remove('dragover')
                   }
                 }"
                 @dragover.prevent.self.stop
                 style="display: inline-block"
               >
-                <q-item-section>
+                <q-item-section class="no-pointer-events">
                   <a
                     class="no-pointer-events ellipsis"
                     :style="'max-width:' + (screenWidth - 215) + 'px;'"
@@ -305,6 +361,14 @@
         </q-toolbar>
 
         <q-toolbar class="q-mt-sm">
+          <!--  <q-btn
+            push
+            dense
+            icon="add"
+            class="bg-primary text-white"
+            @click="addItemToNavbar"
+            style="height: 40px; width: 65px"
+          />  -->
           <q-checkbox
             v-model="allSelected"
             color="green"
@@ -354,14 +418,7 @@
                 outline
               />
             </q-fab>
-            <!-- <q-btn
-              push
-              dense
-              icon="add"
-              class="bg-primary text-white"
-              @click="addItemToNavbar"
-              style="height: 40px; width: 65px"
-            /> -->
+
             <q-space />
 
             <q-input
@@ -484,68 +541,34 @@
                 padding="sm"
               />
             </q-fab>
-            <q-input
-              :color="darkmode ? 'white' : 'black'"
-              v-model="filterSearch"
-              input-class="text-left"
-              label="Search"
-              class="text-body1 col q-ml-sm"
-              outlined
-              dense
-              v-if="q.screen.width > 400"
-            >
-              <template v-slot:append>
-                <q-icon
-                  v-if="filterSearch === ''"
-                  name="search"
-                />
-                <q-icon
-                  v-else
-                  name="clear"
-                  class="cursor-pointer"
-                  @click="filterSearch = ''"
-                />
-              </template>
-              <template v-slot:after>
-                <q-btn
-                  push
-                  dense
-                  icon="search"
-                  class="bg-primary text-white"
-                  @click="filterDialog = !filterDialog"
-                  style="height: 40px; width: 50px"
-                />
-              </template>
-            </q-input>
-            <div
-              v-else
-              class="col q-ml-md"
-            >
-              <q-btn
-                push
-                dense
-                icon="search"
-                class="bg-primary text-white"
-                @click="filterDialog = !filterDialog"
-                style="height: 40px; width: 100px"
-              />
-              <q-space />
-            </div>
+            <q-space />
+            <q-btn
+              push
+              round
+              icon="search"
+              class="bg-primary text-white"
+              @click="filterDialog = !filterDialog"
+            />
+            <q-space />
 
             <div
+              style="width: 130px"
               class="q-ml-md q-mr-sm"
-              style="width: 80px"
             >
               <q-fab
                 push
                 icon="check_box"
-                :label="selectedItems.length"
-                active-icon=" expand_more"
+                active-icon="expand_more"
                 direction="down"
                 color="cyan-14"
+                :label="
+                  selectedItems.length +
+                  ' Item' +
+                  (selectedItems.length > 1 ? 's' : '')
+                "
                 v-if="selectedItems.length > 0"
                 padding="none"
-                style="height: 40px; width: 80px; z-index: 3"
+                style="height: 40px; width: 140px; z-index: 3"
               >
                 <q-fab-action
                   class="text-body1 bg-blue"
@@ -554,7 +577,7 @@
                   label="Move"
                   icon="trending_flat"
                   @click="showMoveSelectedItemsDialog = true"
-                  style="width: 110px; z-index: 3"
+                  style="width: 150px; z-index: 3"
                 />
                 <q-fab-action
                   class="text-body1 bg-red"
@@ -563,7 +586,7 @@
                   icon="close"
                   label="Delete"
                   @click="showDeleteSelectedItemsDialog = true"
-                  style="width: 110px; z-index: 3"
+                  style="width: 150px; z-index: 3"
                 />
               </q-fab>
             </div>
@@ -730,7 +753,7 @@
           <div style="height: 15px" />
           <div
             class="col"
-            :class="q.screen.gt.xs ? 'q-ml-md q-mr-md' : ''"
+            :class="mobile ? 'q-ml-xs q-mr-xs' : 'q-ml-md q-mr-md'"
             @scroll="onScrollerScroll"
           >
             <div v-if="newFolder.show">
@@ -821,14 +844,22 @@
                     :draggable="true"
                     @dragstart="startDrag($event, item)"
                     @drop.prevent.self.stop="(ev: InputEvent) => {
-                      if (ev.dataTransfer!.items.length > 0) {
-                        // real file from filesystem
-                        if (ev.dataTransfer!.items[0].kind == 'file') {
-                          onFolderDrop(ev, item.id);
+                      if (!mobile){
+                        if (ev.dataTransfer!.items.length > 0) {
+                          // real file from filesystem
+                          if (ev.dataTransfer!.items[0].kind == 'file') {
+                            onFolderDrop(ev, item.id);
+                          }
+                          // FileItem
+                          if (ev.dataTransfer!.items[0].type == 'id') {
+                            if (ev.dataTransfer!.getData('id') != item.id && selectedItems.indexOf(item) == -1) {
+                              moveSelection(item.id)
+                            }
+                          }
                         }
-                        // FileItem
-                        if (ev.dataTransfer!.items[0].type == 'id') {
-                          if (ev.dataTransfer!.getData('id') != item.id && selectedItems.indexOf(item) == -1) {
+                      } else {
+                        if ((ev.dataTransfer as any)._data != undefined){
+                          if ((ev.dataTransfer as any)._data.id != item.id && selectedItems.indexOf(item) == -1) {
                             moveSelection(item.id)
                           }
                         }
@@ -851,7 +882,9 @@
                         }
                       } else {
                         if ((ev.dataTransfer as any)._data != undefined){
-
+                          if ((ev.dataTransfer as any)._data.id != item.id && selectedItems.indexOf(item) == -1) {
+                              item.dragOver = true;
+                            }
                         }
                       }
                     }"
@@ -1443,10 +1476,7 @@ import MoveSelectedItemsDialog from 'src/components/Files/Dialogs/MoveSelectedIt
 import DeleteSelectedItemsDialog from 'src/components/Files/Dialogs/DeleteSelectedItemsDialog.vue';
 import UploadFilesDialog from 'src/components/Files/Dialogs/UploadFilesDialog.vue';
 import ErrorPage from 'src/components/ErrorPage.vue';
-
-if (Platform.is.mobile == true) {
-  import('src/components/Files/lib/DragDropTouch');
-}
+import { enableDragDropTouch } from 'src/components/Files/lib/drag-drop-touch.esm.min.js';
 
 export default defineComponent({
   name: 'FilesView',
@@ -1465,7 +1495,6 @@ export default defineComponent({
   setup() {
     const localStore = useLocalStore();
     const q = useQuasar();
-    q.screen.setSizes({ sm: 300, md: 500, lg: 1000, xl: 2000 });
 
     const axiosConfig = {
       withCredentials: true,
@@ -1490,6 +1519,9 @@ export default defineComponent({
     var mobile = q.platform.is.mobile;
     if (mobile == undefined) {
       mobile = false;
+    }
+    if (mobile) {
+      enableDragDropTouch();
     }
 
     return {
@@ -1686,17 +1718,19 @@ export default defineComponent({
   },
 
   methods: {
-    blabla(event) {
+    blabla(event: any) {
       console.log(event);
     },
-    onScroll(e) {
+
+    onScroll(e: any) {
       (this.mainScrollArea as any).scrollBy(
         e.direction[0] * 10,
         e.direction[1] * 10
       );
     },
+
     onScrollerScroll() {
-      this.$refs.selecto.checkScroll();
+      (this.$refs.selecto as any).checkScroll();
     },
 
     startDrag(event: any, item: FolderEntryType) {

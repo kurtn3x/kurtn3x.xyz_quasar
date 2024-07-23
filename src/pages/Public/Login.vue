@@ -1,89 +1,99 @@
 <template>
-  <q-page class="bg row justify-center items-center" :class="theme">
+  <q-page
+    class="bg row justify-center items-center"
+    :class="theme"
+  >
     <ParticlesIndex />
 
-    <div class="column fade-in-text q-pa-md">
-      <div class="row">
-        <q-card
-          style="max-width: 400px"
-          :style="'width:' + cardWidth + 'px;'"
-          dark
-          class="no-shadow bg-transparent"
+    <div class="column fade-in-text q-ma-xs">
+      <q-card
+        style="max-width: 400px"
+        :style="'width:' + cardWidth + 'px;'"
+        dark
+        class="no-shadow bg-transparent"
+      >
+        <div
+          class="text3d-primary text-weight-bolder text-h3 text-center non-selectable"
         >
+          Login
+        </div>
+        <q-card-section
+          align="center"
+          class="q-mr-sm q-ml-sm"
+        >
+          <q-form @submit="submitLogin">
+            <q-input
+              v-model="loginData.username"
+              outlined
+              label="Username"
+              input-style="font-size: 18px"
+              input-class="text-body1 text-layout-text"
+              class="q-mt-lg text-white"
+              color="layout-text"
+              label-color="layout-text"
+              bg-color="layout-bg"
+              no-error-icon
+              dark
+            >
+              <template v-slot:prepend>
+                <q-icon
+                  name="person"
+                  color="layout-text"
+                />
+              </template>
+            </q-input>
+            <q-input
+              outlined
+              input-style="font-size: 18px;"
+              input-class="text-body1 text-layout-text"
+              v-model="loginData.password"
+              label="Password"
+              :type="isPwd ? 'password' : 'text'"
+              class="q-mt-lg text-layout-text"
+              label-color="layout-text"
+              bg-color="layout-bg"
+              color="layout-text"
+              no-error-icon
+              dark
+            >
+              <template v-slot:prepend>
+                <q-icon
+                  name="lock"
+                  color="layout-text"
+                />
+              </template>
+              <template v-slot:append>
+                <q-icon
+                  color="layout-text"
+                  class="pw_icon"
+                  :name="isPwd ? 'visibility' : 'visibility_off'"
+                  @click="isPwd = !isPwd"
+                />
+              </template>
+            </q-input>
+            <q-btn
+              rounded
+              size="lg"
+              class="full-width q-mt-lg layout-btn bg-green text-white"
+              label="Sign In"
+              :loading="loading"
+              type="submit"
+            />
+          </q-form>
+        </q-card-section>
+        <div style="height: 20px">
           <div
-            class="text3d-primary text-weight-bolder text-h3 text-center non-selectable"
-          >
-            Login
-          </div>
-          <q-card-section align="center" class="q-mr-sm q-ml-sm">
-            <q-form @submit="submitLogin">
-              <q-input
-                v-model="loginData.username"
-                outlined
-                label="Username"
-                input-style="font-size: 18px"
-                input-class="text-body1 text-layout-text"
-                class="q-mt-lg text-white"
-                color="layout-text"
-                label-color="layout-text"
-                bg-color="layout-bg"
-                no-error-icon
-                dark
-              >
-                <template v-slot:prepend>
-                  <q-icon name="person" color="layout-text" />
-                </template>
-              </q-input>
-              <q-input
-                outlined
-                input-style="font-size: 18px;"
-                input-class="text-body1 text-layout-text"
-                v-model="loginData.password"
-                label="Password"
-                :type="isPwd ? 'password' : 'text'"
-                class="q-mt-lg text-layout-text"
-                label-color="layout-text"
-                bg-color="layout-bg"
-                color="layout-text"
-                no-error-icon
-                dark
-              >
-                <template v-slot:prepend>
-                  <q-icon name="lock" color="layout-text" />
-                </template>
-                <template v-slot:append>
-                  <q-icon
-                    color="layout-text"
-                    class="pw_icon"
-                    :name="isPwd ? 'visibility' : 'visibility_off'"
-                    @click="isPwd = !isPwd"
-                  />
-                </template>
-              </q-input>
-              <q-btn
-                rounded
-                size="lg"
-                class="full-width q-mt-lg layout-btn bg-green text-white"
-                label="Sign In"
-                :loading="loading"
-                type="submit"
-              />
-            </q-form>
-          </q-card-section>
-          <div style="height: 20px">
-            <div
-              v-if="loginError"
-              ref="errorText"
-              class="text-red text-body1 text-center shake q-ml-sm q-mr-sm"
-              v-on:animationend="
+            v-if="loginError"
+            ref="errorText"
+            class="text-red text-body1 text-center shake q-ml-sm q-mr-sm"
+            v-on:animationend="
                 ($event) => ($event.target as any).classList.remove('shake')
               "
-            >
-              {{ loginErrorMessage }}
-            </div>
+          >
+            {{ loginErrorMessage }}
           </div>
-        </q-card>
-      </div>
+        </div>
+      </q-card>
     </div>
   </q-page>
 </template>

@@ -1,10 +1,16 @@
 <template>
-  <q-dialog v-model="showDialog" @hide="close">
-    <q-card bordered style="min-width: 350px">
+  <q-dialog
+    v-model="showDialog"
+    @hide="close"
+  >
+    <q-card
+      bordered
+      style="min-width: 350px"
+    >
       <q-toolbar class="bg-layout-bg text-layout-text text-center">
-        <q-toolbar-title class="q-ma-sm"
-          >Move Items to new Folder</q-toolbar-title
-        >
+        <q-toolbar-title class="q-ma-sm">
+          Move Items to new Folder
+        </q-toolbar-title>
       </q-toolbar>
       <div
         v-if="loading"
@@ -23,11 +29,14 @@
       <div
         v-if="!loading && error"
         class="q-ma-md row justify-center items-center text-red text-body1 text-weight-bold"
-        style="height: 375px"
+        style="height: 300px"
       >
         Failed fetching folders.
       </div>
-      <div class="q-ma-sm" v-if="!loading && !error">
+      <div
+        class="q-ma-sm"
+        v-if="!loading && !error"
+      >
         <div class="row">
           <q-input
             :color="darkmode ? 'white' : 'black'"
@@ -35,26 +44,37 @@
             dense
             outlined
             label="Search"
-            class="text-primary text-body1"
-            style="height: 45px; width: 200px"
+            class="text-primary text-body1 col-6"
+            style="height: 45px"
           />
-
+          <q-space />
           <q-btn
             icon="expand_more"
             :label="(selectedItems as Array<Object>).length + ' Items'"
-            class="bg-blue text-white q-ml-sm text-body1"
+            class="bg-blue text-white q-ml-sm text-body1 col-4"
             push
             dense
-            style="height: 40px; width: 150px"
+            style="height: 40px"
           >
-            <q-menu anchor="bottom middle" self="top middle" class="no-shadow">
-              <q-card flat bordered style="min-width: 150px; max-height: 250px">
-                <template v-for="item in selectedItems" :key="item">
+            <q-menu
+              anchor="bottom middle"
+              self="top middle"
+              class="no-shadow"
+            >
+              <q-card
+                flat
+                bordered
+                style="min-width: 150px; max-height: 250px"
+              >
+                <template
+                  v-for="item in selectedItems"
+                  :key="item"
+                >
                   <div class="ellipsis text-body1 q-ma-sm">
                     <q-icon
                       :name="item.type == 'folder' ? 'folder' : 'file_present'"
                     />
-                    <a class="q-ml-sm"> {{ item.name }} </a>
+                    <a class="q-ml-sm">{{ item.name }}</a>
                   </div>
                   <q-separator />
                 </template>
@@ -63,7 +83,7 @@
           </q-btn>
         </div>
         <q-separator />
-        <q-scroll-area style="height: 350px">
+        <q-scroll-area style="height: 300px">
           <q-tree
             :nodes="allAvailableFolders"
             v-model:selected="moveItemsSelectedId"
@@ -84,7 +104,7 @@
 
       <q-card-actions class="q-mb-sm column">
         <div class="full-width">
-          <a class="text-weight-bolder">New Folder: </a>
+          <a class="text-weight-bolder">New Folder:</a>
           {{ moveItemsSelectedName }}
         </div>
         <div class="row full-width q-mt-sm">
