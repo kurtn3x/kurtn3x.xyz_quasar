@@ -1,37 +1,57 @@
 <template>
-  <q-dialog v-model="showDialog" @hide="close">
-    <q-card bordered style="width: 350px">
+  <q-dialog
+    v-model="showDialog"
+    @hide="close"
+  >
+    <q-card bordered>
       <q-toolbar class="bg-layout-bg text-layout-text text-center">
         <q-toolbar-title class="q-ma-sm">Delete selected Items</q-toolbar-title>
       </q-toolbar>
-      <div class="text-body1 text-center q-ma-md">
+      <div class="text-body1 text-center q-ma-md text-red text-weight-bolder">
         All selected Items will be deleted.
       </div>
       <div class="row justify-center q-ma-md">
         <q-btn
           push
           icon="expand_more"
-          :label="(selectedItems as Array<Object>).length + ' Items'"
-          class="bg-blue text-white text-body1"
-          style="width: 150px"
+          :label="(selectedItems as Array<Object>).length + ' Item' + ((selectedItems as Array<Object>).length > 1 ? 's' : '')"
+          class="bg-blue-grey-7 text-white text-body1"
+          style="width: 310px"
         >
-          <q-menu anchor="bottom middle" self="top middle" class="no-shadow">
-            <q-card bordered flat style="width: 150px; max-height: 250px">
-              <template v-for="item in selectedItems" :key="item">
+          <q-menu
+            anchor="bottom middle"
+            self="top middle"
+            class="no-shadow bg-blue-grey-7 text-white"
+            style="width: 310px"
+          >
+            <q-card
+              flat
+              style="max-height: 250px; width: 310px"
+              class="bg-blue-grey-7 text-white"
+            >
+              <q-separator color="white" />
+
+              <template
+                v-for="item in selectedItems"
+                :key="item"
+              >
                 <div class="ellipsis text-body1 q-ma-sm">
                   <q-icon
                     :name="item.type == 'folder' ? 'folder' : 'file_present'"
                   />
-                  <a class="q-ml-sm"> {{ item.name }} </a>
+                  <a class="q-ml-sm">{{ item.name }}</a>
                 </div>
-                <q-separator />
+                <q-separator color="white" />
               </template>
             </q-card>
           </q-menu>
         </q-btn>
       </div>
-      <q-separator class="q-mt-sm" />
-      <q-card-actions align="center" class="row q-mt-sm q-mb-sm">
+      <q-separator />
+      <q-card-actions
+        align="center"
+        class="row q-mt-sm q-mb-sm"
+      >
         <q-btn
           v-close-popup
           push

@@ -22,7 +22,7 @@
       @close="showCreateFileDialog = false"
       @create="
         (newFile) => {
-          createFile(newFile);
+          createFile(newFile.name, newFile.mime);
         }
       "
     />
@@ -503,7 +503,7 @@
               push
               icon="add"
               direction="down"
-              class="q-mr-sm q-ml-md"
+              class="q-mr-md q-ml-md"
               color="light-green"
               padding="sm"
               style="z-index: 3"
@@ -541,15 +541,12 @@
                 padding="sm"
               />
             </q-fab>
-            <q-space />
             <q-btn
               push
-              round
               icon="search"
-              class="bg-primary text-white"
+              class="bg-primary text-white col q-ml-md q-mr-md"
               @click="filterDialog = !filterDialog"
             />
-            <q-space />
 
             <div
               style="width: 130px"
@@ -786,7 +783,7 @@
                     class="text-body1 q-ml-md"
                     input-class="text-body2"
                     clearable
-                    @keyup.enter="createFolder"
+                    @keyup.enter="createFolder(newFolder.name)"
                     ref="newItemInput"
                     hide-bottom-space
                     autofocus
@@ -799,7 +796,7 @@
                       class="q-ml-md bg-green text-white"
                       round
                       flat
-                      @click="createFolder"
+                      @click="createFolder(newFolder.name)"
                     />
                     <q-btn
                       icon="close"
@@ -896,7 +893,6 @@
                       :breakpoint="0"
                       @before-show="
                         clearSelectedItems();
-                        allSelected = false;
                         item.selected = true;
                       "
                       @before-hide="
@@ -1029,7 +1025,6 @@
                       :breakpoint="0"
                       @before-show="
                         clearSelectedItems();
-                        allSelected = false;
                         item.selected = true;
                       "
                       @before-hide="
@@ -1795,7 +1790,6 @@ export default defineComponent({
       this.navbarIndex.navbarItems.push({ name: result, id: result });
     },
 
-    // mainScrollArea
     scrollUp(active: boolean) {
       if (active == true) {
         (this.scrollIntervalTop as any) = setInterval(
@@ -1818,7 +1812,10 @@ export default defineComponent({
       }
     },
 
-    // get Home folder
+    /**
+     * Get the Home-(Root-)Folder of the user.
+     * Sets some extra data to ensure the ID of the home folder is always known in every folder context.
+     */
     getHomeFolder() {
       this.loading = true;
       apiGet('/files/folder/home', this.axiosConfig).then((apiData) => {
@@ -1852,8 +1849,7 @@ export default defineComponent({
     },
 
     /**
-     * Sort content of current folder context
-     * Label isn't important → Only for Q-Select.
+     * Sort content of current folder context.
      *
      * value mapping:
      *
@@ -1869,7 +1865,7 @@ export default defineComponent({
      *
      * 6 - sort by shared status
      *
-     * @param   type - object: → name: string, value: number
+     * @param type: name, value
      */
     sortRawFolderContent(type: { label: string; value: number }) {
       var typeVal = type.value;
@@ -1999,7 +1995,6 @@ export default defineComponent({
     /////////// FILE UPLOAD //////////////////////////
     ///////////////////////////////////////////////////
 
-    // cancel the upload of an file
     cancelRequest(progress: UploadProgressEntryType) {
       progress.abort.cancel();
       progress.transferredPercent = 1;
@@ -2015,8 +2010,6 @@ export default defineComponent({
       }
     },
 
-    // run (recursively) trough a folder, mapping files and directories with IDs
-    // view uploadFiles comment for more Info
     async traverseFolder(
       folder: FileSystemDirectoryEntry,
       returnArray: TraverseFolderMapType[],
@@ -2068,15 +2061,17 @@ export default defineComponent({
       });
     },
 
-    // upload Files and Folders to parentFolderId
-    // takes an uploadFileList, which is an array of files/folders to be uploaded
-    // if it is an folder, the folder is traversed and all child-elements are uploaded as well
-    // because the data that is sent is FormData (flat array data)
-    // an id is added to each file and folder, which maps them correctly to their parent element
-    // folders have folderIds (their own id) and parentIds (the folderId of the parent)
-    // files only have parentIds (the folderId of the parent)
-    // on top of that each folder and file has a unique id as well, which is needed to map the form-data correctly
-    // e.g. 1_name : hello.txt, 1_parent_id = xyz, etc.
+    /**
+     * Upload Files and entire Folders from the local Filesystem to parentFolderId.
+     * Takes an uploadFileList, which is an array of file/folder-information to be uploaded.
+     * If the item is an folder, the folder is traversed and all child-elements are uploaded as well.
+     * An id is added to each file and folder, which maps them correctly to their parent element.
+     * Folders have folderIds (their own id) and parentIds (the folderId of the parent).
+     * Files only have parentIds (the folderId of the parent).
+     * On top of that each folder and file has a unique id as well, to ensure correct mapping in the backend.
+     * @param uploadFileList List of files to be uploaded
+     * @param parentFolderId FolderID of the folder to upload to
+     */
     async uploadFiles(
       uploadFileList: UploadDialogEntryType[],
       parentFolderId: string
@@ -2334,35 +2329,39 @@ export default defineComponent({
       }
     },
 
-    ///////////////////////////////////////////////////
-    /////////// GENERAL METHODS ///////////////////////
-    ///////////////////////////////////////////////////
-
-    // clear selected items
+    /**
+     * Clears all selected Items
+     */
     clearSelectedItems() {
       this.selectedItems.forEach(function (item) {
         item.selected = false;
       });
       this.selectedItems = [];
+      this.allSelected = false;
     },
 
+    /**
+     * Check if a file/folder name exists in a certain folder context
+     * @param name Name of the folder to search for
+     * @param folder Folder context of the folder to search in
+     */
     checkNameExistFolderContext(name: string, folder: RawFolderContentType) {
       return folder.children.some((el: FolderEntryType) => el.name == name);
     },
 
-    // copy a text to clipboard
     copyToClipboard(text: string) {
       navigator.clipboard.writeText(text);
       this.notify('positive', 'Copied to clipboard.');
     },
 
-    // used to set q page height
+    /**
+     * Returns the optimal page height
+     */
     styleFn(offset: number, height: number) {
       let pageheight = height - offset;
       return 'height: ' + pageheight + 'px';
     },
 
-    // universal notification popup
     notify(type: string, message: string) {
       this.q.notify({
         type: type,
@@ -2372,7 +2371,9 @@ export default defineComponent({
       });
     },
 
-    // universal function to refetch the current folder when any change is made
+    /**
+     * Refresh the current folder as well as resetting and cleaning up all options
+     */
     refreshFolder() {
       this.loading = true;
       apiGet(
@@ -2381,8 +2382,7 @@ export default defineComponent({
       ).then((apiData) => {
         if (apiData.error == false) {
           this.rawFolderContent = apiData.data as RawFolderContentType;
-          this.selectedItems = [];
-          this.allSelected = false;
+          this.clearSelectedItems();
           this.resetFilterState();
         } else {
           this.notify('negative', apiData.errorMessage);
@@ -2391,6 +2391,10 @@ export default defineComponent({
       });
     },
 
+    /**
+     * Returns a byte size in a human readable format
+     * @param bytes Size in bytes
+     */
     fileSizeIEC(bytes: number) {
       if (Math.abs(bytes) < 1024) {
         return bytes + ' B';
@@ -2411,7 +2415,9 @@ export default defineComponent({
       return bytes.toFixed(2) + ' ' + units[u];
     },
 
-    // select all items
+    /**
+     * Select all items in the current folder
+     */
     selectAllItems() {
       if (this.allSelected == true) {
         for (var item of this.rawFolderContent.children as FolderEntryType[]) {
@@ -2429,25 +2435,22 @@ export default defineComponent({
       }
     },
 
-    ///////////////////////////////////////////////////
-    /////////// ADD / REMOVE OBJECTS //////////////////
-    ///////////////////////////////////////////////////
-    // create folder
-    createFolder() {
-      if (this.newFolder.name.length < 1) {
+    /**
+     * Create a new folder in the current folder
+     * @param name Name of the folder
+     */
+    createFolder(name: string) {
+      if (name.length < 1) {
         this.notify('negative', 'Name must be at least 1 character long.');
         return;
       }
-      if (/\/|\x00/.test(this.newFolder.name)) {
+      if (/\/|\x00/.test(name)) {
         this.notify('negative', 'Name contains invalid characters.');
         return;
       }
 
       if (
-        this.checkNameExistFolderContext(
-          this.newFolder.name,
-          this.rawFolderContent
-        ) == true
+        this.checkNameExistFolderContext(name, this.rawFolderContent) == true
       ) {
         this.notify('negative', 'Item with same name exists in this path.');
         return;
@@ -2455,7 +2458,7 @@ export default defineComponent({
 
       var data = {
         parentId: this.rawFolderContent.id,
-        name: this.newFolder.name,
+        name: name,
       };
 
       this.loading = true;
@@ -2473,33 +2476,36 @@ export default defineComponent({
       });
     },
 
-    // create an empty file
-    createFile(newFile: { name: string; mime: string }) {
-      if (newFile.name.length < 1) {
+    /**
+     * Create a file
+     * @param name Name of the file
+     * @param mime Mime-Type of the file
+     */
+    createFile(name: string, mime: string) {
+      if (name.length < 1) {
         this.notify('negative', 'Name must be at least 1 character long.');
         return;
       }
-      if (/\/|\x00/.test(newFile.name)) {
+      if (/\/|\x00/.test(name)) {
         this.notify('negative', 'Name contains invalid characters.');
         return;
       }
 
       if (
-        this.checkNameExistFolderContext(newFile.name, this.rawFolderContent) ==
-        true
+        this.checkNameExistFolderContext(name, this.rawFolderContent) == true
       ) {
         this.notify('negative', 'Item with same name exists in this path.');
         return;
       }
 
       this.loading = true;
-      var file = new File([''], newFile.name);
+      var file = new File([''], name);
 
       let formData = new FormData();
       formData.append('file', file);
       formData.append('parent_id', this.rawFolderContent.id);
-      formData.append('name', newFile.name);
-      formData.append('mime', newFile.mime);
+      formData.append('name', name);
+      formData.append('mime', mime);
       formData.append('size_bytes', '0');
       let config = {
         withCredentials: true,
@@ -2530,11 +2536,7 @@ export default defineComponent({
       for (var item of this.selectedItems) {
         this.deleteItem(item.type, item.id);
       }
-      this.selectedItems = [];
-      this.allSelected = false;
-      for (var item of this.rawFolderContent.children as FolderEntryType[]) {
-        item.selected = false;
-      }
+      this.clearSelectedItems();
     },
 
     /**

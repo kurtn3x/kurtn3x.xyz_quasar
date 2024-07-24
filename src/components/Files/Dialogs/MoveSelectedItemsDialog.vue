@@ -44,42 +44,30 @@
             dense
             outlined
             label="Search"
-            class="text-primary text-body1 col-6"
-            style="height: 45px"
+            class="text-primary text-body1"
           />
-          <q-space />
           <q-btn
-            icon="expand_more"
-            :label="(selectedItems as Array<Object>).length + ' Items'"
-            class="bg-blue text-white q-ml-sm text-body1 col-4"
             push
-            dense
-            style="height: 40px"
+            icon="unfold_more"
+            round
+            class="bg-blue text-white q-ml-sm"
+            @click="expandTree"
           >
-            <q-menu
-              anchor="bottom middle"
-              self="top middle"
-              class="no-shadow"
-            >
-              <q-card
-                flat
-                bordered
-                style="min-width: 150px; max-height: 250px"
-              >
-                <template
-                  v-for="item in selectedItems"
-                  :key="item"
-                >
-                  <div class="ellipsis text-body1 q-ma-sm">
-                    <q-icon
-                      :name="item.type == 'folder' ? 'folder' : 'file_present'"
-                    />
-                    <a class="q-ml-sm">{{ item.name }}</a>
-                  </div>
-                  <q-separator />
-                </template>
-              </q-card>
-            </q-menu>
+            <q-tooltip class="bg-blue text-white text-body2">
+              Expand all
+            </q-tooltip>
+          </q-btn>
+
+          <q-btn
+            push
+            icon="unfold_less"
+            round
+            class="bg-blue text-white q-ml-sm q-mr-sm"
+            @click="collapseTree"
+          >
+            <q-tooltip class="bg-blue text-white text-body2">
+              Collapse all
+            </q-tooltip>
           </q-btn>
         </div>
         <q-separator />
@@ -93,18 +81,55 @@
             label-key="name"
             selected-color="green"
             class="text-body1"
-            no-transition
             no-selection-unset
             no-results-label="No folder found"
             @update:selected="moveItemsUpdateSelectedLabel"
+            ref="moveItemsTree"
           />
         </q-scroll-area>
+      </div>
+      <div class="row justify-center q-ma-md">
+        <q-btn
+          push
+          icon="expand_more"
+          :label="(selectedItems as Array<Object>).length + ' Item' + ((selectedItems as Array<Object>).length > 1 ? 's' : '')"
+          class="bg-blue-grey-7 text-white text-body1"
+          style="width: 310px"
+        >
+          <q-menu
+            anchor="bottom middle"
+            self="top middle"
+            class="no-shadow bg-blue-grey-7 text-white"
+            style="width: 310px"
+          >
+            <q-card
+              flat
+              style="max-height: 250px; width: 310px"
+              class="bg-blue-grey-7 text-white"
+            >
+              <q-separator color="white" />
+
+              <template
+                v-for="item in selectedItems"
+                :key="item"
+              >
+                <div class="ellipsis text-body1 q-ma-sm">
+                  <q-icon
+                    :name="item.type == 'folder' ? 'folder' : 'file_present'"
+                  />
+                  <a class="q-ml-sm">{{ item.name }}</a>
+                </div>
+                <q-separator color="white" />
+              </template>
+            </q-card>
+          </q-menu>
+        </q-btn>
       </div>
       <q-separator />
 
       <q-card-actions class="q-mb-sm column">
         <div class="full-width">
-          <a class="text-weight-bolder">New Folder:</a>
+          <a class="text-weight-bolder text-body1">Move to:</a>
           {{ moveItemsSelectedName }}
         </div>
         <div class="row full-width q-mt-sm">
@@ -151,8 +176,8 @@ export default defineComponent({
       showDialog: ref(props.active),
       localStore,
       q,
-      allAvailableFolders: ref([{}]),
-      moveItemsExpanded: ref([{}]),
+      allAvailableFolders: ref([]) as Ref<AllAvailableFoldersType[]>,
+      moveItemsExpanded: ref([]) as Ref<string[]>,
       moveItemsFilter: ref(''),
       moveItemsSelectedName: ref(''),
       moveItemsSelectedId: ref(''),
@@ -188,9 +213,26 @@ export default defineComponent({
       this.moveItemsSelectedName = '';
       this.moveItemsSelectedId = '';
     },
+
     move() {
+      if (this.moveItemsSelectedId == '') {
+        this.q.notify({
+          type: 'negative',
+          message: 'No folder selected.',
+          multiLine: false,
+        });
+        return;
+      }
       this.$emit('move', this.moveItemsSelectedId);
     },
+
+    expandTree() {
+      (this.$refs.moveItemsTree as any).expandAll();
+    },
+    collapseTree() {
+      (this.$refs.moveItemsTree as any).collapseAll();
+    },
+
     fetchAllAvailableFolders() {
       this.moveItemsExpanded = [];
       this.allAvailableFolders = [];
@@ -201,6 +243,7 @@ export default defineComponent({
         },
       };
       this.loading = true;
+
       apiGet('/files/available-folders', config).then((apiData) => {
         if (apiData.error == false) {
           this.allAvailableFolders = apiData.data as AllAvailableFoldersType[];

@@ -17,7 +17,7 @@ export var folderData = {
     {
       parentId: '79464030-0157-4f5f-9b97-caae0727c4bf',
       id: 'bf73f4cc-8930-4471-b905-1d0af2f4c18b',
-      name: 'test2',
+      name: 'test2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
       path: 'Home',
       type: 'folder',
       mime: 'Folder',
