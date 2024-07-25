@@ -157,7 +157,7 @@
               @drop.prevent.self.stop="(ev: InputEvent) => {
                 if (!mobile){
                   if (ev.dataTransfer!.items.length > 0) {
-                    if (ev.dataTransfer!.items[0].type == 'id') {
+                    if (ev.dataTransfer!.getData('id') != ' ') {
                         moveSelection(navbarIndex.homeFolderId)
                     }
                   }
@@ -175,7 +175,7 @@
               @dragenter.prevent.stop="(ev: DragEvent) => {
                 if (!mobile){
                   if (ev.dataTransfer && ev.dataTransfer.items.length > 0 && ev.target != undefined) {
-                    if (ev.dataTransfer.items[0].type == 'id'){
+                    if (ev.dataTransfer!.getData('id') != ' '){
                       (ev.target as HTMLElement).classList.add('dragover')
                     }
                   }
@@ -242,7 +242,7 @@
                       @drop.prevent.self.stop="(ev: InputEvent) => {
                         if (!mobile){
                           if (ev.dataTransfer!.items.length > 0) {
-                            if (ev.dataTransfer!.items[0].type == 'id') {
+                            if (ev.dataTransfer!.getData('id') != ' ') {
                                 moveSelection(item.id)
                             }
                           }
@@ -260,7 +260,7 @@
                       @dragenter.prevent.stop="(ev: DragEvent) => {
                         if (!mobile){
                           if (ev.dataTransfer && ev.dataTransfer.items.length > 0 && ev.target != undefined) {
-                            if (ev.dataTransfer.items[0].type == 'id'){
+                            if (ev.dataTransfer!.getData('id') != ' '){
                               (ev.target as HTMLElement).classList.add('dragover')
                             }
                           }
@@ -309,7 +309,7 @@
                 @drop.prevent.self.stop="(ev: InputEvent) => {
                   if (!mobile){
                     if (ev.dataTransfer!.items.length > 0) {
-                      if (ev.dataTransfer!.items[0].type == 'id') {
+                      if (ev.dataTransfer!.getData('id') != ' ') {
                           moveSelection(item.id)
                       }
                     }
@@ -327,7 +327,7 @@
                 @dragenter.prevent.stop="(ev: DragEvent) => {
                   if (!mobile){
                     if (ev.dataTransfer && ev.dataTransfer.items.length > 0 && ev.target != undefined) {
-                      if (ev.dataTransfer.items[0].type == 'id'){
+                      if (ev.dataTransfer!.getData('id') != ' '){
                         (ev.target as HTMLElement).classList.add('dragover')
                       }
                     }
@@ -737,19 +737,24 @@
         }"
       >
         <div class="col column selectoContainer">
-          <div class="row justify-center q-mt-xs">
-            <div
-              class="full-width bg-transparent fixed"
-              style="height: 15px; z-index: 2"
-              @dragenter.self="scrollUp(true)"
-              @dragleave.self="scrollUp(false)"
-              @dragover.prevent
-              @drop.prevent.stop="scrollUp(false)"
+          <div
+            class="full-width bg-transparent fixed row justify-center"
+            style="height: 30px; z-index: 2"
+            @dragenter.self="scrollUp(true)"
+            @dragleave.self="scrollUp(false)"
+            @dragover.prevent
+            @drop.prevent.stop="scrollUp(false)"
+            v-if="dragActive"
+          >
+            <q-icon
+              name="keyboard_arrow_up"
+              color="primary"
+              size="lg"
+              class="no-pointer-events"
             />
           </div>
-          <div style="height: 15px" />
           <div
-            class="col"
+            class="col q-mt-md"
             :class="mobile ? 'q-ml-xs q-mr-xs' : 'q-ml-md q-mr-md'"
             @scroll="onScrollerScroll"
           >
@@ -848,7 +853,7 @@
                             onFolderDrop(ev, item.id);
                           }
                           // FileItem
-                          if (ev.dataTransfer!.items[0].type == 'id') {
+                          if (ev.dataTransfer!.getData('id') != ' ') {
                             if (ev.dataTransfer!.getData('id') != item.id && selectedItems.indexOf(item) == -1) {
                               moveSelection(item.id)
                             }
@@ -871,7 +876,7 @@
                             item.dragOver = true;
                           }
                           // FileItem
-                          if (ev.dataTransfer!.items[0].type == 'id') {
+                          if (ev.dataTransfer!.getData('id') != ' ') {
                             if (ev.dataTransfer!.getData('id') != item.id && selectedItems.indexOf(item) == -1) {
                               item.dragOver = true;
                             }
@@ -886,7 +891,8 @@
                       }
                     }"
                     @dragleave.prevent.stop="item.dragOver = false"
-                    @dragover.prevent.self.stop
+                    @dragover.prevent
+                    @dragend="dragActive = false"
                   >
                     <q-popup-proxy
                       context-menu
@@ -1019,6 +1025,7 @@
                     :class="item.selected ? 'selected' : ''"
                     :draggable="true"
                     @dragstart="startDrag($event, item)"
+                    @dragend="dragActive = false"
                   >
                     <q-popup-proxy
                       context-menu
@@ -1138,17 +1145,25 @@
                 />
               </div>
             </template>
-            <div style="height: 15px" />
+            <div style="height: 30px" />
           </div>
           <div class="row justify-center">
             <div
-              class="full-width bg-transparent bg-transparent fixed-bottom"
-              style="height: 15px"
+              class="full-width bg-transparent fixed-bottom row justify-center"
+              style="height: 30px"
               @dragenter.self="scrollDown(true)"
               @dragleave.self="scrollDown(false)"
               @dragover.prevent
               @drop.prevent.stop="scrollDown(false)"
-            />
+              v-if="dragActive"
+            >
+              <q-icon
+                name="keyboard_arrow_down"
+                color="primary"
+                size="lg"
+                class="no-pointer-events"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -1471,6 +1486,7 @@ import MoveSelectedItemsDialog from 'src/components/Files/Dialogs/MoveSelectedIt
 import DeleteSelectedItemsDialog from 'src/components/Files/Dialogs/DeleteSelectedItemsDialog.vue';
 import UploadFilesDialog from 'src/components/Files/Dialogs/UploadFilesDialog.vue';
 import ErrorPage from 'src/components/ErrorPage.vue';
+// https://github.com/Bernardo-Castilho/dragdroptouch
 import { enableDragDropTouch } from 'src/components/Files/lib/drag-drop-touch.esm.min.js';
 
 export default defineComponent({
@@ -1516,7 +1532,13 @@ export default defineComponent({
       mobile = false;
     }
     if (mobile) {
-      enableDragDropTouch();
+      console.log('loading mobile library');
+      const options = {
+        allowDragScroll: false,
+        isPressHoldMode: true,
+        pressHoldDelayMS: 400,
+      };
+      enableDragDropTouch(undefined, undefined, options);
     }
 
     return {
@@ -1608,6 +1630,7 @@ export default defineComponent({
         throttleTime: 30,
         threshold: 0,
       }),
+      dragActive: ref(false),
       // new folder handler
       newFolder: ref({
         show: false,
@@ -1729,6 +1752,7 @@ export default defineComponent({
     },
 
     startDrag(event: any, item: FolderEntryType) {
+      this.dragActive = true;
       if (this.selectedItems.indexOf(item) == -1) {
         item.selected = true;
         this.selectedItems.push(item);
@@ -1747,11 +1771,20 @@ export default defineComponent({
         (this.selectedItems.length == 1 ? '' : 's');
       elem.style.position = 'absolute';
       elem.style.top = '-1000px';
-      elem.classList.add('text-body1');
-      elem.classList.add('q-pa-sm');
-      elem.classList.add('bg-layout-bg');
-      elem.classList.add('text-layout-text');
-      elem.classList.add('text-weight-bold');
+      if (this.mobile) {
+        elem.classList.add('text-h6');
+        elem.classList.add('q-pa-sm');
+        elem.classList.add('bg-layout-bg');
+        elem.classList.add('text-layout-text');
+        elem.classList.add('text-weight-bold');
+      } else {
+        elem.classList.add('text-h6');
+        elem.classList.add('q-pa-sm');
+        elem.classList.add('bg-layout-bg');
+        elem.classList.add('text-layout-text');
+        elem.classList.add('text-weight-bold');
+      }
+
       document.body.appendChild(elem);
       event.dataTransfer.setDragImage(elem, 0, 0);
     },

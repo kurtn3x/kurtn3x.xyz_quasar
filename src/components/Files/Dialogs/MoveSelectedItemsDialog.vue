@@ -44,13 +44,14 @@
             dense
             outlined
             label="Search"
-            class="text-primary text-body1"
+            class="text-primary text-body1 col-7"
           />
+          <q-space />
           <q-btn
             push
             icon="unfold_more"
             round
-            class="bg-blue text-white q-ml-sm"
+            class="bg-blue text-white"
             @click="expandTree"
           >
             <q-tooltip class="bg-blue text-white text-body2">
@@ -194,14 +195,12 @@ export default defineComponent({
   watch: {
     active(newVal, oldVal) {
       this.showDialog = newVal;
-    },
-    propItem(newVal, oldVal) {
-      this.selectedItems = newVal;
-    },
-    showDialog(newVal, oldVal) {
       if (newVal == true) {
         this.fetchAllAvailableFolders();
       }
+    },
+    propItem(newVal, oldVal) {
+      this.selectedItems = newVal;
     },
   },
   methods: {
