@@ -6,7 +6,10 @@
   />
 
   <q-dialog v-model="sharingPasswordDialog">
-    <q-card bordered style="width: 350px">
+    <q-card
+      bordered
+      style="width: 350px"
+    >
       <q-toolbar class="bg-layout-bg text-layout-text text-center">
         <q-toolbar-title class="q-ma-sm">Set new Password</q-toolbar-title>
       </q-toolbar>
@@ -66,7 +69,10 @@
         />
       </q-card-actions>
       <q-separator />
-      <q-card-actions align="center" class="row q-mt-sm q-mb-sm">
+      <q-card-actions
+        align="center"
+        class="row q-mt-sm q-mb-sm"
+      >
         <q-btn
           v-close-popup
           push
@@ -89,7 +95,10 @@
       </q-card-actions>
     </q-card>
   </q-dialog>
-  <q-list separator bordered>
+  <q-list
+    separator
+    bordered
+  >
     <q-item
       clickable
       v-close-popup
@@ -113,8 +122,15 @@
       <q-item-section side>
         <q-icon name="keyboard_arrow_down" />
       </q-item-section>
-      <q-menu anchor="bottom middle" self="top middle" style="width: 250px">
-        <q-list bordered separator>
+      <q-menu
+        anchor="bottom middle"
+        self="top middle"
+        style="width: 250px"
+      >
+        <q-list
+          bordered
+          separator
+        >
           <q-item>
             <q-checkbox
               dense
@@ -148,8 +164,9 @@
                 class="text-center text-green text-weight-bold"
                 overline
                 style="font-size: 13px"
-                >Password protected</q-item-label
               >
+                Password protected
+              </q-item-label>
               <div class="row full-width q-mt-xs">
                 <q-btn
                   push
@@ -196,8 +213,7 @@
                   flat
                   size="md"
                   round
-                >
-                </q-btn>
+                ></q-btn>
               </template>
             </q-input>
           </q-item>
@@ -217,7 +233,10 @@
         separate-close-popup
         ref="inputMenu"
       >
-        <q-card bordered flat>
+        <q-card
+          bordered
+          flat
+        >
           <q-input
             label="New Name"
             v-model="newName"
@@ -237,7 +256,10 @@
           />
           <q-separator class="q-ma-sm" />
 
-          <q-card-actions align="center" class="row">
+          <q-card-actions
+            align="center"
+            class="row"
+          >
             <q-btn
               v-close-popup
               push
@@ -257,7 +279,11 @@
         </q-card>
       </q-menu>
     </q-item>
-    <q-item clickable v-close-popup @click="moveItem">
+    <q-item
+      clickable
+      v-close-popup
+      @click="moveItem"
+    >
       <q-item-section avatar>
         <q-icon name="trending_flat" />
       </q-item-section>
@@ -265,7 +291,11 @@
         <q-item-label>Move</q-item-label>
       </q-item-section>
     </q-item>
-    <q-item clickable v-close-popup @click="deleteItem">
+    <q-item
+      clickable
+      v-close-popup
+      @click="deleteItem"
+    >
       <q-item-section avatar>
         <q-icon name="close" />
       </q-item-section>
@@ -273,7 +303,10 @@
         <q-item-label>Delete</q-item-label>
       </q-item-section>
     </q-item>
-    <q-item clickable @click="showItemInformationDialog = true">
+    <q-item
+      clickable
+      @click="showItemInformationDialog = true"
+    >
       <q-item-section avatar>
         <q-icon name="info" />
       </q-item-section>
@@ -451,7 +484,7 @@ export default defineComponent({
       args += '?attachment=1';
 
       var url =
-        'https://api.kurtn3x.xyz/files/download/+' +
+        'https://api.kurtn3x.xyz/files/download/' +
         this.item.type +
         '/' +
         this.item.id +
