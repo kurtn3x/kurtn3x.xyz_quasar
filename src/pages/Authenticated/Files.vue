@@ -845,7 +845,7 @@
                     ]"
                     :draggable="true"
                     @dragstart="startDrag($event, item)"
-                    @drop.prevent.self.stop="(ev: InputEvent) => {
+                    @drop.prevent.stop="(ev: InputEvent) => {
                       if (!mobile){
                         if (ev.dataTransfer!.items.length > 0) {
                           // real file from filesystem
@@ -891,7 +891,7 @@
                       }
                     }"
                     @dragleave.prevent.stop="item.dragOver = false"
-                    @dragover.prevent
+                    @dragover.prevent.stop
                     @dragend="dragActive = false"
                   >
                     <q-popup-proxy
