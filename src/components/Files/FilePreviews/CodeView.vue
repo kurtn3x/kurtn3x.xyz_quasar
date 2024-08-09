@@ -1,6 +1,12 @@
 <template>
-  <div class="absolute-full flex flex-center bg-transparent" v-if="loading">
-    <q-spinner color="primary" size="10em" />
+  <div
+    class="absolute-full flex flex-center bg-transparent"
+    v-if="loading"
+  >
+    <q-spinner
+      color="primary"
+      size="10em"
+    />
   </div>
   <div
     v-if="!loading && error"
@@ -9,7 +15,10 @@
     Couldn't load Text from File.
   </div>
 
-  <div v-if="!loading && !error" class="col column">
+  <div
+    v-if="!loading && !error"
+    class="col column"
+  >
     <div
       class="bg-layout-bg row text-layout-text full-width"
       style="height: 40px"
@@ -29,25 +38,48 @@
         v-if="localStore.isAuthenticated"
       />
       <q-space />
-      <q-separator vertical color="layout-text" />
-      <q-btn icon="info" flat stretch>
-        <q-menu anchor="bottom middle" self="top middle">
+      <q-separator
+        vertical
+        color="layout-text"
+      />
+      <q-btn
+        icon="info"
+        flat
+        stretch
+      >
+        <q-menu
+          anchor="bottom middle"
+          self="top middle"
+        >
           <div class="bg-light-blue-6 text-body1 text-center">
-            <a class="q-ml-sm text-white"> Info </a>
+            <a class="q-ml-sm text-white">Info</a>
           </div>
           <div class="q-ma-sm text-body1">
             <div class="q-ma-sm">
-              <a class="text-weight-bold">Lines:</a> {{ state.lines }}
+              <a class="text-weight-bold">Lines:</a>
+              {{ state.lines }}
             </div>
             <div class="q-ma-sm">
-              <a class="text-weight-bold">Characters:</a> {{ state.length }}
+              <a class="text-weight-bold">Characters:</a>
+              {{ state.length }}
             </div>
           </div>
         </q-menu>
       </q-btn>
-      <q-separator vertical color="layout-text" />
-      <q-btn icon="settings" flat stretch>
-        <q-menu class="no-shadow" anchor="bottom middle" self="top middle">
+      <q-separator
+        vertical
+        color="layout-text"
+      />
+      <q-btn
+        icon="settings"
+        flat
+        stretch
+      >
+        <q-menu
+          class="no-shadow"
+          anchor="bottom middle"
+          self="top middle"
+        >
           <q-card bordered>
             <q-item>
               <q-item-section>
@@ -64,8 +96,8 @@
               </q-item-section>
             </q-item>
             <q-separator color="blue-5" />
-            <q-item
-              ><q-item-section>
+            <q-item>
+              <q-item-section>
                 <q-item-label class="text-center text-body1 text-light-blue-6">
                   Tab Spaces
                 </q-item-label>
@@ -90,15 +122,24 @@
           </q-card>
         </q-menu>
       </q-btn>
-      <q-separator vertical color="layout-text" />
+      <q-separator
+        vertical
+        color="layout-text"
+      />
       <q-btn
         :icon="darkmode ? 'dark_mode' : 'light_mode'"
         flat
         @click="darkmode = !darkmode"
       />
     </div>
-    <q-card bordered class="col column">
-      <q-resize-observer @resize="onResize" :debounce="250" />
+    <q-card
+      bordered
+      class="col column"
+    >
+      <q-resize-observer
+        @resize="onResize"
+        :debounce="250"
+      />
       <q-scroll-area
         :class="darkmode ? 'bg-one-dark text-white' : 'bg-white text-dark'"
         :thumb-style="thumbStyle"
@@ -116,8 +157,7 @@
           @update="handleStateUpdate"
           @ready="handleReady"
           @keydown.ctrl.s.prevent.stop="updateContent"
-        >
-        </codemirror>
+        ></codemirror>
       </q-scroll-area>
     </q-card>
   </div>
@@ -346,7 +386,7 @@ function updateContent() {
 function updateSyntax(syntax) {
   var data = {
     itemId: item.value.id,
-    mime: 'text/code-' + syntax,
+    mime: 'text/code' + syntax != '' ? '-' + syntax : '',
   };
   apiPut('/files/file/' + item.value.id, data, axiosConfig).then((apiData) => {
     if (apiData.error == false) {
