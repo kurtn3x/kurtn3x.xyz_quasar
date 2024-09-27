@@ -690,7 +690,7 @@
       </div>
 
       <div
-        class="col column"
+        class="col column selectoContainer"
         ref="mainScrollArea"
         :class="[
           scrollAreaDragover ? 'scrolldragover' : '',
@@ -736,116 +736,115 @@
           }
         }"
       >
-        <div class="col column selectoContainer">
-          <div
-            class="full-width bg-transparent fixed row justify-center"
-            style="height: 30px; z-index: 2"
-            @dragenter.self="scrollUp(true)"
-            @dragleave.self="scrollUp(false)"
-            @dragover.prevent
-            @drop.prevent.stop="scrollUp(false)"
-            v-if="dragActive"
-          >
-            <q-icon
-              name="keyboard_arrow_up"
-              color="primary"
-              size="lg"
-              class="no-pointer-events"
+        <div
+          class="full-width bg-transparent fixed row justify-center"
+          style="height: 30px; z-index: 2"
+          @dragenter.self="scrollUp(true)"
+          @dragleave.self="scrollUp(false)"
+          @dragover.prevent
+          @drop.prevent.stop="scrollUp(false)"
+          v-if="dragActive"
+        >
+          <q-icon
+            name="keyboard_arrow_up"
+            color="primary"
+            size="lg"
+            class="no-pointer-events"
+          />
+        </div>
+        <div
+          class="col q-mt-md"
+          :class="mobile ? 'q-ml-xs q-mr-xs' : 'q-ml-md q-mr-md'"
+          @scroll="onScrollerScroll"
+        >
+          <div v-if="newFolder.show">
+            <q-item
+              class="full-width rounded-borders"
+              style="background-color: rgba(60, 177, 60, 0.801)"
+            >
+              <q-item-section
+                avatar
+                top
+                class="no-pointer-events"
+              >
+                <q-avatar
+                  icon="folder"
+                  color="transparent"
+                  text-color="primary"
+                  size="4.5em"
+                  style="height: 40px"
+                />
+              </q-item-section>
+
+              <q-item-section>
+                <q-input
+                  dark
+                  outlined
+                  dense
+                  color="white"
+                  v-model="newFolder.name"
+                  label="New Folder Name"
+                  class="text-body1 q-ml-md"
+                  input-class="text-body2"
+                  clearable
+                  @keyup.enter="createFolder(newFolder.name)"
+                  ref="newItemInput"
+                  hide-bottom-space
+                  autofocus
+                ></q-input>
+              </q-item-section>
+              <q-item-section side>
+                <div class="row">
+                  <q-btn
+                    icon="done"
+                    class="q-ml-md bg-green text-white"
+                    round
+                    flat
+                    @click="createFolder(newFolder.name)"
+                  />
+                  <q-btn
+                    icon="close"
+                    class="q-ml-md bg-red text-white"
+                    round
+                    flat
+                    @click="
+                      newFolder.show = false;
+                      newFolder.name = '';
+                    "
+                  />
+                </div>
+              </q-item-section>
+            </q-item>
+            <q-separator
+              size="2px"
+              color="light-green"
             />
           </div>
-          <div
-            class="col q-mt-md"
-            :class="mobile ? 'q-ml-xs q-mr-xs' : 'q-ml-md q-mr-md'"
-            @scroll="onScrollerScroll"
+          <template
+            v-for="(item, index) in rawFolderContent.children"
+            :key="item.id"
           >
-            <div v-if="newFolder.show">
-              <q-item
-                class="full-width rounded-borders"
-                style="background-color: rgba(60, 177, 60, 0.801)"
-              >
-                <q-item-section
-                  avatar
-                  top
-                  class="no-pointer-events"
-                >
-                  <q-avatar
-                    icon="folder"
-                    color="transparent"
-                    text-color="primary"
-                    size="4.5em"
-                    style="height: 40px"
-                  />
-                </q-item-section>
-
-                <q-item-section>
-                  <q-input
-                    dark
-                    outlined
-                    dense
-                    color="white"
-                    v-model="newFolder.name"
-                    label="New Folder Name"
-                    class="text-body1 q-ml-md"
-                    input-class="text-body2"
-                    clearable
-                    @keyup.enter="createFolder(newFolder.name)"
-                    ref="newItemInput"
-                    hide-bottom-space
-                    autofocus
-                  ></q-input>
-                </q-item-section>
-                <q-item-section side>
-                  <div class="row">
-                    <q-btn
-                      icon="done"
-                      class="q-ml-md bg-green text-white"
-                      round
-                      flat
-                      @click="createFolder(newFolder.name)"
-                    />
-                    <q-btn
-                      icon="close"
-                      class="q-ml-md bg-red text-white"
-                      round
-                      flat
-                      @click="
-                        newFolder.show = false;
-                        newFolder.name = '';
-                      "
-                    />
-                  </div>
-                </q-item-section>
-              </q-item>
-              <q-separator
-                size="2px"
-                color="light-green"
-              />
-            </div>
-            <template
-              v-for="(item, index) in rawFolderContent.children"
-              :key="item.id"
+            <!--  Search filtering, only by name for now -->
+            <div
+              v-if="
+                filterSearch == '' ||
+                item.name.toLowerCase().includes(filterSearch)
+              "
             >
-              <!--  Search filtering, only by name for now -->
-              <div
-                v-if="
-                  filterSearch == '' ||
-                  item.name.toLowerCase().includes(filterSearch)
-                "
-              >
-                <!-- Folder Items -->
-                <div v-if="item.type == 'folder'">
-                  <q-item
-                    clickable
-                    :id="index"
-                    @click="getFolderId(item.id, true)"
-                    class="rounded-borders full-width selecto-target"
-                    :class="[
-                      item.dragOver ? 'dragover' : '',
-                      item.selected ? 'selected' : '',
-                    ]"
-                    :draggable="true"
-                    @dragstart="startDrag($event, item)"
-                    @drop.prevent.stop="(ev: InputEvent) => {
+              <!-- Folder Items -->
+              <div v-if="item.type == 'folder'">
+                <q-item
+                  clickable
+                  :id="index"
+                  @click="getFolderId(item.id, true)"
+                  class="rounded-borders full-width selecto-target"
+                  :class="[
+                    item.dragOver ? 'dragover' : '',
+                    item.selected ? 'selected' : '',
+                  ]"
+                  :draggable="true"
+                  @dragstart="startDrag($event, item)"
+                  @drop.prevent.stop="(ev: InputEvent) => {
                       if (!mobile){
                         if (ev.dataTransfer!.items.length > 0) {
                           // real file from filesystem
@@ -868,7 +867,7 @@
                       }
                       item.dragOver = false;
                     }"
-                    @dragenter.prevent.stop="(ev: InputEvent) => {
+                  @dragenter.prevent.stop="(ev: InputEvent) => {
                       if (!mobile){
                         if (ev.dataTransfer!.items.length > 0) {
                           // real file from filesystem
@@ -890,280 +889,279 @@
                         }
                       }
                     }"
-                    @dragleave.prevent.stop="item.dragOver = false"
-                    @dragover.prevent.stop
-                    @dragend="dragActive = false"
-                  >
-                    <q-popup-proxy
-                      context-menu
-                      :breakpoint="0"
-                      @before-show="
-                        clearSelectedItems();
-                        item.selected = true;
-                      "
-                      @before-hide="
-                        selectedItems.indexOf(item) == -1
-                          ? (item.selected = false)
-                          : (item.selected = true)
-                      "
-                      v-if="!mobile"
-                    >
-                      <RightClickMenu
-                        :prop-item="item"
-                        @move-item="
-                          () => {
-                            clearSelectedItems();
-                            showMoveSelectedItemsDialog = true;
-                            selectedItems.push(item);
-                          }
-                        "
-                        @delete-item="
-                          () => {
-                            deleteItem(item.type, item.id);
-                          }
-                        "
-                      />
-                    </q-popup-proxy>
-
-                    <q-item-section avatar>
-                      <q-checkbox
-                        v-model="selectedItems"
-                        :val="item"
-                        color="green"
-                        @click="
-                          selectedItems.indexOf(item) == -1
-                            ? (item.selected = false)
-                            : (item.selected = true)
-                        "
-                      />
-                    </q-item-section>
-                    <q-item-section
-                      avatar
-                      top
-                      style="pointer-events: none"
-                    >
-                      <q-avatar
-                        icon="folder"
-                        color="transparent"
-                        text-color="primary"
-                        size="4.5em"
-                        style="height: 40px"
-                      />
-                    </q-item-section>
-                    <q-item-section
-                      :style="'min-width:' + itemTextWidth + 'px;'"
-                      style="pointer-events: none"
-                      class="row"
-                    >
-                      <q-item-label
-                        class="itemText ellipsis"
-                        :style="'--max-width: ' + itemTextWidth + 'px;'"
-                      >
-                        <q-icon
-                          name="share"
-                          v-if="item.shared"
-                        />
-                        {{ item.name }}
-                      </q-item-label>
-                    </q-item-section>
-
-                    <q-item-section
-                      class="text-caption gt-xs"
-                      style="pointer-events: none"
-                    >
-                      -
-                    </q-item-section>
-
-                    <q-item-section
-                      class="text-caption gt-xs"
-                      style="pointer-events: none"
-                    >
-                      {{ item.modified }}
-                    </q-item-section>
-
-                    <q-item-section side>
-                      <q-btn
-                        icon="more_vert"
-                        flat
-                        :loading="loading"
-                        @click.prevent.stop
-                        round
-                      >
-                        <q-menu>
-                          <RightClickMenu
-                            :prop-item="item"
-                            @move-item="
-                              () => {
-                                clearSelectedItems();
-                                showMoveSelectedItemsDialog = true;
-                                selectedItems.push(item);
-                              }
-                            "
-                            @delete-item="
-                              () => {
-                                deleteItem(item.type, item.id);
-                              }
-                            "
-                          />
-                        </q-menu>
-                      </q-btn>
-                    </q-item-section>
-                  </q-item>
-                </div>
-
-                <!-- File Items -->
-
-                <div v-else>
-                  <q-item
-                    clickable
-                    @click="
-                      showFilePreviewDialog = true;
-                      filePreviewDialogItem = item;
+                  @dragleave.prevent.stop="item.dragOver = false"
+                  @dragover.prevent.stop
+                  @dragend="dragActive = false"
+                >
+                  <q-popup-proxy
+                    context-menu
+                    :breakpoint="0"
+                    @before-show="
+                      clearSelectedItems();
+                      item.selected = true;
                     "
-                    :id="index"
-                    class="rounded-borders full-width selecto-target"
-                    :class="item.selected ? 'selected' : ''"
-                    :draggable="true"
-                    @dragstart="startDrag($event, item)"
-                    @dragend="dragActive = false"
+                    @before-hide="
+                      selectedItems.indexOf(item) == -1
+                        ? (item.selected = false)
+                        : (item.selected = true)
+                    "
+                    v-if="!mobile"
                   >
-                    <q-popup-proxy
-                      context-menu
-                      :breakpoint="0"
-                      @before-show="
-                        clearSelectedItems();
-                        item.selected = true;
+                    <RightClickMenu
+                      :prop-item="item"
+                      @move-item="
+                        () => {
+                          clearSelectedItems();
+                          showMoveSelectedItemsDialog = true;
+                          selectedItems.push(item);
+                        }
                       "
-                      @before-hide="
+                      @delete-item="
+                        () => {
+                          deleteItem(item.type, item.id);
+                        }
+                      "
+                    />
+                  </q-popup-proxy>
+
+                  <q-item-section avatar>
+                    <q-checkbox
+                      v-model="selectedItems"
+                      :val="item"
+                      color="green"
+                      @click="
                         selectedItems.indexOf(item) == -1
                           ? (item.selected = false)
                           : (item.selected = true)
                       "
-                      v-if="!mobile"
+                    />
+                  </q-item-section>
+                  <q-item-section
+                    avatar
+                    top
+                    style="pointer-events: none"
+                  >
+                    <q-avatar
+                      icon="folder"
+                      color="transparent"
+                      text-color="primary"
+                      size="4.5em"
+                      style="height: 40px"
+                    />
+                  </q-item-section>
+                  <q-item-section
+                    :style="'min-width:' + itemTextWidth + 'px;'"
+                    style="pointer-events: none"
+                    class="row"
+                  >
+                    <q-item-label
+                      class="itemText ellipsis"
+                      :style="'--max-width: ' + itemTextWidth + 'px;'"
                     >
-                      <RightClickMenu
-                        :prop-item="item"
-                        @move-item="
-                          () => {
-                            clearSelectedItems();
-                            showMoveSelectedItemsDialog = true;
-                            selectedItems.push(item);
-                          }
-                        "
-                        @delete-item="
-                          () => {
-                            deleteItem(item.type, item.id);
-                          }
-                        "
+                      <q-icon
+                        name="share"
+                        v-if="item.shared"
                       />
-                    </q-popup-proxy>
-                    <q-item-section avatar>
-                      <q-checkbox
-                        v-model="selectedItems"
-                        :val="item"
-                        color="green"
-                        @click="
-                          selectedItems.indexOf(item) == -1
-                            ? (item.selected = false)
-                            : (item.selected = true)
-                        "
-                      />
-                    </q-item-section>
-                    <q-item-section
-                      avatar
-                      top
-                    >
-                      <q-avatar
-                        :icon="getIcon(item.mime)"
-                        color="transparent"
-                        text-color="primary"
-                        size="4.5em"
-                        style="height: 40px"
-                      />
-                    </q-item-section>
+                      {{ item.name }}
+                    </q-item-label>
+                  </q-item-section>
 
-                    <q-item-section
-                      :style="'min-width:' + itemTextWidth + 'px;'"
+                  <q-item-section
+                    class="text-caption gt-xs"
+                    style="pointer-events: none"
+                  >
+                    -
+                  </q-item-section>
+
+                  <q-item-section
+                    class="text-caption gt-xs"
+                    style="pointer-events: none"
+                  >
+                    {{ item.modified }}
+                  </q-item-section>
+
+                  <q-item-section side>
+                    <q-btn
+                      icon="more_vert"
+                      flat
+                      :loading="loading"
+                      @click.prevent.stop
+                      round
                     >
-                      <q-item-label
-                        class="itemText ellipsis"
-                        :style="'width: ' + itemTextWidth + 'px;'"
-                      >
-                        <q-icon
-                          name="share"
-                          v-if="item.shared"
+                      <q-menu>
+                        <RightClickMenu
+                          :prop-item="item"
+                          @move-item="
+                            () => {
+                              clearSelectedItems();
+                              showMoveSelectedItemsDialog = true;
+                              selectedItems.push(item);
+                            }
+                          "
+                          @delete-item="
+                            () => {
+                              deleteItem(item.type, item.id);
+                            }
+                          "
                         />
-                        {{ item.name }}
-                      </q-item-label>
-                    </q-item-section>
-                    <q-item-section
-                      class="text-caption gt-xs"
-                      style="pointer-events: none"
-                    >
-                      {{ (item as FolderEntryType).size }}
-                    </q-item-section>
-                    <q-item-section
-                      class="text-caption gt-xs"
-                      style="pointer-events: none"
-                    >
-                      {{ item.modified }}
-                    </q-item-section>
-
-                    <q-item-section side>
-                      <q-btn
-                        icon="more_vert"
-                        flat
-                        round
-                        :loading="loading"
-                        @click.prevent.stop
-                      >
-                        <q-menu>
-                          <RightClickMenu
-                            :prop-item="item"
-                            @move-item="
-                              () => {
-                                clearSelectedItems();
-                                showMoveSelectedItemsDialog = true;
-                                selectedItems.push(item);
-                              }
-                            "
-                            @delete-item="
-                              () => {
-                                deleteItem(item.type, item.id);
-                              }
-                            "
-                          />
-                        </q-menu>
-                      </q-btn>
-                    </q-item-section>
-                  </q-item>
-                </div>
-                <q-separator
-                  @drop.stop.prevent=""
-                  @dragover.stop.prevent=""
-                  @dragenter.stop.prevent=""
-                />
+                      </q-menu>
+                    </q-btn>
+                  </q-item-section>
+                </q-item>
               </div>
-            </template>
-            <div style="height: 30px" />
-          </div>
-          <div class="row justify-center">
-            <div
-              class="full-width bg-transparent fixed-bottom row justify-center"
-              style="height: 30px"
-              @dragenter.self="scrollDown(true)"
-              @dragleave.self="scrollDown(false)"
-              @dragover.prevent
-              @drop.prevent.stop="scrollDown(false)"
-              v-if="dragActive"
-            >
-              <q-icon
-                name="keyboard_arrow_down"
-                color="primary"
-                size="lg"
+
+              <!-- File Items -->
+
+              <div v-else>
+                <q-item
+                  clickable
+                  @click="
+                    showFilePreviewDialog = true;
+                    filePreviewDialogItem = item;
+                  "
+                  :id="index"
+                  class="rounded-borders full-width selecto-target"
+                  :class="item.selected ? 'selected' : ''"
+                  :draggable="true"
+                  @dragstart="startDrag($event, item)"
+                  @dragend="dragActive = false"
+                >
+                  <q-popup-proxy
+                    context-menu
+                    :breakpoint="0"
+                    @before-show="
+                      clearSelectedItems();
+                      item.selected = true;
+                    "
+                    @before-hide="
+                      selectedItems.indexOf(item) == -1
+                        ? (item.selected = false)
+                        : (item.selected = true)
+                    "
+                    v-if="!mobile"
+                  >
+                    <RightClickMenu
+                      :prop-item="item"
+                      @move-item="
+                        () => {
+                          clearSelectedItems();
+                          showMoveSelectedItemsDialog = true;
+                          selectedItems.push(item);
+                        }
+                      "
+                      @delete-item="
+                        () => {
+                          deleteItem(item.type, item.id);
+                        }
+                      "
+                    />
+                  </q-popup-proxy>
+                  <q-item-section avatar>
+                    <q-checkbox
+                      v-model="selectedItems"
+                      :val="item"
+                      color="green"
+                      @click="
+                        selectedItems.indexOf(item) == -1
+                          ? (item.selected = false)
+                          : (item.selected = true)
+                      "
+                    />
+                  </q-item-section>
+                  <q-item-section
+                    avatar
+                    top
+                  >
+                    <q-avatar
+                      :icon="getIcon(item.mime)"
+                      color="transparent"
+                      text-color="primary"
+                      size="4.5em"
+                      style="height: 40px"
+                    />
+                  </q-item-section>
+
+                  <q-item-section :style="'min-width:' + itemTextWidth + 'px;'">
+                    <q-item-label
+                      class="itemText ellipsis"
+                      :style="'width: ' + itemTextWidth + 'px;'"
+                    >
+                      <q-icon
+                        name="share"
+                        v-if="item.shared"
+                      />
+                      {{ item.name }}
+                    </q-item-label>
+                  </q-item-section>
+                  <q-item-section
+                    class="text-caption gt-xs"
+                    style="pointer-events: none"
+                  >
+                    {{ (item as FolderEntryType).size }}
+                  </q-item-section>
+                  <q-item-section
+                    class="text-caption gt-xs"
+                    style="pointer-events: none"
+                  >
+                    {{ item.modified }}
+                  </q-item-section>
+
+                  <q-item-section side>
+                    <q-btn
+                      icon="more_vert"
+                      flat
+                      round
+                      :loading="loading"
+                      @click.prevent.stop
+                    >
+                      <q-menu>
+                        <RightClickMenu
+                          :prop-item="item"
+                          @move-item="
+                            () => {
+                              clearSelectedItems();
+                              showMoveSelectedItemsDialog = true;
+                              selectedItems.push(item);
+                            }
+                          "
+                          @delete-item="
+                            () => {
+                              deleteItem(item.type, item.id);
+                            }
+                          "
+                        />
+                      </q-menu>
+                    </q-btn>
+                  </q-item-section>
+                </q-item>
+              </div>
+              <q-separator
                 class="no-pointer-events"
+                @drop.stop.prevent=""
+                @dragover.stop.prevent=""
+                @dragenter.stop.prevent=""
+                @dragleave.stop.prevent=""
               />
             </div>
+          </template>
+          <div style="height: 30px" />
+        </div>
+        <div class="row justify-center">
+          <div
+            class="full-width bg-transparent fixed-bottom row justify-center"
+            style="height: 30px"
+            @dragenter.self="scrollDown(true)"
+            @dragleave.self="scrollDown(false)"
+            @dragover.prevent
+            @drop.prevent.stop="scrollDown(false)"
+            v-if="dragActive"
+          >
+            <q-icon
+              name="keyboard_arrow_down"
+              color="primary"
+              size="lg"
+              class="no-pointer-events"
+            />
           </div>
         </div>
       </div>
@@ -2056,13 +2054,11 @@ export default defineComponent({
         directoryReader.readEntries(async (entries: FileSystemEntry[]) => {
           for (var entry of entries) {
             this.uniqueFolderUploadId += 1;
+            console.log(entry);
+            if (entry.isDirectory) {
+              // && entry instanceof FileSystemDirectoryEntry, removed because chromium doesnt have it for some reason
 
-            if (
-              entry.isDirectory &&
-              entry instanceof FileSystemDirectoryEntry
-            ) {
               // handle folders
-
               // increment the parentId, which will result in a unique
               // id for each folder
               var uniqueFolderId = (parentId += 1);
@@ -2076,8 +2072,14 @@ export default defineComponent({
               returnArray.push(folderStructure);
               // recursively call this function again to check for content
               // in this folder
-              await this.traverseFolder(entry, returnArray, uniqueFolderId);
-            } else if (entry.isFile && entry instanceof FileSystemFileEntry) {
+              await this.traverseFolder(
+                entry as FileSystemDirectoryEntry,
+                returnArray,
+                uniqueFolderId
+              );
+            } else if (entry.isFile) {
+              // && entry instanceof FileSystemFileEntry, removed because same as above
+
               // handle files
               let fileEntity: TraverseFolderMapType = {
                 type: 'file',
