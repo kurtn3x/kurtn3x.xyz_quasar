@@ -52,13 +52,13 @@
           >
             <div
               v-if="uploadFilesDialogUploadList.length == 0"
-              class="text-center text-h6 q-mt-md"
+              class="text-center text-h6 q-mt-md no-pointer-events"
             >
               Select some Files or Folders or Drag & Drop them here.
               <q-icon
                 name="ads_click"
                 :size="uploadFilesDialogAreaDragover ? '100px' : '50px'"
-                class="absolute-center q-mt-md"
+                class="absolute-center q-mt-md no-pointer-events"
               />
             </div>
 

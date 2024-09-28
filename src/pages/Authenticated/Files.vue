@@ -17,6 +17,7 @@
       :active="showFilePreviewDialog"
       @close="showFilePreviewDialog = false"
     />
+
     <CreateFileDialog
       :active="showCreateFileDialog"
       @close="showCreateFileDialog = false"
@@ -26,6 +27,7 @@
         }
       "
     />
+
     <MoveSelectedItemsDialog
       :prop-item="selectedItems"
       :active="showMoveSelectedItemsDialog"
@@ -54,6 +56,41 @@
       }
       "
     />
+
+    <q-dialog
+      v-model="scrollAreaDragover"
+      @drop.prevent.stop="(ev: DragEvent) => {
+          // disable file drag&drop for mobile
+          if (!mobile){
+            if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
+              if (ev.dataTransfer.items[0].kind == 'file') {
+                uploadFilesDialogInitialEvent = ev;
+                showUploadFilesDialog = true;
+                scrollAreaDragover = false;
+              }
+            }
+          }
+        }"
+      @dragleave.prevent.stop="scrollAreaDragover = false"
+      @dragover.prevent.stop
+    >
+      <q-card
+        bordered
+        style="height: 200px; width: 350px"
+        class="no-pointer-events"
+      >
+        <div class="text-center text-h5 q-mt-md no-pointer-events">
+          Drop Files to upload
+        </div>
+        <div class="row justify-center">
+          <q-icon
+            name="ads_click"
+            size="100px"
+            class="q-mt-md no-pointer-events"
+          />
+        </div>
+      </q-card>
+    </q-dialog>
 
     <!-- filterDialog -->
     <q-page-sticky
@@ -383,7 +420,7 @@
               push
               icon="add"
               direction="down"
-              class="q-ml-md"
+              class="q-ml-lg"
               color="light-green"
               round
               padding="none"
@@ -503,7 +540,7 @@
               push
               icon="add"
               direction="down"
-              class="q-mr-md q-ml-md"
+              class="q-mr-md q-ml-lg"
               color="light-green"
               padding="sm"
               style="z-index: 3"
@@ -692,45 +729,13 @@
       <div
         class="col column selectoContainer"
         ref="mainScrollArea"
-        :class="[
-          scrollAreaDragover ? 'scrolldragover' : '',
-          mobile ? 'scroll' : 'scrollmobile',
-        ]"
-        @drop.prevent.stop="(ev: DragEvent) => {
+        :class="[mobile ? 'scroll' : 'scrollmobile']"
+        @dragenter.prevent.stop="(ev: DragEvent) => {
           // disable file drag&drop for mobile
           if (!mobile){
             if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
               if (ev.dataTransfer.items[0].kind == 'file') {
-                uploadFilesDialogInitialEvent = ev;
-                showUploadFilesDialog = true;
-                scrollAreaDragover = false;
-              }
-            }
-          }
-        }"
-        @dragover.prevent="(ev: DragEvent) => {
-          if (!mobile){
-            if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
-              if (ev.dataTransfer.items[0].kind == 'file') {
                 scrollAreaDragover = true;
-              }
-            }
-          }
-        }"
-        @dragenter.self="(ev: DragEvent) => {
-          if (!mobile){
-            if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
-              if (ev.dataTransfer.items[0].kind == 'file') {
-                scrollAreaDragover = true;
-              }
-            }
-          }
-        }"
-        @dragleave.prevent="(ev: DragEvent) => {
-          if(!mobile){
-            if (ev.dataTransfer && ev.dataTransfer.items.length > 0) {
-              if (ev.dataTransfer.items[0].kind == 'file') {
-                scrollAreaDragover = false;
               }
             }
           }
@@ -847,10 +852,6 @@
                   @drop.prevent.stop="(ev: InputEvent) => {
                       if (!mobile){
                         if (ev.dataTransfer!.items.length > 0) {
-                          // real file from filesystem
-                          if (ev.dataTransfer!.items[0].kind == 'file') {
-                            onFolderDrop(ev, item.id);
-                          }
                           // FileItem
                           if (ev.dataTransfer!.getData('id') != ' ') {
                             if (ev.dataTransfer!.getData('id') != item.id && selectedItems.indexOf(item) == -1) {
@@ -870,10 +871,6 @@
                   @dragenter.prevent.stop="(ev: InputEvent) => {
                       if (!mobile){
                         if (ev.dataTransfer!.items.length > 0) {
-                          // real file from filesystem
-                          if (ev.dataTransfer!.items[0].kind == 'file') {
-                            item.dragOver = true;
-                          }
                           // FileItem
                           if (ev.dataTransfer!.getData('id') != ' ') {
                             if (ev.dataTransfer!.getData('id') != item.id && selectedItems.indexOf(item) == -1) {
@@ -924,9 +921,13 @@
                     />
                   </q-popup-proxy>
 
-                  <q-item-section avatar>
+                  <q-item-section
+                    avatar
+                    class="no-pointer-events"
+                  >
                     <q-checkbox
                       v-model="selectedItems"
+                      style="pointer-events: auto"
                       :val="item"
                       color="green"
                       @click="
@@ -939,7 +940,7 @@
                   <q-item-section
                     avatar
                     top
-                    style="pointer-events: none"
+                    class="no-pointer-events"
                   >
                     <q-avatar
                       icon="folder"
@@ -947,46 +948,45 @@
                       text-color="primary"
                       size="4.5em"
                       style="height: 40px"
+                      class="no-pointer-events"
                     />
                   </q-item-section>
                   <q-item-section
                     :style="'min-width:' + itemTextWidth + 'px;'"
-                    style="pointer-events: none"
-                    class="row"
+                    class="row no-pointer-events"
                   >
                     <q-item-label
-                      class="itemText ellipsis"
+                      class="itemText ellipsis no-pointer-events"
                       :style="'--max-width: ' + itemTextWidth + 'px;'"
                     >
                       <q-icon
                         name="share"
                         v-if="item.shared"
+                        class="no-pointer-events"
                       />
                       {{ item.name }}
                     </q-item-label>
                   </q-item-section>
 
-                  <q-item-section
-                    class="text-caption gt-xs"
-                    style="pointer-events: none"
-                  >
+                  <q-item-section class="text-caption gt-xs no-pointer-events">
                     -
                   </q-item-section>
 
-                  <q-item-section
-                    class="text-caption gt-xs"
-                    style="pointer-events: none"
-                  >
+                  <q-item-section class="text-caption gt-xs no-pointer-events">
                     {{ item.modified }}
                   </q-item-section>
 
-                  <q-item-section side>
+                  <q-item-section
+                    side
+                    class="no-pointer-events"
+                  >
                     <q-btn
                       icon="more_vert"
                       flat
                       :loading="loading"
                       @click.prevent.stop
                       round
+                      style="pointer-events: auto"
                     >
                       <q-menu>
                         <RightClickMenu
@@ -1056,9 +1056,13 @@
                       "
                     />
                   </q-popup-proxy>
-                  <q-item-section avatar>
+                  <q-item-section
+                    avatar
+                    class="no-pointer-events"
+                  >
                     <q-checkbox
                       v-model="selectedItems"
+                      style="pointer-events: auto"
                       :val="item"
                       color="green"
                       @click="
@@ -1071,6 +1075,7 @@
                   <q-item-section
                     avatar
                     top
+                    class="no-pointer-events"
                   >
                     <q-avatar
                       :icon="getIcon(item.mime)"
@@ -1078,41 +1083,44 @@
                       text-color="primary"
                       size="4.5em"
                       style="height: 40px"
+                      class="no-pointer-events"
                     />
                   </q-item-section>
 
-                  <q-item-section :style="'min-width:' + itemTextWidth + 'px;'">
+                  <q-item-section
+                    class="no-pointer-events"
+                    :style="'min-width:' + itemTextWidth + 'px;'"
+                  >
                     <q-item-label
-                      class="itemText ellipsis"
+                      class="itemText ellipsis no-pointer-events"
                       :style="'width: ' + itemTextWidth + 'px;'"
                     >
                       <q-icon
                         name="share"
                         v-if="item.shared"
+                        class="no-pointer-events"
                       />
                       {{ item.name }}
                     </q-item-label>
                   </q-item-section>
-                  <q-item-section
-                    class="text-caption gt-xs"
-                    style="pointer-events: none"
-                  >
+                  <q-item-section class="text-caption gt-xs no-pointer-events">
                     {{ (item as FolderEntryType).size }}
                   </q-item-section>
-                  <q-item-section
-                    class="text-caption gt-xs"
-                    style="pointer-events: none"
-                  >
+                  <q-item-section class="text-caption gt-xs no-pointer-events">
                     {{ item.modified }}
                   </q-item-section>
 
-                  <q-item-section side>
+                  <q-item-section
+                    side
+                    class="no-pointer-events"
+                  >
                     <q-btn
                       icon="more_vert"
                       flat
                       round
                       :loading="loading"
                       @click.prevent.stop
+                      style="pointer-events: auto"
                     >
                       <q-menu>
                         <RightClickMenu
@@ -1135,13 +1143,7 @@
                   </q-item-section>
                 </q-item>
               </div>
-              <q-separator
-                class="no-pointer-events"
-                @drop.stop.prevent=""
-                @dragover.stop.prevent=""
-                @dragenter.stop.prevent=""
-                @dragleave.stop.prevent=""
-              />
+              <q-separator class="no-pointer-events" />
             </div>
           </template>
           <div style="height: 30px" />
@@ -1621,6 +1623,7 @@ export default defineComponent({
       // dragover
       mainScrollArea,
       scrollAreaDragover: ref(false),
+
       scrollIntervalBottom: {},
       scrollIntervalTop: {},
       scrollOptions: ref({
@@ -1734,8 +1737,8 @@ export default defineComponent({
   },
 
   methods: {
-    blabla(event: any) {
-      console.log(event);
+    consolelog(something: any) {
+      console.log(something);
     },
 
     onScroll(e: any) {
@@ -1803,22 +1806,6 @@ export default defineComponent({
           this.selectedItems.splice(index, 1);
         }
       });
-    },
-
-    addItemToNavbar() {
-      var length = 100;
-      let result = '';
-      const characters =
-        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      const charactersLength = characters.length;
-      let counter = 0;
-      while (counter < length) {
-        result += characters.charAt(
-          Math.floor(Math.random() * charactersLength)
-        );
-        counter += 1;
-      }
-      this.navbarIndex.navbarItems.push({ name: result, id: result });
     },
 
     scrollUp(active: boolean) {
@@ -2320,48 +2307,6 @@ export default defineComponent({
           });
         }
       });
-    },
-
-    /**
-     * Upload files from the computer filesystem per drag & drop to this folder
-     * Instantly uploads the dropped files.
-     * @param {InputEvent} ev The event that triggered this function.
-     * @param {string} itemId The ID of the folder this file is uploaded to.
-     */
-    onFolderDrop(ev: InputEvent, itemId: string) {
-      if (ev.dataTransfer!.items.length > 0) {
-        if (ev.dataTransfer!.items[0].kind != 'file') {
-          return;
-        }
-        var uploadList = [];
-        for (var item of (ev.dataTransfer as DataTransfer)
-          .items as unknown as DataTransferItem[]) {
-          if (item.kind == 'file') {
-            if (item.webkitGetAsEntry()?.isFile) {
-              const validFile = item.getAsFile() as File;
-
-              var uploadFileObject = {
-                name: validFile.name,
-                content: validFile,
-                type: 'file',
-              };
-
-              uploadList.push(uploadFileObject);
-            } else if (item.webkitGetAsEntry()?.isDirectory) {
-              const folder = item.webkitGetAsEntry() as FileSystemEntry;
-
-              var uploadFolderObject = {
-                name: folder.name,
-                content: folder,
-                type: 'folder',
-              };
-
-              uploadList.push(uploadFolderObject);
-            }
-          }
-        }
-        this.uploadFiles(uploadList, itemId);
-      }
     },
 
     /**
