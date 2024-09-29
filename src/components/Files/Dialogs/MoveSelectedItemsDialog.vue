@@ -28,10 +28,26 @@
       </div>
       <div
         v-if="!loading && error"
-        class="q-ma-md row justify-center items-center text-red text-body1 text-weight-bold"
-        style="height: 300px"
+        class="q-ma-sm"
       >
-        Failed fetching folders.
+        <div
+          class="row justify-center q-ma-md text-h6 text-red text-weight-bold"
+        >
+          Failed fetching folders
+        </div>
+        <q-separator />
+
+        <q-card-actions class="q-mb-sm column">
+          <div class="row full-width q-mt-sm">
+            <q-btn
+              v-close-popup
+              push
+              icon="close"
+              label="Cancel"
+              class="bg-red text-white col q-mr-xs"
+            />
+          </div>
+        </q-card-actions>
       </div>
       <div
         class="q-ma-sm"
@@ -44,32 +60,34 @@
             dense
             outlined
             label="Search"
-            class="text-primary text-body1 col-7"
+            class="text-primary text-body1 col-8"
           />
-          <q-space />
-          <q-btn
-            push
-            icon="unfold_more"
-            round
-            class="bg-blue text-white"
-            @click="expandTree"
-          >
-            <q-tooltip class="bg-blue text-white text-body2">
-              Expand all
-            </q-tooltip>
-          </q-btn>
+          <div class="row col justify-evenly">
+            <q-btn
+              push
+              icon="unfold_more"
+              round
+              class="bg-blue text-white"
+              @click="expandTree"
+              size="md"
+            >
+              <q-tooltip class="bg-blue text-white text-body2 col">
+                Expand all
+              </q-tooltip>
+            </q-btn>
 
-          <q-btn
-            push
-            icon="unfold_less"
-            round
-            class="bg-blue text-white q-ml-sm q-mr-sm"
-            @click="collapseTree"
-          >
-            <q-tooltip class="bg-blue text-white text-body2">
-              Collapse all
-            </q-tooltip>
-          </q-btn>
+            <q-btn
+              push
+              icon="unfold_less"
+              round
+              class="bg-blue text-white"
+              @click="collapseTree"
+            >
+              <q-tooltip class="bg-blue text-white text-body2 col">
+                Collapse all
+              </q-tooltip>
+            </q-btn>
+          </div>
         </div>
         <q-separator />
         <q-scroll-area style="height: 300px">
@@ -88,68 +106,68 @@
             ref="moveItemsTree"
           />
         </q-scroll-area>
-      </div>
-      <div class="row justify-center q-ma-md">
-        <q-btn
-          push
-          icon="expand_more"
-          :label="(selectedItems as Array<Object>).length + ' Item' + ((selectedItems as Array<Object>).length > 1 ? 's' : '')"
-          class="bg-blue-grey-7 text-white text-body1"
-          style="width: 310px"
-        >
-          <q-menu
-            anchor="bottom middle"
-            self="top middle"
-            class="no-shadow bg-blue-grey-7 text-white"
+        <div class="row justify-center q-ma-md">
+          <q-btn
+            push
+            icon="expand_more"
+            :label="(selectedItems as Array<Object>).length + ' Item' + ((selectedItems as Array<Object>).length > 1 ? 's' : '')"
+            class="bg-blue-grey-7 text-white text-body1"
             style="width: 310px"
           >
-            <q-card
-              flat
-              style="max-height: 250px; width: 310px"
-              class="bg-blue-grey-7 text-white"
+            <q-menu
+              anchor="bottom middle"
+              self="top middle"
+              class="no-shadow bg-blue-grey-7 text-white"
+              style="width: 310px"
             >
-              <q-separator color="white" />
-
-              <template
-                v-for="item in selectedItems"
-                :key="item"
+              <q-card
+                flat
+                style="max-height: 250px; width: 310px"
+                class="bg-blue-grey-7 text-white"
               >
-                <div class="ellipsis text-body1 q-ma-sm">
-                  <q-icon
-                    :name="item.type == 'folder' ? 'folder' : 'file_present'"
-                  />
-                  <a class="q-ml-sm">{{ item.name }}</a>
-                </div>
                 <q-separator color="white" />
-              </template>
-            </q-card>
-          </q-menu>
-        </q-btn>
-      </div>
-      <q-separator />
 
-      <q-card-actions class="q-mb-sm column">
-        <div class="full-width">
-          <a class="text-weight-bolder text-body1">Move to:</a>
-          {{ moveItemsSelectedName }}
+                <template
+                  v-for="item in selectedItems"
+                  :key="item"
+                >
+                  <div class="ellipsis text-body1 q-ma-sm">
+                    <q-icon
+                      :name="item.type == 'folder' ? 'folder' : 'file_present'"
+                    />
+                    <a class="q-ml-sm">{{ item.name }}</a>
+                  </div>
+                  <q-separator color="white" />
+                </template>
+              </q-card>
+            </q-menu>
+          </q-btn>
         </div>
-        <div class="row full-width q-mt-sm">
-          <q-btn
-            v-close-popup
-            push
-            icon="close"
-            label="Cancel"
-            class="bg-red text-white col q-mr-xs"
-          />
-          <q-btn
-            push
-            class="bg-green text-white col q-ml-xs"
-            icon="done"
-            label="Move"
-            @click="move"
-          />
-        </div>
-      </q-card-actions>
+        <q-separator />
+
+        <q-card-actions class="q-mb-sm column">
+          <div class="full-width">
+            <a class="text-weight-bolder text-body1">Move to:</a>
+            {{ moveItemsSelectedName }}
+          </div>
+          <div class="row full-width q-mt-sm">
+            <q-btn
+              v-close-popup
+              push
+              icon="close"
+              label="Cancel"
+              class="bg-red text-white col q-mr-xs"
+            />
+            <q-btn
+              push
+              class="bg-green text-white col q-ml-xs"
+              icon="done"
+              label="Move"
+              @click="move"
+            />
+          </div>
+        </q-card-actions>
+      </div>
     </q-card>
   </q-dialog>
 </template>

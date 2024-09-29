@@ -1,6 +1,12 @@
 <template>
-  <div class="absolute-full flex flex-center bg-transparent" v-if="loading">
-    <q-spinner color="primary" size="10em" />
+  <div
+    class="absolute-full flex flex-center bg-transparent"
+    v-if="loading"
+  >
+    <q-spinner
+      color="primary"
+      size="10em"
+    />
   </div>
   <div
     v-if="!loading && error"
@@ -9,11 +15,11 @@
     Couldn't load Text from File.
   </div>
 
-  <div v-if="!loading && !error" class="col column">
-    <div
-      class="bg-layout-bg text-layout-text row full-width"
-      style="height: 40px"
-    >
+  <div
+    v-if="!loading && !error"
+    class="col column"
+  >
+    <div class="bg-layout-bg text-layout-text row rounded-borders q-pa-none">
       <q-btn
         icon="save"
         label="Save"
@@ -29,13 +35,27 @@
         v-if="localStore.isAuthenticated"
       />
       <q-space />
-      <q-separator vertical color="layout-text" />
-      <q-btn icon="settings" flat stretch>
-        <q-menu class="no-shadow" anchor="bottom middle" self="top middle">
+      <q-separator
+        vertical
+        color="layout-text"
+      />
+      <q-btn
+        icon="settings"
+        flat
+        stretch
+      >
+        <q-menu
+          class="no-shadow"
+          anchor="bottom middle"
+          self="top middle"
+        >
           <q-card bordered>
             <q-item>
               <q-item-section side>
-                <q-icon name="text_decrease" size="sm" />
+                <q-icon
+                  name="text_decrease"
+                  size="sm"
+                />
               </q-item-section>
               <q-item-section>
                 <q-slider
@@ -50,12 +70,15 @@
                 />
               </q-item-section>
               <q-item-section side>
-                <q-icon name="text_increase" size="sm" />
+                <q-icon
+                  name="text_increase"
+                  size="sm"
+                />
               </q-item-section>
             </q-item>
             <q-separator />
-            <q-item
-              ><q-item-section>
+            <q-item>
+              <q-item-section>
                 <q-checkbox
                   class="text-body1"
                   v-model="mono"
@@ -67,19 +90,27 @@
           </q-card>
         </q-menu>
       </q-btn>
-      <q-separator vertical color="layout-text" />
+      <q-separator
+        vertical
+        color="layout-text"
+      />
       <q-btn
         :icon="darkmode ? 'dark_mode' : 'light_mode'"
         flat
+        stretch
         @click="darkmode = !darkmode"
       />
     </div>
-    <q-card class="col column q-ma-xs" bordered square>
+    <q-card
+      class="col column q-mb-xs"
+      bordered
+      square
+    >
       <textarea
         :style="'font-size:' + textSize + 'px;'"
         style="resize: none"
         v-model="text"
-        class="col full-width rounded-borders textarea"
+        class="col full-width textarea"
         :class="[
           darkmode
             ? 'bg-dark text-white textarea-dark'
@@ -207,11 +238,11 @@ function updateContent() {
   max-width: 100%;
   line-height: 1.5;
   border-radius: 5px;
-  border: 2px solid #c5c5c5;
+  border: 2px solid #a0a0a0;
 }
 
 .textarea-dark:focus {
-  border: 3px solid #ffffff;
+  border: 2px solid #ffffff;
   outline: none;
 }
 
@@ -220,11 +251,11 @@ function updateContent() {
   max-width: 100%;
   line-height: 1.5;
   border-radius: 5px;
-  border: 2px solid #575757;
+  border: 2px solid #a0a0a0;
 }
 
 .textarea-light:focus {
-  border: 3px solid #1d1d1d;
+  border: 2px solid #535353;
   outline: none;
 }
 

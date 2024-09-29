@@ -19,10 +19,7 @@
     v-if="!loading && !error"
     class="col column"
   >
-    <div
-      class="bg-layout-bg row text-layout-text full-width"
-      style="height: 40px"
-    >
+    <div class="bg-layout-bg text-layout-text row rounded-borders q-pa-none">
       <q-btn
         icon="save"
         label="Save"
@@ -386,7 +383,7 @@ function updateContent() {
 function updateSyntax(syntax) {
   var data = {
     itemId: item.value.id,
-    mime: 'text/code' + syntax != '' ? '-' + syntax : '',
+    mime: 'text/code' + (syntax != '' ? '-' + syntax : ''),
   };
   apiPut('/files/file/' + item.value.id, data, axiosConfig).then((apiData) => {
     if (apiData.error == false) {

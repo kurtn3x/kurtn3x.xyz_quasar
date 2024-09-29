@@ -1,6 +1,12 @@
 <template>
-  <div class="absolute-full flex flex-center bg-transparent" v-if="loading">
-    <q-spinner color="primary" size="10em" />
+  <div
+    class="absolute-full flex flex-center bg-transparent"
+    v-if="loading"
+  >
+    <q-spinner
+      color="primary"
+      size="10em"
+    />
   </div>
   <div
     v-if="!loading && error"
@@ -9,8 +15,11 @@
     Couldn't load Text from File.
   </div>
 
-  <div v-if="!loading && !error" class="col column">
-    <div class="bg-light-blue-8 row text-white" style="height: 40px">
+  <div
+    v-if="!loading && !error"
+    class="col column"
+  >
+    <div class="bg-layout-bg text-layout-text row rounded-borders q-pa-none">
       <q-btn
         icon="save"
         label="Save"
@@ -19,11 +28,17 @@
         class="bg-green text-white"
         @click="updateContent"
       />
-      <q-separator vertical color="white" />
+      <q-separator
+        vertical
+        color="white"
+      />
       <q-space />
       <div class="text-h6">Rich-Text-Editor</div>
       <q-space />
-      <q-separator vertical color="white" />
+      <q-separator
+        vertical
+        color="white"
+      />
       <q-btn
         :icon="darkmode ? 'dark_mode' : 'light_mode'"
         flat

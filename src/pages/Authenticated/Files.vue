@@ -168,8 +168,8 @@
     >
       <div
         :class="q.screen.gt.xs ? 'q-mt-sm' : 'q-mt-xs'"
-        @dragover.stop.prevent=""
-        @drop.prevent=""
+        @dragover.stop.prevent
+        @drop.prevent
       >
         <q-toolbar class="q-pa-none">
           <!-- navbar toolbar -->
@@ -750,11 +750,12 @@
           @drop.prevent.stop="scrollUp(false)"
           v-if="dragActive"
         >
-          <q-icon
-            name="keyboard_arrow_up"
-            color="primary"
-            size="lg"
-            class="no-pointer-events"
+          <q-btn
+            icon="keyboard_arrow_up"
+            color="white"
+            size="sm"
+            class="no-pointer-events bg-primary"
+            round
           />
         </div>
         <div
@@ -1158,11 +1159,12 @@
             @drop.prevent.stop="scrollDown(false)"
             v-if="dragActive"
           >
-            <q-icon
-              name="keyboard_arrow_down"
-              color="primary"
-              size="lg"
-              class="no-pointer-events"
+            <q-btn
+              icon="keyboard_arrow_down"
+              color="white"
+              size="sm"
+              class="no-pointer-events bg-primary q-mb-lg"
+              round
             />
           </div>
         </div>
