@@ -910,6 +910,7 @@
                       @move-item="
                         () => {
                           clearSelectedItems();
+                          item.selected = true;
                           showMoveSelectedItemsDialog = true;
                           selectedItems.push(item);
                         }
@@ -997,6 +998,7 @@
                               clearSelectedItems();
                               showMoveSelectedItemsDialog = true;
                               selectedItems.push(item);
+                              item.selected = true;
                             }
                           "
                           @delete-item="
@@ -1131,6 +1133,7 @@
                               clearSelectedItems();
                               showMoveSelectedItemsDialog = true;
                               selectedItems.push(item);
+                              item.selected = true;
                             }
                           "
                           @delete-item="
@@ -2602,9 +2605,14 @@ export default defineComponent({
      * @param newParentId The ID of the folder these items are moved to.
      */
     moveSelection(newParentId: string) {
-      for (var item of this.selectedItems) {
-        this.updateParent(item.type, item.id, newParentId);
+      if (newParentId != this.rawFolderContent.id) {
+        for (var item of this.selectedItems) {
+          this.updateParent(item.type, item.id, newParentId);
+        }
+      } else {
+        this.notify('positive', 'Nothing to move');
       }
+
       this.showMoveSelectedItemsDialog = false;
       for (var item of this.rawFolderContent.children as FolderEntryType[]) {
         item.selected = false;
@@ -2670,16 +2678,12 @@ export default defineComponent({
 }
 
 .selected {
-  background: #00b8d4 !important;
+  background: #00b8d4b0 !important;
   color: #fff;
 }
 
 .dragover {
   background: #304ffeb0 !important;
   color: #fff;
-}
-
-.scrolldragover {
-  background: #00bfa5b0 !important;
 }
 </style>

@@ -246,7 +246,14 @@
           size="md"
           to="/login"
           :style="q.screen.gt.xs ? 'width: 140px' : 'width: 80px'"
-        />
+        >
+          <q-tooltip
+            class="bg-layout-bg text-layout-text"
+            v-if="!q.screen.gt.xs"
+          >
+            <a class="text-body1">Login</a>
+          </q-tooltip>
+        </q-btn>
 
         <q-btn
           stretch
@@ -257,7 +264,14 @@
           class="text-body1 text-weight-bold q-ml-xs"
           size="md"
           :style="q.screen.gt.xs ? 'width: 140px' : 'width: 80px'"
-        />
+        >
+          <q-tooltip
+            class="bg-layout-bg text-layout-text"
+            v-if="!q.screen.gt.xs"
+          >
+            <a class="text-body1">Register</a>
+          </q-tooltip>
+        </q-btn>
       </q-toolbar>
     </q-header>
 
