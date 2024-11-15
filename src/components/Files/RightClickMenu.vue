@@ -27,9 +27,7 @@
           :color="darkmode ? 'white' : 'black'"
           :rules="[
             (val) =>
-              /^([a-zA-Z0-9\u0600-\u06FF\u0660-\u0669\u06F0-\u06F9 _.-]+)$/.test(
-                val
-              ) ||
+              /^[a-z0-9]+$/i.test(val) ||
               'Only alphanumeric characters allowed and must contain at least 1 character.',
           ]"
         >

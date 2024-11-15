@@ -1,5 +1,8 @@
 <template>
-  <q-card bordered style="max-width: 400px">
+  <q-card
+    bordered
+    style="max-width: 400px"
+  >
     <q-toolbar class="bg-layout-bg text-layout-text text-center">
       <q-toolbar-title class="q-ma-sm">VPN Setup Help</q-toolbar-title>
     </q-toolbar>
@@ -12,7 +15,8 @@
             href="https://www.wireguard.com/install/"
             target="_blank"
             class="text-blue"
-            >Install Wireguard depending on Operating System.
+          >
+            Install Wireguard depending on Operating System.
           </a>
         </li>
         <li class="text-body1 q-mt-sm">
@@ -21,16 +25,22 @@
         </li>
         <li class="text-body1 q-mt-sm">Download the resulting config.</li>
         <li class="text-body1 q-mt-sm">
-          <a class="text-weight-bolder" style="text-decoration: underline"
-            >Windows/Mobile/GUI:</a
+          <a
+            class="text-weight-bolder"
+            style="text-decoration: underline"
           >
+            Windows/Mobile/GUI:
+          </a>
           Import the config in the Wireguard-GUI and enable it.
         </li>
         <li class="text-body1 q-mt-sm">
-          <a class="text-weight-bolder" style="text-decoration: underline"
-            >Linux with Terminal:</a
+          <a
+            class="text-weight-bolder"
+            style="text-decoration: underline"
           >
-          Copy the config (wg0.conf) to /etc/wireguard/.
+            Linux with Terminal:
+          </a>
+          Copy the config to /etc/wireguard.
           <div>
             Enable it with
             <a class="text-italic text-weight-bold">sudo wg-quick up wg0</a>
@@ -44,7 +54,11 @@
     </q-card>
 
     <q-separator class="q-mt-sm" />
-    <q-card-actions align="center" class="q-mt-sm q-mb-sm" vertical>
+    <q-card-actions
+      align="center"
+      class="q-mt-sm q-mb-sm"
+      vertical
+    >
       <q-btn
         v-close-popup
         push

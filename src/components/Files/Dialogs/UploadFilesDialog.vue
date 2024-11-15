@@ -251,7 +251,7 @@ export default defineComponent({
   emits: ['close', 'upload'],
   setup(props) {
     return {
-      rawFolderContent: ref(props.propItem),
+      rawFolderContent: ref(props.propItem) as Ref<RawFolderContentType>,
       showDialog: ref(props.active),
       uploadFilesDialog: ref(false),
       uploadFilesDialogUploadList: ref([]) as Ref<UploadDialogEntryType[]>,
@@ -263,7 +263,7 @@ export default defineComponent({
     active(newVal, oldVal) {
       this.showDialog = newVal;
     },
-    rawFolderContent(newVal, oldVal) {
+    propItem(newVal, oldVal) {
       this.rawFolderContent = newVal;
     },
     initialEvent(newVal, oldVal) {

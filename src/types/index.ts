@@ -128,6 +128,7 @@ export interface VPNSetupInputType {
   clientPrivateKey: string;
   name: string;
   autoKeyGeneration: boolean;
+  alternativeRoute: boolean;
 }
 
 export interface VPNConnectionType {
@@ -139,6 +140,7 @@ export interface VPNConnectionType {
   presharedKey: string;
   dnsServers: string;
   allowedIps: string;
+  allowedIpsInternal: string;
   endpoint: string;
 }
 

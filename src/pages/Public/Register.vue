@@ -1,5 +1,8 @@
 <template>
-  <q-page class="bg row justify-center items-center" :class="theme">
+  <q-page
+    class="bg row justify-center items-center"
+    :class="theme"
+  >
     <ParticlesIndex />
     <div class="column fade-in-text q-ma-xs">
       <div v-if="!registerSuccessful">
@@ -14,7 +17,10 @@
           >
             Register
           </div>
-          <q-card-section align="center" class="q-mr-sm q-ml-sm q-pb-none">
+          <q-card-section
+            align="center"
+            class="q-mr-sm q-ml-sm q-pb-none"
+          >
             <q-form @submit="submitRegister">
               <q-input
                 v-model="registerDataRequired.username"
@@ -29,9 +35,8 @@
                   (val) =>
                     (val && val.length < 17) || 'Not more than 16 characters',
                   (val) =>
-                    /^([a-zA-Z0-9\u0600-\u06FF\u0660-\u0669\u06F0-\u06F9 _.-]+)$/.test(
-                      val
-                    ) || 'Only alphanumeric characters allowed.',
+                    /^[a-z0-9]+$/i.test(val) ||
+                    'Only alphanumeric characters allowed.',
                   (val) => /^\S+$/.test(val) || 'No spaces allowed.',
                 ]"
                 class="q-mt-lg"
@@ -43,7 +48,10 @@
                 @blur="isValidUsername"
               >
                 <template v-slot:prepend>
-                  <q-icon color="layout-text" name="person" />
+                  <q-icon
+                    color="layout-text"
+                    name="person"
+                  />
                 </template>
 
                 <template v-slot:append>
@@ -66,8 +74,9 @@
                       style="width: 150px"
                     >
                       <div class="text-body2 text-center">
-                        <a class="text-red">4-16</a> Characters.
-                        <a class="text-red"> Latin Alphabet & Numbers.</a>
+                        <a class="text-red">4-16</a>
+                        Characters.
+                        <a class="text-red">Latin Alphabet & Numbers.</a>
                       </div>
                     </q-tooltip>
                   </q-btn>
@@ -108,7 +117,10 @@
                 @blur="isValidEmail"
               >
                 <template v-slot:prepend>
-                  <q-icon color="layout-text" name="email" />
+                  <q-icon
+                    color="layout-text"
+                    name="email"
+                  />
                 </template>
                 <template v-slot:append>
                   <q-btn
@@ -129,7 +141,9 @@
                       style="width: 150px"
                     >
                       <div class="text-body2 text-center">
-                        A <a class="text-red">valid </a>email address.
+                        A
+                        <a class="text-red">valid</a>
+                        email address.
                       </div>
                     </q-tooltip>
                   </q-btn>
@@ -168,7 +182,10 @@
                 @blur="isValidPassword"
               >
                 <template v-slot:prepend>
-                  <q-icon color="layout-text" name="lock" />
+                  <q-icon
+                    color="layout-text"
+                    name="lock"
+                  />
                 </template>
                 <template v-slot:append>
                   <q-icon
@@ -195,7 +212,9 @@
                       style="width: 150px"
                     >
                       <div class="text-body2 text-center">
-                        Password with <a class="text-red">8-100 </a> characters.
+                        Password with
+                        <a class="text-red">8-100</a>
+                        characters.
                       </div>
                     </q-tooltip>
                   </q-btn>
@@ -234,7 +253,10 @@
                 @blur="isValidPasswordConfirm"
               >
                 <template v-slot:prepend>
-                  <q-icon color="layout-text" name="lock" />
+                  <q-icon
+                    color="layout-text"
+                    name="lock"
+                  />
                 </template>
                 <template v-slot:append>
                   <q-icon
@@ -290,19 +312,29 @@
                       darkmode ? 'bg-dark text-white' : 'bg-white text-dark'
                     "
                     class="text-body2"
-                    >Refresh Captcha</q-tooltip
-                  ></q-btn
-                >
+                  >
+                    Refresh Captcha
+                  </q-tooltip>
+                </q-btn>
                 <q-img
                   :src="captchaData.img"
                   spinner-color="red"
                   width="150px"
                   height="55px"
                 >
-                  <div class="fit" v-if="captchaData.loading">
-                    <q-spinner color="blue" size="2em" />
+                  <div
+                    class="fit"
+                    v-if="captchaData.loading"
+                  >
+                    <q-spinner
+                      color="blue"
+                      size="2em"
+                    />
                   </div>
-                  <div class="text-red text-body2" v-if="captchaData.error">
+                  <div
+                    class="text-red text-body2"
+                    v-if="captchaData.error"
+                  >
                     Failed to load Captcha.
                   </div>
                 </q-img>
@@ -332,7 +364,10 @@
                 unelevated
                 type="submit"
               />
-              <div style="height: 40px" class="q-mt-md">
+              <div
+                style="height: 40px"
+                class="q-mt-md"
+              >
                 <div
                   class="text-center text-red text-h6 shake"
                   ref="errorText"
@@ -351,7 +386,10 @@
         </q-card>
       </div>
 
-      <div v-if="registerSuccessful" class="absolute-center fade-in-text">
+      <div
+        v-if="registerSuccessful"
+        class="absolute-center fade-in-text"
+      >
         <q-card
           bordered
           dark
@@ -360,7 +398,8 @@
           class="no-shadow bg-layout-bg text-h6 text-center text-layout-text fade-in-text"
         >
           <div class="q-ma-md">
-            Successfully registered! <br />
+            Successfully registered!
+            <br />
             Your Account still has to be activated by an Administrator.
           </div>
         </q-card>

@@ -1,6 +1,12 @@
 <template>
-  <div v-if="initialFetch.loading" class="absolute-center">
-    <q-spinner color="primary" size="10em" />
+  <div
+    v-if="initialFetch.loading"
+    class="absolute-center"
+  >
+    <q-spinner
+      color="primary"
+      size="10em"
+    />
   </div>
   <div v-if="!initialFetch.loading && initialFetch.error">
     <ErrorPage :error-message="initialFetch.errorMessage" />
@@ -20,17 +26,22 @@
           clientPublicKey: '',
           clientPrivateKey: '',
           name: '',
+          alternativeRoute: false,
           autoKeyGeneration: true,
         }
       "
     >
-      <q-card bordered style="max-width: 400px; min-width: 350px">
+      <q-card
+        bordered
+        flat
+        style="max-width: 400px; min-width: 350px"
+      >
         <q-toolbar
           class="bg-layout-bg text-layout-text text-center items-center"
         >
-          <q-toolbar-title class="q-ma-sm"
-            >Setup VPN Connection</q-toolbar-title
-          >
+          <q-toolbar-title class="q-ma-sm">
+            Setup VPN Connection
+          </q-toolbar-title>
           <div class="absolute-right row items-center q-mr-sm">
             <q-btn
               icon="question_mark"
@@ -44,7 +55,10 @@
           </div>
         </q-toolbar>
         <q-form @submit="createVPNClient">
-          <div class="q-ma-md text-body1" v-if="!loading">
+          <div
+            class="q-ma-md text-body1"
+            v-if="!loading"
+          >
             <q-input
               v-model="vpnSetupInput.name"
               outlined
@@ -59,9 +73,8 @@
                 (val) =>
                   (val && val.length < 17) || 'Not more than 16 characters',
                 (val) =>
-                  /^([a-zA-Z0-9\u0600-\u06FF\u0660-\u0669\u06F0-\u06F9 _.-]+)$/.test(
-                    val
-                  ) || 'Only alphanumeric characters allowed.',
+                  /^[a-z0-9]+$/i.test(val) ||
+                  'Only alphanumeric characters allowed.',
                 (val) => /^\S+$/.test(val) || 'No spaces allowed.',
               ]"
               lazy-rules
@@ -72,6 +85,7 @@
                 color="green"
                 dense
                 label="Generate Keypair automatically"
+                style="width: 300px"
               />
             </div>
             <div v-if="!vpnSetupInput.autoKeyGeneration">
@@ -98,14 +112,47 @@
                 input-class="text-body2 "
                 class="q-mt-md"
                 no-error-icon
-              />
+              >
+                <q-tooltip
+                  class="text-body1 shadow-1"
+                  :class="
+                    darkmode ? 'bg-dark text-white' : 'bg-white text-dark'
+                  "
+                >
+                  Private Keys are never transmitted
+                </q-tooltip>
+              </q-input>
+            </div>
+            <div class="row justify-center q-mt-md">
+              <q-checkbox
+                v-model="vpnSetupInput.alternativeRoute"
+                color="green"
+                dense
+                label="Use alternative route"
+                style="width: 300px"
+              >
+                <q-tooltip
+                  class="text-body1 shadow-1"
+                  :class="
+                    darkmode ? 'bg-dark text-white' : 'bg-white text-dark'
+                  "
+                >
+                  For connection issues
+                </q-tooltip>
+              </q-checkbox>
             </div>
           </div>
-          <div v-if="loading" class="row justify-center items-center q-ma-md">
+          <div
+            v-if="loading"
+            class="row justify-center items-center q-ma-md"
+          >
             <q-spinner size="4em" />
           </div>
           <q-separator class="q-mt-sm" />
-          <q-card-actions align="center" class="q-mt-sm q-mb-sm row">
+          <q-card-actions
+            align="center"
+            class="q-mt-sm q-mb-sm row"
+          >
             <q-btn
               v-close-popup
               push
@@ -125,8 +172,15 @@
         </q-form>
       </q-card>
     </q-dialog>
-    <q-dialog v-model="setupVPNDialogSuccessful" persistent>
-      <q-card bordered class="full-width">
+    <q-dialog
+      v-model="setupVPNDialogSuccessful"
+      persistent
+    >
+      <q-card
+        bordered
+        flat
+        class="full-width absolute"
+      >
         <q-toolbar class="bg-layout-bg text-layout-text text-center">
           <q-toolbar-title class="q-ma-sm">VPN Connection Data</q-toolbar-title>
           <div class="absolute-right row items-center q-mr-sm">
@@ -141,7 +195,10 @@
             />
           </div>
         </q-toolbar>
-        <q-separator size="1px" :color="darkmode ? 'white' : 'dark'" />
+        <q-separator
+          size="1px"
+          :color="darkmode ? 'white' : 'dark'"
+        />
         <q-tabs
           inline-label
           v-model="setupVPNDialogTabs"
@@ -151,17 +208,35 @@
           active-color="layout-text"
           active-bg-color="primary"
         >
-          <q-separator vertical size="1px" />
-          <q-tab name="info" icon="info" label="Info" />
-          <q-separator vertical size="1px" />
-          <q-tab name="config" icon="download" label="Download" />
-          <q-separator vertical size="1px" />
+          <q-separator
+            vertical
+            size="1px"
+          />
+          <q-tab
+            name="info"
+            icon="info"
+            label="Info"
+          />
+          <q-separator
+            vertical
+            size="1px"
+          />
+          <q-tab
+            name="config"
+            icon="download"
+            label="Config"
+          />
+          <q-separator
+            vertical
+            size="1px"
+          />
         </q-tabs>
         <q-separator size="1px" />
         <q-tab-panels
           v-model="setupVPNDialogTabs"
           animated
           class="bg-transparent"
+          style="max-height: 50vh; height: 50vh; overflow: scroll"
         >
           <q-tab-panel name="info">
             <div class="text-h6 text-weight-bold q-mb-sm">Your Keys</div>
@@ -331,6 +406,13 @@
                 </a>
               </template>
             </q-input>
+            <q-checkbox
+              v-model="vpnSetupConnectionOptions.onlyInternal"
+              color="green"
+              dense
+              label="Only allow internal networks"
+              class="q-mt-sm text-body1"
+            />
             <q-input
               outlined
               readonly
@@ -338,6 +420,7 @@
               style="height: 50px"
               dense
               :color="darkmode ? 'white' : 'dark'"
+              v-if="!vpnSetupConnectionOptions.onlyInternal"
             >
               <q-btn
                 flat
@@ -346,6 +429,33 @@
                 class="absolute-right"
                 size="md"
                 @click="copyToClipboard(vpnSetupConnection.allowedIps)"
+              />
+              <template v-slot:prepend>
+                <a
+                  style="width: 120px"
+                  class="text-body1"
+                  :class="darkmode ? 'text-white' : 'text-dark'"
+                >
+                  Allowed IPs:
+                </a>
+              </template>
+            </q-input>
+            <q-input
+              outlined
+              readonly
+              v-model="vpnSetupConnection.allowedIpsInternal"
+              style="height: 50px"
+              dense
+              :color="darkmode ? 'white' : 'dark'"
+              v-if="vpnSetupConnectionOptions.onlyInternal"
+            >
+              <q-btn
+                flat
+                round
+                icon="content_copy"
+                class="absolute-right"
+                size="md"
+                @click="copyToClipboard(vpnSetupConnection.allowedIpsInternal)"
               />
               <template v-slot:prepend>
                 <a
@@ -385,21 +495,85 @@
             </q-input>
           </q-tab-panel>
           <q-tab-panel name="config">
-            <div class="row justify-center q-ma-md">
-              <q-btn
-                label="Download wg0.conf"
-                push
-                size="lg"
-                icon="download"
-                class="bg-green text-white q-mt-lg"
-                @click="downloadConfiguration"
+            <div class="q-ma-md">
+              <q-checkbox
+                v-model="vpnSetupConnectionOptions.onlyInternal"
+                color="green"
+                dense
+                label="Only allow internal networks"
+                class="text-body1"
               />
+              <div class="row justify-center items-center full-width">
+                <q-input
+                  v-model="vpnSetupConnectionOptions.configName"
+                  outlined
+                  dense
+                  :color="darkmode ? 'white' : 'black'"
+                  input-class="text-body1 "
+                  class="q-mt-md full-width"
+                  no-error-icon
+                  suffix=".conf"
+                >
+                  <template v-slot:before>
+                    <a
+                      style="width: 120px"
+                      class="text-body1"
+                      :class="darkmode ? 'text-white' : 'text-dark'"
+                    >
+                      Config Name
+                    </a>
+                  </template>
+                </q-input>
+              </div>
             </div>
+            <q-card
+              bordered
+              flat
+            >
+              <q-toolbar>
+                <q-toolbar-title class="q-ma-sm">
+                  {{ vpnSetupConnectionOptions.configName }}.conf
+                </q-toolbar-title>
+                <div class="absolute-right row items-center">
+                  <q-btn
+                    icon="content_copy"
+                    push
+                    class="bg-grey-6 text-white q-mr-sm"
+                    round
+                    @click="copyToClipboard(wireguardConfig)"
+                  />
+                  <q-btn
+                    icon="download"
+                    push
+                    class="bg-green text-white q-mr-sm"
+                    round
+                    style="height: 20px; width: 20px"
+                    @click="downloadConfiguration"
+                  />
+                </div>
+              </q-toolbar>
+              <q-separator />
+
+              <q-input
+                readonly
+                type="textarea"
+                v-model="wireguardConfig"
+                input-class="mono q-mr-sm q-ml-sm text-body1"
+                input-style="resize: none; height: 220px; line-height: 1.25"
+                style="height: 220px"
+                :autogrow="false"
+                borderless
+              />
+            </q-card>
           </q-tab-panel>
         </q-tab-panels>
 
         <q-separator class="q-mt-sm" />
-        <q-card-actions align="center" class="q-mt-sm q-mb-sm" vertical>
+        <q-card-actions
+          align="center"
+          class="q-mt-sm q-mb-sm"
+          vertical
+        >
           <div class="text-body2 text-center text-red">
             You won't be able to recover this information.
           </div>
@@ -431,19 +605,29 @@
             />
           </div>
         </q-toolbar>
-        <q-card class="bg-transparent" bordered flat>
+        <q-card
+          class="bg-transparent"
+          bordered
+          flat
+        >
           <q-item dense>
-            <q-item-section avatar class="items-left col-1">
+            <q-item-section
+              avatar
+              class="items-left col-1"
+            >
               Nr.
             </q-item-section>
             <q-item-section class="col">
-              <q-item-label> Name </q-item-label>
+              <q-item-label>Name</q-item-label>
             </q-item-section>
             <q-item-section class="col">
               <div class="q-ml-md">Addresses (v4, v6)</div>
             </q-item-section>
           </q-item>
-          <q-separator color="primary" size="2px" />
+          <q-separator
+            color="primary"
+            size="2px"
+          />
           <div
             v-if="vpnConnections.length == 0"
             class="text-center q-mt-md text-body1 q-mb-md"
@@ -452,10 +636,13 @@
             up.
           </div>
           <div
-            :style="'max-height:' + ($q.screen.height - 240) + 'px;'"
+            :style="'max-height:' + (q.screen.height - 240) + 'px;'"
             style="overflow: scroll"
           >
-            <template v-for="(item, index) in vpnConnections" :key="item">
+            <template
+              v-for="(item, index) in vpnConnections"
+              :key="item"
+            >
               <q-item
                 clickable
                 @click="
@@ -471,7 +658,10 @@
                   @before-hide="item.selected = false"
                   class="shadow-1"
                 >
-                  <q-list separator bordered>
+                  <q-list
+                    separator
+                    bordered
+                  >
                     <q-item
                       clickable
                       v-close-popup
@@ -501,7 +691,10 @@
                   </q-list>
                 </q-popup-proxy>
 
-                <q-item-section avatar class="items-left col-1">
+                <q-item-section
+                  avatar
+                  class="items-left col-1"
+                >
                   {{ index }}.
                 </q-item-section>
                 <q-item-section class="text-body1 col">
@@ -521,7 +714,10 @@
                     @click.prevent.stop
                   >
                     <q-menu>
-                      <q-list separator bordered>
+                      <q-list
+                        separator
+                        bordered
+                      >
                         <q-item
                           clickable
                           v-close-popup
@@ -629,14 +825,48 @@ export default defineComponent({
         clientPrivateKey: '',
         name: '',
         autoKeyGeneration: true,
+        alternativeRoute: false,
       }) as Ref<VPNSetupInputType>,
       vpnSetupConnection: ref({}) as Ref<VPNConnectionType>,
+      vpnSetupConnectionOptions: ref({
+        onlyInternal: false,
+        configName: 'vpn0',
+      }),
     };
   },
 
   computed: {
     darkmode() {
       return this.localStore.darkmode;
+    },
+
+    wireguardConfig() {
+      return (
+        '[Interface]\n' +
+        'PrivateKey = ' +
+        this.vpnSetupConnection.clientPrivateKey +
+        '\n' +
+        'Address = ' +
+        this.vpnSetupConnection.addresses +
+        '\n' +
+        'DNS = ' +
+        this.vpnSetupConnection.dnsServers +
+        '\n' +
+        '[Peer]\n' +
+        'PresharedKey = ' +
+        this.vpnSetupConnection.presharedKey +
+        '\n' +
+        'PublicKey = ' +
+        this.vpnSetupConnection.serverPublicKey +
+        '\n' +
+        'AllowedIPs = ' +
+        (this.vpnSetupConnectionOptions.onlyInternal
+          ? this.vpnSetupConnection.allowedIpsInternal
+          : this.vpnSetupConnection.allowedIps) +
+        '\n' +
+        'Endpoint = ' +
+        this.vpnSetupConnection.endpoint
+      );
     },
   },
 
@@ -660,36 +890,16 @@ export default defineComponent({
 
     downloadConfiguration() {
       var element = document.createElement('a');
-      var config =
-        '[Interface]\n' +
-        'PrivateKey = ' +
-        this.vpnSetupConnection.clientPrivateKey +
-        '\n' +
-        'Address = ' +
-        this.vpnSetupConnection.addresses +
-        '\n' +
-        'DNS = ' +
-        this.vpnSetupConnection.dnsServers +
-        '\n' +
-        '[Peer]\n' +
-        'PresharedKey = ' +
-        this.vpnSetupConnection.presharedKey +
-        '\n' +
-        'PublicKey = ' +
-        this.vpnSetupConnection.serverPublicKey +
-        '\n' +
-        'AllowedIPs = ' +
-        this.vpnSetupConnection.allowedIps +
-        '\n' +
-        'Endpoint = ' +
-        this.vpnSetupConnection.endpoint;
 
       element.setAttribute(
         'href',
         'data:application/octet-stream;charset=utf-8,' +
-          encodeURIComponent(config)
+          encodeURIComponent(this.wireguardConfig)
       );
-      element.setAttribute('download', 'wg0.conf');
+      element.setAttribute(
+        'download',
+        this.vpnSetupConnectionOptions.configName + '.conf'
+      );
 
       element.style.display = 'none';
       document.body.appendChild(element);
