@@ -16,8 +16,8 @@
     "@codemirror/lang-markdown": "^6.3.1",
     "@codemirror/lang-python": "^6.1.6",
     "@codemirror/theme-one-dark": "^6.1.2",
-    "@quasar/cli": "^2.4.1",
-    "@quasar/extras": "^1.16.13",
+    "@quasar/cli": "^2.5.0",
+    "@quasar/extras": "^1.16.17",
     "@tsparticles/slim": "^3.5.0",
     "@tsparticles/vue3": "^3.0.1",
     "@videojs-player/vue": "^1.0.0",
@@ -28,7 +28,7 @@
     "npm": "^10.9.0",
     "pdfjs-dist": "^4.8.69",
     "pinia": "^2.2.6",
-    "quasar": "^2.17.2",
+    "quasar": "^2.18.1",
     "video.js": "^7.21.6",
     "vue": "^3.5.12",
     "vue-codemirror": "^6.1.1",
@@ -36,7 +36,7 @@
     "vue3-selecto": "^1.12.3"
   },
   "devDependencies": {
-    "@quasar/app-vite": "^1.10.2",
+    "@quasar/app-vite": "^1.11.0",
     "@types/lodash": "^4.17.13",
     "@types/node": "^12.20.55",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
