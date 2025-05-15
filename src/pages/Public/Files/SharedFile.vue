@@ -1,6 +1,12 @@
 <template>
-  <div v-if="initialFetch.loading" class="absolute-center">
-    <q-spinner color="primary" size="10em" />
+  <div
+    v-if="initialFetch.loading"
+    class="absolute-center"
+  >
+    <q-spinner
+      color="primary"
+      size="10em"
+    />
   </div>
   <div v-if="!initialFetch.loading && initialFetch.error">
     <ErrorPage :error-message="initialFetch.errorMessage" />
@@ -12,7 +18,10 @@
       !initialFetch.error
     "
   >
-    <ErrorPage error-message="Password required" v-if="!showPasswordDialog" />
+    <ErrorPage
+      error-message="Password required"
+      v-if="!showPasswordDialog"
+    />
     <PasswordDialog
       :prop-item="item"
       :active="showPasswordDialog"
@@ -46,7 +55,10 @@
     <div
       class="text-primary text-h4 text-center q-mt-lg ellipsis text-weight-bolder"
     >
-      <q-icon :name="getIcon(item.mime)" class="q-mr-sm" />
+      <q-icon
+        :name="getIcon(item.mime)"
+        class="q-mr-sm"
+      />
       {{ item.name }}
     </div>
     <div class="row justify-center q-mt-sm">
@@ -81,14 +93,6 @@
         size="xl"
         style="width: 380px"
       />
-    </div>
-    <div class="q-mt-lg text-center">
-      <router-link
-        :to="'/user/' + item.owner"
-        class="text-indigo-5 text-weight-bold text-h5"
-      >
-        Owner: {{ item.owner }}
-      </router-link>
     </div>
   </div>
 </template>

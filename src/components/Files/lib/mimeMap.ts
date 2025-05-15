@@ -21,9 +21,9 @@ const IMAGEMIME = [
   'image/webp',
 ];
 
-const TEXTMIME = ['text/plain', 'text/text'];
-
 const CODEMIME = [
+  'text/plain',
+  'text/text',
   'text/code',
   'text/code-json',
   'text/code-javascript',
@@ -44,61 +44,74 @@ const CODEMIME = [
 ];
 
 const PDFMIME = ['application/pdf'];
-const WYSIWYGMIME = ['text/wysiwyg'];
+const WYSIWYGMIME = ['text/document', 'text/wysiwyg'];
 
 interface mimeMapType {
+  name: string;
   icon: string;
   type: string;
-  availableTypes: Array<string>;
 }
 
 const mimeMap: Map<string, mimeMapType> = new Map<string, mimeMapType>();
 
 for (const mime of VIDEOMIME) {
   mimeMap.set(mime, {
+    name: 'Video',
     icon: 'movie',
     type: 'video',
-    availableTypes: [],
   });
 }
 for (const mime of IMAGEMIME) {
   mimeMap.set(mime, {
+    name: 'Image',
     icon: 'image',
     type: 'image',
-    availableTypes: [],
-  });
-}
-for (const mime of TEXTMIME) {
-  mimeMap.set(mime, {
-    icon: 'text_fields',
-    type: 'text',
-    availableTypes: ['text', 'code'],
   });
 }
 
 for (const mime of CODEMIME) {
   mimeMap.set(mime, {
+    name: 'Text/Code',
     icon: 'code',
     type: 'code',
-    availableTypes: ['text', 'code'],
   });
 }
 
 for (const mime of PDFMIME) {
   mimeMap.set(mime, {
+    name: 'PDF',
     icon: 'picture_as_pdf',
     type: 'pdf',
-    availableTypes: [],
   });
 }
 
 for (const mime of WYSIWYGMIME) {
   mimeMap.set(mime, {
+    name: 'Document',
     icon: 'article',
     type: 'wysiwyg',
-    availableTypes: ['code', 'text', 'wysiwyg'],
   });
 }
+
+mimeMap.set('folder', {
+  name: 'Folder',
+  icon: 'folder',
+  type: 'folder',
+});
+
+const createTypes: Map<string, mimeMapType> = new Map<string, mimeMapType>();
+
+createTypes.set('text/wysiwyg', {
+  name: 'Document',
+  icon: 'article',
+  type: 'wysiwyg',
+});
+
+createTypes.set('text/code', {
+  name: 'Text/Code',
+  icon: 'code',
+  type: 'code',
+});
 
 export function getIcon(mime: string) {
   const t = mimeMap.get(mime);
@@ -109,4 +122,4 @@ export function getIcon(mime: string) {
   }
 }
 
-export { mimeMap };
+export { mimeMap, createTypes };

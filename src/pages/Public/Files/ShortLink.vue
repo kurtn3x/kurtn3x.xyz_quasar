@@ -1,8 +1,16 @@
 <template>
-  <div v-if="ok" class="absolute-center">
-    <q-spinner color="primary" size="10em" />
+  <div
+    v-if="loading"
+    class="absolute-center"
+  >
+    <q-spinner
+      color="primary"
+      size="10em"
+    />
   </div>
-  <div v-if="!ok">Something went wrong :/. The link is probably invalid.</div>
+  <div v-if="!loading">
+    <ErrorPage error-message="Something went wrong" />
+  </div>
 </template>
 
 <script>
@@ -10,10 +18,13 @@ import { defineComponent, ref } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
+import ErrorPage from 'src/components/ErrorPage.vue';
 
 export default defineComponent({
-  name: 'IndexPage',
-
+  name: 'ShortLinkView',
+  components: {
+    ErrorPage,
+  },
   setup() {
     const localStore = useLocalStore();
     const q = useQuasar();
@@ -21,36 +32,35 @@ export default defineComponent({
     return {
       localStore,
       q,
-      ok: ref(true),
+      loading: ref(true),
     };
   },
   created() {
     var id = this.$route.params.id;
+
     const axiosConfig = {
       withCredentials: true,
       headers: {
         'X-CSRFToken': this.q.cookies.get('csrftoken'),
       },
     };
+
     api
-      .get('/files/permalink/' + id, axiosConfig)
+      .get('/files/sl/' + id, axiosConfig)
       .then((response) => {
         if (response.status == 200) {
           this.$router.push(
-            '/public/' + response.data.type + '/' + response.data.id
+            '/files/' + response.data.objectType + '/' + response.data.objectId
           );
         } else {
-          this.ok = false;
+          this.loading = false;
         }
       })
       .catch((error) => {
         if (error.response) {
           this.notify('negative', error.response.data.error);
-        } else {
-          console.log(error);
         }
-        this.ok = false;
-        console.log(error);
+        this.loading = false;
       });
   },
 });

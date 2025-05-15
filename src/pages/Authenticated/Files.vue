@@ -18,16 +18,6 @@
       @close="showFilePreviewDialog = false"
     />
 
-    <CreateFileDialog
-      :active="showCreateFileDialog"
-      @close="showCreateFileDialog = false"
-      @create="
-        (newFile) => {
-          createFile(newFile.name, newFile.mime);
-        }
-      "
-    />
-
     <MoveSelectedItemsDialog
       :prop-item="selectedItems"
       :active="showMoveSelectedItemsDialog"
@@ -432,7 +422,10 @@
                 text-color="white"
                 icon="note_add"
                 label="New File"
-                @click="showCreateFileDialog = true"
+                @click="
+                  newItem.show = true;
+                  newItem.type = 'file';
+                "
                 style="width: 180px; z-index: 3"
               />
               <q-fab-action
@@ -441,7 +434,10 @@
                 text-color="white"
                 icon="create_new_folder"
                 label="New Folder"
-                @click="newFolder.show = true"
+                @click="
+                  newItem.show = true;
+                  newItem.type = 'folder';
+                "
                 style="width: 180px; z-index: 3"
               />
               <q-fab-action
@@ -551,7 +547,10 @@
                 outline
                 icon="note_add"
                 label="New File"
-                @click="showCreateFileDialog = true"
+                @click="
+                  newItem.show = true;
+                  newItem.type = 'file';
+                "
                 style="width: 180px; z-index: 3"
                 padding="sm"
               />
@@ -562,7 +561,10 @@
                 outline
                 icon="create_new_folder"
                 label="New Folder"
-                @click="newFolder.show = true"
+                @click="
+                  newItem.show = true;
+                  newItem.type = 'folder';
+                "
                 style="width: 180px; z-index: 3"
                 padding="sm"
               />
@@ -763,7 +765,7 @@
           :class="mobile ? 'q-ml-xs q-mr-xs' : 'q-ml-md q-mr-md'"
           @scroll="onScrollerScroll"
         >
-          <div v-if="newFolder.show">
+          <div v-if="newItem.show">
             <q-item
               class="full-width rounded-borders"
               style="background-color: rgba(60, 177, 60, 0.801)"
@@ -771,15 +773,35 @@
               <q-item-section
                 avatar
                 top
-                class="no-pointer-events"
               >
-                <q-avatar
+                <q-fab
+                  v-if="newItem.type == 'folder'"
+                  class="bg-layout-bg text-layout-text no-pointer-events"
                   icon="folder"
-                  color="transparent"
-                  text-color="primary"
-                  size="4.5em"
-                  style="height: 40px"
+                  direction="down"
+                  round
+                  padding="sm"
                 />
+                <q-fab
+                  v-else
+                  class="bg-layout-bg text-layout-text"
+                  :icon="getIcon(newItem.mime)"
+                  direction="right"
+                  round
+                  padding="sm"
+                >
+                  <template
+                    v-for="[key, value] in Array.from(createTypes)"
+                    :key="key"
+                  >
+                    <q-fab-action
+                      class="bg-layout-bg text-layout-text"
+                      @click="newItem.mime = key"
+                      :icon="value.icon"
+                      :label="value.name"
+                    />
+                  </template>
+                </q-fab>
               </q-item-section>
 
               <q-item-section>
@@ -788,12 +810,12 @@
                   outlined
                   dense
                   color="white"
-                  v-model="newFolder.name"
-                  label="New Folder Name"
+                  v-model="newItem.name"
+                  :label="'New ' + newItem.type + ' name'"
                   class="text-body1 q-ml-md"
                   input-class="text-body2"
                   clearable
-                  @keyup.enter="createFolder(newFolder.name)"
+                  @keyup.enter="createItem"
                   ref="newItemInput"
                   hide-bottom-space
                   autofocus
@@ -806,7 +828,7 @@
                     class="q-ml-md bg-green text-white"
                     round
                     flat
-                    @click="createFolder(newFolder.name)"
+                    @click="createItem"
                   />
                   <q-btn
                     icon="close"
@@ -814,8 +836,10 @@
                     round
                     flat
                     @click="
-                      newFolder.show = false;
-                      newFolder.name = '';
+                      newItem.show = false;
+                      newItem.name = '';
+                      newItem.type = '';
+                      newItem.mime = '';
                     "
                   />
                 </div>
@@ -1478,15 +1502,15 @@ import type {
 } from 'src/types/index';
 import { defineComponent, ref, reactive } from 'vue';
 import { useLocalStore } from 'stores/localStore';
-import { useQuasar, scroll, Platform } from 'quasar';
-import { getIcon } from 'src/components/Files/lib/mimeMap';
+import { useQuasar, scroll } from 'quasar';
+import { getIcon, createTypes } from 'src/components/Files/lib/mimeMap';
 import { apiGet, apiPut, apiPost, apiDelete } from 'src/components/apiWrapper';
-import { folderData } from 'src/testdata/folder';
+// import { folderData } from 'src/testdata/folder';
 import { VueSelecto } from 'vue3-selecto';
 
 import RightClickMenu from 'src/components/Files/RightClickMenu.vue';
 import FilePreviewDialog from 'src/components/Files/Dialogs/FilePreviewDialog.vue';
-import CreateFileDialog from 'src/components/Files/Dialogs/CreateFileDialog.vue';
+
 import MoveSelectedItemsDialog from 'src/components/Files/Dialogs/MoveSelectedItemsDialog.vue';
 import DeleteSelectedItemsDialog from 'src/components/Files/Dialogs/DeleteSelectedItemsDialog.vue';
 import UploadFilesDialog from 'src/components/Files/Dialogs/UploadFilesDialog.vue';
@@ -1500,7 +1524,6 @@ export default defineComponent({
   components: {
     RightClickMenu,
     FilePreviewDialog,
-    CreateFileDialog,
     MoveSelectedItemsDialog,
     DeleteSelectedItemsDialog,
     UploadFilesDialog,
@@ -1565,7 +1588,7 @@ export default defineComponent({
       }),
 
       // raw content including children of current folder
-      rawFolderContent: ref(folderData) as Ref<RawFolderContentType>,
+      rawFolderContent: ref() as Ref<RawFolderContentType>,
 
       // Bottom Progress Panel handlers when files are being uploaded -> shows state
       progressSticky: ref(false),
@@ -1638,13 +1661,17 @@ export default defineComponent({
       }),
       dragActive: ref(false),
       // new folder handler
-      newFolder: ref({
+      newItem: ref({
         show: false,
         name: '',
+        type: '',
+        mime: '',
       }),
+      createTypes,
+
+      renameItem: ref({ id: '', type: '', newName: '' }),
 
       // Dialogs
-      showCreateFileDialog: ref(false),
       showMoveSelectedItemsDialog: ref(false),
       showDeleteSelectedItemsDialog: ref(false),
       showUploadFilesDialog: ref(false),
@@ -2420,6 +2447,14 @@ export default defineComponent({
       }
     },
 
+    createItem() {
+      if (this.newItem.type == 'folder') {
+        this.createFolder(this.newItem.name);
+      } else {
+        this.createFile(this.newItem.name, this.newItem.mime);
+      }
+    },
+
     /**
      * Create a new folder in the current folder
      * @param name Name of the folder
@@ -2449,8 +2484,11 @@ export default defineComponent({
       this.loading = true;
       apiPost('/files/folder', data, this.axiosConfig).then((apiData) => {
         if (apiData.error == false) {
-          this.newFolder.name = '';
-          this.newFolder.show = false;
+          this.newItem.name = '';
+          this.newItem.show = false;
+          this.newItem.type = '';
+          this.newItem.mime = '';
+
           this.notify('positive', 'Created');
           this.refreshFolder();
           this.resetFilterState();
@@ -2503,7 +2541,10 @@ export default defineComponent({
       this.loading = true;
       apiPost('/files/file', formData, config).then((apiData) => {
         if (apiData.error == false) {
-          this.showCreateFileDialog = false;
+          this.newItem.name = '';
+          this.newItem.show = false;
+          this.newItem.type = '';
+          this.newItem.mime = '';
           this.notify('positive', 'Created');
           this.refreshFolder();
           this.resetFilterState();

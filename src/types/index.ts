@@ -17,8 +17,10 @@ export interface FolderEntryType {
   createdTimeIso: string;
   sizeBytes: number;
   // set on demand
+  owner?: string;
   selected?: boolean;
   dragOver?: boolean;
+  rename?: boolean;
 }
 
 export interface SharedFileType {

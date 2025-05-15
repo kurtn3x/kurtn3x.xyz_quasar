@@ -62,86 +62,7 @@
           <q-tooltip>Close</q-tooltip>
         </q-btn>
       </q-toolbar>
-      <q-separator :color="darkmode ? 'white' : 'dark'" />
 
-      <div
-        class="row"
-        style="height: 31px"
-      >
-        <q-btn
-          stretch
-          flat
-          icon="download"
-          :label="'(' + item.size + ')'"
-          class="text-weight-bold text-caption"
-          @click="downloadFile"
-        />
-        <q-separator
-          vertical
-          :color="darkmode ? 'white' : 'dark'"
-        />
-
-        <div
-          v-if="
-            !Object.values(availablePreviews).every(
-              (item) => item.available == false
-            )
-          "
-          class="row"
-        >
-          <q-btn
-            stretch
-            flat
-            label="Open with"
-            icon-right="expand_more"
-            class="text-weight-bold text-caption"
-          >
-            <q-menu
-              class="no-shadow"
-              style="width: 140px"
-            >
-              <q-card bordered>
-                <q-separator :color="darkmode ? 'white' : 'dark'" />
-                <template
-                  v-for="value in availablePreviews"
-                  v-bind:key="value"
-                >
-                  <div v-if="value.available">
-                    <q-item
-                      clickable
-                      @click="setMime(value.mime, false)"
-                      v-close-popup
-                      class="text-body1"
-                    >
-                      <q-item-section>
-                        <q-item-label>{{ value.label }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
-                    <q-separator :color="darkmode ? 'white' : 'dark'" />
-                  </div>
-                </template>
-              </q-card>
-            </q-menu>
-          </q-btn>
-          <q-separator
-            vertical
-            :color="darkmode ? 'white' : 'dark'"
-          />
-        </div>
-        <q-space />
-        <q-separator
-          vertical
-          :color="darkmode ? 'white' : 'dark'"
-        />
-
-        <q-btn
-          stretch
-          flat
-          icon="question_mark"
-          class="text-weight-bold text-caption"
-          @click="showItemInformationDialog = true"
-        />
-      </div>
       <q-separator :color="darkmode ? 'white' : 'dark'" />
 
       <q-card-section
@@ -173,15 +94,6 @@
           />
         </div>
         <div
-          v-else-if="mimePreview.text"
-          class="col column"
-        >
-          <TextView
-            :item="item"
-            :password="$props.password"
-          />
-        </div>
-        <div
           v-else-if="mimePreview.wysiwyg"
           class="col column"
         >
@@ -207,6 +119,13 @@
         </div>
         <div v-else>
           <div class="text-h6 text-center q-mt-lg">No Preview available.</div>
+          <div class="row justify-center q-mt-md">
+            <q-btn
+              label="Try to open as text"
+              class="bg-blue text-white text-body1"
+              @click="setMime('text/text')"
+            />
+          </div>
         </div>
       </q-card-section>
       <q-btn
@@ -222,7 +141,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, Ref, defineAsyncComponent } from 'vue';
+import { defineComponent, ref, Ref, defineAsyncComponent, computed } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
 import { FolderEntryType } from 'src/types/index';
@@ -235,9 +154,7 @@ const VideoView = defineAsyncComponent(
 const WysiwygView = defineAsyncComponent(
   () => import('src/components/Files/FilePreviews/WysiwygView.vue')
 );
-const TextView = defineAsyncComponent(
-  () => import('src/components/Files/FilePreviews/TextView.vue')
-);
+
 const PdfView = defineAsyncComponent(
   () => import('src/components/Files/FilePreviews/PdfView.vue')
 );
@@ -254,7 +171,6 @@ export default defineComponent({
     VideoView,
     ItemInformationDialog,
     WysiwygView,
-    TextView,
     PdfView,
     ImageView,
     CodeView,
@@ -274,7 +190,7 @@ export default defineComponent({
   setup(props) {
     const localStore = useLocalStore();
     const q = useQuasar();
-    var item = ref(props.propItem) as Ref<FolderEntryType>;
+    var item = computed(() => props.propItem);
     var showDialog = ref(props.active) as Ref<boolean>;
     var mobile = q.platform.is.mobile;
     if (mobile == undefined) {
@@ -294,27 +210,8 @@ export default defineComponent({
         y: 0,
       }),
       dialogSize: ref({
-        x: 350,
+        x: 400,
         y: 400,
-      }),
-      dialogWidth: ref(0),
-      initialDialogWidth: ref(0),
-      availablePreviews: ref({
-        text: {
-          available: false,
-          label: 'Text Editor',
-          mime: 'text/text',
-        },
-        code: {
-          available: false,
-          label: 'Code Editor',
-          mime: 'text/code',
-        },
-        wysiwyg: {
-          available: false,
-          label: 'Rich Editor',
-          mime: 'text/wysiwyg',
-        },
       }),
       mimePreview: ref({
         video: false,
@@ -329,7 +226,7 @@ export default defineComponent({
   },
 
   created() {
-    this.setMime(this.item.mime, true);
+    this.setMime(this.item.mime);
   },
 
   computed: {
@@ -337,45 +234,28 @@ export default defineComponent({
       return this.localStore.darkmode;
     },
     dialogStyle() {
-      return (
-        'transform: translate(' +
-        this.dialogPos.x +
-        'px,' +
-        this.dialogPos.y +
-        'px); ' +
-        'min-width: ' +
-        this.dialogSize.x +
-        'px; ' +
-        'min-height: ' +
-        this.dialogSize.y +
-        'px;'
-      );
+      return `
+    transform: translate(${this.dialogPos.x}px, ${this.dialogPos.y}px);
+    width: ${this.dialogSize.x}px;
+    height: ${this.dialogSize.y}px;
+    min-width: 350px;
+    min-height: 400px;
+    max-width: ${this.q.screen.width}px;
+    max-height: ${this.q.screen.height}px;
+    position: relative;
+  `;
     },
   },
   watch: {
     active(newVal, oldVal) {
       this.showDialog = newVal;
     },
-    propItem(newVal, oldVal) {
-      this.item = newVal;
-      this.setMime(newVal.mime, true);
-    },
-    childHeight(newVal, oldVal) {
-      console.log(newVal);
+    'item.mime'(newVal) {
+      this.setMime(newVal);
     },
   },
 
   methods: {
-    // this sucks ass but for some reason after minimizing, the child component views have difficulty gaining
-    // the full size of the rest of the card. There has to be another rezise event to properly set the right height
-    onResize(size: any) {
-      if (this.initialHeightMinimized) {
-        this.initialHeightMinimized = false;
-        var el = document.getElementById('viewerWrapper') as any;
-        el.style.height = '401px';
-      }
-    },
-
     close() {
       this.$emit('close', true);
       this.showDialog = false;
@@ -416,29 +296,28 @@ export default defineComponent({
     },
 
     onPanResize(evt: any) {
-      var el = document.getElementById('viewerWrapper') as any;
-      var bounds = el.getBoundingClientRect() as any;
-      var x;
-      var y;
-      // window width is between 350px and screenwidth-100
+      if (this.maximizedToggle) return;
 
-      if (bounds.x + el.clientWidth >= this.q.screen.width || bounds.x <= 0) {
-        // dont allow the resizing to make the window leave
-        x = this.dialogSize.x - 0.1;
-      } else {
-        x = this.dialogSize.x + evt.delta.x;
-      }
+      // Use deltas for smoother resizing
+      const deltaX = evt.delta.x;
+      const deltaY = evt.delta.y;
 
-      // window height is between 400px and screenheight-100
-      if (bounds.y + el.clientHeight >= this.q.screen.height || bounds.y <= 0) {
-        y = this.dialogSize.y - 0.1;
-      } else {
-        y = this.dialogSize.y + evt.delta.y;
-      }
-
+      // Update size directly without complex calculations
       this.dialogSize = {
-        x: x,
-        y: y,
+        x: Math.max(
+          400,
+          Math.min(
+            this.dialogSize.x + deltaX,
+            window.innerWidth - this.dialogPos.x - 10
+          )
+        ),
+        y: Math.max(
+          400,
+          Math.min(
+            this.dialogSize.y + deltaY,
+            window.innerHeight - this.dialogPos.y - 10
+          )
+        ),
       };
     },
 
@@ -447,30 +326,13 @@ export default defineComponent({
     // by default an Unknown Mimetype can be opened with text, code and wysiwyg
     // text or code can each be opened with mytype text or code
     // wysiwyg mime can be opened with text, code & wysiwyg
-    setMime(mime: string, updateAvail = true) {
+    setMime(mime: string) {
       Object.keys(this.mimePreview).forEach(
         (v) => ((this.mimePreview as any)[v] = false)
       );
-      if (updateAvail) {
-        Object.keys(this.availablePreviews).forEach(
-          (v) => ((this.availablePreviews as any)[v]['available'] = false)
-        );
-      }
-
       var mimeType = this.mimeMap.get(mime);
       if (mimeType != undefined) {
         (this.mimePreview as any)[mimeType.type] = true;
-        if (updateAvail && mimeType.availableTypes.length != 0) {
-          for (var availType of mimeType.availableTypes) {
-            (this.availablePreviews as any)[availType].available = true;
-          }
-        }
-      } else {
-        if (updateAvail) {
-          // always allow text & code editor for unknown mimes because why not
-          this.availablePreviews.text.available = true;
-          this.availablePreviews.code.available = true;
-        }
       }
     },
 
@@ -489,7 +351,6 @@ export default defineComponent({
       document.body.appendChild(link);
       link.click();
       link.remove();
-      // window?.open(url, '_blank')?.focus();
     },
   },
 });
@@ -498,5 +359,26 @@ export default defineComponent({
 <style>
 .close:hover {
   background-color: rgba(255, 0, 0, 0.644);
+}
+#viewerWrapper {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform;
+  position: relative;
+  contain: layout size;
+}
+
+.q-btn.absolute-bottom-right {
+  cursor: se-resize;
+  z-index: 1000;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  right: 0;
+  bottom: 0;
+  position: absolute;
+  touch-action: none;
+  user-select: none;
+  pointer-events: auto;
 }
 </style>

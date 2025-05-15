@@ -19,45 +19,43 @@
     v-if="!loading && !error"
     class="col column"
   >
-    <div class="bg-layout-bg text-layout-text row rounded-borders q-pa-none">
-      <q-btn
-        icon="save"
-        label="Save"
-        flat
-        stretch
-        class="bg-green text-white"
-        @click="updateContent"
-      />
-      <q-separator
-        vertical
-        color="white"
-      />
-      <q-space />
-      <div class="text-h6">Rich-Text-Editor</div>
-      <q-space />
-      <q-separator
-        vertical
-        color="white"
-      />
-      <q-btn
-        :icon="darkmode ? 'dark_mode' : 'light_mode'"
-        flat
-        @click="darkmode = !darkmode"
-      />
+    <div
+      class="bg-layout-bg text-layout-text row rounded-borders q-pa-none"
+      style="height: 45px"
+    >
+      <div class="col row justify-start">
+        <q-btn
+          icon="save"
+          label="Save"
+          flat
+          stretch
+          class="bg-green text-white"
+          @click="updateContent"
+          v-if="localStore.isAuthenticated"
+        />
+        <q-separator
+          vertical
+          color="layout-text"
+          v-if="localStore.isAuthenticated"
+        />
+      </div>
+
+      <div class="col row justify-end">
+        <q-separator
+          vertical
+          color="white"
+        />
+        <q-btn
+          :icon="darkmode ? 'dark_mode' : 'light_mode'"
+          flat
+          @click="darkmode = !darkmode"
+        />
+      </div>
     </div>
 
     <q-editor
       v-model="text"
       :toolbar="[
-        [
-          {
-            label: $q.lang.editor.align,
-            icon: $q.iconSet.editor.align,
-            fixedLabel: true,
-            list: 'only-icons',
-            options: ['left', 'center', 'right', 'justify'],
-          },
-        ],
         ['bold', 'italic', 'strike', 'underline'],
         ['token', 'hr', 'link', 'custom_btn'],
         [
@@ -100,6 +98,13 @@
               'verdana',
             ],
           },
+          {
+            label: $q.lang.editor.align,
+            icon: $q.iconSet.editor.align,
+            fixedLabel: false,
+            list: 'only-icons',
+            options: ['left', 'center', 'right', 'justify'],
+          },
         ],
         ['quote', 'unordered', 'ordered', 'outdent', 'indent'],
 
@@ -128,7 +133,7 @@
 <script setup>
 import { ref } from 'vue';
 import { apiGet, apiPut } from 'src/components/apiWrapper';
-import { defineProps, watch } from 'vue';
+import { defineProps, watch, computed } from 'vue';
 import { useQuasar } from 'quasar';
 import { useLocalStore } from 'stores/localStore';
 
@@ -139,7 +144,7 @@ const props = defineProps({
     default: '',
   },
 });
-var item = ref(props.item);
+const item = computed(() => props.item);
 
 const q = useQuasar();
 const localStore = useLocalStore();
@@ -156,10 +161,11 @@ var text = ref('');
 getFileContent();
 
 watch(
-  () => item.value.id,
-  () => {
+  () => props.item,
+  (newVal) => {
     getFileContent();
-  }
+  },
+  { immediate: true }
 );
 
 function getFileContent() {
@@ -181,6 +187,9 @@ function getFileContent() {
   );
 }
 function updateContent() {
+  if (!localStore.isAuthenticated) {
+    return;
+  }
   var data = {
     content: text.value,
   };

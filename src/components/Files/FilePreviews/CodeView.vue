@@ -19,115 +19,112 @@
     v-if="!loading && !error"
     class="col column"
   >
-    <div class="bg-layout-bg text-layout-text row rounded-borders q-pa-none">
-      <q-btn
-        icon="save"
-        label="Save"
-        flat
-        stretch
-        class="bg-green text-white"
-        @click="updateContent"
-        v-if="localStore.isAuthenticated"
-      />
-      <q-separator
-        vertical
-        color="layout-text"
-        v-if="localStore.isAuthenticated"
-      />
-      <q-space />
-      <q-separator
-        vertical
-        color="layout-text"
-      />
-      <q-btn
-        icon="info"
-        flat
-        stretch
-      >
-        <q-menu
-          anchor="bottom middle"
-          self="top middle"
+    <div
+      class="bg-layout-bg text-layout-text row rounded-borders q-pa-none"
+      style="height: 45px"
+    >
+      <div class="col row justify-start">
+        <q-btn
+          icon="save"
+          label="Save"
+          flat
+          stretch
+          class="bg-green text-white"
+          @click="updateContent"
+          v-if="localStore.isAuthenticated"
+        />
+        <q-separator
+          vertical
+          color="layout-text"
+          v-if="localStore.isAuthenticated"
+        />
+      </div>
+      <div class="col row justify-end">
+        <q-separator
+          vertical
+          color="layout-text"
+          v-if="lang == 'markdown'"
+        />
+        <q-btn
+          :icon="markdownPreview ? 'visibility_off' : 'visibility'"
+          flat
+          @click="markdownPreview = !markdownPreview"
+          v-if="lang == 'markdown'"
         >
-          <div class="bg-light-blue-6 text-body1 text-center">
-            <a class="q-ml-sm text-white">Info</a>
-          </div>
-          <div class="q-ma-sm text-body1">
-            <div class="q-ma-sm">
-              <a class="text-weight-bold">Lines:</a>
-              {{ state.lines }}
-            </div>
-            <div class="q-ma-sm">
-              <a class="text-weight-bold">Characters:</a>
-              {{ state.length }}
-            </div>
-          </div>
-        </q-menu>
-      </q-btn>
-      <q-separator
-        vertical
-        color="layout-text"
-      />
-      <q-btn
-        icon="settings"
-        flat
-        stretch
-      >
-        <q-menu
-          class="no-shadow"
-          anchor="bottom middle"
-          self="top middle"
+          <q-tooltip class="bg-layout-bg text-layout-text text-body2">
+            Markdown Preview
+          </q-tooltip>
+        </q-btn>
+        <q-separator
+          vertical
+          color="layout-text"
+        />
+        <q-btn
+          icon="settings"
+          flat
+          stretch
         >
-          <q-card bordered>
-            <q-item>
-              <q-item-section>
-                <q-item-label class="text-center text-body1 text-light-blue-6">
-                  Syntax
-                </q-item-label>
-                <q-option-group
-                  v-model="lang"
-                  :options="langOptions"
-                  color="light-blue-6"
-                  class="q-mr-md q-mt-xs q-mb-xs"
-                  @update:model-value="updateSyntax"
-                />
-              </q-item-section>
-            </q-item>
-            <q-separator color="blue-5" />
-            <q-item>
-              <q-item-section>
-                <q-item-label class="text-center text-body1 text-light-blue-6">
-                  Tab Spaces
-                </q-item-label>
-                <div class="row q-mt-sm">
-                  <q-btn
-                    :disable="tabsize == 2"
-                    label="2"
-                    flat
-                    class="col bg-blue-6 text-white q-mr-xs"
-                    @click="tabsize = 2"
+          <q-menu
+            class="no-shadow"
+            anchor="bottom middle"
+            self="top middle"
+          >
+            <q-card bordered>
+              <q-item>
+                <q-item-section>
+                  <q-item-label
+                    class="text-center text-body1 text-light-blue-6"
+                  >
+                    Syntax
+                  </q-item-label>
+                  <q-option-group
+                    v-model="lang"
+                    :options="langOptions"
+                    color="light-blue-6"
+                    class="q-mr-md q-mt-xs q-mb-xs"
+                    @update:model-value="updateSyntax"
                   />
-                  <q-btn
-                    :disable="tabsize == 4"
-                    label="4"
-                    flat
-                    class="col bg-blue-6 text-white q-ml-xs"
-                    @click="tabsize = 4"
-                  />
-                </div>
-              </q-item-section>
-            </q-item>
-          </q-card>
-        </q-menu>
-      </q-btn>
-      <q-separator
-        vertical
-        color="layout-text"
-      />
-      <q-btn
-        :icon="darkmode ? 'dark_mode' : 'light_mode'"
-        flat
-        @click="darkmode = !darkmode"
-      />
+                </q-item-section>
+              </q-item>
+              <q-separator color="blue-5" />
+              <q-item>
+                <q-item-section>
+                  <q-item-label
+                    class="text-center text-body1 text-light-blue-6"
+                  >
+                    Tab Spaces
+                  </q-item-label>
+                  <div class="row q-mt-sm">
+                    <q-btn
+                      :disable="tabsize == 2"
+                      label="2"
+                      flat
+                      class="col bg-blue-6 text-white q-mr-xs"
+                      @click="tabsize = 2"
+                    />
+                    <q-btn
+                      :disable="tabsize == 4"
+                      label="4"
+                      flat
+                      class="col bg-blue-6 text-white q-ml-xs"
+                      @click="tabsize = 4"
+                    />
+                  </div>
+                </q-item-section>
+              </q-item>
+            </q-card>
+          </q-menu>
+        </q-btn>
+        <q-separator
+          vertical
+          color="layout-text"
+        />
+        <q-btn
+          :icon="darkmode ? 'dark_mode' : 'light_mode'"
+          flat
+          @click="darkmode = !darkmode"
+        />
+      </div>
     </div>
     <q-card
       bordered
@@ -142,6 +139,21 @@
         :thumb-style="thumbStyle"
         :bar-style="barStyle"
         class="col column"
+        v-if="markdownPreview"
+      >
+        <vue-markdown
+          :source="text"
+          class="col column q-ml-md q-mb-md q-mt-md markdown-content"
+          :options="options"
+          :plugins="plugins"
+        />
+      </q-scroll-area>
+      <q-scroll-area
+        :class="darkmode ? 'bg-one-dark text-white' : 'bg-white text-dark'"
+        :thumb-style="thumbStyle"
+        :bar-style="barStyle"
+        class="col column"
+        v-else
       >
         <codemirror
           v-model="text"
@@ -154,7 +166,7 @@
           @update="handleStateUpdate"
           @ready="handleReady"
           @keydown.ctrl.s.prevent.stop="updateContent"
-        ></codemirror>
+        />
       </q-scroll-area>
     </q-card>
   </div>
@@ -181,6 +193,8 @@ import { python } from '@codemirror/lang-python';
 import { json } from '@codemirror/lang-json';
 import { markdown } from '@codemirror/lang-markdown';
 import { javascript } from '@codemirror/lang-javascript';
+import VueMarkdown from 'vue-markdown-render';
+import MarkdownItHighlightjs from 'markdown-it-highlightjs';
 
 const props = defineProps({
   item: Object,
@@ -190,14 +204,16 @@ const props = defineProps({
   },
 });
 
-var item = ref(props.item);
+const plugins = [MarkdownItHighlightjs];
 
-watch(
-  () => item.value.id,
-  () => {
-    getFileContent();
-  }
-);
+const options = {
+  html: true,
+  breaks: true,
+  linkify: true,
+  typographer: true,
+};
+
+const item = computed(() => props.item);
 
 const q = useQuasar();
 const localStore = useLocalStore();
@@ -243,23 +259,23 @@ var lang = ref('');
 var tabsize = ref(4);
 var text = ref('');
 
-// set the initial config for python, javascript, markdown or json
-const initialMime = item.value.mime;
-if (['text/x-python', 'text/code-python'].indexOf(initialMime) > -1) {
-  lang.value = 'python';
-} else if (
-  [
-    'application/x-javascript',
-    'application/javascript',
-    'text/code-javascript',
-  ].indexOf(initialMime) > -1
-) {
-  lang.value = 'javascript';
-} else if (['text/markdown', 'text/code-markdown'].indexOf(initialMime) > -1) {
-  lang.value = 'markdown';
-} else if (['application/json', 'text/code-json'].indexOf(initialMime) > -1) {
-  lang.value = 'json';
-}
+// markdown preview
+var markdownPreview = ref(false);
+
+watch(
+  () => props.item,
+  (newVal) => {
+    getFileContent();
+  },
+  { immediate: true }
+);
+
+onMounted(async () => {
+  var els = document.getElementsByClassName('q-scrollarea__container');
+  for (var el of els) {
+    el.classList.add('column', 'col');
+  }
+});
 
 // styling
 var thumbStyle = {
@@ -313,17 +329,35 @@ const handleStateUpdate = (viewUpdate) => {
   state.lines = viewUpdate.state.doc.lines;
 };
 
-getFileContent();
-
-onMounted(async () => {
-  var els = document.getElementsByClassName('q-scrollarea__container');
-  for (var el of els) {
-    el.classList.add('column', 'col');
-  }
-});
-
 // functions
 function getFileContent() {
+  const initialMime = item.value.mime;
+  if (['text/x-python', 'text/code-python'].indexOf(initialMime) > -1) {
+    lang.value = 'python';
+  } else if (
+    [
+      'application/x-javascript',
+      'application/javascript',
+      'text/code-javascript',
+    ].indexOf(initialMime) > -1
+  ) {
+    lang.value = 'javascript';
+  } else if (
+    ['text/markdown', 'text/code-markdown'].indexOf(initialMime) > -1
+  ) {
+    lang.value = 'markdown';
+  } else if (['application/json', 'text/code-json'].indexOf(initialMime) > -1) {
+    lang.value = 'json';
+  } else {
+    lang.value = '';
+  }
+
+  if (!localStore.isAuthenticated && lang.value == 'markdown') {
+    markdownPreview.value = true;
+  } else {
+    markdownPreview.value = false;
+  }
+
   var args = '';
   if (props.password != '') {
     args += '?password=' + props.password;
@@ -343,6 +377,9 @@ function getFileContent() {
 }
 
 function updateContent() {
+  if (!localStore.isAuthenticated) {
+    return;
+  }
   var data = {
     content: text.value,
   };
@@ -414,5 +451,74 @@ function onResize() {
 <style>
 .bg-one-dark {
   background-color: #282c34;
+}
+.markdown-content {
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+
+/* Headings */
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+  margin-top: 0.9rem; /* reduced from 1.2rem */
+  margin-bottom: 0.6rem; /* reduced from 0.8rem */
+  line-height: 1.1; /* reduced from 1.2 */
+}
+
+.markdown-content h1 {
+  font-size: 3rem;
+}
+.markdown-content h2 {
+  font-size: 2.7rem;
+}
+.markdown-content h3 {
+  font-size: 2.4rem;
+}
+.markdown-content h4 {
+  font-size: 2.1rem;
+}
+.markdown-content h5 {
+  font-size: 1.8rem;
+}
+.markdown-content h6 {
+  font-size: 1.5rem;
+}
+
+.markdown-content p {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding-left: 2.4rem;
+}
+
+.markdown-content li {
+  margin: 0.25rem 0;
+  line-height: 1.2;
+}
+
+/* Code blocks */
+.markdown-content pre {
+  margin: 0.7rem 0;
+  padding: 0.8rem;
+  font-size: 1rem;
+  line-height: 1.1;
+}
+
+.markdown-content blockquote {
+  margin: 0.7rem 0;
+  padding-left: 1.6rem;
+  font-size: 1rem;
+  line-height: 1.2;
+  border-left: 4px solid #4fc3f7;
 }
 </style>

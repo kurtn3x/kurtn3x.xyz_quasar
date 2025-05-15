@@ -1,11 +1,17 @@
 <template>
-  <q-page class="bg row justify-center items-center" :class="theme">
+  <q-page
+    class="bg row justify-center items-center"
+    :class="theme"
+  >
     <ParticlesIndex />
     <div class="absolute-bottom-right q-mb-md q-mr-md">
       <div class="text-right">
-        <router-link to="/privacy" class="q-ml-md text-white"
-          >Privacy Policy</router-link
+        <router-link
+          to="/privacy"
+          class="q-ml-md text-white"
         >
+          Privacy Policy
+        </router-link>
       </div>
     </div>
     <div class="q-mb-xl">

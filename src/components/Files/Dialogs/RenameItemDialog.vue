@@ -1,32 +1,34 @@
 <template>
-  <q-dialog v-model="showDialog" @hide="close">
-    <q-card bordered style="width: 350px">
+  <q-dialog
+    v-model="showDialog"
+    @hide="close"
+  >
+    <q-card
+      bordered
+      style="width: 350px"
+    >
       <q-toolbar class="bg-layout-bg text-layout-text text-center">
-        <q-toolbar-title class="q-ma-sm">Create new File</q-toolbar-title>
+        <q-toolbar-title class="q-ma-sm">Rename Item</q-toolbar-title>
       </q-toolbar>
       <div class="text-body1 text-center q-ma-md">
         <q-input
           :color="darkmode ? 'white' : 'black'"
-          v-model="newFile.name"
+          v-model="newName"
           dense
           outlined
-          label="Name"
+          label="New Name"
           class="text-primary text-body1 col"
           style="height: 45px"
-          @keyup.enter="createFile"
+          @keyup.enter="renameFile"
+          autofocus
         />
       </div>
-      <div class="q-ml-md">
-        <a class="text-h6"> Type:</a>
-        <q-option-group
-          v-model="newFile.mime"
-          :options="mimeOptions"
-          color="primary"
-          class="q-mt-xs text-body1"
-        />
-      </div>
+
       <q-separator class="q-mt-md" />
-      <q-card-actions align="center" class="row q-mt-sm q-mb-sm">
+      <q-card-actions
+        align="center"
+        class="row q-mt-sm q-mb-sm"
+      >
         <q-btn
           v-close-popup
           push
@@ -39,8 +41,8 @@
           class="bg-green text-white col"
           icon="done"
           size="md"
-          label="Create"
-          @click="createFile"
+          label="Rename"
+          @click="renameFile"
         />
       </q-card-actions>
     </q-card>
@@ -53,40 +55,20 @@ import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
 
 export default defineComponent({
-  name: 'CreateFileDialog',
+  name: 'RenameItemDialog',
   props: {
     active: Boolean,
+    currentName: String,
   },
-  emits: ['close', 'create'],
+  emits: ['close', 'rename'],
   setup(props) {
     const localStore = useLocalStore();
     const q = useQuasar();
     var showDialog = ref(props.active) as Ref<boolean>;
-    var newFile = ref({
-      name: '',
-      mime: 'Unknown',
-    });
-    const mimeOptions = [
-      {
-        label: 'Text',
-        value: 'text/plain',
-      },
-      {
-        label: 'WYSIWYG (Rich Text Editor)',
-        value: 'text/wysiwyg',
-      },
-      {
-        label: 'Code',
-        value: 'text/code',
-      },
-      {
-        label: 'Unknown',
-        value: 'Unknown',
-      },
-    ];
+    var newName = ref(props.currentName);
+
     return {
-      mimeOptions,
-      newFile,
+      newName,
       localStore,
       q,
       showDialog,
@@ -105,14 +87,9 @@ export default defineComponent({
   methods: {
     close() {
       this.$emit('close', true);
-      this.showDialog = false;
-      this.newFile.name = '';
-      this.newFile.mime = 'Unknown';
     },
-    createFile() {
-      this.$emit('create', this.newFile);
-      this.newFile.name = '';
-      this.newFile.mime = 'Unknown';
+    renameFile() {
+      this.$emit('rename', this.newName);
     },
   },
 });

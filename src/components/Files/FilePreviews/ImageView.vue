@@ -1,5 +1,8 @@
 <template>
-  <q-img :src="src" fit="scale-down">
+  <q-img
+    :src="src"
+    fit="scale-down"
+  >
     <template v-slot:error>
       <div
         class="absolute-full flex flex-center text-h6 bg-transparent text-red"
@@ -11,7 +14,7 @@
 </template>
 
 <script setup>
-import { defineProps, ref } from 'vue';
+import { defineProps, ref, watch } from 'vue';
 
 const props = defineProps({
   item: Object,
@@ -28,9 +31,16 @@ if (props.password != '') {
   args += '?attachment=0';
 }
 
-console.log(props.password);
-
 var src = ref(
   'https://api.kurtn3x.xyz/files/download/file/' + props.item.id + args
+);
+
+watch(
+  () => props.item,
+  (newVal) => {
+    src.value =
+      'https://api.kurtn3x.xyz/files/download/file/' + props.item.id + args;
+  },
+  { immediate: true }
 );
 </script>

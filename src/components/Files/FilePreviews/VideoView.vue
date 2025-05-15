@@ -1,5 +1,8 @@
 <template>
-  <div class="q-mt-lg row justify-center" v-if="loading">
+  <div
+    class="q-mt-lg row justify-center"
+    v-if="loading"
+  >
     <q-spinner
       color="light-blue-6"
       size="10em"
@@ -31,7 +34,7 @@
 <script setup>
 import { VideoPlayer } from '@videojs-player/vue';
 import 'video.js/dist/video-js.css';
-import { defineProps, ref } from 'vue';
+import { defineProps, ref, watch } from 'vue';
 
 const props = defineProps({
   item: Object,
@@ -49,6 +52,7 @@ if (props.password != '') {
 } else {
   args += '?attachment=0';
 }
+
 var src = ref(
   'https://api.kurtn3x.xyz/files/download/file/' + props.item.id + args
 );
@@ -68,6 +72,16 @@ var videoOptions = ref({
     },
   ],
 });
+
+watch(
+  () => props.item,
+  (newVal) => {
+    src.value =
+      'https://api.kurtn3x.xyz/files/download/file/' + props.item.id + args;
+    videoOptions.value.sources[0].src = src.value;
+  },
+  { immediate: true }
+);
 
 // functions
 const handleMetadata = () => {

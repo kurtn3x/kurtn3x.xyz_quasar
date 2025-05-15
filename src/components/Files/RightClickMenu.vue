@@ -5,6 +5,25 @@
     @close="showItemInformationDialog = false"
   />
 
+  <ItemLinksDialog
+    :prop-item="propItem"
+    :active="showItemLinksDialog"
+    @close="showItemLinksDialog = false"
+    v-if="showItemLinksDialog"
+  />
+
+  <RenameItemDialog
+    :current-name="propItem.name"
+    :active="showRenameItemDialog"
+    @close="showRenameItemDialog = false"
+    @rename="
+      (newName) => {
+        console.log(newName);
+        updateName(newName);
+      }
+    "
+  />
+
   <q-dialog v-model="sharingPasswordDialog">
     <q-card
       bordered
@@ -16,7 +35,7 @@
       <div class="text-body1 text-center q-ma-sm">
         <q-input
           v-model="sharingPasswordOptions.sharedPassword"
-          class="q-mt-sm full-width"
+          class="q-ma-md full-width"
           style="max-width: 400px"
           label="Password"
           input-class="text-body1"
@@ -28,7 +47,7 @@
           :rules="[
             (val) =>
               /^[a-z0-9]+$/i.test(val) ||
-              'Only alphanumeric characters allowed and must contain at least 1 character.',
+              'Only alphanumerical characters and length > 0',
           ]"
         >
           <template v-slot:prepend>
@@ -47,25 +66,6 @@
           </template>
         </q-input>
       </div>
-      <q-card-actions
-        align="center"
-        class="row q-ml-md q-mr-md q-mb-sm q-mt-sm"
-      >
-        <q-btn
-          label="Random"
-          icon="refresh"
-          push
-          class="bg-blue text-white col"
-          @click="generatePassword()"
-        />
-        <q-btn
-          icon="content_copy"
-          label="Copy"
-          push
-          class="bg-blue text-white col"
-          @click="copyToClipboard(sharingPasswordOptions.sharedPassword)"
-        />
-      </q-card-actions>
       <q-separator />
       <q-card-actions
         align="center"
@@ -196,86 +196,27 @@
             />
           </q-item>
           <q-item v-if="item.shared">
-            <q-input
-              label="Share Link"
-              :color="darkmode ? 'white' : 'black'"
-              outlined
-              v-model="itemShareLink"
-              readonly
-              dense
-            >
-              <template v-slot:append>
-                <q-btn
-                  @click="copyToClipboard(itemShareLink)"
-                  icon="content_copy"
-                  flat
-                  size="md"
-                  round
-                ></q-btn>
-              </template>
-            </q-input>
+            <q-btn
+              icon="link"
+              label="Manage Links"
+              push
+              class="full-width full-height bg-green text-white"
+              @click="showItemLinksDialog = true"
+            />
           </q-item>
         </q-list>
       </q-menu>
     </q-item>
-    <q-item clickable>
+    <q-item
+      clickable
+      @click="showRenameItemDialog = true"
+    >
       <q-item-section avatar>
         <q-icon name="edit" />
       </q-item-section>
       <q-item-section>
         <q-item-label>Rename</q-item-label>
       </q-item-section>
-      <q-menu
-        anchor="bottom middle"
-        self="top middle"
-        separate-close-popup
-        ref="inputMenu"
-      >
-        <q-card
-          bordered
-          flat
-        >
-          <q-input
-            label="New Name"
-            v-model="newName"
-            autofocus
-            :color="darkmode ? 'white' : 'black'"
-            @keyup.enter="updateName"
-            class="text-primary text-body1 q-ma-sm"
-            style="max-width: 300px"
-            outlined
-            dense
-            hide-bottom-space
-            :rules="[
-              (val) => val.length > 0 || 'Please type something',
-              (val) => !/\/|\x00/.test(val) || 'No slash or Null char.',
-            ]"
-            lazy-rules
-          />
-          <q-separator class="q-ma-sm" />
-
-          <q-card-actions
-            align="center"
-            class="row"
-          >
-            <q-btn
-              v-close-popup
-              push
-              icon="close"
-              class="bg-red text-white q-mr-sm"
-              style="width: 95px"
-            />
-            <q-btn
-              push
-              class="bg-green text-white q-ml-sm"
-              icon="done"
-              size="md"
-              @click="updateName"
-              style="width: 95px"
-            />
-          </q-card-actions>
-        </q-card>
-      </q-menu>
     </q-item>
     <q-item
       clickable
@@ -316,20 +257,26 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, Ref } from 'vue';
+import { defineComponent, ref, Ref, defineAsyncComponent } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
 import { FolderEntryType } from 'src/types/index';
 import ItemInformationDialog from 'components/Files/Dialogs/ItemInformationDialog.vue';
+import RenameItemDialog from 'components/Files/Dialogs/RenameItemDialog.vue';
+
 import { apiPut } from 'src/components/apiWrapper';
+
+const ItemLinksDialog = defineAsyncComponent(
+  () => import('components/Files/Dialogs/ItemLinksDialog.vue')
+);
 
 export default defineComponent({
   name: 'RightClickMenu',
-  components: { ItemInformationDialog },
+  components: { ItemInformationDialog, RenameItemDialog, ItemLinksDialog },
   props: {
     propItem: Object,
   },
-  emits: ['moveItem', 'deleteItem', 'showInformation'],
+  emits: ['moveItem', 'deleteItem', 'renameItem', 'showInformation'],
   setup(props) {
     const localStore = useLocalStore();
     const q = useQuasar();
@@ -369,6 +316,8 @@ export default defineComponent({
       sharingPasswordDialog: ref(false),
       sharingPasswordOptions,
       showItemInformationDialog: ref(false),
+      showRenameItemDialog: ref(false),
+      showItemLinksDialog: ref(false),
     };
   },
 
@@ -399,40 +348,6 @@ export default defineComponent({
         retVal += charset.charAt(Math.floor(Math.random() * n));
       }
       this.sharingPasswordOptions.sharedPassword = retVal;
-    },
-
-    copyToClipboard(text: string) {
-      navigator.clipboard.writeText(text);
-      this.notify('positive', 'Copied to clipboard.');
-    },
-
-    updateName() {
-      if (this.newName.length < 1) {
-        this.notify('negative', 'Name must be at least 1 character long.');
-        return;
-      }
-      if (/\/|\x00/.test(this.newName)) {
-        this.notify('negative', 'Name contains invalid characters.');
-        return;
-      }
-
-      (this.$refs as any).inputMenu.hide();
-      var data = {
-        name: this.newName,
-      };
-
-      apiPut(
-        '/files/' + this.item.type + '/' + this.item.id,
-        data,
-        this.axiosConfig
-      ).then((apiData) => {
-        if (apiData.error == false) {
-          this.item.name = this.newName;
-          this.notify('positive', 'Updated');
-        } else {
-          this.notify('negative', apiData.errorMessage);
-        }
-      });
     },
 
     updateSharing() {
@@ -477,6 +392,10 @@ export default defineComponent({
       this.$emit('deleteItem', true);
     },
 
+    renameItem() {
+      this.$emit('renameItem', true);
+    },
+
     downloadItem() {
       var args = '';
       args += '?attachment=1';
@@ -493,6 +412,35 @@ export default defineComponent({
       document.body.appendChild(link);
       link.click();
       link.remove();
+    },
+
+    updateName(newName: string) {
+      if (newName.length < 1) {
+        this.notify('negative', 'Name must be at least 1 character long.');
+        return;
+      }
+      if (/\/|\x00/.test(newName)) {
+        this.notify('negative', 'Name contains invalid characters.');
+        return;
+      }
+
+      var data = {
+        name: newName,
+      };
+
+      apiPut(
+        '/files/' + this.item.type + '/' + this.item.id,
+        data,
+        this.axiosConfig
+      ).then((apiData) => {
+        if (apiData.error == false) {
+          this.item.name = newName;
+          this.notify('positive', 'Updated');
+          this.showRenameItemDialog = false;
+        } else {
+          this.notify('negative', apiData.errorMessage);
+        }
+      });
     },
   },
 });

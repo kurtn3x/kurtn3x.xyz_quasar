@@ -93,6 +93,18 @@
                   {{ item.sharedAllowAllWrite }}
                 </div>
               </div>
+              <div
+                class="text-body1 q-mt-md row q-ml-sm"
+                v-if="item.owner"
+              >
+                <div class="text-weight-bolder text-weight-bolder">Owner</div>
+                <router-link
+                  :to="'/user/' + item.owner"
+                  class="q-ml-md text-blue"
+                >
+                  {{ item.owner }}
+                </router-link>
+              </div>
               <div class="text-body1 q-mt-md row q-ml-sm q-mb-sm">
                 <div class="text-weight-bolder text-weight-bolder">
                   Password Protected

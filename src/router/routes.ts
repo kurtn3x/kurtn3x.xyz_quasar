@@ -38,8 +38,8 @@ const routes: RouteRecordRaw[] = [
         component: () => import('pages/Public/Files/SharedFile.vue'),
       },
       {
-        path: 'p/:id',
-        component: () => import('pages/Public/Files/Permalink.vue'),
+        path: 'sl/:id',
+        component: () => import('pages/Public/Files/ShortLink.vue'),
       },
     ],
   },
