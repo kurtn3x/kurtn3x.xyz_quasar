@@ -3,27 +3,36 @@ import { RouteRecordRaw } from 'vue-router';
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    component: () => import('layouts/MainLayout.vue'),
+    component: () => import('src/layouts/MainLayout.vue'),
 
     children: [
-      { path: '/', component: () => import('pages/Public/Home.vue') },
       {
-        path: 'login',
-        component: () => import('pages/Public/Login.vue'),
-      },
-      {
-        name: 'register',
-        path: 'register',
-        component: () => import('pages/Public/Register.vue'),
-      },
-      {
-        name: 'privacy',
-        path: 'privacy',
-        component: () => import('pages/Public/PrivacyPolicy.vue'),
+        path: '',
+        component: () => import('src/layouts/ThemeBackground.vue'),
+        children: [
+          {
+            path: '',
+            component: () => import('src/pages/public/HomeView.vue'),
+          },
+          {
+            path: 'login',
+            component: () => import('src/pages/public/LoginView.vue'),
+          },
+          {
+            name: 'register',
+            path: 'register',
+            component: () => import('src/pages/public/RegisterView.vue'),
+          },
+          {
+            name: 'privacy',
+            path: 'privacy',
+            component: () => import('src/pages/public/PrivacyPolicyView.vue'),
+          },
+        ],
       },
       {
         path: 'user/:username',
-        component: () => import('pages/Public/UserProfile.vue'),
+        component: () => import('src/pages/public/UserProfileView.vue'),
       },
     ],
   },
@@ -31,15 +40,15 @@ const routes: RouteRecordRaw[] = [
   // public file views, these are used for file sharing
   {
     path: '/files',
-    component: () => import('layouts/MainLayout.vue'),
+    component: () => import('src/layouts/MainLayout.vue'),
     children: [
       {
         path: 'file/:id',
-        component: () => import('pages/Public/Files/SharedFile.vue'),
+        component: () => import('src/pages/public/files/SharedFileView.vue'),
       },
       {
         path: 'sl/:id',
-        component: () => import('pages/Public/Files/ShortLink.vue'),
+        component: () => import('src/pages/public/files/ShortLinkView.vue'),
       },
     ],
   },
@@ -49,31 +58,27 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/dashboard',
     meta: { requiresAuth: true },
-    component: () => import('layouts/MainLayout.vue'),
+    component: () => import('src/layouts/MainLayout.vue'),
     children: [
       {
-        path: 'home',
-        component: () => import('pages/Public/Home.vue'),
-      },
-      {
         path: 'settings',
-        component: () => import('pages/Authenticated/Settings.vue'),
+        component: () => import('src/pages/authenticated/SettingsView.vue'),
       },
       {
         path: 'settings/:page',
-        component: () => import('pages/Authenticated/Settings.vue'),
+        component: () => import('src/pages/authenticated/SettingsView.vue'),
       },
       {
         path: 'files',
-        component: () => import('pages/Authenticated/Files.vue'),
+        component: () => import('src/pages/authenticated/Files.vue'),
       },
       {
         path: 'vpn',
-        component: () => import('src/pages/Authenticated/VPN.vue'),
+        component: () => import('src/pages/authenticated/VPNView.vue'),
       },
       {
         path: 'torrent',
-        component: () => import('src/pages/Authenticated/Torrent.vue'),
+        component: () => import('src/pages/authenticated/Torrent.vue'),
       },
     ],
   },
@@ -82,11 +87,11 @@ const routes: RouteRecordRaw[] = [
   // but you can also remove it
   {
     path: '/:catchAll(.*)*',
-    component: () => import('layouts/MainLayout.vue'),
+    component: () => import('src/layouts/MainLayout.vue'),
     children: [
       {
         path: '',
-        component: () => import('pages/NotFound.vue'),
+        component: () => import('src/pages/NotFoundView.vue'),
       },
     ],
   },

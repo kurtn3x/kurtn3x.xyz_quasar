@@ -1,5 +1,9 @@
 <template>
-  <router-view v-if="prefetch" class="font" :key="$route.fullPath" />
+  <router-view
+    v-if="prefetch"
+    class="font"
+    :key="$route.fullPath"
+  />
 </template>
 
 <script lang="ts">
@@ -36,6 +40,10 @@ export default defineComponent({
       LocalStorage.set('theme', state.theme);
     });
 
+    localStore.$subscribe((mutation, state) => {
+      LocalStorage.set('isDebugMode', state.debugMode);
+    });
+
     return { q, localStore };
   },
 
@@ -62,17 +70,23 @@ export default defineComponent({
       },
     };
 
-    await apiGet('/auth/authenticated', config).then((apiData) => {
-      if (apiData.error == false) {
-        this.localStore.setAuthState(
-          (apiData.data as any).isAuthenticated as boolean
-        );
-        this.prefetch = true;
-      } else {
-        this.localStore.setAuthState(false);
-        this.prefetch = true;
-      }
-    });
+    // Only check authentication if not in debug mode
+    if (!this.localStore.isDebugMode) {
+      await apiGet('/auth/authenticated', config).then((apiData) => {
+        if (apiData.error == false) {
+          this.localStore.setAuthState(
+            (apiData.data as any).isAuthenticated as boolean
+          );
+          this.prefetch = true;
+        } else {
+          this.localStore.setAuthState(false);
+          this.prefetch = true;
+        }
+      });
+    } else {
+      // In debug mode, skip the authentication check
+      this.prefetch = true;
+    }
   },
 
   computed: {

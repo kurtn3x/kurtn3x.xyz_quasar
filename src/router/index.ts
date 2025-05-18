@@ -34,6 +34,8 @@ export default route(function () {
     history: createHistory(process.env.VUE_ROUTER_BASE),
   });
 
+  // Update the router navigation guard
+
   Router.beforeEach((to, from, next) => {
     const localStore = useLocalStore();
 
@@ -41,8 +43,12 @@ export default route(function () {
       to.matched.some((record) => record.meta.requiresAuth) &&
       !localStore.isAuthenticated
     ) {
-      next();
-      // next({ path: '/login' });
+      // If in debug mode, allow access to protected routes
+      if (localStore.isDebugMode) {
+        next();
+      } else {
+        next({ path: '/login' });
+      }
     } else {
       next();
     }

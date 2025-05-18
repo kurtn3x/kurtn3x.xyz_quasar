@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia';
 import { HeaderInformationType } from 'src/types';
-import { defaultHeaderInformation } from 'src/types/defaults';
 import { LocalStorage } from 'quasar';
 
 export const useLocalStore = defineStore('header', {
@@ -8,10 +7,11 @@ export const useLocalStore = defineStore('header', {
     // authenticated stores the authentication state
     authenticated: (LocalStorage.getItem('authenticated') as boolean) || false,
     // headerInfo stores information required to load the header such as username and avatar
-    headerInfo: (LocalStorage.getItem('header') ||
-      defaultHeaderInformation()) as HeaderInformationType,
+    headerInfo: LocalStorage.getItem('header'),
     darkmode: LocalStorage.getItem('darkmode'),
     theme: LocalStorage.getItem('theme'),
+    // Debug flag for testing authenticated views
+    debugMode: LocalStorage.getItem('isDebugMode') || false,
   }),
 
   getters: {
@@ -21,33 +21,50 @@ export const useLocalStore = defineStore('header', {
     isAdmin: (state) => state.headerInfo.isAdmin,
     darkmodeState: (state) => state.darkmode,
     themeState: (state) => state.theme,
+    isDebugMode: (state) => state.debugMode,
   },
 
   actions: {
-    setHeaderInfoAvatar(data: string) {
-      this.headerInfo.avatar = data;
+    // Add a toggle for debug mode
+    toggleDebugMode() {
+      this.debugMode = !this.debugMode;
+      // If entering debug mode and we don't have proper header info, set a test one
+      if (this.debugMode && this.headerInfo.username === 'username') {
+        this.headerInfo = {
+          username: 'testuser',
+          isAdmin: true,
+          avatar: 'https://media.kurtn3x.xyz/default.png',
+        };
+      }
     },
-    setHeaderInfoUsername(data: string) {
-      this.headerInfo.username = data;
-    },
-    setHeaderInfoAdmin(data: boolean) {
-      this.headerInfo.isAdmin = data;
-    },
-    setHeaderInfo(info: HeaderInformationType) {
-      this.headerInfo = info;
-    },
+
+    // Existing actions
     setAuthState(state: boolean) {
       this.authenticated = state;
+      LocalStorage.set('authenticated', state);
+    },
+
+    setHeaderInfo(info: HeaderInformationType) {
+      this.headerInfo = info;
+      LocalStorage.set('header', info);
+    },
+
+    loginUser(headerInfo: HeaderInformationType) {
+      this.authenticated = true;
+      this.headerInfo = headerInfo;
+      LocalStorage.set('authenticated', true);
+      LocalStorage.set('header', headerInfo);
     },
 
     deleteAll() {
-      this.headerInfo = defaultHeaderInformation() as HeaderInformationType;
       this.authenticated = false;
-    },
-
-    loginUser(headerData: HeaderInformationType) {
-      this.headerInfo = headerData;
-      this.authenticated = true;
+      this.headerInfo = {
+        avatar: '',
+        isAdmin: false,
+        username: '',
+      } as HeaderInformationType;
+      LocalStorage.set('authenticated', false);
+      LocalStorage.set('header', this.headerInfo);
     },
   },
 });

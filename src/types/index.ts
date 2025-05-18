@@ -20,7 +20,6 @@ export interface FolderEntryType {
   owner?: string;
   selected?: boolean;
   dragOver?: boolean;
-  rename?: boolean;
 }
 
 export interface SharedFileType {
@@ -125,7 +124,7 @@ export interface HeaderInformationType {
 
 // VPN
 
-export interface VPNSetupInputType {
+export interface VPNSetupType {
   clientPublicKey: string;
   clientPrivateKey: string;
   name: string;

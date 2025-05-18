@@ -1,0 +1,73 @@
+<template>
+  <q-page class="flex flex-center position-relative full-width">
+    <!-- Fix the privacy policy positioning -->
+    <div class="privacy-policy-container">
+      <router-link
+        to="/privacy"
+        class="text-white privacy-link"
+      >
+        Privacy Policy
+      </router-link>
+    </div>
+
+    <div class="content-container">
+      <div class="text-center non-selectable text-white text-h4 text3d-primary">
+        <a v-if="!localStore.isAuthenticated">Welcome!</a>
+        <a v-if="localStore.isAuthenticated">Welcome, {{ username }}</a>
+      </div>
+    </div>
+  </q-page>
+</template>
+
+<script setup>
+import { ref, computed, onMounted, watch } from 'vue';
+import { useLocalStore } from 'stores/localStore';
+
+const localStore = useLocalStore();
+
+// Reactive state
+const darkmodeToogle = ref(localStore.darkmodeState);
+const username = ref('');
+
+// Computed properties
+const darkmode = computed(() => localStore.darkmode);
+
+// Watchers
+watch(darkmode, (newVal) => {
+  darkmodeToogle.value = newVal;
+});
+
+// Lifecycle hooks
+onMounted(() => {
+  if (localStore.isAuthenticated) {
+    username.value = localStore.username;
+  }
+});
+</script>
+
+<style scoped>
+.content-container {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  text-align: center;
+}
+
+.privacy-policy-container {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 20;
+}
+
+.privacy-link {
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+  text-decoration: none;
+}
+
+.privacy-link:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+</style>
