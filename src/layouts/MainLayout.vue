@@ -16,7 +16,7 @@
             <q-item>
               <q-item-section>
                 <q-toggle
-                  v-model="debugAuthMode"
+                  v-model="debugMode"
                   label="DEBUG"
                   color="primary"
                 />
@@ -69,16 +69,16 @@
             size="26px"
             rounded
           >
-            <img :src="headerInfo.avatar" />
+            <img :src="localStore.headerInfo.avatar" />
           </q-avatar>
           <a class="text-body2 q-mr-sm text-weight-bold">
-            {{ headerInfo.username }}
+            {{ localStore.headerInfo.username }}
           </a>
           <q-icon
             name="arrow_drop_down"
             size="sm"
           />
-          <user-menu :headerInfo="headerInfo" />
+          <user-menu :headerInfo="localStore.headerInfo" />
         </q-btn>
       </q-toolbar>
 
@@ -145,11 +145,18 @@
     </q-header>
 
     <!-- NAV DRAWER -->
-    <navigation-drawer
+    <q-drawer
+      dark
+      v-model="navDrawer"
+      no-swipe-open
+      mini-to-overlay
+      side="left"
+      :mini="miniState"
+      class="bg-layout-bg text-layout-text column justify-between"
       v-if="localStore.isAuthenticated"
-      v-model:navDrawer="navDrawer"
-      v-model:miniState="miniState"
-    />
+    >
+      <navigation-drawer />
+    </q-drawer>
 
     <q-page-container>
       <router-view />
@@ -159,179 +166,80 @@
   </q-layout>
 </template>
 
-<script lang="ts">
-import { ref, defineComponent, onMounted, watchEffect, computed } from 'vue';
-import { useQuasar, LocalStorage } from 'quasar';
-import { api } from 'boot/axios';
+<script setup lang="ts">
+import { ref, onMounted, watchEffect, computed, watch } from 'vue';
+import { useQuasar } from 'quasar';
 import { useLocalStore } from 'stores/localStore';
-import { defaultHeaderInformation } from 'src/types/test';
 import { useRoute, useRouter } from 'vue-router';
 import NavigationDrawer from 'src/components/layout/NavigationDrawer.vue';
 import ThemeSelector from 'src/components/layout/ThemeSelector.vue';
 import UserMenu from 'src/components/layout/UserMenu.vue';
 
-export default defineComponent({
-  name: 'MainLayout',
+// Setup composables
+const localStore = useLocalStore();
+const q = useQuasar();
+const route = useRoute();
+const router = useRouter();
 
-  components: {
-    NavigationDrawer,
-    ThemeSelector,
-    UserMenu,
+// In your script section
+const debugMode = computed({
+  get: () => localStore.isDebugMode,
+  set: (value) => {
+    localStore.toggleDebugMode();
+    if (value === true) {
+      localStore.getHeaderInfo();
+    } else {
+      localStore.clearAll();
+    }
   },
+});
 
-  setup() {
-    const localStore = useLocalStore();
-    const q = useQuasar();
-    const route = useRoute();
-    const router = useRouter();
+// Drawer state
+const navDrawer = ref(true);
+const miniState = ref(true);
 
-    // Drawer state
-    const navDrawer = ref(true);
-    const miniState = ref(true);
+// Reference to process.env for the template
+const nodeEnv = process.env.NODE_ENV;
 
-    // Debug auth mode toggle - fixed syntax
-    const debugAuthMode = computed({
-      get: () => localStore.isDebugMode,
-      set: () => {
-        localStore.toggleDebugMode();
-        if (localStore.isDebugMode) {
-          getHeaderInfo();
-        }
-      },
-    });
+// Reset function for localStorage
+const resetLocalStorage = () => {
+  localStore.clearAll();
+};
 
-    // Reference to process.env for the template
-    const nodeEnv = process.env.NODE_ENV;
+// Responsive adjustment for initial state
+if (q.screen.width < 1024) {
+  navDrawer.value = false;
+  miniState.value = false;
+}
 
-    // Reset function for localStorage
-    const resetLocalStorage = () => {
-      LocalStorage.clear();
-      window.location.reload();
-    };
+// Authentication handling - respect debug mode
+watchEffect(() => {
+  const requiresAuth = route.meta.requiresAuth === true;
+  if (requiresAuth && !localStore.isAuthenticated) {
+    // Only redirect if not in debug mode
+    if (!localStore.isDebugMode) {
+      router.push('/login');
+    }
+  }
+});
 
-    // Responsive adjustment
-    if (q.screen.width < 1024) {
+watch(
+  () => q.screen.width,
+  (newVal) => {
+    if (newVal < 1024) {
       navDrawer.value = false;
       miniState.value = false;
+    } else {
+      navDrawer.value = true;
+      miniState.value = true;
     }
+  }
+);
 
-    const darkmodeToogle = ref(localStore.darkmodeState);
-    const headerInfo = ref(localStore.headerInfo);
-
-    // Authentication handling - modify to respect debug mode
-    watchEffect(() => {
-      const requiresAuth = route.meta.requiresAuth === true;
-      if (requiresAuth && !localStore.isAuthenticated) {
-        // Only redirect if not in debug mode
-        if (!localStore.isDebugMode) {
-          router.push('/login');
-        }
-      }
-    });
-
-    const getHeaderInfo = () => {
-      // If in debug mode and not authenticated, use mock data
-      if (localStore.isDebugMode) {
-        headerInfo.value = {
-          username: 'testuser',
-          isAdmin: true,
-          avatar: 'https://media.kurtn3x.xyz/default.png',
-        };
-        return;
-      }
-
-      const axiosConfig = {
-        withCredentials: true,
-        headers: {
-          'X-CSRFToken': q.cookies.get('csrftoken'),
-        },
-      };
-
-      api
-        .get('/profile/headerinfo', axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
-            headerInfo.value = response.data;
-            localStore.loginUser(response.data);
-          } else {
-            q.notify({
-              type: 'negative',
-              message: 'Something went wrong when fetching the user.',
-              progress: true,
-            });
-            localStore.deleteAll();
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-          q.notify({
-            type: 'negative',
-            message: 'API ERROR.',
-            progress: true,
-          });
-          localStore.deleteAll();
-        });
-    };
-
-    onMounted(() => {
-      if (localStore.isAuthenticated) {
-        getHeaderInfo();
-      } else {
-        headerInfo.value = defaultHeaderInformation();
-        localStore.deleteAll();
-      }
-    });
-
-    return {
-      navDrawer,
-      miniState,
-      darkmodeToogle,
-      localStore,
-      q,
-      headerInfo,
-      getHeaderInfo,
-      debugAuthMode,
-      resetLocalStorage,
-      nodeEnv, // Expose process.env.NODE_ENV to the template instead of process
-    };
-  },
-
-  computed: {
-    myprofileroute() {
-      return '/user/' + this.headerInfo.username;
-    },
-
-    darkmode() {
-      return this.localStore.darkmodeState;
-    },
-
-    headerInfoStore() {
-      return this.localStore.headerInfo;
-    },
-
-    screenWidth() {
-      return this.q.screen.width;
-    },
-  },
-
-  watch: {
-    headerInfoStore(newVal) {
-      this.headerInfo = newVal;
-    },
-
-    darkmode(newVal) {
-      this.darkmodeToogle = newVal;
-    },
-
-    screenWidth(newVal) {
-      if (newVal < 1024) {
-        this.navDrawer = false;
-        this.miniState = false;
-      } else {
-        this.navDrawer = true;
-        this.miniState = true;
-      }
-    },
-  },
+// Lifecycle hooks
+onMounted(() => {
+  if (localStore.isAuthenticated) {
+    localStore.getHeaderInfo();
+  }
 });
 </script>

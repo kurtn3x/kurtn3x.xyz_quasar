@@ -1,96 +1,77 @@
 <template>
-  <q-dialog
-    v-model="showDialog"
-    @hide="close"
+  <q-card
+    bordered
+    style="width: 350px"
   >
-    <q-card
-      bordered
-      style="width: 350px"
-    >
-      <q-toolbar class="bg-layout-bg text-layout-text text-center">
-        <q-toolbar-title class="q-ma-sm">Rename Item</q-toolbar-title>
-      </q-toolbar>
-      <div class="text-body1 text-center q-ma-md">
-        <q-input
-          :color="darkmode ? 'white' : 'black'"
-          v-model="newName"
-          dense
-          outlined
-          label="New Name"
-          class="text-primary text-body1 col"
-          style="height: 45px"
-          @keyup.enter="renameFile"
-          autofocus
-        />
-      </div>
+    <q-toolbar class="bg-layout-bg text-layout-text text-center">
+      <q-toolbar-title class="q-ma-sm">Rename Item</q-toolbar-title>
+    </q-toolbar>
+    <div class="text-body1 text-center q-ma-md">
+      <q-input
+        :color="localStore.isDarkMode ? 'white' : 'black'"
+        v-model="newName"
+        dense
+        outlined
+        label="New Name"
+        class="text-primary text-body1 col"
+        style="height: 45px"
+        @keyup.enter="renameFile"
+        autofocus
+      />
+    </div>
 
-      <q-separator class="q-mt-md" />
-      <q-card-actions
-        align="center"
-        class="row q-mt-sm q-mb-sm"
-      >
-        <q-btn
-          v-close-popup
-          push
-          icon="close"
-          label="Cancel"
-          class="bg-red text-white col"
-        />
-        <q-btn
-          push
-          class="bg-green text-white col"
-          icon="done"
-          size="md"
-          label="Rename"
-          @click="renameFile"
-        />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+    <q-separator class="q-mt-md" />
+    <q-card-actions
+      align="center"
+      class="row q-mt-sm q-mb-sm"
+    >
+      <q-btn
+        v-close-popup
+        push
+        icon="close"
+        label="Cancel"
+        class="bg-red text-white col"
+      />
+      <q-btn
+        push
+        class="bg-green text-white col"
+        icon="done"
+        size="md"
+        label="Rename"
+        @click="renameFile"
+        v-close-popup
+      />
+    </q-card-actions>
+  </q-card>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, Ref } from 'vue';
+<script setup lang="ts">
+import { ref } from 'vue';
 import { useLocalStore } from 'stores/localStore';
-import { useQuasar } from 'quasar';
+import { useFileStore } from 'src/stores/fileStore';
+import { FolderEntryType } from 'src/types/index';
 
-export default defineComponent({
-  name: 'RenameItemDialog',
-  props: {
-    active: Boolean,
-    currentName: String,
-  },
-  emits: ['close', 'rename'],
-  setup(props) {
-    const localStore = useLocalStore();
-    const q = useQuasar();
-    var showDialog = ref(props.active) as Ref<boolean>;
-    var newName = ref(props.currentName);
-
-    return {
-      newName,
-      localStore,
-      q,
-      showDialog,
-    };
-  },
-  computed: {
-    darkmode() {
-      return this.localStore.darkmode;
-    },
-  },
-  watch: {
-    active(newVal, oldVal) {
-      this.showDialog = newVal;
-    },
-  },
-  methods: {
-    close() {
-      this.$emit('close', true);
-    },
-    renameFile() {
-      this.$emit('rename', this.newName);
-    },
+// Define props
+const props = defineProps({
+  propItem: {
+    type: Object as () => FolderEntryType,
+    required: true,
   },
 });
+
+// Setup store and Quasar
+const localStore = useLocalStore();
+const fileStore = useFileStore();
+
+// Local state
+const newName = ref(props.propItem.name);
+
+// Methods
+function renameFile() {
+  fileStore.fileOps.updateName(
+    props.propItem.type,
+    props.propItem.id,
+    newName.value
+  );
+}
 </script>

@@ -46,9 +46,9 @@
           color="white"
         />
         <q-btn
-          :icon="darkmode ? 'dark_mode' : 'light_mode'"
+          :icon="isDarkMode ? 'dark_mode' : 'light_mode'"
           flat
-          @click="darkmode = !darkmode"
+          @click="isDarkMode = !isDarkMode"
         />
       </div>
     </div>
@@ -121,8 +121,8 @@
         times_new_roman: 'Times New Roman',
         verdana: 'Verdana',
       }"
-      :dark="darkmode"
-      :class="darkmode ? 'text-white' : 'text-dark'"
+      :dark="isDarkMode"
+      :class="isDarkMode ? 'text-white' : 'text-dark'"
       class="col column"
       max-height="600px"
       @keydown.ctrl.s.prevent.stop="updateContent"
@@ -156,7 +156,7 @@ const axiosConfig = {
     'X-CSRFToken': q.cookies.get('csrftoken'),
   },
 };
-var darkmode = ref(localStore.darkmodeState);
+var isDarkMode = ref(localStore.isDarkMode);
 var text = ref('');
 getFileContent();
 

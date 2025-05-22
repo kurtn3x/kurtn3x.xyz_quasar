@@ -11,7 +11,7 @@ export interface FolderEntryType {
   sharedPasswordProtected: boolean;
   path: string;
   type: string;
-  size: number;
+  size: string;
   mime: string;
   modifiedTimeIso: string;
   createdTimeIso: string;

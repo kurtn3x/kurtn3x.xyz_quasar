@@ -23,7 +23,7 @@
         <q-input
           v-model="localSetupInput.name"
           outlined
-          :color="darkmode ? 'white' : 'black'"
+          :color="localStore.isDarkMode ? 'white' : 'black'"
           label="VPN Connection Name"
           input-style="font-size: 18px"
           input-class="text-body1"
@@ -53,7 +53,7 @@
             v-model="localSetupInput.clientPublicKey"
             outlined
             dense
-            :color="darkmode ? 'white' : 'black'"
+            :color="localStore.isDarkMode ? 'white' : 'black'"
             label="Public Key"
             input-style="font-size: 14px"
             input-class="text-body2"
@@ -64,7 +64,7 @@
             v-model="localSetupInput.clientPrivateKey"
             outlined
             dense
-            :color="darkmode ? 'white' : 'black'"
+            :color="localStore.isDarkMode ? 'white' : 'black'"
             label="Private Key"
             input-style="font-size: 14px"
             input-class="text-body2"
@@ -73,7 +73,11 @@
           >
             <q-tooltip
               class="text-body1 shadow-1"
-              :class="darkmode ? 'bg-dark text-white' : 'bg-white text-dark'"
+              :class="
+                localStore.isDarkMode
+                  ? 'bg-dark text-white'
+                  : 'bg-white text-dark'
+              "
             >
               Private Keys are never transmitted
             </q-tooltip>
@@ -89,7 +93,11 @@
           >
             <q-tooltip
               class="text-body1 shadow-1"
-              :class="darkmode ? 'bg-dark text-white' : 'bg-white text-dark'"
+              :class="
+                localStore.isDarkMode
+                  ? 'bg-dark text-white'
+                  : 'bg-white text-dark'
+              "
             >
               For connection issues
             </q-tooltip>
@@ -122,7 +130,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { useLocalStore } from 'stores/localStore';
 import { VPNSetupType } from 'src/types/index';
@@ -155,9 +163,6 @@ const localSetupInput = ref({
   ...defaultSetupInput,
   ...props.initialValues,
 });
-
-// Compute dark mode from store
-const darkmode = computed(() => localStore.darkmode);
 
 // Handle form submission - send the current state to parent
 function handleSubmit() {

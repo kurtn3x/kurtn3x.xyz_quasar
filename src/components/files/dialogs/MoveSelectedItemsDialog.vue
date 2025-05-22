@@ -55,7 +55,7 @@
       >
         <div class="row">
           <q-input
-            :color="darkmode ? 'white' : 'black'"
+            :color="isDarkMode ? 'white' : 'black'"
             v-model="moveItemsFilter"
             dense
             outlined
@@ -206,8 +206,8 @@ export default defineComponent({
     };
   },
   computed: {
-    darkmode() {
-      return this.localStore.darkmode;
+    isDarkMode() {
+      return this.localStore.isDarkMode;
     },
   },
   watch: {

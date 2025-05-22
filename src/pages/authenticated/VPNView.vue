@@ -265,6 +265,7 @@ const vpnSetupConnection = ref({}) as Ref<VPNConnectionType>;
 const handleCreateVPNClient = async (formData: VPNSetupType) => {
   const connection = await createVPNClient(formData);
   if (connection) {
+    getConnections();
     vpnSetupConnection.value = connection;
     setupVPNDialog.value = false;
     setupVPNDialogSuccessful.value = true;

@@ -7,12 +7,12 @@
         <q-item>
           <q-item-section>
             <q-toggle
-              v-model="darkmodeToogle"
+              v-model="darkMode"
               checked-icon="check"
               color="green"
               unchecked-icon="clear"
               label="Dark Mode"
-              @click="darkmodeChanged"
+              @click="darkMode"
               class="full-width text-h5"
             />
           </q-item-section>
@@ -45,31 +45,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { computed } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { themes } from 'src/components/lib/themes';
 
 // Setup composables
 const localStore = useLocalStore();
 
-// State variables
-const darkmodeToogle = ref(localStore.darkmodeState);
-
-// Computed properties
-const darkmode = computed(() => localStore.darkmode);
-
 // Methods
 const setTheme = (theme: string) => {
-  document.body.setAttribute('data-theme', theme);
-  localStore.theme = theme;
+  localStore.setTheme(theme);
 };
 
-const darkmodeChanged = () => {
-  localStore.darkmode = darkmodeToogle.value;
-};
-
-// Watchers
-watch(darkmode, (newVal) => {
-  darkmodeToogle.value = newVal;
+const darkMode = computed({
+  get: () => localStore.isDarkMode,
+  set: () => {
+    localStore.toggleDarkMode();
+  },
 });
 </script>

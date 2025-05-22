@@ -1,23 +1,25 @@
-import { reactive } from 'vue';
+// stores/settingsStore.ts
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
+import { UserProfileType, AccountType } from 'src/types';
+import { apiGet, apiPut, apiDelete } from '../api/apiWrapper';
 import { useQuasar } from 'quasar';
-import { apiGet, apiPut, apiDelete } from 'src/components/apiWrapper';
-import { AccountType, UserProfileType } from 'src/types';
 import { defaultAccount, defaultUserProfile } from 'src/types/test';
 import { useLocalStore } from 'stores/localStore';
 
-export function useSettings() {
+export const useSettingsStore = defineStore('settings', () => {
   const q = useQuasar();
-
-  const state = reactive({
-    accountData: {} as AccountType,
-    profileData: {} as UserProfileType,
-    avatarPreview: null as string | null,
-    loading: true,
-    error: false,
-    errorMessage: '',
-  });
-
   const localStore = useLocalStore();
+
+  // State
+  const profileData = ref<UserProfileType | null>(null);
+  const accountData = ref<AccountType | null>(null);
+  const avatarPreview = ref<string | null>(null);
+
+  const loading = ref(false);
+  const componentLoading = ref(false);
+  const error = ref(false);
+  const errorMessage = ref('');
 
   const axiosConfig = {
     withCredentials: true,
@@ -26,55 +28,55 @@ export function useSettings() {
     },
   };
 
-  // Fetch account and profile information
-  const getAccountInformation = async () => {
-    state.loading = true;
-    state.error = false;
+  // Actions
+  async function getAccountInformation() {
+    loading.value = true;
+    error.value = false;
 
     if (localStore.isDebugMode) {
       q.notify({ type: 'info', message: 'Debug' });
       await new Promise((resolve) => setTimeout(resolve, 500));
-      state.loading = false;
-      state.error = false;
-      state.accountData = defaultAccount();
-      state.profileData = defaultUserProfile();
+      loading.value = false;
+      error.value = false;
+      accountData.value = defaultAccount();
+      profileData.value = defaultUserProfile();
+      avatarPreview.value = profileData.value.avatar + '?' + Math.random();
       return;
     }
 
     const accountResponse = await apiGet('/auth/account', axiosConfig);
 
     if (accountResponse.error === false) {
-      state.accountData = accountResponse.data as AccountType;
+      accountData.value = accountResponse.data as AccountType;
 
       const profileResponse = await apiGet('/profile/user', axiosConfig);
 
       if (profileResponse.error === false) {
-        state.profileData = profileResponse.data as UserProfileType;
+        profileData.value = profileResponse.data as UserProfileType;
         // force refresh by adding random stuff to url
-        state.avatarPreview = state.profileData.avatar + '?' + Math.random();
-        state.error = false;
+        avatarPreview.value = profileData.value.avatar + '?' + Math.random();
+        error.value = false;
       } else {
         q.notify({
           type: 'negative',
           message: profileResponse.errorMessage,
         });
-        state.error = true;
-        state.errorMessage = profileResponse.errorMessage;
+        error.value = true;
+        errorMessage.value = profileResponse.errorMessage;
       }
     } else {
       q.notify({ type: 'negative', message: accountResponse.errorMessage });
-      state.error = true;
-      state.errorMessage = accountResponse.errorMessage;
+      error.value = true;
+      errorMessage.value = accountResponse.errorMessage;
     }
+  }
 
-    state.loading = false;
-  };
-
-  // Update user profile including avatar
-  const updateUserProfile = async (
-    profileData: UserProfileType,
+  async function updateProfile(
+    newProfileData: UserProfileType,
     avatarFile: File | null
-  ) => {
+  ) {
+    componentLoading.value = true;
+
     const config = {
       ...axiosConfig,
       headers: {
@@ -83,12 +85,20 @@ export function useSettings() {
       },
     };
 
-    state.loading = true;
     const formData = new FormData();
-    formData.append('username', profileData.username);
-    formData.append('location', profileData.location);
-    formData.append('description', profileData.description);
-    formData.append('status', profileData.status);
+    if (newProfileData.username !== profileData.value?.username) {
+      formData.append('username', newProfileData.username);
+    }
+    if (newProfileData.location !== profileData.value?.location) {
+      formData.append('location', newProfileData.location);
+    }
+    if (newProfileData.description !== profileData.value?.description) {
+      formData.append('description', newProfileData.description);
+    }
+    if (newProfileData.status !== profileData.value?.status) {
+      formData.append('status', newProfileData.status);
+    }
+
     if (avatarFile) {
       formData.append('avatar', avatarFile);
     }
@@ -101,40 +111,39 @@ export function useSettings() {
         message: 'Profile updated successfully.',
       });
       await getAccountInformation();
+      if (avatarFile && profileData.value) {
+        localStore.setHeaderAvatar(profileData.value.avatar);
+      }
     } else {
       q.notify({ type: 'negative', message: apiData.errorMessage });
     }
 
-    state.loading = false;
-  };
+    componentLoading.value = false;
+  }
 
-  // Update user email
-  const updateEmail = async (newEmail: string, password: string) => {
-    state.loading = true;
-
+  async function updateEmail(
+    newEmail: string,
+    password: string
+  ): Promise<boolean> {
     const data = { newEmail, password };
     const apiData = await apiPut('/auth/account', data, axiosConfig);
 
     if (apiData.error === false) {
       q.notify({ type: 'positive', message: 'Email updated successfully.' });
-      await getAccountInformation();
     } else {
       q.notify({ type: 'negative', message: apiData.errorMessage });
       return false;
     }
 
-    state.loading = false;
     return true;
-  };
+  }
 
   // Update user password
-  const updatePassword = async (
+  async function updatePassword(
     newPassword: string,
     newPasswordConfirm: string,
     password: string
-  ) => {
-    state.loading = true;
-
+  ): Promise<boolean> {
     const data = { newPassword, newPasswordConfirm, password };
     const apiData = await apiPut('/auth/account', data, axiosConfig);
 
@@ -148,12 +157,11 @@ export function useSettings() {
       return false;
     }
 
-    state.loading = false;
     return true;
-  };
+  }
 
   // Delete user account
-  const deleteAccount = async (password: string) => {
+  async function deleteAccount(password: string): Promise<boolean> {
     const config = {
       ...axiosConfig,
       data: { password },
@@ -166,17 +174,34 @@ export function useSettings() {
         type: 'positive',
         message: 'Account deleted successfully.',
       });
+      return true;
     } else {
       q.notify({ type: 'negative', message: apiData.errorMessage });
     }
-  };
+    return false;
+  }
+
+  function setAvatarPreview(avatar: File | null) {
+    avatarPreview.value = URL.createObjectURL(avatar as File);
+    localStore.setHeaderAvatar(avatarPreview.value);
+  }
 
   return {
-    state,
+    // State
+    profileData,
+    accountData,
+    avatarPreview,
+    loading,
+    componentLoading,
+    error,
+    errorMessage,
+
+    // Actions
     getAccountInformation,
-    updateUserProfile,
+    updateProfile,
     updateEmail,
     updatePassword,
     deleteAccount,
+    setAvatarPreview,
   };
-}
+});

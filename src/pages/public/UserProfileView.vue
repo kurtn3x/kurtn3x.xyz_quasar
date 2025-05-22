@@ -14,16 +14,8 @@
   <div v-if="!state.loading && !state.error">
     <q-page class="column">
       <!-- Desktop Layout Component -->
-      <div class="gt-xs q-ma-xs">
+      <div class="q-ma-md">
         <DesktopLayout
-          :user="user"
-          :userlink="userlink"
-        />
-      </div>
-
-      <!-- Mobile Layout Component -->
-      <div class="lt-sm q-ma-xs">
-        <MobileLayout
           :user="user"
           :userlink="userlink"
         />
@@ -37,7 +29,6 @@ import { onMounted } from 'vue';
 import ErrorPage from 'src/components/ErrorPage.vue';
 import { useUserProfile } from 'src/api/profile';
 import DesktopLayout from 'src/components/profile/DesktopLayout.vue';
-import MobileLayout from 'src/components/profile/MobileLayout.vue';
 
 // Use the extracted profile functionality
 const { state, user, userlink, getUser } = useUserProfile();

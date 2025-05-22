@@ -1,181 +1,146 @@
 <template>
-  <q-dialog
-    v-model="showDialog"
-    @hide="close"
+  <q-card
+    bordered
+    style="width: 350px"
   >
-    <q-card
-      bordered
-      style="width: 350px"
-    >
-      <q-toolbar class="bg-layout-bg text-layout-text text-center">
-        <q-toolbar-title class="q-ma-sm">{{ item.name }}</q-toolbar-title>
-        <q-tooltip class="text-body1 bg-layout-bg text-layout-text">
-          {{ item.name }}
-        </q-tooltip>
-      </q-toolbar>
-      <div class="q-ma-md">
-        <div>
+    <q-toolbar class="bg-layout-bg text-layout-text text-center">
+      <q-toolbar-title class="q-ma-sm">{{ propItem.name }}</q-toolbar-title>
+      <q-tooltip class="text-body1 bg-layout-bg text-layout-text">
+        {{ propItem.name }}
+      </q-tooltip>
+    </q-toolbar>
+    <div class="q-ma-md">
+      <div>
+        <div class="text-body1 q-mt-md row">
+          <div class="text-weight-bolder col-3">Type</div>
+          <div class="col q-ml-sm">{{ propItem.type }}</div>
+        </div>
+
+        <div v-if="propItem.type != 'folder'">
           <div class="text-body1 q-mt-md row">
-            <div class="text-weight-bolder col-3">Type</div>
-            <div class="col q-ml-sm">{{ item.type }}</div>
-          </div>
-
-          <div v-if="item.type != 'folder'">
-            <div class="text-body1 q-mt-md row">
-              <div class="text-weight-bolder col-3">Mime</div>
-              <div
-                class="col q-ml-sm"
-                style="line-break: anywhere"
-              >
-                {{ item.mime }}
-              </div>
-            </div>
-
-            <div class="text-body1 q-mt-md row">
-              <div class="text-weight-bolder col-3">Size</div>
-              <div class="col q-ml-sm">
-                {{ item.size }}
-              </div>
-            </div>
-          </div>
-
-          <div class="text-body1 q-mt-md row">
-            <div class="text-weight-bolder col-3">Created</div>
-            <div class="col q-ml-sm">{{ item.created }}</div>
-          </div>
-
-          <div class="text-body1 q-mt-md row">
-            <div class="text-weight-bolder col-3">Modified</div>
-            <div class="col q-ml-sm">{{ item.modified }}</div>
-          </div>
-
-          <div class="text-body1 q-mt-md row">
-            <div class="text-weight-bolder col-3">Folder</div>
+            <div class="text-weight-bolder col-3">Mime</div>
             <div
               class="col q-ml-sm"
               style="line-break: anywhere"
             >
-              {{ item.path }}
+              {{ propItem.mime }}
             </div>
           </div>
 
-          <div
-            class="text-body1 q-mt-md row"
-            v-if="item.shared == false"
-          >
-            <div class="text-weight-bolder col-3">Shared</div>
-            <div class="col q-ml-sm">{{ item.shared }}</div>
+          <div class="text-body1 q-mt-md row">
+            <div class="text-weight-bolder col-3">Size</div>
+            <div class="col q-ml-sm">
+              {{ propItem.size }}
+            </div>
           </div>
-          <q-card
-            class="q-mt-md"
-            bordered
-            flat
-            v-if="item.shared == true"
-          >
-            <q-expansion-item
-              icon="shared"
-              label="Shared"
-              header-class="text-weight-bolder text-body1 bg-blue text-white"
-              expand-icon-class="text-white"
-            >
-              <q-separator />
-              <div class="text-body1 q-mt-md row q-ml-sm">
-                <div class="text-weight-bolder">Allow Read</div>
-                <div class="q-ml-md">
-                  {{ item.sharedAllowAllRead }}
-                </div>
-              </div>
-              <div class="text-body1 q-mt-md row q-ml-sm">
-                <div class="text-weight-bolder text-weight-bolder">
-                  Allow Write
-                </div>
-                <div class="q-ml-md">
-                  {{ item.sharedAllowAllWrite }}
-                </div>
-              </div>
-              <div
-                class="text-body1 q-mt-md row q-ml-sm"
-                v-if="item.owner"
-              >
-                <div class="text-weight-bolder text-weight-bolder">Owner</div>
-                <router-link
-                  :to="'/user/' + item.owner"
-                  class="q-ml-md text-blue"
-                >
-                  {{ item.owner }}
-                </router-link>
-              </div>
-              <div class="text-body1 q-mt-md row q-ml-sm q-mb-sm">
-                <div class="text-weight-bolder text-weight-bolder">
-                  Password Protected
-                </div>
-                <div class="q-ml-md">
-                  {{ item.sharedPasswordProtected }}
-                </div>
-              </div>
-            </q-expansion-item>
-          </q-card>
         </div>
+
+        <div class="text-body1 q-mt-md row">
+          <div class="text-weight-bolder col-3">Created</div>
+          <div class="col q-ml-sm">{{ propItem.created }}</div>
+        </div>
+
+        <div class="text-body1 q-mt-md row">
+          <div class="text-weight-bolder col-3">Modified</div>
+          <div class="col q-ml-sm">{{ propItem.modified }}</div>
+        </div>
+
+        <div class="text-body1 q-mt-md row">
+          <div class="text-weight-bolder col-3">Folder</div>
+          <div
+            class="col q-ml-sm"
+            style="line-break: anywhere"
+          >
+            {{ propItem.path }}
+          </div>
+        </div>
+
+        <div
+          class="text-body1 q-mt-md row"
+          v-if="propItem.shared == false"
+        >
+          <div class="text-weight-bolder col-3">Shared</div>
+          <div class="col q-ml-sm">{{ propItem.shared }}</div>
+        </div>
+        <q-card
+          class="q-mt-md"
+          bordered
+          flat
+          v-if="propItem.shared == true"
+        >
+          <q-expansion-item
+            icon="shared"
+            label="Shared"
+            header-class="text-weight-bolder text-body1 bg-blue text-white"
+            expand-icon-class="text-white"
+          >
+            <q-separator />
+            <div class="text-body1 q-mt-md row q-ml-sm">
+              <div class="text-weight-bolder">Allow Read</div>
+              <div class="q-ml-md">
+                {{ propItem.sharedAllowAllRead }}
+              </div>
+            </div>
+            <div class="text-body1 q-mt-md row q-ml-sm">
+              <div class="text-weight-bolder text-weight-bolder">
+                Allow Write
+              </div>
+              <div class="q-ml-md">
+                {{ propItem.sharedAllowAllWrite }}
+              </div>
+            </div>
+            <div
+              class="text-body1 q-mt-md row q-ml-sm"
+              v-if="propItem.owner"
+            >
+              <div class="text-weight-bolder text-weight-bolder">Owner</div>
+              <router-link
+                :to="'/user/' + propItem.owner"
+                class="q-ml-md text-blue"
+              >
+                {{ propItem.owner }}
+              </router-link>
+            </div>
+            <div class="text-body1 q-mt-md row q-ml-sm q-mb-sm">
+              <div class="text-weight-bolder text-weight-bolder">
+                Password Protected
+              </div>
+              <div class="q-ml-md">
+                {{ propItem.sharedPasswordProtected }}
+              </div>
+            </div>
+          </q-expansion-item>
+        </q-card>
       </div>
+    </div>
 
-      <q-separator class="q-mt-sm" />
+    <q-separator class="q-mt-sm" />
 
-      <q-card-actions
-        align="center"
-        class="q-mt-sm q-mb-sm"
-      >
-        <q-btn
-          v-close-popup
-          push
-          class="bg-green text-white col"
-          icon="done"
-          size="md"
-          label="OK"
-          style="max-width: 130px"
-        />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+    <q-card-actions
+      align="center"
+      class="q-mt-sm q-mb-sm"
+    >
+      <q-btn
+        v-close-popup
+        push
+        class="bg-green text-white col"
+        icon="done"
+        size="md"
+        label="OK"
+        style="max-width: 130px"
+      />
+    </q-card-actions>
+  </q-card>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, Ref } from 'vue';
-import { useLocalStore } from 'stores/localStore';
-import { useQuasar } from 'quasar';
+<script setup lang="ts">
 import { FolderEntryType } from 'src/types/index';
 
-export default defineComponent({
-  name: 'ItemInformationDialog',
-  props: {
-    propItem: Object,
-    active: Boolean,
-  },
-  emits: ['close'],
-  setup(props) {
-    const localStore = useLocalStore();
-    const q = useQuasar();
-    var item = ref(props.propItem) as Ref<FolderEntryType>;
-    var showDialog = ref(props.active) as Ref<boolean>;
-    return {
-      item,
-      localStore,
-      q,
-      showDialog,
-    };
-  },
-  watch: {
-    active(newVal, oldVal) {
-      this.showDialog = newVal;
-    },
-    propItem(newVal, oldVal) {
-      this.item = newVal;
-    },
-  },
-  methods: {
-    close() {
-      this.$emit('close', true);
-      this.showDialog = false;
-    },
+// Define props with type safety
+const props = defineProps({
+  propItem: {
+    type: Object as () => FolderEntryType,
+    required: true,
   },
 });
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <div :class="darkmode ? 'text-white' : 'text-dark'">
+  <div :class="isDarkMode ? 'text-white' : 'text-dark'">
     <q-card
       flat
       class="bg-transparent q-ma-sm"
@@ -17,7 +17,7 @@
             class="q-mb-md"
             input-class="text-body1"
             label="Name"
-            :color="darkmode ? 'white' : 'black'"
+            :color="isDarkMode ? 'white' : 'black'"
             outlined
             lazy-rules
             :rules="[(val) => val.length < 50 || 'Max Length = 50 characters']"
@@ -28,7 +28,7 @@
             class="q-mb-md"
             input-class="text-body1"
             label="Location"
-            :color="darkmode ? 'white' : 'black'"
+            :color="isDarkMode ? 'white' : 'black'"
             outlined
             lazy-rules
             :rules="[(val) => val.length < 50 || 'Max Length = 50 characters']"
@@ -39,7 +39,7 @@
             class="q-mb-md"
             input-class="text-body1"
             label="Status"
-            :color="darkmode ? 'white' : 'black'"
+            :color="isDarkMode ? 'white' : 'black'"
             outlined
             lazy-rules
             :rules="[(val) => val.length < 15 || 'Max Length = 15 characters']"
@@ -50,7 +50,7 @@
             class="q-mb-md"
             input-class="text-body1"
             label="Description"
-            :color="darkmode ? 'white' : 'black'"
+            :color="isDarkMode ? 'white' : 'black'"
             type="textarea"
             outlined
             lazy-rules
@@ -64,14 +64,14 @@
               size="150px"
               class="q-mb-md"
             >
-              <img :src="(avatarPreview as string)" />
+              <img :src="(settingsStore.avatarPreview as string)" />
             </q-avatar>
           </div>
 
           <q-file
             v-model="avatar"
             label="Upload Image"
-            :color="darkmode ? 'white' : 'black'"
+            :color="isDarkMode ? 'white' : 'black'"
             outlined
             max-file-size="2048000"
             accept=".jpg, .png, .gif, .jpeg"
@@ -98,7 +98,7 @@
               label="Save Changes"
               type="submit"
               push
-              :loading="loading"
+              :loading="settingsStore.componentLoading"
               class="q-px-xl full-width"
             />
           </div>
@@ -109,49 +109,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useQuasar } from 'quasar';
 import { useLocalStore } from 'stores/localStore';
 import { UserProfileType } from 'src/types/index';
-import { useSettings } from 'src/api/settings';
-
-// Define props
-const props = defineProps<{
-  profileData: UserProfileType;
-}>();
+import { useSettingsStore } from 'src/stores/settingsStore';
 
 // Setup composables
 const q = useQuasar();
 const localStore = useLocalStore();
-const { updateUserProfile } = useSettings();
+const settingsStore = useSettingsStore();
 
 // State variables
-const loading = ref(false);
 const avatar = ref<File | null>(null);
-const avatarPreview = ref<string | ArrayBuffer | null>(null);
-const editableProfile = ref({} as UserProfileType);
+const editableProfile = ref(settingsStore.profileData as UserProfileType);
 
 // Computed properties
-const darkmode = computed(() => localStore.darkmode);
-
-// Initialize editable profile with prop data
-onMounted(() => {
-  editableProfile.value = {
-    name: props.profileData?.name || '',
-    location: props.profileData?.location || '',
-    status: props.profileData?.status || '',
-    description: props.profileData?.description || '',
-    ...props.profileData,
-  };
-
-  if (props.profileData?.avatar) {
-    avatarPreview.value = props.profileData.avatar;
-  }
-});
+const isDarkMode = computed(() => localStore.isDarkMode);
 
 // Methods
 const onAvatarSelect = () => {
-  avatarPreview.value = URL.createObjectURL(avatar.value as File);
+  settingsStore.setAvatarPreview(avatar.value);
 };
 
 const onRejected = () => {
@@ -162,11 +140,6 @@ const onRejected = () => {
 };
 
 const handleUpdateUserProfile = async () => {
-  loading.value = true;
-  const success = await updateUserProfile(editableProfile.value, avatar.value);
-  if (success) {
-    avatar.value = null;
-  }
-  loading.value = false;
+  settingsStore.updateProfile(editableProfile.value, avatar.value);
 };
 </script>

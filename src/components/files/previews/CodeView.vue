@@ -120,9 +120,9 @@
           color="layout-text"
         />
         <q-btn
-          :icon="darkmode ? 'dark_mode' : 'light_mode'"
+          :icon="isDarkMode ? 'dark_mode' : 'light_mode'"
           flat
-          @click="darkmode = !darkmode"
+          @click="isDarkMode = !isDarkMode"
         />
       </div>
     </div>
@@ -135,7 +135,7 @@
         :debounce="250"
       />
       <q-scroll-area
-        :class="darkmode ? 'bg-one-dark text-white' : 'bg-white text-dark'"
+        :class="isDarkMode ? 'bg-one-dark text-white' : 'bg-white text-dark'"
         :thumb-style="thumbStyle"
         :bar-style="barStyle"
         class="col column"
@@ -149,7 +149,7 @@
         />
       </q-scroll-area>
       <q-scroll-area
-        :class="darkmode ? 'bg-one-dark text-white' : 'bg-white text-dark'"
+        :class="isDarkMode ? 'bg-one-dark text-white' : 'bg-white text-dark'"
         :thumb-style="thumbStyle"
         :bar-style="barStyle"
         class="col column"
@@ -292,15 +292,15 @@ var barStyle = {
   width: '9px',
   opacity: 0.2,
 };
-var darkmode = ref(localStore.darkmodeState);
+var isDarkMode = ref(localStore.isDarkMode);
 
 // codemirror options
 const extensions = computed(() => {
-  if (darkmode.value && lang.value == '') {
+  if (isDarkMode.value && lang.value == '') {
     return [basicSetup, oneDark];
-  } else if (!darkmode.value && lang.value == '') {
+  } else if (!isDarkMode.value && lang.value == '') {
     return [basicSetup];
-  } else if (darkmode.value && lang.value != '') {
+  } else if (isDarkMode.value && lang.value != '') {
     return [basicSetup, oneDark, langmap.get(lang.value)];
   } else {
     return [basicSetup, langmap.get(lang.value)];

@@ -38,80 +38,74 @@ export function useVPN() {
       return;
     }
 
-    try {
-      const apiData = await apiGet('/vpn/client', axiosConfig);
-      if (apiData.error === false) {
-        state.connections = apiData.data as VPNInfoType[];
-      } else {
-        q.notify({ type: 'negative', message: apiData.errorMessage });
-        state.error = true;
-        state.errorMessage = apiData.errorMessage;
-      }
-    } catch (error) {
+    const apiData = await apiGet('/vpn/client', axiosConfig);
+    if (apiData.error === false) {
+      state.connections = apiData.data as VPNInfoType[];
+    } else {
+      q.notify({ type: 'negative', message: apiData.errorMessage });
       state.error = true;
-      state.errorMessage = 'Network error occurred';
-      q.notify({ type: 'negative', message: 'Network error occurred' });
-    } finally {
-      state.loading = false;
+      state.errorMessage = apiData.errorMessage;
     }
+
+    state.loading = false;
   };
 
   const deleteConnection = async (id: string) => {
-    try {
-      const apiData = await apiDelete('/vpn/client/' + id, axiosConfig);
-      if (apiData.error === false) {
-        q.notify({ type: 'positive', message: 'Deleted.' });
-        await getConnections();
-      } else {
-        q.notify({ type: 'negative', message: apiData.errorMessage });
-      }
-    } catch (error) {
-      q.notify({ type: 'negative', message: 'Network error during deletion' });
+    const apiData = await apiDelete('/vpn/client/' + id, axiosConfig);
+    if (apiData.error === false) {
+      q.notify({ type: 'positive', message: 'Deleted.' });
+      await getConnections();
+    } else {
+      q.notify({ type: 'negative', message: apiData.errorMessage });
     }
   };
 
-  const createVPNClient = async (setup: VPNSetupType) => {
+  const createVPNClient = async (
+    setup: VPNSetupType
+  ): Promise<VPNConnectionType | null> => {
     let keys = {
       privateKey: '',
       publicKey: '',
     };
 
-    if (setup.autoKeyGeneration == true) {
+    if (setup.autoKeyGeneration === true) {
       keys = wireguard.generateKeypair();
       setup.clientPublicKey = keys.publicKey;
     }
 
-    // don't transmit private key
+    // Store private key but don't transmit it
     const privateKey = setup.clientPrivateKey;
     setup.clientPrivateKey = '';
 
-    let vpnConnection = {} as VPNConnectionType;
-
+    // Debug mode handling
     if (localStore.isDebugMode) {
       q.notify({ type: 'info', message: 'Debug' });
       await new Promise((resolve) => setTimeout(resolve, 500));
-      vpnConnection = defaultVPNConnection();
-      return vpnConnection;
+      const debugConnection = defaultVPNConnection();
+      return debugConnection;
     }
 
-    apiPost('/vpn/client', setup, axiosConfig).then((apiData) => {
-      if (apiData.error == false) {
-        vpnConnection = apiData.data;
-        if (setup.autoKeyGeneration == true) {
-          // use generated keys
-          vpnConnection.clientPrivateKey = keys.privateKey;
-          vpnConnection.clientPublicKey = keys.publicKey;
-        } else {
-          // use keys from input
-          vpnConnection.clientPrivateKey = privateKey;
-          vpnConnection.clientPublicKey = setup.clientPublicKey;
-        }
-      } else {
-        q.notify({ type: 'negative', message: apiData.errorMessage });
-      }
-    });
+    // Make API call
+    const apiData = await apiPost('/vpn/client', setup, axiosConfig);
 
-    return vpnConnection;
+    if (apiData.error === false) {
+      const vpnConnection = apiData.data as VPNConnectionType;
+
+      // Add the key information back
+      if (setup.autoKeyGeneration === true) {
+        // Use generated keys
+        vpnConnection.clientPrivateKey = keys.privateKey;
+        vpnConnection.clientPublicKey = keys.publicKey;
+      } else {
+        // Use keys from input
+        vpnConnection.clientPrivateKey = privateKey;
+        vpnConnection.clientPublicKey = setup.clientPublicKey;
+      }
+      return vpnConnection;
+    } else {
+      q.notify({ type: 'negative', message: apiData.errorMessage });
+      return null;
+    }
   };
 
   return {

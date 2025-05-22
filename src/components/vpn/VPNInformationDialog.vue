@@ -1,11 +1,17 @@
 <template>
-  <q-card bordered style="width: 400px">
+  <q-card
+    bordered
+    style="width: 400px"
+  >
     <q-toolbar class="bg-layout-bg text-layout-text text-center">
-      <q-toolbar-title class="q-ma-sm"
-        >Info for {{ vpnClientInfo.name }}</q-toolbar-title
-      >
+      <q-toolbar-title class="q-ma-sm">
+        Info for {{ vpnClientInfo.name }}
+      </q-toolbar-title>
     </q-toolbar>
-    <div class="q-ma-md" style="line-break: anywhere">
+    <div
+      class="q-ma-md"
+      style="line-break: anywhere"
+    >
       <div class="row q-mt-md">
         <div class="col-3 text-weight-bolder">Name</div>
         <div class="col">{{ vpnClientInfo.name }}</div>
@@ -27,7 +33,10 @@
     </div>
 
     <q-separator class="q-mt-sm" />
-    <q-card-actions align="evenly" class="q-ma-sm row">
+    <q-card-actions
+      align="evenly"
+      class="q-ma-sm row"
+    >
       <q-btn
         v-close-popup
         push
@@ -40,6 +49,7 @@
     </q-card-actions>
   </q-card>
 </template>
+
 <script setup>
 import { defineProps } from 'vue';
 

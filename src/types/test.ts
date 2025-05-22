@@ -10,7 +10,7 @@ import {
   AccountType,
   UserProfileType,
   HeaderInformationType,
-  VPNSetupInputType,
+  VPNSetupType,
   VPNConnectionType,
   VPNInfoType,
 } from './index';
@@ -183,7 +183,7 @@ export const defaultHeaderInformation = (): HeaderInformationType => ({
 });
 
 // Default VPNSetupInput
-export const defaultVPNSetupInput = (): VPNSetupInputType => ({
+export const defaultVPNSetupInput = (): VPNSetupType => ({
   clientPublicKey: '',
   clientPrivateKey: '',
   name: 'My VPN',

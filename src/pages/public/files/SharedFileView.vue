@@ -139,11 +139,6 @@ export default defineComponent({
       getIcon,
     };
   },
-  computed: {
-    darkmode() {
-      return this.localStore.darkmode;
-    },
-  },
   created() {
     this.getFile();
   },

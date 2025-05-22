@@ -28,7 +28,7 @@
               bg-color="layout-bg"
               no-error-icon
               dark
-              :disable="state.loading"
+              :disable="localStore.componentLoading"
               :rules="[
                 (val) => (val && val.length > 0) || 'Input your Password',
               ]"
@@ -54,7 +54,7 @@
               color="layout-text"
               no-error-icon
               dark
-              :disable="state.loading"
+              :disable="localStore.componentLoading"
               :rules="[
                 (val) => (val && val.length > 0) || 'Input your Password',
               ]"
@@ -80,7 +80,7 @@
               size="lg"
               class="full-width q-mt-lg login-button"
               label="Sign In"
-              :loading="state.loading"
+              :loading="localStore.componentLoading"
               type="submit"
               :ripple="{ early: true }"
             />
@@ -93,7 +93,7 @@
             leave-active-class="animated fadeOut"
           >
             <div
-              v-if="state.error"
+              v-if="localStore.error"
               key="error"
               class="error-container"
             >
@@ -102,7 +102,7 @@
                 class="text-red text-body1 text-center shake q-mx-md"
                 @animationend="handleAnimationEnd"
               >
-                {{ state.errorMessage }}
+                {{ localStore.errorMessage }}
               </div>
             </div>
           </transition-group>
@@ -114,10 +114,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useAuth } from 'src/api/auth';
+import { useLocalStore } from 'src/stores/localStore';
 
 // Composables
-const { state, login, redirectIfAuthenticated } = useAuth();
+const localStore = useLocalStore();
 
 // Refs
 const credentials = ref({
@@ -129,9 +129,9 @@ const errorText = ref<HTMLElement | null>(null);
 
 // Methods
 const handleLogin = async () => {
-  await login(credentials.value);
+  await localStore.login(credentials.value);
 
-  if (state.error) {
+  if (localStore.error) {
     setTimeout(() => {
       if (errorText.value) {
         errorText.value.classList.add('shake');
@@ -149,7 +149,7 @@ const handleAnimationEnd = (event: AnimationEvent) => {
 
 // Lifecycle hooks
 onMounted(() => {
-  redirectIfAuthenticated();
+  localStore.redirectIfAuthenticated();
 });
 </script>
 

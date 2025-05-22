@@ -14,7 +14,7 @@
       <q-input
         autofocus
         v-model="deleteAccountPassword"
-        :color="darkmode ? 'white' : 'dark'"
+        :color="isDarkMode ? 'white' : 'dark'"
         label="Current Password"
         :type="isPwd ? 'password' : 'text'"
         outlined
@@ -59,31 +59,31 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { LocalStorage } from 'quasar';
 import { useLocalStore } from 'stores/localStore';
+import { useSettingsStore } from 'src/stores/settingsStore';
+import { LocalStorage } from 'quasar';
 import { useRouter } from 'vue-router';
-import { useSettings } from 'src/api/settings';
 
 // Setup composables
-const router = useRouter();
 const localStore = useLocalStore();
-const { deleteAccount } = useSettings();
+const settingsStore = useSettingsStore();
 
 // State variables
 const isPwd = ref(true);
 const deleteAccountPassword = ref('');
 
 // Computed properties
-const darkmode = computed(() => localStore.darkmode);
+const isDarkMode = computed(() => localStore.isDarkMode);
 
 // Methods
 const handleDeleteAccount = async () => {
-  const success = await deleteAccount(deleteAccountPassword.value);
+  const successful = await settingsStore.deleteAccount(
+    deleteAccountPassword.value
+  );
 
-  if (success) {
-    localStore.setAuthState(false);
-    LocalStorage.remove('header');
-    router.push('/');
+  if (successful) {
+    localStore.clearAll();
+    window.location.reload();
   }
 };
 </script>

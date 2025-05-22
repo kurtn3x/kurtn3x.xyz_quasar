@@ -23,7 +23,7 @@
               rounded
               size="20px"
             >
-              <img :src="headerInfo.avatar" />
+              <img :src="localStore.headerInfo.avatar" />
             </q-avatar>
             <div class="q-ml-md ellipsis">My Profile</div>
           </q-btn>
@@ -99,70 +99,21 @@
   </q-menu>
 </template>
 
-<script lang="ts">
-import { defineComponent, computed } from 'vue';
-import { useQuasar, LocalStorage } from 'quasar';
-import { api } from 'boot/axios';
+<script setup lang="ts">
+import { computed } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import ThemeSelector from './ThemeSelector.vue';
 
-export default defineComponent({
-  name: 'UserMenu',
+// Setup composables
+const localStore = useLocalStore();
 
-  components: {
-    ThemeSelector,
-  },
+// Computed properties
+const myProfileRoute = computed(
+  () => `/user/${localStore.headerInfo.username}`
+);
 
-  props: {
-    headerInfo: {
-      type: Object,
-      required: true,
-    },
-  },
-
-  setup(props) {
-    const q = useQuasar();
-    const localStore = useLocalStore();
-
-    const myProfileRoute = computed(() => `/user/${props.headerInfo.username}`);
-
-    const logout = () => {
-      const axiosConfig = {
-        withCredentials: true,
-        headers: {
-          'X-CSRFToken': q.cookies.get('csrftoken'),
-        },
-      };
-
-      api
-        .post('/auth/logout', '', axiosConfig)
-        .then((response) => {
-          if (response.status == 200) {
-            localStore.deleteAll();
-            q.notify({
-              type: 'positive',
-              message: 'Logged out!',
-              progress: true,
-            });
-            LocalStorage.remove('header');
-            window.location.replace('https://kurtn3x.xyz');
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-          q.notify({
-            type: 'negative',
-            message: 'API ERROR.',
-            progress: true,
-          });
-          localStore.deleteAll();
-        });
-    };
-
-    return {
-      myProfileRoute,
-      logout,
-    };
-  },
-});
+// Methods
+const logout = async () => {
+  await localStore.logout();
+};
 </script>

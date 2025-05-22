@@ -2,11 +2,11 @@
   <q-card
     bordered
     flat
-    class="bg-primary text-layout-text profile-header q-mb-md"
+    class="bg-primary text-layout-text profile-header"
   >
     <div class="row items-center q-mt-md q-mb-md">
       <!-- Avatar Section -->
-      <div>
+      <div class="gt-xs">
         <q-avatar
           rounded
           size="180px"
@@ -29,10 +29,38 @@
         </q-avatar>
       </div>
 
+      <div class="lt-sm">
+        <q-avatar
+          rounded
+          size="120px"
+          class="bg-transparent q-ml-md shadow-4"
+        >
+          <q-img
+            :src="user.avatar"
+            class="full-height full-width"
+          >
+            <q-badge
+              rounded
+              floating
+              :color="user.role === 'Admin' ? 'negative' : 'info'"
+              class="text-caption"
+              size="sm"
+            >
+              {{ user.role }}
+            </q-badge>
+          </q-img>
+        </q-avatar>
+      </div>
+
       <!-- User Info Section -->
       <div class="col">
         <div
-          class="text-h3 text-weight-bold text3d-primary q-ml-lg non-selectable"
+          class="text-h3 gt-xs text-weight-bold text3d-primary q-ml-lg non-selectable"
+        >
+          {{ user.username }}
+        </div>
+        <div
+          class="text-h4 lt-sm text-weight-bold text3d-primary q-ml-lg non-selectable"
         >
           {{ user.username }}
         </div>
@@ -109,7 +137,10 @@
       animated
       class="bg-transparent"
     >
-      <q-tab-panel name="about">
+      <q-tab-panel
+        name="about"
+        class="q-pa-none q-mt-md"
+      >
         <q-card
           flat
           class="full-width full-height bg-transparent"
@@ -120,7 +151,6 @@
               <q-card
                 flat
                 bordered
-                class="q-mb-md"
               >
                 <q-card-section class="bg-primary text-layout-text q-py-sm">
                   <div class="text-h6">User Information</div>

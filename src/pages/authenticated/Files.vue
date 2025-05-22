@@ -95,7 +95,7 @@
       >
         <div class="q-ma-md">
           <q-input
-            :color="darkmode ? 'white' : 'black'"
+            :color="isDarkMode ? 'white' : 'black'"
             v-model="filterSearch"
             input-class="text-left"
             style="width: 30%"
@@ -119,7 +119,7 @@
           </q-input>
           <div class="row q-mt-md">
             <q-select
-              :color="darkmode ? 'white' : 'black'"
+              :color="isDarkMode ? 'white' : 'black'"
               outlined
               v-model="filterSortBy"
               :options="filterSortByOptions"
@@ -256,7 +256,7 @@
                 >
                   <q-separator
                     size="1px"
-                    :color="darkmode ? 'white' : 'dark'"
+                    :color="isDarkMode ? 'white' : 'dark'"
                   />
                   <template
                     v-for="item in navbarIndex.menuItems"
@@ -317,7 +317,7 @@
                     </q-item>
                     <q-separator
                       size="1px"
-                      :color="darkmode ? 'white' : 'dark'"
+                      :color="isDarkMode ? 'white' : 'dark'"
                     />
                   </template>
                 </q-card>
@@ -455,7 +455,7 @@
             <q-space />
 
             <q-input
-              :color="darkmode ? 'white' : 'black'"
+              :color="isDarkMode ? 'white' : 'black'"
               v-model="filterSearch"
               input-class="text-left"
               label="Search"
@@ -1356,7 +1356,7 @@
                             <q-tooltip
                               class="text-body1 bordered"
                               :class="
-                                darkmode
+                                isDarkMode
                                   ? 'bg-dark text-white'
                                   : 'bg-white text-dark'
                               "
@@ -1754,8 +1754,8 @@ export default defineComponent({
       return this.navbarIndex.navbarItems.length;
     },
 
-    darkmode() {
-      return this.localStore.darkmode;
+    isDarkMode() {
+      return this.localStore.isDarkMode;
     },
 
     screenWidth() {

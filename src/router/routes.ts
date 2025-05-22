@@ -73,6 +73,10 @@ const routes: RouteRecordRaw[] = [
         component: () => import('src/pages/authenticated/Files.vue'),
       },
       {
+        path: 'files-rework',
+        component: () => import('src/pages/authenticated/FilesRework.vue'),
+      },
+      {
         path: 'vpn',
         component: () => import('src/pages/authenticated/VPNView.vue'),
       },

@@ -5,13 +5,16 @@
     persistent
     backdrop-filter="brightness(0%)"
   >
-    <q-card bordered style="width: 350px">
+    <q-card
+      bordered
+      style="width: 350px"
+    >
       <q-toolbar class="bg-layout-bg text-layout-text text-center">
         <q-toolbar-title class="q-ma-sm">Password Required</q-toolbar-title>
       </q-toolbar>
       <div class="text-body1 text-center q-ml-md q-mr-md q-mt-lg q-mb-sm">
         <q-input
-          :color="darkmode ? 'white' : 'black'"
+          :color="isDarkMode ? 'white' : 'black'"
           v-model="password"
           outlined
           label="Password"
@@ -35,7 +38,10 @@
         </q-input>
       </div>
       <q-separator />
-      <q-card-actions align="center" class="row q-mt-sm q-mb-sm">
+      <q-card-actions
+        align="center"
+        class="row q-mt-sm q-mb-sm"
+      >
         <q-btn
           v-close-popup
           push
@@ -90,8 +96,8 @@ export default defineComponent({
     };
   },
   computed: {
-    darkmode() {
-      return this.localStore.darkmode;
+    isDarkMode() {
+      return this.localStore.isDarkMode;
     },
   },
   watch: {

@@ -20,7 +20,7 @@
     </q-toolbar>
     <q-separator
       size="1px"
-      :color="darkmode ? 'white' : 'dark'"
+      :color="isDarkMode ? 'white' : 'dark'"
     />
     <q-tabs
       inline-label
@@ -68,7 +68,7 @@
           readonly
           :model-value="connection.clientPublicKey"
           style="height: 50px"
-          :color="darkmode ? 'white' : 'dark'"
+          :color="isDarkMode ? 'white' : 'dark'"
           dense
         >
           <q-btn
@@ -83,7 +83,7 @@
             <a
               style="width: 120px"
               class="text-body1"
-              :class="darkmode ? 'text-white' : 'text-dark'"
+              :class="isDarkMode ? 'text-white' : 'text-dark'"
             >
               Public-Key:
             </a>
@@ -94,7 +94,7 @@
           readonly
           :model-value="connection.clientPrivateKey"
           style="height: 50px"
-          :color="darkmode ? 'white' : 'dark'"
+          :color="isDarkMode ? 'white' : 'dark'"
           dense
         >
           <q-btn
@@ -109,7 +109,7 @@
             <a
               style="width: 120px"
               class="text-body1"
-              :class="darkmode ? 'text-white' : 'text-dark'"
+              :class="isDarkMode ? 'text-white' : 'text-dark'"
             >
               Private-Key:
             </a>
@@ -124,7 +124,7 @@
           readonly
           :model-value="connection.addresses"
           style="height: 50px"
-          :color="darkmode ? 'white' : 'dark'"
+          :color="isDarkMode ? 'white' : 'dark'"
           dense
         >
           <q-btn
@@ -139,7 +139,7 @@
             <a
               style="width: 120px"
               class="text-body1"
-              :class="darkmode ? 'text-white' : 'text-dark'"
+              :class="isDarkMode ? 'text-white' : 'text-dark'"
             >
               Addresses:
             </a>
@@ -150,7 +150,7 @@
           readonly
           :model-value="connection.dnsServers"
           style="height: 50px"
-          :color="darkmode ? 'white' : 'dark'"
+          :color="isDarkMode ? 'white' : 'dark'"
           dense
         >
           <q-btn
@@ -165,7 +165,7 @@
             <a
               style="width: 120px"
               class="text-body1"
-              :class="darkmode ? 'text-white' : 'text-dark'"
+              :class="isDarkMode ? 'text-white' : 'text-dark'"
             >
               DNS:
             </a>
@@ -179,14 +179,14 @@
         <q-input
           outlined
           readonly
-          :color="darkmode ? 'white' : 'dark'"
+          :color="isDarkMode ? 'white' : 'dark'"
           :model-value="connection.presharedKey"
           style="height: 50px"
           dense
         >
           <q-btn
             flat
-            :color="darkmode ? 'white' : 'dark'"
+            :color="isDarkMode ? 'white' : 'dark'"
             round
             icon="content_copy"
             class="absolute-right"
@@ -197,7 +197,7 @@
             <a
               style="width: 120px"
               class="text-body1"
-              :class="darkmode ? 'text-white' : 'text-dark'"
+              :class="isDarkMode ? 'text-white' : 'text-dark'"
             >
               Preshared Key:
             </a>
@@ -206,7 +206,7 @@
         <q-input
           outlined
           readonly
-          :color="darkmode ? 'white' : 'dark'"
+          :color="isDarkMode ? 'white' : 'dark'"
           :model-value="connection.serverPublicKey"
           style="height: 50px"
           dense
@@ -223,7 +223,7 @@
             <a
               style="width: 120px"
               class="text-body1"
-              :class="darkmode ? 'text-white' : 'text-dark'"
+              :class="isDarkMode ? 'text-white' : 'text-dark'"
             >
               Server Key:
             </a>
@@ -242,7 +242,7 @@
           :model-value="connection.allowedIps"
           style="height: 50px"
           dense
-          :color="darkmode ? 'white' : 'dark'"
+          :color="isDarkMode ? 'white' : 'dark'"
           v-if="!connectionOptions.onlyInternal"
         >
           <q-btn
@@ -257,7 +257,7 @@
             <a
               style="width: 120px"
               class="text-body1"
-              :class="darkmode ? 'text-white' : 'text-dark'"
+              :class="isDarkMode ? 'text-white' : 'text-dark'"
             >
               Allowed IPs:
             </a>
@@ -269,7 +269,7 @@
           :model-value="connection.allowedIpsInternal"
           style="height: 50px"
           dense
-          :color="darkmode ? 'white' : 'dark'"
+          :color="isDarkMode ? 'white' : 'dark'"
           v-if="connectionOptions.onlyInternal"
         >
           <q-btn
@@ -284,7 +284,7 @@
             <a
               style="width: 120px"
               class="text-body1"
-              :class="darkmode ? 'text-white' : 'text-dark'"
+              :class="isDarkMode ? 'text-white' : 'text-dark'"
             >
               Allowed IPs:
             </a>
@@ -296,7 +296,7 @@
           :model-value="connection.endpoint"
           style="height: 50px"
           dense
-          :color="darkmode ? 'white' : 'dark'"
+          :color="isDarkMode ? 'white' : 'dark'"
         >
           <q-btn
             flat
@@ -310,7 +310,7 @@
             <a
               style="width: 120px"
               class="text-body1"
-              :class="darkmode ? 'text-white' : 'text-dark'"
+              :class="isDarkMode ? 'text-white' : 'text-dark'"
             >
               Endpoint:
             </a>
@@ -324,7 +324,7 @@
               :model-value="connectionOptions.configName"
               outlined
               dense
-              :color="darkmode ? 'white' : 'black'"
+              :color="isDarkMode ? 'white' : 'black'"
               input-class="text-body1"
               class="full-width"
               no-error-icon
@@ -334,7 +334,7 @@
                 <a
                   style="width: 120px"
                   class="text-body1"
-                  :class="darkmode ? 'text-white' : 'text-dark'"
+                  :class="isDarkMode ? 'text-white' : 'text-dark'"
                 >
                   Config Name
                 </a>
@@ -431,7 +431,7 @@ const connectionOptions = ref({
 });
 
 // Compute dark mode from store
-const darkmode = computed(() => localStore.darkmode);
+const isDarkMode = computed(() => localStore.isDarkMode);
 
 // Compute config
 const wireguardConfig = computed(() => {

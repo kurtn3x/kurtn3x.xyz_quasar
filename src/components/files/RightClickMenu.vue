@@ -1,98 +1,20 @@
 <template>
-  <ItemInformationDialog
-    :prop-item="propItem"
-    :active="showItemInformationDialog"
-    @close="showItemInformationDialog = false"
-  />
+  <q-dialog v-model="showItemInformationDialog">
+    <ItemInformationDialog :prop-item="propItem" />
+  </q-dialog>
 
-  <ItemLinksDialog
-    :prop-item="propItem"
-    :active="showItemLinksDialog"
-    @close="showItemLinksDialog = false"
-    v-if="showItemLinksDialog"
-  />
+  <q-dialog v-model="showItemLinksDialog">
+    <ItemLinksDialog :prop-item="propItem" />
+  </q-dialog>
 
-  <RenameItemDialog
-    :current-name="propItem.name"
-    :active="showRenameItemDialog"
-    @close="showRenameItemDialog = false"
-    @rename="
-      (newName) => {
-        console.log(newName);
-        updateName(newName);
-      }
-    "
-  />
+  <q-dialog v-model="showRenameItemDialog">
+    <RenameItemDialog :prop-item="propItem" />
+  </q-dialog>
 
   <q-dialog v-model="sharingPasswordDialog">
-    <q-card
-      bordered
-      style="width: 350px"
-    >
-      <q-toolbar class="bg-layout-bg text-layout-text text-center">
-        <q-toolbar-title class="q-ma-sm">Set new Password</q-toolbar-title>
-      </q-toolbar>
-      <div class="text-body1 text-center q-ma-sm">
-        <q-input
-          v-model="sharingPasswordOptions.sharedPassword"
-          class="q-ma-md full-width"
-          style="max-width: 400px"
-          label="Password"
-          input-class="text-body1"
-          outlined
-          no-error-icon
-          hide-bottom-space
-          :type="sharingPasswordOptions.isPwd ? 'password' : 'text'"
-          :color="darkmode ? 'white' : 'black'"
-          :rules="[
-            (val) =>
-              /^[a-z0-9]+$/i.test(val) ||
-              'Only alphanumerical characters and length > 0',
-          ]"
-        >
-          <template v-slot:prepend>
-            <q-icon name="lock" />
-          </template>
-          <template v-slot:append>
-            <q-icon
-              class="pw_icon"
-              :name="
-                sharingPasswordOptions.isPwd ? 'visibility' : 'visibility_off'
-              "
-              @click="
-                sharingPasswordOptions.isPwd = !sharingPasswordOptions.isPwd
-              "
-            />
-          </template>
-        </q-input>
-      </div>
-      <q-separator />
-      <q-card-actions
-        align="center"
-        class="row q-mt-sm q-mb-sm"
-      >
-        <q-btn
-          v-close-popup
-          push
-          icon="close"
-          label="Cancel"
-          class="bg-red text-white col"
-          @click="sharingPasswordOptions.sharedPassword = ''"
-        />
-        <q-btn
-          push
-          class="bg-green text-white col"
-          icon="done"
-          size="md"
-          label="Set"
-          @click="
-            sharingPasswordOptions.sharedPasswordProtected = true;
-            updateSharingPassword();
-          "
-        />
-      </q-card-actions>
-    </q-card>
+    <SharingPasswordDialog :prop-item="propItem" />
   </q-dialog>
+
   <q-list
     separator
     bordered
@@ -100,7 +22,6 @@
     <q-item
       clickable
       v-close-popup
-      v-if="item.type == 'folder' || item.type == 'file'"
       @click="downloadItem"
     >
       <q-item-section avatar>
@@ -138,7 +59,7 @@
               @click="updateSharing"
             />
           </q-item>
-          <q-item v-if="item.shared == true">
+          <q-item v-if="propItem.shared == true">
             <q-checkbox
               dense
               v-model="sharingOptions.sharedAllowAllRead"
@@ -147,7 +68,7 @@
               @click="updateSharing"
             />
           </q-item>
-          <q-item v-if="item.shared == true">
+          <q-item v-if="propItem.shared == true">
             <q-checkbox
               dense
               v-model="sharingOptions.sharedAllowAllWrite"
@@ -156,7 +77,7 @@
               @click="updateSharing"
             />
           </q-item>
-          <q-item v-if="item.shared && item.sharedPasswordProtected">
+          <q-item v-if="propItem.shared && propItem.sharedPasswordProtected">
             <q-item-section>
               <q-item-label
                 class="text-center text-green text-weight-bold"
@@ -176,16 +97,16 @@
                   push
                   icon="lock close"
                   class="col q-ml-sm bg-red text-white"
-                  @click="
-                    sharingPasswordOptions.sharedPasswordProtected = false;
-                    updateSharingPassword();
-                  "
+                  @click="clearSharingPassword"
                 />
               </div>
             </q-item-section>
           </q-item>
           <q-item
-            v-if="item.shared == true && item.sharedPasswordProtected == false"
+            v-if="
+              propItem.shared == true &&
+              propItem.sharedPasswordProtected == false
+            "
           >
             <q-btn
               push
@@ -195,7 +116,7 @@
               @click="sharingPasswordDialog = true"
             />
           </q-item>
-          <q-item v-if="item.shared">
+          <q-item v-if="propItem.shared">
             <q-btn
               icon="link"
               label="Manage Links"
@@ -256,192 +177,70 @@
   </q-list>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, Ref, defineAsyncComponent } from 'vue';
-import { useLocalStore } from 'stores/localStore';
-import { useQuasar } from 'quasar';
+<script setup lang="ts">
+import { ref } from 'vue';
 import { FolderEntryType } from 'src/types/index';
-import ItemInformationDialog from 'components/files/dialogs/ItemInformationDialog.vue';
+import { useFileStore } from 'src/stores/fileStore';
+
 import RenameItemDialog from 'components/files/dialogs/RenameItemDialog.vue';
+import SharingPasswordDialog from 'components/files/dialogs/SharingPasswordDialog.vue';
+import ItemInformationDialog from 'components/files/dialogs/ItemInformationDialog.vue';
+import ItemLinksDialog from 'components/files/dialogs/ItemLinksDialog.vue';
 
-import { apiPut } from 'src/components/apiWrapper';
-
-const ItemLinksDialog = defineAsyncComponent(
-  () => import('components/files/dialogs/ItemLinksDialog.vue')
-);
-
-export default defineComponent({
-  name: 'RightClickMenu',
-  components: { ItemInformationDialog, RenameItemDialog, ItemLinksDialog },
-  props: {
-    propItem: Object,
-  },
-  emits: ['moveItem', 'deleteItem', 'renameItem', 'showInformation'],
-  setup(props) {
-    const localStore = useLocalStore();
-    const q = useQuasar();
-    const axiosConfig = {
-      withCredentials: true,
-      headers: {
-        'X-CSRFToken': q.cookies.get('csrftoken'),
-      },
-    };
-
-    var item = ref(props.propItem) as Ref<FolderEntryType>;
-
-    var sharingOptions = ref({
-      itemId: item.value.id,
-      sharedRecursive: true,
-      shared: item.value.shared,
-      sharedAllowAllRead: item.value.sharedAllowAllRead,
-      sharedAllowAllWrite: item.value.sharedAllowAllWrite,
-    });
-
-    var sharingPasswordOptions = ref({
-      itemId: item.value.id,
-      sharedPasswordProtected: item.value.sharedPasswordProtected,
-      sharedPassword: '',
-      isPwd: true,
-    });
-
-    const newName = ref(item.value.name);
-
-    return {
-      q,
-      axiosConfig,
-      item,
-      localStore,
-      newName,
-      sharingOptions,
-      sharingPasswordDialog: ref(false),
-      sharingPasswordOptions,
-      showItemInformationDialog: ref(false),
-      showRenameItemDialog: ref(false),
-      showItemLinksDialog: ref(false),
-    };
-  },
-
-  computed: {
-    darkmode() {
-      return this.localStore.darkmode;
-    },
-    itemShareLink() {
-      return 'https://kurtn3x.xyz/files/' + this.item.type + '/' + this.item.id;
-    },
-  },
-
-  methods: {
-    notify(type: string, message: string) {
-      this.q.notify({
-        type: type,
-        message: message,
-        progress: true,
-      });
-    },
-
-    generatePassword() {
-      var length = 10,
-        charset =
-          'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
-        retVal = '';
-      for (var i = 0, n = charset.length; i < length; ++i) {
-        retVal += charset.charAt(Math.floor(Math.random() * n));
-      }
-      this.sharingPasswordOptions.sharedPassword = retVal;
-    },
-
-    updateSharing() {
-      apiPut(
-        '/files/' + this.item.type + '/' + this.item.id,
-        this.sharingOptions,
-        this.axiosConfig
-      ).then((apiData) => {
-        if (apiData.error == false) {
-          Object.assign(this.item, this.sharingOptions);
-          this.notify('positive', 'Updated');
-        } else {
-          Object.assign(this.sharingOptions, this.item);
-          this.notify('negative', apiData.errorMessage);
-        }
-      });
-    },
-
-    updateSharingPassword() {
-      apiPut(
-        '/files/' + this.item.type + '/' + this.item.id,
-        this.sharingPasswordOptions,
-        this.axiosConfig
-      ).then((apiData) => {
-        if (apiData.error == false) {
-          Object.assign(this.item, this.sharingPasswordOptions);
-          this.sharingPasswordOptions.sharedPassword = '';
-          this.sharingPasswordDialog = false;
-          this.notify('positive', 'Updated');
-        } else {
-          Object.assign(this.sharingPasswordOptions, this.item);
-          this.notify('negative', apiData.errorMessage);
-        }
-      });
-    },
-
-    moveItem() {
-      this.$emit('moveItem', true);
-    },
-
-    deleteItem() {
-      this.$emit('deleteItem', true);
-    },
-
-    renameItem() {
-      this.$emit('renameItem', true);
-    },
-
-    downloadItem() {
-      var args = '';
-      args += '?attachment=1';
-
-      var url =
-        'https://api.kurtn3x.xyz/files/download/' +
-        this.item.type +
-        '/' +
-        this.item.id +
-        args;
-      var link = document.createElement('a');
-      link.setAttribute('download', '');
-      link.href = url;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    },
-
-    updateName(newName: string) {
-      if (newName.length < 1) {
-        this.notify('negative', 'Name must be at least 1 character long.');
-        return;
-      }
-      if (/\/|\x00/.test(newName)) {
-        this.notify('negative', 'Name contains invalid characters.');
-        return;
-      }
-
-      var data = {
-        name: newName,
-      };
-
-      apiPut(
-        '/files/' + this.item.type + '/' + this.item.id,
-        data,
-        this.axiosConfig
-      ).then((apiData) => {
-        if (apiData.error == false) {
-          this.item.name = newName;
-          this.notify('positive', 'Updated');
-          this.showRenameItemDialog = false;
-        } else {
-          this.notify('negative', apiData.errorMessage);
-        }
-      });
-    },
+// Define props
+const props = defineProps({
+  propItem: {
+    type: Object as () => FolderEntryType,
+    required: true,
   },
 });
+
+// Setup store and Quasar
+const filesStore = useFileStore();
+
+const sharingPasswordDialog = ref(false);
+const showItemInformationDialog = ref(false);
+const showRenameItemDialog = ref(false);
+const showItemLinksDialog = ref(false);
+
+const sharingOptions = ref({
+  shared: props.propItem.shared,
+  sharedAllowAllRead: props.propItem.sharedAllowAllRead,
+  sharedAllowAllWrite: props.propItem.sharedAllowAllWrite,
+});
+
+function deleteItem() {
+  filesStore.fileOps.deleteItem(props.propItem.type, props.propItem.id);
+}
+
+function moveItem() {
+  filesStore.fileOps.updateParent(props.propItem.type, props.propItem.id, '');
+}
+
+function clearSharingPassword() {
+  filesStore.fileOps.updateSharingPassword(
+    props.propItem.type,
+    props.propItem.id,
+    { sharedPasswordProtected: false, sharedPassword: '' }
+  );
+}
+
+function downloadItem() {
+  filesStore.fileOps.downloadItem(props.propItem.type, props.propItem.id);
+}
+
+async function updateSharing() {
+  const successful = await filesStore.fileOps.updateSharing(
+    props.propItem.type,
+    props.propItem.id,
+    sharingOptions.value
+  );
+
+  if (!successful) {
+    sharingOptions.value.shared = props.propItem.shared;
+    sharingOptions.value.sharedAllowAllRead = props.propItem.sharedAllowAllRead;
+    sharingOptions.value.sharedAllowAllWrite =
+      props.propItem.sharedAllowAllWrite;
+  }
+}
 </script>

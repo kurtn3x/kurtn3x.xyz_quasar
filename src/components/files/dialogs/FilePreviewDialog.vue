@@ -63,7 +63,7 @@
         </q-btn>
       </q-toolbar>
 
-      <q-separator :color="darkmode ? 'white' : 'dark'" />
+      <q-separator :color="isDarkMode ? 'white' : 'dark'" />
 
       <q-card-section
         class="col column q-pa-xs"
@@ -237,8 +237,8 @@ export default defineComponent({
   },
 
   computed: {
-    darkmode() {
-      return this.localStore.darkmode;
+    isDarkMode() {
+      return this.localStore.isDarkMode;
     },
     dialogStyle() {
       return `

@@ -63,7 +63,9 @@
                   >
                     <q-tooltip
                       :class="
-                        darkmode ? 'bg-dark text-white' : 'bg-white text-dark'
+                        localStore.isDarkMode
+                          ? 'bg-dark text-white'
+                          : 'bg-white text-dark'
                       "
                       anchor="center end"
                       self="center left"
@@ -131,7 +133,9 @@
                   >
                     <q-tooltip
                       :class="
-                        darkmode ? 'bg-dark text-white' : 'bg-white text-dark'
+                        localStore.isDarkMode
+                          ? 'bg-dark text-white'
+                          : 'bg-white text-dark'
                       "
                       anchor="center end"
                       self="center left"
@@ -203,7 +207,9 @@
                   >
                     <q-tooltip
                       :class="
-                        darkmode ? 'bg-dark text-white' : 'bg-white text-dark'
+                        localStore.isDarkMode
+                          ? 'bg-dark text-white'
+                          : 'bg-white text-dark'
                       "
                       anchor="center end"
                       self="center left"
@@ -276,7 +282,9 @@
                   >
                     <q-tooltip
                       :class="
-                        darkmode ? 'bg-dark text-white' : 'bg-white text-dark'
+                        localStore.isDarkMode
+                          ? 'bg-dark text-white'
+                          : 'bg-white text-dark'
                       "
                       anchor="center end"
                       self="center left"
@@ -415,7 +423,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { QInput } from 'quasar';
 import { useLocalStore } from 'stores/localStore';
 import { useRegister } from 'src/api/register';
@@ -450,9 +458,6 @@ const errorMap = ref({
 });
 
 const checkErrorRequired = ref(true);
-
-// Computed properties
-const darkmode = computed(() => localStore.darkmodeState);
 
 // Methods
 const isValidUsername = async () => {

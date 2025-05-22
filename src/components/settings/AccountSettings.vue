@@ -3,7 +3,7 @@
     <DeleteAccountDialog />
   </q-dialog>
   <div
-    :class="darkmode ? 'text-white' : 'text-dark'"
+    :class="isDarkMode ? 'text-white' : 'text-dark'"
     style="background: transparent"
   >
     <q-card
@@ -22,7 +22,7 @@
             Id:
           </q-item-section>
           <q-item-section style="line-break: anywhere">
-            {{ accountData.id }}
+            {{ settingsStore.accountData?.id }}
           </q-item-section>
         </q-item>
         <q-separator />
@@ -35,7 +35,7 @@
             Username:
           </q-item-section>
           <q-item-section style="line-break: anywhere">
-            {{ accountData.username }}
+            {{ settingsStore.accountData?.username }}
           </q-item-section>
         </q-item>
 
@@ -49,7 +49,7 @@
             Email:
           </q-item-section>
           <q-item-section style="line-break: anywhere">
-            {{ accountData.email }}
+            {{ settingsStore.accountData?.email }}
           </q-item-section>
         </q-item>
 
@@ -63,7 +63,7 @@
             Is Admin:
           </q-item-section>
           <q-item-section style="line-break: anywhere">
-            {{ accountData.isAdmin }}
+            {{ settingsStore.accountData?.isAdmin }}
           </q-item-section>
         </q-item>
 
@@ -77,7 +77,7 @@
             Joined:
           </q-item-section>
           <q-item-section style="line-break: anywhere">
-            {{ profileData.dateJoined }}
+            {{ settingsStore.profileData?.dateJoined }}
           </q-item-section>
         </q-item>
 
@@ -91,7 +91,7 @@
             Name:
           </q-item-section>
           <q-item-section style="line-break: anywhere">
-            {{ profileData.name }}
+            {{ settingsStore.profileData?.name }}
           </q-item-section>
         </q-item>
 
@@ -105,7 +105,7 @@
             Location:
           </q-item-section>
           <q-item-section style="line-break: anywhere">
-            {{ profileData.location }}
+            {{ settingsStore.profileData?.location }}
           </q-item-section>
         </q-item>
 
@@ -119,7 +119,7 @@
             Status:
           </q-item-section>
           <q-item-section style="line-break: anywhere">
-            {{ profileData.status }}
+            {{ settingsStore.profileData?.status }}
           </q-item-section>
         </q-item>
 
@@ -163,7 +163,7 @@
                         val
                       ) || 'Not a valid E-Mail',
                   ]"
-                  :color="darkmode ? 'white' : 'black'"
+                  :color="isDarkMode ? 'white' : 'black'"
                 >
                   <template v-slot:prepend>
                     <q-icon name="email" />
@@ -179,7 +179,7 @@
                   input-class="text-body1"
                   outlined
                   :type="isPwd2 ? 'password' : 'text'"
-                  :color="darkmode ? 'white' : 'black'"
+                  :color="isDarkMode ? 'white' : 'black'"
                 >
                   <template v-slot:prepend>
                     <q-icon name="lock" />
@@ -200,7 +200,7 @@
                 color="green"
                 push
                 type="submit"
-                :loading="loading"
+                :loading="settingsStore.componentLoading"
               />
             </q-form>
           </q-expansion-item>
@@ -225,7 +225,7 @@
                   style="max-width: 400px"
                   label="New Password"
                   input-class="text-body1"
-                  :color="darkmode ? 'white' : 'black'"
+                  :color="isDarkMode ? 'white' : 'black'"
                   type="password"
                   lazy-rules
                   outlined
@@ -254,7 +254,7 @@
                   style="max-width: 400px"
                   label="Confirm New Password"
                   input-class="text-body1"
-                  :color="darkmode ? 'white' : 'black'"
+                  :color="isDarkMode ? 'white' : 'black'"
                   no-error-icon
                   outlined
                   type="password"
@@ -279,7 +279,7 @@
                   input-class="text-body1"
                   outlined
                   :type="isPwd1 ? 'password' : 'text'"
-                  :color="darkmode ? 'white' : 'black'"
+                  :color="isDarkMode ? 'white' : 'black'"
                 >
                   <template v-slot:prepend>
                     <q-icon name="lock" />
@@ -301,7 +301,7 @@
                 color="green"
                 push
                 type="submit"
-                :loading="loading"
+                :loading="settingsStore.componentLoading"
               />
             </q-form>
           </q-expansion-item>
@@ -326,22 +326,15 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useLocalStore } from 'stores/localStore';
-import { AccountType, UserProfileType } from 'src/types/index';
-import { useSettings } from 'src/api/settings';
 import DeleteAccountDialog from 'src/components/settings/DeleteAccountDialog.vue';
+import { useSettingsStore } from 'src/stores/settingsStore';
 
-// Define props
-const props = defineProps<{
-  accountData: AccountType;
-  profileData: UserProfileType;
-}>();
+const settingsStore = useSettingsStore();
 
 // Setup composables
 const localStore = useLocalStore();
-const { updateEmail, updatePassword, getAccountInformation } = useSettings();
 
 // State variables
-const loading = ref(false);
 const isPwd1 = ref(true);
 const isPwd2 = ref(true);
 const confirmDeleteAccountDialog = ref(false);
@@ -355,39 +348,31 @@ const updatePasswordData = ref({
 });
 
 // Computed properties
-const darkmode = computed(() => localStore.darkmode);
+const isDarkMode = computed(() => localStore.isDarkMode);
 
 // Methods
 const handleUpdatePassword = async () => {
-  loading.value = true;
-  const success = await updatePassword(
+  const successful = await settingsStore.updatePassword(
     updatePasswordData.value.newPassword,
     updatePasswordData.value.newPasswordConfirm,
     updatePasswordData.value.password
   );
-
-  if (success) {
+  if (successful) {
     updatePasswordData.value = {
       newPassword: '',
       newPasswordConfirm: '',
       password: '',
     };
   }
-
-  loading.value = false;
 };
 
 const handleUpdateEmail = async () => {
-  loading.value = true;
-  const success = await updateEmail(
+  const successful = await settingsStore.updateEmail(
     updateEmailData.value.newEmail,
     updateEmailData.value.password
   );
-
-  if (success) {
+  if (successful) {
     updateEmailData.value = { newEmail: '', password: '' };
-    getAccountInformation();
   }
-  loading.value = false;
 };
 </script>

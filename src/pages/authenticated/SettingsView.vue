@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="state.loading"
+    v-if="settingsStore.loading"
     class="absolute-center"
   >
     <q-spinner
@@ -8,10 +8,10 @@
       size="10em"
     />
   </div>
-  <div v-if="!state.loading && state.error">
-    <ErrorPage :error-message="state.errorMessage" />
+  <div v-if="!settingsStore.loading && settingsStore.error">
+    <ErrorPage :error-message="settingsStore.errorMessage" />
   </div>
-  <div v-if="!state.loading && !state.error">
+  <div v-if="!settingsStore.loading && !settingsStore.error">
     <q-page class="column">
       <q-card
         bordered
@@ -20,7 +20,7 @@
       >
         <q-separator
           size="1px"
-          :color="darkmode ? 'white' : 'dark'"
+          :color="localStore.isDarkMode ? 'white' : 'dark'"
         />
         <q-tabs
           inline-label
@@ -34,7 +34,7 @@
           <q-separator
             vertical
             size="1px"
-            :color="darkmode ? 'white' : 'dark'"
+            :color="localStore.isDarkMode ? 'white' : 'dark'"
           />
 
           <q-tab
@@ -45,7 +45,7 @@
           <q-separator
             vertical
             size="1px"
-            :color="darkmode ? 'white' : 'dark'"
+            :color="localStore.isDarkMode ? 'white' : 'dark'"
           />
 
           <q-tab
@@ -56,7 +56,7 @@
           <q-separator
             vertical
             size="1px"
-            :color="darkmode ? 'white' : 'dark'"
+            :color="localStore.isDarkMode ? 'white' : 'dark'"
           />
 
           <q-tab
@@ -67,12 +67,12 @@
           <q-separator
             vertical
             size="1px"
-            :color="darkmode ? 'white' : 'dark'"
+            :color="localStore.isDarkMode ? 'white' : 'dark'"
           />
         </q-tabs>
         <q-separator
           size="1px"
-          :color="darkmode ? 'white' : 'dark'"
+          :color="localStore.isDarkMode ? 'white' : 'dark'"
         />
 
         <q-tab-panels
@@ -89,19 +89,16 @@
 
           <q-tab-panel
             name="profile"
-            :class="darkmode ? 'text-white' : 'text-dark'"
+            :class="localStore.isDarkMode ? 'text-white' : 'text-dark'"
           >
-            <ProfileSettings :profile-data="state.profileData" />
+            <ProfileSettings />
           </q-tab-panel>
 
           <q-tab-panel
             name="account"
-            :class="darkmode ? 'text-white' : 'text-dark'"
+            :class="localStore.isDarkMode ? 'text-white' : 'text-dark'"
           >
-            <AccountSettings
-              :account-data="state.accountData"
-              :profile-data="state.profileData"
-            />
+            <AccountSettings />
           </q-tab-panel>
         </q-tab-panels>
       </q-card>
@@ -117,18 +114,15 @@ import { useRoute } from 'vue-router';
 import SiteSettings from 'src/components/settings/SiteSettings.vue';
 import ProfileSettings from 'src/components/settings/ProfileSettings.vue';
 import AccountSettings from 'src/components/settings/AccountSettings.vue';
-import { useSettings } from 'src/api/settings';
+import { useSettingsStore } from 'src/stores/settingsStore';
 
 // Setup composables
 const route = useRoute();
 const localStore = useLocalStore();
-const { state, getAccountInformation } = useSettings();
+const settingsStore = useSettingsStore();
 
 // State variables
 const tab = ref('site');
-
-// Computed properties
-const darkmode = computed(() => localStore.darkmode);
 
 // Lifecycle hooks
 onMounted(() => {
@@ -138,6 +132,6 @@ onMounted(() => {
     tab.value = 'profile';
   }
 
-  getAccountInformation();
+  settingsStore.getAccountInformation();
 });
 </script>

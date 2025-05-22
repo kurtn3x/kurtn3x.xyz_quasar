@@ -1,6 +1,6 @@
 <template>
   <div
-    :class="theme"
+    :class="localStore.themeBackground"
     class="fullscreen-bg"
   >
     <vue-particles
@@ -13,13 +13,9 @@
 
 <script setup lang="ts">
 declare module '@tsparticles/vue3';
-import { computed } from 'vue';
 import { useLocalStore } from 'stores/localStore';
-import { getThemeBackground } from 'src/components/lib/themes';
 
 const localStore = useLocalStore();
-
-const theme = computed(() => getThemeBackground(localStore.theme));
 
 const options = {
   fpsLimit: 60,

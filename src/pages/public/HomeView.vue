@@ -13,36 +13,18 @@
     <div class="content-container">
       <div class="text-center non-selectable text-white text-h4 text3d-primary">
         <a v-if="!localStore.isAuthenticated">Welcome!</a>
-        <a v-if="localStore.isAuthenticated">Welcome, {{ username }}</a>
+        <a v-if="localStore.isAuthenticated">
+          Welcome, {{ localStore.headerInfo.username }}
+        </a>
       </div>
     </div>
   </q-page>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 
 const localStore = useLocalStore();
-
-// Reactive state
-const darkmodeToogle = ref(localStore.darkmodeState);
-const username = ref('');
-
-// Computed properties
-const darkmode = computed(() => localStore.darkmode);
-
-// Watchers
-watch(darkmode, (newVal) => {
-  darkmodeToogle.value = newVal;
-});
-
-// Lifecycle hooks
-onMounted(() => {
-  if (localStore.isAuthenticated) {
-    username.value = localStore.username;
-  }
-});
 </script>
 
 <style scoped>
