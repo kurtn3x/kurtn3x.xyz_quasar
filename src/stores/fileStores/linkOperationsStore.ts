@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { useQuasar } from 'quasar';
-import { apiGet, apiPost, apiDelete } from 'src/components/apiWrapper';
+import { apiGet, apiPost, apiDelete } from 'src/api/apiWrapper';
 
 export interface ShortLink {
   id: string;

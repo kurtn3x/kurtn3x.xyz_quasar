@@ -275,12 +275,12 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { UserProfileType } from 'src/types/index';
+import { UserProfile } from 'src/types/apiTypes';
 import { copyToClipboard } from 'src/components/lib/functions';
 
 // Props
 const props = defineProps<{
-  user: UserProfileType;
+  user: UserProfile;
   userlink: string;
 }>();
 

@@ -8,22 +8,22 @@
     </q-toolbar>
     <q-separator size="1px" />
 
-    <q-card>
+    <q-card style="max-height: 50vh; height: 45vh; overflow: scroll">
       <ol>
         <li class="text-body1">
           <a
             href="https://www.wireguard.com/install/"
             target="_blank"
-            class="text-blue"
+            class="text-light-blue"
           >
-            Install Wireguard depending on Operating System.
+            Install Wireguard depending on Operating System
           </a>
         </li>
         <li class="text-body1 q-mt-sm">
-          Generate a Public and Private-Keypair (automatically or do it
-          yourself) and create the client.
+          (Optional) Generate a Keypair yourself
         </li>
-        <li class="text-body1 q-mt-sm">Download the resulting config.</li>
+        <li class="text-body1 q-mt-sm">Create a VPN Client</li>
+        <li class="text-body1 q-mt-sm">Download the resulting config</li>
         <li class="text-body1 q-mt-sm">
           <a
             class="text-weight-bolder"
@@ -31,7 +31,9 @@
           >
             Windows/Mobile/GUI:
           </a>
-          Import the config in the Wireguard-GUI and enable it.
+          <div class="q-mt-sm">
+            Import the config in the Wireguard-GUI and enable it
+          </div>
         </li>
         <li class="text-body1 q-mt-sm">
           <a
@@ -40,14 +42,14 @@
           >
             Linux with Terminal:
           </a>
-          Copy the config to /etc/wireguard.
-          <div>
+          <div class="q-mt-sm">Copy the config to /etc/wireguard</div>
+          <div class="q-mt-sm">
             Enable it with
-            <a class="text-italic text-weight-bold">sudo wg-quick up wg0</a>
+            <a class="text-italic text-weight-bold">sudo wg-quick up vpn0</a>
           </div>
-          <div>
+          <div class="q-mt-sm">
             Disable it with
-            <a class="text-italic text-weight-bold">sudo wg-quick down wg0</a>
+            <a class="text-italic text-weight-bold">sudo wg-quick down vpn0</a>
           </div>
         </li>
       </ol>

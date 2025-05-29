@@ -144,7 +144,7 @@
 import { defineComponent, ref, Ref, defineAsyncComponent, computed } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
-import { mimeMap } from 'components/lib/mimeMap';
+import { mimeMap } from 'src/components/files/mimeMap';
 import ItemInformationDialog from 'components/files/dialogs/ItemInformationDialog.vue';
 
 const VideoView = defineAsyncComponent(

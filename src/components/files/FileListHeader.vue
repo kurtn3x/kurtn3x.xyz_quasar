@@ -1,8 +1,8 @@
 <template>
   <!-- Header Row -->
-  <div class="file-list-header">
+  <div class="file-list-header full-height full-width flex-center">
     <!-- Checkbox column -->
-    <div class="file-checkbox">
+    <div class="file-checkbox flex-center">
       <!-- Empty header for checkbox column -->
     </div>
 
@@ -30,17 +30,6 @@
 const filter = '';
 </script>
 <style scoped>
-/* Column layout styles */
-.file-list-header {
-  display: grid;
-  grid-template-columns: 40px 35px minmax(100px, 1fr) 75px 170px 40px;
-  align-items: center;
-  width: 100%;
-  padding: 8px 16px;
-  background-color: rgba(var(--q-primary-rgb), 0.05);
-  border-bottom: 1px solid rgba(var(--q-primary-rgb), 0.1);
-}
-
 .file-checkbox {
   width: 40px;
   min-width: 40px;
@@ -52,38 +41,39 @@ const filter = '';
 }
 
 .file-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   min-width: 100px;
 }
 
 .file-size {
-  width: 75px;
-  min-width: 75px;
-  text-align: right;
+  width: 115px;
+  min-width: 115px;
+  text-align: left !important;
   white-space: nowrap;
   overflow: hidden;
-  padding-right: 20px;
 }
 
 .file-date {
-  width: 170px;
-  min-width: 170px;
-  text-align: right;
+  width: 200px;
+  min-width: 200px;
+  text-align: right !important;
   white-space: nowrap;
   overflow: hidden;
 }
 
 .file-actions {
-  width: 40px;
-  min-width: 40px;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
+  width: 50px;
+  min-width: 50px;
+  padding-left: 20px;
 }
 
 /* Individual header cells */
+.file-list-header {
+  display: grid;
+  grid-template-columns: 40px 35px minmax(100px, 1fr) 115px 200px 50px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
 .file-list-header > div:nth-child(1) {
   grid-column: 1;
   justify-self: center;
@@ -96,18 +86,16 @@ const filter = '';
 
 .file-list-header > div:nth-child(3) {
   grid-column: 3;
-  padding-left: 8px;
 }
 
 .file-list-header > div:nth-child(4) {
   grid-column: 4;
-  text-align: right;
-  padding-right: 20px;
+  text-align: right !important;
 }
 
 .file-list-header > div:nth-child(5) {
   grid-column: 5;
-  text-align: right;
+  text-align: right !important;
 }
 
 .file-list-header > div:nth-child(6) {
@@ -115,40 +103,18 @@ const filter = '';
   justify-self: center;
 }
 
-/* Responsive behavior */
-@media (max-width: 768px) {
+@media (max-width: 599px) {
   .file-list-header {
-    grid-template-columns: 40px 35px minmax(100px, 1fr) 75px 40px;
+    grid-template-columns: 40px 35px minmax(100px, 1fr) 50px;
   }
 
-  .file-list-header > div:nth-child(5) {
-    display: none;
-  }
-
-  .file-item-content {
-    grid-template-columns: 40px 35px minmax(100px, 1fr) 75px 40px;
-  }
-
+  .file-size,
   .file-date {
     display: none;
   }
-}
 
-@media (max-width: 480px) {
-  .file-list-header {
-    grid-template-columns: 40px 35px minmax(100px, 1fr) 40px;
-  }
-
-  .file-list-header > div:nth-child(4) {
-    display: none;
-  }
-
-  .file-item-content {
-    grid-template-columns: 40px 35px minmax(100px, 1fr) 40px;
-  }
-
-  .file-size {
-    display: none;
+  .file-list-header > div:nth-child(6) {
+    grid-column: 4;
   }
 }
 </style>

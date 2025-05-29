@@ -1,12 +1,28 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { useQuasar } from 'quasar';
-import { apiGet, apiPut, apiPost, apiDelete } from 'src/components/apiWrapper';
-import type { RawFolderContentType, FolderEntryType } from 'src/types/index';
+import {
+  apiGet,
+  apiPut,
+  apiPost,
+  apiDelete,
+  apiPatch,
+} from 'src/api/apiWrapper';
+import {
+  FileNode,
+  FileNodeFolder,
+  FolderTreeNode,
+  isFolder,
+} from 'src/types/apiTypes';
 import { useSelectionStore } from './selectionStore';
 import { useNavigationStore } from './navigationStore';
 import { useLocalStore } from '../localStore';
-import { createMockFolder } from 'src/types/mockfolder';
+import {
+  createMockFolder,
+  createMockFolderHierarchy,
+  mockFolderDatabase,
+  initializeMockFolderDatabase,
+} from 'src/types/mockfolder';
 
 export const useFileOperationsStore = defineStore('fileOperations', () => {
   const q = useQuasar();
@@ -24,31 +40,47 @@ export const useFileOperationsStore = defineStore('fileOperations', () => {
 
   // State
   const loading = ref(false);
-  const componentLoading = ref(false);
   const error = ref(false);
   const errorMessage = ref('');
-  const rawFolderContent = ref({} as RawFolderContentType);
+
+  // variables
+  const rawFolderContent = ref({} as FileNodeFolder);
+  const folderTree = ref([] as FolderTreeNode[]);
+
+  // variable for creating a new folder or file
+  const newItem = ref({
+    show: false,
+    name: '',
+    type: '',
+    mime: 'text/code',
+  });
 
   // Functions that get a folder
-  async function getHomeFolder() {
+  async function getRootFolder() {
     loading.value = true;
 
     if (localStore.isDebugMode) {
-      rawFolderContent.value = createMockFolder();
+      q.notify({ type: 'info', message: 'Debug Mode: Loading Home Folder' });
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Initialize mock database and get home folder
+      const homeFolder = initializeMockFolderDatabase();
+      rawFolderContent.value = homeFolder;
+
       navigationStore.setHomeFolderId(rawFolderContent.value.id);
       navigationStore.clearNavigation();
+      selectionStore.clearSelectedItems();
       loading.value = false;
       return true;
     }
 
-    const apiData = await apiGet('/files/folder/home', axiosConfig);
+    const apiData = await apiGet('/files/nodes/root_folder/', axiosConfig);
 
     if (apiData.error === false) {
-      rawFolderContent.value = apiData.data as RawFolderContentType;
-      navigationStore.setHomeFolderId(
-        (apiData.data as RawFolderContentType).id
-      );
+      rawFolderContent.value = apiData.data as FileNodeFolder;
+      navigationStore.setHomeFolderId((apiData.data as FileNodeFolder).id);
       navigationStore.clearNavigation();
+      selectionStore.clearSelectedItems();
       error.value = false;
     } else {
       q.notify({ type: 'negative', message: apiData.errorMessage });
@@ -61,11 +93,43 @@ export const useFileOperationsStore = defineStore('fileOperations', () => {
   }
 
   async function getFolderById(folderId: string, navbarAdd: boolean) {
-    componentLoading.value = true;
-    const apiData = await apiGet(`/files/folder/${folderId}`, axiosConfig);
+    loading.value = true;
+
+    if (localStore.isDebugMode) {
+      q.notify({
+        type: 'info',
+        message: `Debug Mode: Loading Folder ${folderId}`,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Get folder from mock database
+      const folder = mockFolderDatabase.get(folderId);
+
+      if (folder) {
+        rawFolderContent.value = folder;
+        if (navbarAdd === true) {
+          navigationStore.addNavbarItem({
+            name: folder.name,
+            id: folder.id,
+          });
+        }
+        selectionStore.clearSelectedItems();
+        loading.value = false;
+        return true;
+      } else {
+        q.notify({
+          type: 'negative',
+          message: 'Folder not found in mock database',
+        });
+        loading.value = false;
+        return false;
+      }
+    }
+
+    const apiData = await apiGet(`/files/nodes/${folderId}/`, axiosConfig);
 
     if (apiData.error === false) {
-      rawFolderContent.value = apiData.data as RawFolderContentType;
+      rawFolderContent.value = apiData.data as FileNodeFolder;
       if (navbarAdd === true) {
         navigationStore.addNavbarItem({
           name: rawFolderContent.value.name,
@@ -77,30 +141,47 @@ export const useFileOperationsStore = defineStore('fileOperations', () => {
       q.notify({ type: 'negative', message: apiData.errorMessage });
     }
 
-    componentLoading.value = false;
+    loading.value = false;
     return !apiData.error;
   }
 
   async function refreshFolder() {
-    componentLoading.value = true;
+    loading.value = true;
     const apiData = await apiGet(
-      `/files/folder/${rawFolderContent.value.id}`,
+      `/files/nodes/${rawFolderContent.value.id}/`,
       axiosConfig
     );
 
     if (apiData.error === false) {
-      rawFolderContent.value = apiData.data as RawFolderContentType;
+      rawFolderContent.value = apiData.data as FileNodeFolder;
       selectionStore.clearSelectedItems();
     } else {
       q.notify({ type: 'negative', message: apiData.errorMessage });
     }
 
-    componentLoading.value = false;
+    loading.value = false;
     return !apiData.error;
   }
 
-  function downloadItem(itemType: string, itemId: string) {
-    const url = `https://api.kurtn3x.xyz/files/download/${itemType}/${itemId}?attachment=1`;
+  async function getFolderTree() {
+    if (localStore.isDebugMode) {
+      q.notify({ type: 'info', message: 'Debug' });
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      folderTree.value = createMockFolderHierarchy();
+      return true;
+    }
+    const apiData = await apiGet('/files/nodes/folder_tree/', axiosConfig);
+
+    if (apiData.error === false) {
+      folderTree.value = apiData.data as FolderTreeNode[];
+    } else {
+      q.notify({ type: 'negative', message: apiData.errorMessage });
+      folderTree.value = [];
+    }
+  }
+
+  function downloadItem(itemId: string) {
+    const url = `https://api.kurtn3x.xyz/files/nodes/${itemId}/download/`;
 
     const link = document.createElement('a');
     link.setAttribute('download', '');
@@ -113,16 +194,16 @@ export const useFileOperationsStore = defineStore('fileOperations', () => {
   // Functions that create a folder or file
   async function createFolder(name: string, parentId: string) {
     if (!validName(name)) {
-      return;
+      q.notify({ type: 'negative', message: 'Invalid name' });
+      return false;
     }
 
-    componentLoading.value = true;
-
     const apiData = await apiPost(
-      '/files/folder',
+      '/files/nodes/',
       {
         parentId: parentId,
-        name,
+        name: name,
+        nodeType: 'folder',
       },
       axiosConfig
     );
@@ -134,25 +215,25 @@ export const useFileOperationsStore = defineStore('fileOperations', () => {
       q.notify({ type: 'negative', message: apiData.errorMessage });
     }
 
-    componentLoading.value = false;
     return !apiData.error;
   }
 
   async function createFile(name: string, mime: string, parentId: string) {
     if (!validName(name)) {
-      return;
+      q.notify({ type: 'negative', message: 'Invalid name' });
+      return false;
     }
-
-    componentLoading.value = true;
 
     const file = new File([''], name);
     const formData = new FormData();
 
+    // this was snake case before, check if this works
     formData.append('file', file);
-    formData.append('parent_id', parentId);
+    formData.append('nodeType', 'file');
+    formData.append('parentId', parentId);
     formData.append('name', name);
-    formData.append('mime', mime);
-    formData.append('size_bytes', '0');
+    formData.append('mimeType', mime);
+    formData.append('sizeBytes', '0');
 
     const config = {
       ...axiosConfig,
@@ -162,7 +243,7 @@ export const useFileOperationsStore = defineStore('fileOperations', () => {
       },
     };
 
-    const apiData = await apiPost('/files/file', formData, config);
+    const apiData = await apiPost('/files/nodes/', formData, config);
 
     if (apiData.error === false) {
       q.notify({ type: 'positive', message: 'File created' });
@@ -171,17 +252,12 @@ export const useFileOperationsStore = defineStore('fileOperations', () => {
       q.notify({ type: 'negative', message: apiData.errorMessage });
     }
 
-    componentLoading.value = false;
     return !apiData.error;
   }
 
   // Function that deletes a folder or file
-  async function deleteItem(itemType: string, itemId: string) {
-    componentLoading.value = true;
-    const apiData = await apiDelete(
-      `/files/${itemType}/${itemId}`,
-      axiosConfig
-    );
+  async function deleteItem(itemId: string) {
+    const apiData = await apiDelete(`/files/nodes/${itemId}/`, axiosConfig);
 
     if (apiData.error === false) {
       q.notify({ type: 'positive', message: 'Item deleted' });
@@ -190,25 +266,18 @@ export const useFileOperationsStore = defineStore('fileOperations', () => {
       q.notify({ type: 'negative', message: apiData.errorMessage });
     }
 
-    componentLoading.value = false;
     return !apiData.error;
   }
 
   // Functions that update an existing item
-  async function updateParent(
-    itemType: string,
-    itemId: string,
-    newParentId: string
-  ) {
+  async function updateParent(itemId: string, newParentId: string) {
     if (newParentId === itemId) {
       return false;
     }
     // other error handling is done in the backend
 
-    componentLoading.value = true;
-
-    const apiData = await apiPut(
-      `/files/${itemType}/${itemId}`,
+    const apiData = await apiPatch(
+      `/files/nodes/${itemId}/`,
       { parentId: newParentId },
       axiosConfig
     );
@@ -221,17 +290,16 @@ export const useFileOperationsStore = defineStore('fileOperations', () => {
       q.notify({ type: 'negative', message: apiData.errorMessage });
     }
 
-    componentLoading.value = false;
     return !apiData.error;
   }
 
-  async function updateName(itemType: string, itemId: string, newName: string) {
+  async function updateName(itemId: string, newName: string) {
     if (!validName(newName)) {
       return;
     }
 
-    const apiData = await apiPut(
-      `/files/${itemType}/${itemId}`,
+    const apiData = await apiPatch(
+      `/files/nodes/${itemId}/`,
       { name: newName },
       axiosConfig
     );
@@ -242,66 +310,59 @@ export const useFileOperationsStore = defineStore('fileOperations', () => {
     } else {
       q.notify({ type: 'negative', message: apiData.errorMessage });
     }
+    return !apiData.error;
   }
 
   async function updateSharing(
-    itemType: string,
     itemId: string,
     sharingOptions: {
-      shared: boolean;
-      sharedAllowAllRead: boolean;
-      sharedAllowAllWrite: boolean;
+      isShared: boolean;
+      allowPublicRead: boolean;
+      allowPublicWrite: boolean;
     }
   ) {
-    componentLoading.value = true;
-
-    const apiData = await apiPut(
-      `/files/${itemType}/${itemId}`,
+    const apiData = await apiPatch(
+      `/files/nodes/${itemId}/`,
       sharingOptions,
       axiosConfig
     );
 
     if (apiData.error === false) {
       updateItemInStore(itemId, {
-        shared: sharingOptions.shared,
-        sharedAllowAllRead: sharingOptions.sharedAllowAllRead,
-        sharedAllowAllWrite: sharingOptions.sharedAllowAllWrite,
+        isShared: sharingOptions.isShared,
+        allowPublicRead: sharingOptions.allowPublicRead,
+        allowPublicWrite: sharingOptions.allowPublicWrite,
       });
       q.notify({ type: 'positive', message: 'Sharing settings updated' });
     } else {
       q.notify({ type: 'negative', message: apiData.errorMessage });
     }
 
-    componentLoading.value = false;
     return !apiData.error;
   }
 
   async function updateSharingPassword(
-    itemType: string,
     itemId: string,
     passwordOptions: {
-      sharedPasswordProtected: boolean;
+      isPasswordProtected: boolean;
       sharedPassword: string;
     }
   ) {
-    componentLoading.value = true;
-
-    const apiData = await apiPut(
-      `/files/${itemType}/${itemId}`,
+    const apiData = await apiPatch(
+      `/files/nodes/${itemId}/`,
       passwordOptions,
       axiosConfig
     );
 
     if (apiData.error === false) {
       updateItemInStore(itemId, {
-        sharedPasswordProtected: passwordOptions.sharedPasswordProtected,
+        isPasswordProtected: passwordOptions.isPasswordProtected,
       });
       q.notify({ type: 'positive', message: 'Password settings updated' });
     } else {
       q.notify({ type: 'negative', message: apiData.errorMessage });
     }
 
-    componentLoading.value = false;
     return !apiData.error;
   }
 
@@ -324,9 +385,7 @@ export const useFileOperationsStore = defineStore('fileOperations', () => {
     }
 
     if (
-      rawFolderContent.value.children?.some(
-        (el: FolderEntryType) => el.name === name
-      )
+      rawFolderContent.value.children?.some((el: FileNode) => el.name === name)
     ) {
       q.notify({
         type: 'negative',
@@ -339,11 +398,8 @@ export const useFileOperationsStore = defineStore('fileOperations', () => {
   }
 
   // helpers to manipulate the items directly, so the api only has to be called on panic
-  function updateItemInStore(
-    itemId: string,
-    updates: Partial<FolderEntryType>
-  ) {
-    if (!rawFolderContent.value.children) {
+  function updateItemInStore(itemId: string, updates: Partial<FileNode>) {
+    if (!isFolder(rawFolderContent.value) || !rawFolderContent.value.children) {
       return false;
     }
 
@@ -355,7 +411,7 @@ export const useFileOperationsStore = defineStore('fileOperations', () => {
       rawFolderContent.value.children[index] = {
         ...rawFolderContent.value.children[index],
         ...updates,
-      };
+      } as (typeof rawFolderContent.value.children)[typeof index];
       return true;
     }
 
@@ -382,15 +438,17 @@ export const useFileOperationsStore = defineStore('fileOperations', () => {
   return {
     // State
     loading,
-    componentLoading,
     error,
     errorMessage,
     rawFolderContent,
+    folderTree,
+    newItem,
 
     // Methods
-    getHomeFolder,
+    getRootFolder,
     getFolderById,
     refreshFolder,
+    getFolderTree,
     downloadItem,
     createFolder,
     createFile,
@@ -399,5 +457,6 @@ export const useFileOperationsStore = defineStore('fileOperations', () => {
     updateName,
     updateSharing,
     updateSharingPassword,
+    validName,
   };
 });

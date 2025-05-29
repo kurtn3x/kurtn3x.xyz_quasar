@@ -98,7 +98,7 @@
               label="Save Changes"
               type="submit"
               push
-              :loading="settingsStore.componentLoading"
+              :loading="localLoading"
               class="q-px-xl full-width"
             />
           </div>
@@ -112,17 +112,20 @@
 import { ref, computed } from 'vue';
 import { useQuasar } from 'quasar';
 import { useLocalStore } from 'stores/localStore';
-import { UserProfileType } from 'src/types/index';
 import { useSettingsStore } from 'src/stores/settingsStore';
+import { UserProfile } from 'src/types/apiTypes';
 
 // Setup composables
 const q = useQuasar();
 const localStore = useLocalStore();
 const settingsStore = useSettingsStore();
+const localLoading = ref(false);
 
 // State variables
 const avatar = ref<File | null>(null);
-const editableProfile = ref(settingsStore.profileData as UserProfileType);
+const editableProfile = ref({
+  ...settingsStore.accountSettings.profile,
+} as UserProfile);
 
 // Computed properties
 const isDarkMode = computed(() => localStore.isDarkMode);
@@ -140,6 +143,8 @@ const onRejected = () => {
 };
 
 const handleUpdateUserProfile = async () => {
-  settingsStore.updateProfile(editableProfile.value, avatar.value);
+  localLoading.value = true;
+  await settingsStore.updateProfile(editableProfile.value, avatar.value);
+  localLoading.value = false;
 };
 </script>

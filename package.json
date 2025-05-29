@@ -17,7 +17,7 @@
     "@codemirror/lang-python": "^6.1.6",
     "@codemirror/theme-one-dark": "^6.1.2",
     "@quasar/cli": "^2.5.0",
-    "@quasar/extras": "^1.16.17",
+    "@quasar/extras": "^1.17.0",
     "@tsparticles/slim": "^3.5.0",
     "@tsparticles/vue3": "^3.0.1",
     "@videojs-player/vue": "^1.0.0",

@@ -107,7 +107,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import ErrorPage from 'src/components/ErrorPage.vue';
 import { useRoute } from 'vue-router';

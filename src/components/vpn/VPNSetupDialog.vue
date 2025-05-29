@@ -130,18 +130,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, Ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { useLocalStore } from 'stores/localStore';
-import { VPNSetupType } from 'src/types/index';
-
-// Define optional props for initial values
-const props = defineProps({
-  initialValues: {
-    type: Object as () => Partial<VPNSetupType>,
-    default: () => ({}),
-  },
-});
+import { VPNSetupType } from 'src/types/localTypes';
 
 // Define events
 const emit = defineEmits(['submit', 'open-help']);
@@ -150,18 +142,12 @@ const localStore = useLocalStore();
 const q = useQuasar();
 
 // Define default values
-const defaultSetupInput: VPNSetupType = {
+const localSetupInput: Ref<VPNSetupType> = ref({
   clientPublicKey: '',
   clientPrivateKey: '',
   name: '',
   autoKeyGeneration: true,
   alternativeRoute: false,
-};
-
-// Create local state with initial values merged with defaults
-const localSetupInput = ref({
-  ...defaultSetupInput,
-  ...props.initialValues,
 });
 
 // Handle form submission - send the current state to parent
@@ -196,15 +182,4 @@ function validateForm(): boolean {
 
   return true;
 }
-
-// Optionally expose a reset method
-function resetForm() {
-  localSetupInput.value = { ...defaultSetupInput };
-}
-
-// Optional: expose methods to parent via defineExpose
-defineExpose({
-  resetForm,
-  getFormData: () => localSetupInput.value,
-});
 </script>

@@ -1,9 +1,9 @@
 import { reactive, ref } from 'vue';
 import { useQuasar } from 'quasar';
-import { apiGet } from 'src/components/apiWrapper';
-import { UserProfileType } from 'src/types/index';
+import { apiGet } from './apiWrapper';
+import { UserProfile } from 'src/types/apiTypes';
 import { useRoute } from 'vue-router';
-import { defaultUserProfile } from 'src/types/test';
+import { getTestUserProfile } from 'src/types/test';
 import { useLocalStore } from 'stores/localStore';
 
 export function useUserProfile() {
@@ -18,7 +18,7 @@ export function useUserProfile() {
     errorMessage: '',
   });
 
-  const user = ref({} as UserProfileType);
+  const user = ref({} as UserProfile);
   const userlink = ref('kurtn3x.xyz/user/');
 
   // Axios configuration
@@ -39,15 +39,15 @@ export function useUserProfile() {
       q.notify({ type: 'info', message: 'Debug' });
       await new Promise((resolve) => setTimeout(resolve, 500));
       state.loading = false;
-      user.value = defaultUserProfile();
+      user.value = getTestUserProfile();
       userlink.value = 'kurtn3x.xyz/user/' + user.value.id;
       return;
     }
 
-    const apiData = await apiGet('/profile/user/' + userParam, axiosConfig);
+    const apiData = await apiGet('/profile/profiles/' + userParam, axiosConfig);
 
     if (apiData.error === false) {
-      user.value = apiData.data as UserProfileType;
+      user.value = apiData.data as UserProfile;
       userlink.value = 'kurtn3x.xyz/user/' + user.value.id;
     } else {
       state.error = true;

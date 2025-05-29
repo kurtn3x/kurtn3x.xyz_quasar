@@ -102,7 +102,7 @@ import { defineComponent, ref, Ref } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
 import { SharedFileType } from 'src/types/index';
-import { getIcon } from 'components/lib/mimeMap';
+import { getIcon } from 'src/components/files/mimeMap';
 import { apiGet } from 'src/components/apiWrapper';
 
 import FilePreviewDialog from 'src/components/files/dialogs/FilePreviewDialog.vue';

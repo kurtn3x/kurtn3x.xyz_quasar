@@ -61,8 +61,6 @@
 import { ref, computed } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { useSettingsStore } from 'src/stores/settingsStore';
-import { LocalStorage } from 'quasar';
-import { useRouter } from 'vue-router';
 
 // Setup composables
 const localStore = useLocalStore();

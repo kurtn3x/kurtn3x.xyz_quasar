@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { reactive, computed } from 'vue';
-import type { NavbarIndexType } from 'src/types/index';
+import type { NavbarIndexType } from 'src/types/localTypes';
 
 export const useNavigationStore = defineStore('navigation', () => {
   // Navbar state

@@ -2,7 +2,7 @@ import { reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useLocalStore } from 'stores/localStore';
-import { apiGet, apiPost } from 'src/components/apiWrapper';
+import { apiGet, apiPost } from './apiWrapper';
 
 export interface RegisterData {
   username: string;
@@ -51,7 +51,7 @@ export function useRegister() {
     captchaState.loading = true;
 
     try {
-      const apiData = await apiGet('/auth/captcha', axiosConfig);
+      const apiData = await apiGet('/auth/captcha/', axiosConfig);
       if (apiData.error === false) {
         Object.assign(captchaState, apiData.data);
         captchaState.loading = false;
@@ -81,7 +81,7 @@ export function useRegister() {
     };
 
     try {
-      const apiData = await apiPost('/auth/register', payload, axiosConfig);
+      const apiData = await apiPost('/auth/register/', payload, axiosConfig);
       if (apiData.error === false) {
         state.registerSuccessful = true;
       } else {

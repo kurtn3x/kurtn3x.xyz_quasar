@@ -8,11 +8,24 @@
   </q-dialog>
 
   <q-dialog v-model="showRenameItemDialog">
-    <RenameItemDialog :prop-item="propItem" />
+    <RenameItemDialog
+      :prop-item="propItem"
+      @updated="showRenameItemDialog = false"
+    />
   </q-dialog>
 
   <q-dialog v-model="sharingPasswordDialog">
-    <SharingPasswordDialog :prop-item="propItem" />
+    <SharingPasswordDialog
+      :prop-item="propItem"
+      @updated="sharingPasswordDialog = false"
+    />
+  </q-dialog>
+
+  <q-dialog v-model="showMoveItemsDialog">
+    <MoveItemsDialog
+      :prop-item="propItem"
+      @updated="showMoveItemsDialog = false"
+    />
   </q-dialog>
 
   <q-list
@@ -53,31 +66,31 @@
           <q-item>
             <q-checkbox
               dense
-              v-model="sharingOptions.shared"
+              v-model="sharingOptions.isShared"
               color="green"
               label="Enable Sharing"
               @click="updateSharing"
             />
           </q-item>
-          <q-item v-if="propItem.shared == true">
+          <q-item v-if="propItem.isShared == true">
             <q-checkbox
               dense
-              v-model="sharingOptions.sharedAllowAllRead"
+              v-model="sharingOptions.allowPublicRead"
               color="green"
               label="Allow everyone to read"
               @click="updateSharing"
             />
           </q-item>
-          <q-item v-if="propItem.shared == true">
+          <q-item v-if="propItem.isShared == true">
             <q-checkbox
               dense
-              v-model="sharingOptions.sharedAllowAllWrite"
+              v-model="sharingOptions.allowPublicWrite"
               color="green"
               label="Allow everyone to write"
               @click="updateSharing"
             />
           </q-item>
-          <q-item v-if="propItem.shared && propItem.sharedPasswordProtected">
+          <q-item v-if="propItem.isShared && propItem.isPasswordProtected">
             <q-item-section>
               <q-item-label
                 class="text-center text-green text-weight-bold"
@@ -104,8 +117,7 @@
           </q-item>
           <q-item
             v-if="
-              propItem.shared == true &&
-              propItem.sharedPasswordProtected == false
+              propItem.isShared == true && propItem.isPasswordProtected == false
             "
           >
             <q-btn
@@ -116,7 +128,7 @@
               @click="sharingPasswordDialog = true"
             />
           </q-item>
-          <q-item v-if="propItem.shared">
+          <q-item v-if="propItem.isShared">
             <q-btn
               icon="link"
               label="Manage Links"
@@ -141,8 +153,7 @@
     </q-item>
     <q-item
       clickable
-      v-close-popup
-      @click="moveItem"
+      @click="showMoveItemsDialog = true"
     >
       <q-item-section avatar>
         <q-icon name="trending_flat" />
@@ -179,18 +190,19 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { FolderEntryType } from 'src/types/index';
+import { FileNode } from 'src/types/apiTypes';
 import { useFileStore } from 'src/stores/fileStore';
 
 import RenameItemDialog from 'components/files/dialogs/RenameItemDialog.vue';
 import SharingPasswordDialog from 'components/files/dialogs/SharingPasswordDialog.vue';
 import ItemInformationDialog from 'components/files/dialogs/ItemInformationDialog.vue';
 import ItemLinksDialog from 'components/files/dialogs/ItemLinksDialog.vue';
+import MoveItemsDialog from './dialogs/MoveItemsDialog.vue';
 
 // Define props
 const props = defineProps({
   propItem: {
-    type: Object as () => FolderEntryType,
+    type: Object as () => FileNode,
     required: true,
   },
 });
@@ -202,45 +214,39 @@ const sharingPasswordDialog = ref(false);
 const showItemInformationDialog = ref(false);
 const showRenameItemDialog = ref(false);
 const showItemLinksDialog = ref(false);
+const showMoveItemsDialog = ref(false);
 
 const sharingOptions = ref({
-  shared: props.propItem.shared,
-  sharedAllowAllRead: props.propItem.sharedAllowAllRead,
-  sharedAllowAllWrite: props.propItem.sharedAllowAllWrite,
+  isShared: props.propItem.isShared,
+  allowPublicRead: props.propItem.allowPublicRead,
+  allowPublicWrite: props.propItem.allowPublicWrite,
 });
 
 function deleteItem() {
-  filesStore.fileOps.deleteItem(props.propItem.type, props.propItem.id);
-}
-
-function moveItem() {
-  filesStore.fileOps.updateParent(props.propItem.type, props.propItem.id, '');
+  filesStore.fileOps.deleteItem(props.propItem.id);
 }
 
 function clearSharingPassword() {
-  filesStore.fileOps.updateSharingPassword(
-    props.propItem.type,
-    props.propItem.id,
-    { sharedPasswordProtected: false, sharedPassword: '' }
-  );
+  filesStore.fileOps.updateSharingPassword(props.propItem.id, {
+    isPasswordProtected: false,
+    sharedPassword: '',
+  });
 }
 
 function downloadItem() {
-  filesStore.fileOps.downloadItem(props.propItem.type, props.propItem.id);
+  filesStore.fileOps.downloadItem(props.propItem.id);
 }
 
 async function updateSharing() {
   const successful = await filesStore.fileOps.updateSharing(
-    props.propItem.type,
     props.propItem.id,
     sharingOptions.value
   );
 
   if (!successful) {
-    sharingOptions.value.shared = props.propItem.shared;
-    sharingOptions.value.sharedAllowAllRead = props.propItem.sharedAllowAllRead;
-    sharingOptions.value.sharedAllowAllWrite =
-      props.propItem.sharedAllowAllWrite;
+    sharingOptions.value.isShared = props.propItem.isShared;
+    sharingOptions.value.allowPublicRead = props.propItem.allowPublicRead;
+    sharingOptions.value.allowPublicWrite = props.propItem.allowPublicWrite;
   }
 }
 </script>

@@ -161,20 +161,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, PropType } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { copyToClipboard } from 'quasar';
-import { FolderEntryType } from 'src/types/index';
+import { FileNode } from 'src/types/apiTypes';
 import { useLinkOperationsStore } from 'src/stores/fileStores/linkOperationsStore';
 
 // Define props
 const props = defineProps({
   propItem: {
-    type: Object as () => FolderEntryType,
+    type: Object as PropType<FileNode>,
     required: true,
   },
 });
-
 // Setup stores
 const localStore = useLocalStore();
 const linkStore = useLinkOperationsStore();
@@ -186,12 +185,12 @@ const linkId = ref('');
 
 // Computed properties
 const permanentLink = computed(() =>
-  linkStore.getItemShareLink(item.value.type, item.value.id)
+  linkStore.getItemShareLink(item.value.nodeType, item.value.id)
 );
 
 // Handlers
 async function handleCreateShortLink() {
-  await linkStore.createShortLink(item.value.type, item.value.id, {
+  await linkStore.createShortLink(item.value.nodeType, item.value.id, {
     random: linkRandom.value,
     linkId: linkId.value,
   });
@@ -202,18 +201,12 @@ async function handleCreateShortLink() {
   }
 }
 
-async function handleDeleteShortLink(id: string) {
-  await linkStore.deleteShortLink(id, item.value.type, item.value.id);
+function handleDeleteShortLink(id: string) {
+  linkStore.deleteShortLink(id, item.value.nodeType, item.value.id);
 }
-
-// Fetch links when component mounts or item changes
-async function fetchLinks() {
-  await linkStore.getShortLinks(item.value.type, item.value.id);
-}
-
-// Watch for changes in the propItem
-watch(() => props.propItem, fetchLinks);
 
 // Lifecycle hooks
-onMounted(fetchLinks);
+onMounted(() => {
+  linkStore.getShortLinks(item.value.nodeType, item.value.id);
+});
 </script>

@@ -73,6 +73,7 @@ const props = defineProps({
     required: true,
   },
 });
+const emit = defineEmits(['updated']);
 
 const localStore = useLocalStore();
 const fileStore = useFileStore();
@@ -82,12 +83,15 @@ const isPwdHidden = ref(true);
 const localPassword = ref('');
 
 // Handle set password button
-function setPassword() {
-  fileStore.fileOps.updateSharingPassword(
+async function setPassword() {
+  const successful = await fileStore.fileOps.updateSharingPassword(
     props.propItem.type,
     props.propItem.id,
-    { sharedPasswordProtected: true, sharedPassword: localPassword.value }
+    { isPasswordProtected: true, sharedPassword: localPassword.value }
   );
-  localPassword.value = '';
+  if (successful) {
+    localPassword.value = '';
+    emit('updated');
+  }
 }
 </script>

@@ -13,24 +13,24 @@
       <div>
         <div class="text-body1 q-mt-md row">
           <div class="text-weight-bolder col-3">Type</div>
-          <div class="col q-ml-sm">{{ propItem.type }}</div>
+          <div class="col q-ml-sm">{{ propItem.nodeType }}</div>
         </div>
 
-        <div v-if="propItem.type != 'folder'">
+        <div v-if="propItem.nodeType != 'folder'">
           <div class="text-body1 q-mt-md row">
             <div class="text-weight-bolder col-3">Mime</div>
             <div
               class="col q-ml-sm"
               style="line-break: anywhere"
             >
-              {{ propItem.mime }}
+              {{ propItem.mimeType }}
             </div>
           </div>
 
           <div class="text-body1 q-mt-md row">
             <div class="text-weight-bolder col-3">Size</div>
             <div class="col q-ml-sm">
-              {{ propItem.size }}
+              {{ propItem.displaySize }}
             </div>
           </div>
         </div>
@@ -51,22 +51,22 @@
             class="col q-ml-sm"
             style="line-break: anywhere"
           >
-            {{ propItem.path }}
+            {{ propItem.displayPath }}
           </div>
         </div>
 
         <div
           class="text-body1 q-mt-md row"
-          v-if="propItem.shared == false"
+          v-if="propItem.isShared == false"
         >
           <div class="text-weight-bolder col-3">Shared</div>
-          <div class="col q-ml-sm">{{ propItem.shared }}</div>
+          <div class="col q-ml-sm">{{ propItem.isShared }}</div>
         </div>
         <q-card
           class="q-mt-md"
           bordered
           flat
-          v-if="propItem.shared == true"
+          v-if="propItem.isShared == true"
         >
           <q-expansion-item
             icon="shared"
@@ -78,7 +78,7 @@
             <div class="text-body1 q-mt-md row q-ml-sm">
               <div class="text-weight-bolder">Allow Read</div>
               <div class="q-ml-md">
-                {{ propItem.sharedAllowAllRead }}
+                {{ propItem.allowPublicRead }}
               </div>
             </div>
             <div class="text-body1 q-mt-md row q-ml-sm">
@@ -86,7 +86,7 @@
                 Allow Write
               </div>
               <div class="q-ml-md">
-                {{ propItem.sharedAllowAllWrite }}
+                {{ propItem.allowPublicWrite }}
               </div>
             </div>
             <div
@@ -106,7 +106,7 @@
                 Password Protected
               </div>
               <div class="q-ml-md">
-                {{ propItem.sharedPasswordProtected }}
+                {{ propItem.isPasswordProtected }}
               </div>
             </div>
           </q-expansion-item>
@@ -134,12 +134,12 @@
 </template>
 
 <script setup lang="ts">
-import { FolderEntryType } from 'src/types/index';
+import { PropType } from 'vue';
+import { FileNode } from 'src/types/apiTypes';
 
-// Define props with type safety
 const props = defineProps({
   propItem: {
-    type: Object as () => FolderEntryType,
+    type: Object as PropType<FileNode>,
     required: true,
   },
 });

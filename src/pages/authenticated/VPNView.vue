@@ -1,7 +1,7 @@
 <template>
   <!-- Initial loading and error states -->
   <div
-    v-if="vpnState.loading"
+    v-if="vpnStore.loading"
     class="absolute-center"
   >
     <q-spinner
@@ -10,11 +10,11 @@
     />
   </div>
 
-  <div v-if="!vpnState.loading && vpnState.error">
-    <ErrorPage :error-message="vpnState.errorMessage" />
+  <div v-if="!vpnStore.loading && vpnStore.error">
+    <ErrorPage :error-message="vpnStore.errorMessage" />
   </div>
 
-  <div v-if="!vpnState.loading && !vpnState.error">
+  <div v-if="!vpnStore.loading && !vpnStore.error">
     <q-dialog v-model="helpVPNDialog">
       <VPNHelpDialog />
     </q-dialog>
@@ -28,7 +28,6 @@
       <VPNSetupDialog
         @submit="handleCreateVPNClient"
         @open-help="helpVPNDialog = true"
-        ref="vpnSetupDialogRef"
       />
     </q-dialog>
 
@@ -40,6 +39,7 @@
       <VPNSetupSuccessDialog
         :connection="vpnSetupConnection"
         @open-help="helpVPNDialog = true"
+        @done="handleCreated"
       />
     </q-dialog>
 
@@ -65,19 +65,26 @@
           bordered
           flat
         >
-          <q-item dense>
+          <q-item
+            dense
+            class="text-weight-bold q-mt-sm q-mb-sm text-body2"
+          >
             <q-item-section
               avatar
-              class="items-left col-1"
+              style="min-width: 50px; max-width: 50px"
             >
               Nr.
             </q-item-section>
-            <q-item-section class="col">
+            <q-item-section>
               <q-item-label>Name</q-item-label>
             </q-item-section>
-            <q-item-section class="col">
-              <div class="q-ml-md">Addresses (v4, v6)</div>
+            <q-item-section>
+              <q-item-label>Addresses (v4, v6)</q-item-label>
             </q-item-section>
+            <q-item-section
+              side
+              style="width: 50px"
+            />
           </q-item>
 
           <q-separator
@@ -86,7 +93,7 @@
           />
 
           <div
-            v-if="vpnState.connections.length == 0"
+            v-if="vpnStore.connections.length == 0"
             class="text-center q-mt-md text-body1 q-mb-md"
           >
             No VPN setup yet. Click the + at the bottom of the screen to set one
@@ -94,12 +101,12 @@
           </div>
 
           <div
-            :style="'max-height:' + (q.screen.height - 240) + 'px;'"
-            style="overflow: scroll"
+            class="vpn-connection-list"
+            style="overflow: auto"
           >
             <template
-              v-for="(item, index) in vpnState.connections"
-              :key="item"
+              v-for="(item, index) in vpnStore.connections"
+              :key="item.id"
             >
               <q-item
                 clickable
@@ -151,19 +158,22 @@
 
                 <q-item-section
                   avatar
-                  class="items-left col-1"
+                  style="min-width: 50px; max-width: 50px"
                 >
-                  {{ index }}.
+                  {{ index + 1 }}.
                 </q-item-section>
-                <q-item-section class="text-body1 col">
+                <q-item-section class="text-body1">
                   <q-item-label class="text-weight-bolder ellipsis">
                     {{ item.name }}
                   </q-item-label>
                 </q-item-section>
-                <q-item-section class="text-body2 col">
-                  <div class="q-ml-md">{{ item.addresses }}</div>
+                <q-item-section class="text-body2">
+                  {{ item.addresses }}
                 </q-item-section>
-                <q-item-section side>
+                <q-item-section
+                  side
+                  style="width: 50px"
+                >
                   <q-btn
                     icon="more_vert"
                     flat
@@ -232,23 +242,17 @@
 import { ref, onMounted, Ref } from 'vue';
 import { useQuasar } from 'quasar';
 import ErrorPage from 'src/components/ErrorPage.vue';
-import { VPNConnectionType, VPNInfoType, VPNSetupType } from 'src/types/index';
+import { VPNSetupType } from 'src/types/localTypes';
+import { VPNClient, VPNConnection } from 'src/types/apiTypes';
 import VPNHelpDialog from 'src/components/vpn/VPNHelpDialog.vue';
 import VPNInformationDialog from 'src/components/vpn/VPNInformationDialog.vue';
 import VPNSetupDialog from 'src/components/vpn/VPNSetupDialog.vue';
 import VPNSetupSuccessDialog from 'src/components/vpn/VPNSetupSuccessDialog.vue';
 
-import { useVPN } from 'src/api/vpn';
+import { useVPNStore } from 'src/stores/vpnStore';
 
 const q = useQuasar();
-
-// Get the VPN composable
-const {
-  state: vpnState,
-  getConnections,
-  deleteConnection,
-  createVPNClient,
-} = useVPN();
+const vpnStore = useVPNStore();
 
 // UI-specific state (dialog controls and form data)
 const vpnInfoDialog = ref(false);
@@ -257,23 +261,35 @@ const setupVPNDialog = ref(false);
 const setupVPNDialogSuccessful = ref(false);
 
 // Data references
-const vpnClientInfo = ref({}) as Ref<VPNInfoType>;
-
-const vpnSetupConnection = ref({}) as Ref<VPNConnectionType>;
+const vpnClientInfo = ref({}) as Ref<VPNClient>;
+const vpnSetupConnection = ref({}) as Ref<VPNConnection>;
 
 // Wrapper function for creating a VPN connection that handles the UI state
 const handleCreateVPNClient = async (formData: VPNSetupType) => {
-  const connection = await createVPNClient(formData);
+  const connection = await vpnStore.createVPNClient(formData);
   if (connection) {
-    getConnections();
     vpnSetupConnection.value = connection;
     setupVPNDialog.value = false;
     setupVPNDialogSuccessful.value = true;
   }
 };
 
+function handleCreated() {
+  setupVPNDialogSuccessful.value = false;
+  vpnStore.getConnections();
+}
+
+function deleteConnection(id: string) {
+  vpnStore.deleteConnection(id);
+}
+
 // Lifecycle hooks
 onMounted(() => {
-  getConnections();
+  vpnStore.getConnections();
 });
 </script>
+<style scoped>
+.vpn-connection-list {
+  max-height: calc(100vh - 240px);
+}
+</style>

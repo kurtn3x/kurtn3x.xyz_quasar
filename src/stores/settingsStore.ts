@@ -1,10 +1,10 @@
 // stores/settingsStore.ts
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { UserProfileType, AccountType } from 'src/types';
-import { apiGet, apiPut, apiDelete } from '../api/apiWrapper';
+import { AccountSettings, UserProfile } from 'src/types/apiTypes';
+import { apiGet, apiDelete, apiPatch, apiPost } from '../api/apiWrapper';
 import { useQuasar } from 'quasar';
-import { defaultAccount, defaultUserProfile } from 'src/types/test';
+import { getTestAccountSettings } from 'src/types/test';
 import { useLocalStore } from 'stores/localStore';
 
 export const useSettingsStore = defineStore('settings', () => {
@@ -12,12 +12,10 @@ export const useSettingsStore = defineStore('settings', () => {
   const localStore = useLocalStore();
 
   // State
-  const profileData = ref<UserProfileType | null>(null);
-  const accountData = ref<AccountType | null>(null);
+  const accountSettings = ref<AccountSettings>({} as AccountSettings);
   const avatarPreview = ref<string | null>(null);
 
   const loading = ref(false);
-  const componentLoading = ref(false);
   const error = ref(false);
   const errorMessage = ref('');
 
@@ -38,45 +36,34 @@ export const useSettingsStore = defineStore('settings', () => {
       await new Promise((resolve) => setTimeout(resolve, 500));
       loading.value = false;
       error.value = false;
-      accountData.value = defaultAccount();
-      profileData.value = defaultUserProfile();
-      avatarPreview.value = profileData.value.avatar + '?' + Math.random();
+      accountSettings.value = getTestAccountSettings();
+      avatarPreview.value =
+        accountSettings.value.profile.avatar + '?' + Math.random();
       return;
     }
 
-    const accountResponse = await apiGet('/auth/account', axiosConfig);
+    const apiData = await apiGet(
+      '/profile/profiles/account_settings/',
+      axiosConfig
+    );
 
-    if (accountResponse.error === false) {
-      accountData.value = accountResponse.data as AccountType;
-
-      const profileResponse = await apiGet('/profile/user', axiosConfig);
-
-      if (profileResponse.error === false) {
-        profileData.value = profileResponse.data as UserProfileType;
-        // force refresh by adding random stuff to url
-        avatarPreview.value = profileData.value.avatar + '?' + Math.random();
-        error.value = false;
-      } else {
-        q.notify({
-          type: 'negative',
-          message: profileResponse.errorMessage,
-        });
-        error.value = true;
-        errorMessage.value = profileResponse.errorMessage;
-      }
+    if (apiData.error === false) {
+      accountSettings.value = apiData.data as AccountSettings;
+      avatarPreview.value =
+        accountSettings.value.profile.avatar + '?' + Math.random();
+      error.value = false;
     } else {
-      q.notify({ type: 'negative', message: accountResponse.errorMessage });
+      q.notify({ type: 'negative', message: apiData.errorMessage });
       error.value = true;
-      errorMessage.value = accountResponse.errorMessage;
+      errorMessage.value = apiData.errorMessage;
     }
+    loading.value = false;
   }
 
   async function updateProfile(
-    newProfileData: UserProfileType,
+    newProfileData: Partial<UserProfile>,
     avatarFile: File | null
   ) {
-    componentLoading.value = true;
-
     const config = {
       ...axiosConfig,
       headers: {
@@ -86,16 +73,28 @@ export const useSettingsStore = defineStore('settings', () => {
     };
 
     const formData = new FormData();
-    if (newProfileData.username !== profileData.value?.username) {
-      formData.append('username', newProfileData.username);
+    if (
+      newProfileData.name &&
+      newProfileData.name !== accountSettings.value.profile.name
+    ) {
+      formData.append('name', newProfileData.name);
     }
-    if (newProfileData.location !== profileData.value?.location) {
+    if (
+      newProfileData.location &&
+      newProfileData.location !== accountSettings.value.profile.location
+    ) {
       formData.append('location', newProfileData.location);
     }
-    if (newProfileData.description !== profileData.value?.description) {
+    if (
+      newProfileData.description &&
+      newProfileData.description !== accountSettings.value.profile.description
+    ) {
       formData.append('description', newProfileData.description);
     }
-    if (newProfileData.status !== profileData.value?.status) {
+    if (
+      newProfileData.status &&
+      newProfileData.status !== accountSettings.value.profile.status
+    ) {
       formData.append('status', newProfileData.status);
     }
 
@@ -103,7 +102,7 @@ export const useSettingsStore = defineStore('settings', () => {
       formData.append('avatar', avatarFile);
     }
 
-    const apiData = await apiPut('/profile/user', formData, config);
+    const apiData = await apiPatch('/profile/profiles/me/', formData, config);
 
     if (apiData.error === false) {
       q.notify({
@@ -111,22 +110,21 @@ export const useSettingsStore = defineStore('settings', () => {
         message: 'Profile updated successfully.',
       });
       await getAccountInformation();
-      if (avatarFile && profileData.value) {
-        localStore.setHeaderAvatar(profileData.value.avatar);
+      localStore.getHeaderInfo();
+      if (avatarFile && accountSettings.value) {
+        localStore.setHeaderAvatar(accountSettings.value.profile.avatar);
       }
     } else {
       q.notify({ type: 'negative', message: apiData.errorMessage });
     }
-
-    componentLoading.value = false;
   }
 
   async function updateEmail(
-    newEmail: string,
+    email: string,
     password: string
   ): Promise<boolean> {
-    const data = { newEmail, password };
-    const apiData = await apiPut('/auth/account', data, axiosConfig);
+    const data = { email: email, password: password };
+    const apiData = await apiPatch('/auth/users/me/', data, axiosConfig);
 
     if (apiData.error === false) {
       q.notify({ type: 'positive', message: 'Email updated successfully.' });
@@ -144,8 +142,12 @@ export const useSettingsStore = defineStore('settings', () => {
     newPasswordConfirm: string,
     password: string
   ): Promise<boolean> {
-    const data = { newPassword, newPasswordConfirm, password };
-    const apiData = await apiPut('/auth/account', data, axiosConfig);
+    const data = { currentPassword: password, newPassword: newPassword };
+    const apiData = await apiPost(
+      '/auth/users/change_password/',
+      data,
+      axiosConfig
+    );
 
     if (apiData.error === false) {
       q.notify({
@@ -167,7 +169,7 @@ export const useSettingsStore = defineStore('settings', () => {
       data: { password },
     };
 
-    const apiData = await apiDelete('/auth/account', config);
+    const apiData = await apiDelete('/auth/users/delete_account/', config);
 
     if (apiData.error === false) {
       q.notify({
@@ -183,16 +185,13 @@ export const useSettingsStore = defineStore('settings', () => {
 
   function setAvatarPreview(avatar: File | null) {
     avatarPreview.value = URL.createObjectURL(avatar as File);
-    localStore.setHeaderAvatar(avatarPreview.value);
   }
 
   return {
     // State
-    profileData,
-    accountData,
+    accountSettings,
     avatarPreview,
     loading,
-    componentLoading,
     error,
     errorMessage,
 

@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia';
 import { ref, computed, watch, onMounted } from 'vue';
-import { HeaderInformationType } from 'src/types';
+import { HeaderInfo } from 'src/types/apiTypes';
 import { LocalStorage } from 'quasar';
 import { useQuasar } from 'quasar';
 import { apiGet, apiPost } from '../api/apiWrapper';
-import { defaultHeaderInformation } from 'src/types/test';
+import { getTestHeaderInfo } from 'src/types/test';
 import { useRouter } from 'vue-router';
 import { getThemeBackground, ThemeName } from 'src/components/lib/themes';
 
@@ -20,7 +20,6 @@ export const useLocalStore = defineStore('header', () => {
   };
 
   const loading = ref(false);
-  const componentLoading = ref(false);
   const error = ref(false);
   const errorMessage = ref('');
 
@@ -28,7 +27,7 @@ export const useLocalStore = defineStore('header', () => {
   const authenticated = ref<boolean>(
     (LocalStorage.getItem('authenticated') as boolean) || false
   );
-  const headerInfo = ref<HeaderInformationType>(
+  const headerInfo = ref<HeaderInfo>(
     LocalStorage.getItem('header') || {
       username: '',
       avatar: '',
@@ -60,7 +59,7 @@ export const useLocalStore = defineStore('header', () => {
     LocalStorage.set('authenticated', state);
   }
 
-  function setHeaderInfo(info: HeaderInformationType) {
+  function setHeaderInfo(info: HeaderInfo) {
     headerInfo.value = info;
     LocalStorage.set('header', info);
   }
@@ -84,22 +83,20 @@ export const useLocalStore = defineStore('header', () => {
   }
 
   async function login(credentials: { username: string; password: string }) {
-    componentLoading.value = true;
     error.value = false;
     errorMessage.value = '';
 
     if (isDebugMode.value) {
       q.notify({ type: 'info', message: 'Debug' });
       await new Promise((resolve) => setTimeout(resolve, 500));
-      componentLoading.value = false;
       error.value = false;
       setAuthState(true);
-      setHeaderInfo(defaultHeaderInformation());
+      setHeaderInfo(getTestHeaderInfo());
       router.push('/');
       return;
     }
 
-    const apiData = await apiPost('/auth/login', credentials, axiosConfig);
+    const apiData = await apiPost('/auth/login/', credentials, axiosConfig);
 
     if (apiData.error === false) {
       setAuthState(true);
@@ -116,11 +113,10 @@ export const useLocalStore = defineStore('header', () => {
       errorMessage.value = apiData.errorMessage || 'Authentication failed';
       setAuthState(false);
     }
-    componentLoading.value = false;
   }
 
   async function logout() {
-    const apiData = await apiPost('/auth/logout', {}, axiosConfig);
+    const apiData = await apiPost('/auth/logout/', {}, axiosConfig);
     if (apiData.error === false) {
       q.notify({
         type: 'positive',
@@ -138,7 +134,7 @@ export const useLocalStore = defineStore('header', () => {
   }
 
   async function fetchCsrfToken() {
-    const csrfData = await apiGet('/auth/csrf_cookie', {
+    const csrfData = await apiGet('/auth/csrf_cookie/', {
       withCredentials: true,
     });
     if (csrfData.error === true) {
@@ -154,16 +150,14 @@ export const useLocalStore = defineStore('header', () => {
   }
 
   async function getAuthState() {
-    componentLoading.value = true;
     if (isDebugMode.value) {
       q.notify({ type: 'info', message: 'Debug' });
       await new Promise((resolve) => setTimeout(resolve, 500));
-      componentLoading.value = false;
       setAuthState(true);
       return;
     }
 
-    const apiData = await apiGet('/auth/state', axiosConfig);
+    const apiData = await apiGet('/auth/authenticated/', axiosConfig);
     if (apiData.error === false) {
       setAuthState(apiData.data.isAuthenticated as boolean);
     } else {
@@ -173,20 +167,19 @@ export const useLocalStore = defineStore('header', () => {
       });
       setAuthState(false);
     }
-    componentLoading.value = false;
   }
 
   async function getHeaderInfo() {
     loading.value = true;
 
     if (isDebugMode.value) {
-      setHeaderInfo(defaultHeaderInformation());
+      setHeaderInfo(getTestHeaderInfo());
       setAuthState(true);
       loading.value = false;
       return;
     }
 
-    const apiData = await apiGet('/profile/headerinfo', axiosConfig);
+    const apiData = await apiGet('/profile/profiles/header_info/', axiosConfig);
 
     if (apiData.error === false) {
       setHeaderInfo(apiData.data);
@@ -246,7 +239,6 @@ export const useLocalStore = defineStore('header', () => {
     error,
     errorMessage,
     loading,
-    componentLoading,
 
     // Getters
     isAuthenticated,

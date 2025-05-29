@@ -22,7 +22,7 @@
             Id:
           </q-item-section>
           <q-item-section style="line-break: anywhere">
-            {{ settingsStore.accountData?.id }}
+            {{ settingsStore.accountSettings.account.id }}
           </q-item-section>
         </q-item>
         <q-separator />
@@ -35,7 +35,7 @@
             Username:
           </q-item-section>
           <q-item-section style="line-break: anywhere">
-            {{ settingsStore.accountData?.username }}
+            {{ settingsStore.accountSettings.account.username }}
           </q-item-section>
         </q-item>
 
@@ -49,7 +49,7 @@
             Email:
           </q-item-section>
           <q-item-section style="line-break: anywhere">
-            {{ settingsStore.accountData?.email }}
+            {{ settingsStore.accountSettings.account.email }}
           </q-item-section>
         </q-item>
 
@@ -63,7 +63,7 @@
             Is Admin:
           </q-item-section>
           <q-item-section style="line-break: anywhere">
-            {{ settingsStore.accountData?.isAdmin }}
+            {{ settingsStore.accountSettings.account.isAdmin }}
           </q-item-section>
         </q-item>
 
@@ -77,7 +77,7 @@
             Joined:
           </q-item-section>
           <q-item-section style="line-break: anywhere">
-            {{ settingsStore.profileData?.dateJoined }}
+            {{ settingsStore.accountSettings.profile.dateJoined }}
           </q-item-section>
         </q-item>
 
@@ -91,7 +91,7 @@
             Name:
           </q-item-section>
           <q-item-section style="line-break: anywhere">
-            {{ settingsStore.profileData?.name }}
+            {{ settingsStore.accountSettings.profile.name }}
           </q-item-section>
         </q-item>
 
@@ -105,7 +105,7 @@
             Location:
           </q-item-section>
           <q-item-section style="line-break: anywhere">
-            {{ settingsStore.profileData?.location }}
+            {{ settingsStore.accountSettings.profile.location }}
           </q-item-section>
         </q-item>
 
@@ -119,7 +119,7 @@
             Status:
           </q-item-section>
           <q-item-section style="line-break: anywhere">
-            {{ settingsStore.profileData?.status }}
+            {{ settingsStore.accountSettings.profile.status }}
           </q-item-section>
         </q-item>
 
@@ -200,7 +200,7 @@
                 color="green"
                 push
                 type="submit"
-                :loading="settingsStore.componentLoading"
+                :loading="localLoading"
               />
             </q-form>
           </q-expansion-item>
@@ -301,7 +301,7 @@
                 color="green"
                 push
                 type="submit"
-                :loading="settingsStore.componentLoading"
+                :loading="localLoading"
               />
             </q-form>
           </q-expansion-item>
@@ -335,6 +335,7 @@ const settingsStore = useSettingsStore();
 const localStore = useLocalStore();
 
 // State variables
+const localLoading = ref(false);
 const isPwd1 = ref(true);
 const isPwd2 = ref(true);
 const confirmDeleteAccountDialog = ref(false);
@@ -352,6 +353,7 @@ const isDarkMode = computed(() => localStore.isDarkMode);
 
 // Methods
 const handleUpdatePassword = async () => {
+  localLoading.value = true;
   const successful = await settingsStore.updatePassword(
     updatePasswordData.value.newPassword,
     updatePasswordData.value.newPasswordConfirm,
@@ -364,9 +366,11 @@ const handleUpdatePassword = async () => {
       password: '',
     };
   }
+  localLoading.value = false;
 };
 
 const handleUpdateEmail = async () => {
+  localLoading.value = true;
   const successful = await settingsStore.updateEmail(
     updateEmailData.value.newEmail,
     updateEmailData.value.password
@@ -374,5 +378,6 @@ const handleUpdateEmail = async () => {
   if (successful) {
     updateEmailData.value = { newEmail: '', password: '' };
   }
+  localLoading.value = false;
 };
 </script>

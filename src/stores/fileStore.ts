@@ -14,9 +14,7 @@ export const useFileStore = defineStore('fileSystem', () => {
   const navigation = useNavigationStore();
 
   // Example of cross-store computed property
-  const isLoading = computed(
-    () => fileOps.loading || fileOps.componentLoading || upload.hasActiveUploads
-  );
+  const isLoading = computed(() => fileOps.loading || upload.hasActiveUploads);
 
   return {
     // Access to all stores

@@ -214,3 +214,55 @@ export async function apiPut(endpoint: string, data: any, axiosConfig: any) {
 
   return returnData;
 }
+
+export async function apiPatch(endpoint: string, data: any, axiosConfig: any) {
+  const returnData: ApiResponse = {
+    error: true,
+    errorMessage: '',
+    data: {} as any,
+    returnCode: 0,
+  };
+
+  try {
+    const response = await api.patch(endpoint, data, axiosConfig);
+
+    returnData.returnCode = response.status;
+    if (response.status == 200) {
+      returnData.error = false;
+      returnData.data = response.data;
+    } else {
+      returnData.error = true;
+      returnData.errorMessage = response.data;
+      if (
+        returnData.errorMessage == '' ||
+        returnData.errorMessage == undefined
+      ) {
+        returnData.errorMessage =
+          'API Error returned code ' + response.status + '.';
+      }
+    }
+  } catch (error: any) {
+    returnData.returnCode = 1;
+    if (error.response) {
+      returnData.returnCode = error.response.status;
+      returnData.error = true;
+      returnData.errorMessage = error.response.data.error;
+      if (
+        returnData.errorMessage == '' ||
+        returnData.errorMessage == undefined
+      ) {
+        returnData.errorMessage =
+          'API returned code ' + error.response.status.toString();
+        returnData.errorMessage += ' ' + error.response.statusText;
+      }
+    } else {
+      returnData.error = true;
+      returnData.errorMessage = error.message;
+      if (returnData.errorMessage == '' || error.message == undefined) {
+        returnData.errorMessage = 'Error during request.';
+      }
+    }
+  }
+
+  return returnData;
+}

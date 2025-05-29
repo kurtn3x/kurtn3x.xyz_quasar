@@ -20,7 +20,7 @@
     </q-toolbar>
     <q-separator
       size="1px"
-      :color="isDarkMode ? 'white' : 'dark'"
+      :color="localStore.isDarkMode ? 'white' : 'dark'"
     />
     <q-tabs
       inline-label
@@ -68,7 +68,7 @@
           readonly
           :model-value="connection.clientPublicKey"
           style="height: 50px"
-          :color="isDarkMode ? 'white' : 'dark'"
+          :color="localStore.isDarkMode ? 'white' : 'dark'"
           dense
         >
           <q-btn
@@ -83,7 +83,7 @@
             <a
               style="width: 120px"
               class="text-body1"
-              :class="isDarkMode ? 'text-white' : 'text-dark'"
+              :class="localStore.isDarkMode ? 'text-white' : 'text-dark'"
             >
               Public-Key:
             </a>
@@ -94,7 +94,7 @@
           readonly
           :model-value="connection.clientPrivateKey"
           style="height: 50px"
-          :color="isDarkMode ? 'white' : 'dark'"
+          :color="localStore.isDarkMode ? 'white' : 'dark'"
           dense
         >
           <q-btn
@@ -103,13 +103,17 @@
             icon="content_copy"
             class="absolute-right"
             size="md"
-            @click="copyToClipboard(connection.clientPrivateKey)"
+            @click="
+              copyToClipboard(
+                connection.clientPrivateKey ? connection.clientPrivateKey : ''
+              )
+            "
           />
           <template v-slot:prepend>
             <a
               style="width: 120px"
               class="text-body1"
-              :class="isDarkMode ? 'text-white' : 'text-dark'"
+              :class="localStore.isDarkMode ? 'text-white' : 'text-dark'"
             >
               Private-Key:
             </a>
@@ -124,7 +128,7 @@
           readonly
           :model-value="connection.addresses"
           style="height: 50px"
-          :color="isDarkMode ? 'white' : 'dark'"
+          :color="localStore.isDarkMode ? 'white' : 'dark'"
           dense
         >
           <q-btn
@@ -139,7 +143,7 @@
             <a
               style="width: 120px"
               class="text-body1"
-              :class="isDarkMode ? 'text-white' : 'text-dark'"
+              :class="localStore.isDarkMode ? 'text-white' : 'text-dark'"
             >
               Addresses:
             </a>
@@ -150,7 +154,7 @@
           readonly
           :model-value="connection.dnsServers"
           style="height: 50px"
-          :color="isDarkMode ? 'white' : 'dark'"
+          :color="localStore.isDarkMode ? 'white' : 'dark'"
           dense
         >
           <q-btn
@@ -165,7 +169,7 @@
             <a
               style="width: 120px"
               class="text-body1"
-              :class="isDarkMode ? 'text-white' : 'text-dark'"
+              :class="localStore.isDarkMode ? 'text-white' : 'text-dark'"
             >
               DNS:
             </a>
@@ -179,14 +183,14 @@
         <q-input
           outlined
           readonly
-          :color="isDarkMode ? 'white' : 'dark'"
+          :color="localStore.isDarkMode ? 'white' : 'dark'"
           :model-value="connection.presharedKey"
           style="height: 50px"
           dense
         >
           <q-btn
             flat
-            :color="isDarkMode ? 'white' : 'dark'"
+            :color="localStore.isDarkMode ? 'white' : 'dark'"
             round
             icon="content_copy"
             class="absolute-right"
@@ -197,7 +201,7 @@
             <a
               style="width: 120px"
               class="text-body1"
-              :class="isDarkMode ? 'text-white' : 'text-dark'"
+              :class="localStore.isDarkMode ? 'text-white' : 'text-dark'"
             >
               Preshared Key:
             </a>
@@ -206,7 +210,7 @@
         <q-input
           outlined
           readonly
-          :color="isDarkMode ? 'white' : 'dark'"
+          :color="localStore.isDarkMode ? 'white' : 'dark'"
           :model-value="connection.serverPublicKey"
           style="height: 50px"
           dense
@@ -223,7 +227,7 @@
             <a
               style="width: 120px"
               class="text-body1"
-              :class="isDarkMode ? 'text-white' : 'text-dark'"
+              :class="localStore.isDarkMode ? 'text-white' : 'text-dark'"
             >
               Server Key:
             </a>
@@ -242,7 +246,7 @@
           :model-value="connection.allowedIps"
           style="height: 50px"
           dense
-          :color="isDarkMode ? 'white' : 'dark'"
+          :color="localStore.isDarkMode ? 'white' : 'dark'"
           v-if="!connectionOptions.onlyInternal"
         >
           <q-btn
@@ -257,7 +261,7 @@
             <a
               style="width: 120px"
               class="text-body1"
-              :class="isDarkMode ? 'text-white' : 'text-dark'"
+              :class="localStore.isDarkMode ? 'text-white' : 'text-dark'"
             >
               Allowed IPs:
             </a>
@@ -269,7 +273,7 @@
           :model-value="connection.allowedIpsInternal"
           style="height: 50px"
           dense
-          :color="isDarkMode ? 'white' : 'dark'"
+          :color="localStore.isDarkMode ? 'white' : 'dark'"
           v-if="connectionOptions.onlyInternal"
         >
           <q-btn
@@ -284,7 +288,7 @@
             <a
               style="width: 120px"
               class="text-body1"
-              :class="isDarkMode ? 'text-white' : 'text-dark'"
+              :class="localStore.isDarkMode ? 'text-white' : 'text-dark'"
             >
               Allowed IPs:
             </a>
@@ -296,7 +300,7 @@
           :model-value="connection.endpoint"
           style="height: 50px"
           dense
-          :color="isDarkMode ? 'white' : 'dark'"
+          :color="localStore.isDarkMode ? 'white' : 'dark'"
         >
           <q-btn
             flat
@@ -310,7 +314,7 @@
             <a
               style="width: 120px"
               class="text-body1"
-              :class="isDarkMode ? 'text-white' : 'text-dark'"
+              :class="localStore.isDarkMode ? 'text-white' : 'text-dark'"
             >
               Endpoint:
             </a>
@@ -321,10 +325,10 @@
         <div class="q-ma-md">
           <div class="row justify-center items-center full-width">
             <q-input
-              :model-value="connectionOptions.configName"
+              v-model="connectionOptions.configName"
               outlined
               dense
-              :color="isDarkMode ? 'white' : 'black'"
+              :color="localStore.isDarkMode ? 'white' : 'black'"
               input-class="text-body1"
               class="full-width"
               no-error-icon
@@ -334,7 +338,7 @@
                 <a
                   style="width: 120px"
                   class="text-body1"
-                  :class="isDarkMode ? 'text-white' : 'text-dark'"
+                  :class="localStore.isDarkMode ? 'text-white' : 'text-dark'"
                 >
                   Config Name
                 </a>
@@ -375,8 +379,8 @@
             type="textarea"
             v-model="wireguardConfig"
             input-class="mono q-mr-sm q-ml-sm text-body1"
-            input-style="resize: none; height: 220px; line-height: 1.25"
-            style="height: 350px"
+            input-style="resize: none; height: 150px; line-height: 1.15; font-size: 12px;"
+            style="height: 160px"
             :autogrow="false"
             borderless
           />
@@ -395,6 +399,7 @@
       </div>
       <q-btn
         v-close-popup
+        @click="getConnections"
         push
         class="bg-green text-white q-mt-md"
         icon="done"
@@ -409,17 +414,17 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useLocalStore } from 'stores/localStore';
-import { VPNConnectionType } from 'src/types/index';
+import { VPNConnection } from 'src/types/apiTypes';
 import { copyToClipboard } from 'src/components/lib/functions';
 
 const props = defineProps({
   connection: {
-    type: Object as () => VPNConnectionType,
+    type: Object as () => VPNConnection,
     required: true,
   },
 });
 
-const emit = defineEmits(['open-help']);
+const emit = defineEmits(['open-help', 'done']);
 
 const localStore = useLocalStore();
 const activeTab = ref('info');
@@ -431,7 +436,6 @@ const connectionOptions = ref({
 });
 
 // Compute dark mode from store
-const isDarkMode = computed(() => localStore.isDarkMode);
 
 // Compute config
 const wireguardConfig = computed(() => {
@@ -481,5 +485,10 @@ function downloadConfiguration() {
   document.body.appendChild(element);
   element.click();
   document.body.removeChild(element);
+}
+
+function getConnections() {
+  // Emit event to parent component to refresh connections
+  emit('done');
 }
 </script>

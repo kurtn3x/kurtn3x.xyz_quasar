@@ -5,7 +5,7 @@
   >
     <q-toolbar class="bg-layout-bg text-layout-text text-center">
       <q-toolbar-title class="q-ma-sm">
-        Info for {{ vpnClientInfo.name }}
+        Info for {{ propItem.name }}
       </q-toolbar-title>
     </q-toolbar>
     <div
@@ -14,20 +14,20 @@
     >
       <div class="row q-mt-md">
         <div class="col-3 text-weight-bolder">Name</div>
-        <div class="col">{{ vpnClientInfo.name }}</div>
+        <div class="col">{{ propItem.name }}</div>
       </div>
       <div class="row q-mt-md">
         <div class="col-3 text-weight-bolder">Addresses</div>
-        <div class="col">{{ vpnClientInfo.addresses }}</div>
+        <div class="col">{{ propItem.addresses }}</div>
       </div>
       <div class="row q-mt-md">
         <div class="col-3 text-weight-bolder">Created</div>
-        <div class="col">{{ vpnClientInfo.created }}</div>
+        <div class="col">{{ propItem.created }}</div>
       </div>
       <div class="row q-mt-md">
         <div class="col-3 text-weight-bolder">Public Key</div>
         <div class="col">
-          {{ vpnClientInfo.clientPublicKey }}
+          {{ propItem.clientPublicKey }}
         </div>
       </div>
     </div>
@@ -50,12 +50,14 @@
   </q-card>
 </template>
 
-<script setup>
-import { defineProps } from 'vue';
+<script setup lang="ts">
+import { defineProps, PropType } from 'vue';
+import { VPNClient } from 'src/types/apiTypes';
 
 const props = defineProps({
-  propItem: Object,
+  propItem: {
+    type: Object as PropType<VPNClient>,
+    required: true,
+  },
 });
-
-var vpnClientInfo = props.propItem;
 </script>

@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, reactive, computed } from 'vue';
 import { useQuasar } from 'quasar';
 import axios from 'axios';
-import { apiPost } from 'src/components/apiWrapper';
+import { apiPost } from 'src/api/apiWrapper';
 import {
   fileSizeIEC,
   transferedPercentLabel,
@@ -11,7 +11,10 @@ import { useFileOperationsStore } from './fileOperationsStore';
 import type {
   TraverseFolderMapType,
   UploadProgressEntryType,
-} from 'src/types/index';
+  UploadEntryType,
+} from 'src/types/localTypes';
+
+import { FileNode } from 'src/types/apiTypes';
 
 export const useUploadStore = defineStore('upload', () => {
   const q = useQuasar();
@@ -20,17 +23,235 @@ export const useUploadStore = defineStore('upload', () => {
   // Progress panel state
   const progressPanel = ref(false);
   const progressSticky = ref(false);
-  const progressPanelProgressMap = ref([] as UploadProgressEntryType[]);
   const uniqueFolderUploadId = ref(0);
+
+  // Upload dialog state
+
+  // holds temporary entries before uploading
+  const uploadList = ref<UploadEntryType[]>([]);
+  // after starting uploading, holds the entries that track the progress
+  const uploadProgessList = ref([] as UploadProgressEntryType[]);
 
   // Constants
   const MAX_FILE_SIZE = 524288000; // 500MB
   const MAX_FOLDER_ENTRIES = 500;
 
   // Computed values
+  const hasUploadListItems = computed(() => uploadList.value.length > 0);
+
   const hasActiveUploads = computed(() =>
-    progressPanelProgressMap.value.some((p) => p.status === 'loading')
+    uploadProgessList.value.some((p) => p.status === 'loading')
   );
+
+  /**
+   * Check if a name exists in current upload context
+   */
+  function validName(name: string) {
+    if (name.length < 1) {
+      q.notify({
+        type: 'negative',
+        message: 'Name must be at least 1 character long.',
+      });
+      return false;
+    }
+
+    if (/\/|\x00/.test(name)) {
+      q.notify({
+        type: 'negative',
+        message: 'Name contains invalid characters.',
+      });
+      return false;
+    }
+
+    if (nameAvailable(name) === false) {
+      q.notify({
+        type: 'negative',
+        message: 'Item with same name already exists in upload list',
+      });
+      return false;
+    }
+
+    return true;
+  }
+
+  function nameAvailable(name: string) {
+    if (uploadList.value.some((el: UploadEntryType) => el.name === name)) {
+      return false;
+    }
+
+    if (fileOps.rawFolderContent.children.some((el) => el.name === name)) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Find a valid name for a file or folder
+   * If the name already exists, add (1), (2), etc. until a unique name is found
+   *
+   * @param name The original name to check and potentially modify
+   * @param type 'file' or 'folder' - affects how extensions are handled
+   * @returns A valid, unique name
+   */
+  function findAvailableName(
+    originalName: string,
+    type: 'file' | 'folder'
+  ): string {
+    // Check if the original name is valid as-is
+    if (nameAvailable(originalName)) {
+      return originalName;
+    }
+
+    // For files, we need to handle extensions properly
+    if (type === 'file') {
+      // Get the file name without the extension
+      let nameWithoutExtension = originalName;
+      let extension = '';
+
+      // Check if this file has an extension (it has a dot that isn't the first character)
+      if (originalName.indexOf('.') > 0) {
+        extension = originalName.substring(originalName.lastIndexOf('.'));
+        nameWithoutExtension = originalName.substring(
+          0,
+          originalName.lastIndexOf('.')
+        );
+      }
+
+      // Check if the name already has a number in parentheses
+      const parenthesisRegex = /\((\d+)\)$/;
+      const match = nameWithoutExtension.match(parenthesisRegex);
+
+      let counter = 1;
+      let newName = '';
+
+      if (match) {
+        // If it already has a number, start counting from that number + 1
+        counter = parseInt(match[1], 10) + 1;
+        nameWithoutExtension = nameWithoutExtension.replace(
+          parenthesisRegex,
+          ''
+        );
+      }
+
+      // Keep incrementing the counter until we find a unique name
+      do {
+        newName = `${nameWithoutExtension}(${counter})${extension}`;
+        counter++;
+      } while (!nameAvailable(newName));
+
+      return newName;
+    }
+    // For folders (simpler, no extension handling)
+    else {
+      const parenthesisRegex = /\((\d+)\)$/;
+      const match = originalName.match(parenthesisRegex);
+
+      let counter = 1;
+      let nameBase = originalName;
+      let newName = '';
+
+      if (match) {
+        // If it already has a number, start counting from that number + 1
+        counter = parseInt(match[1], 10) + 1;
+        nameBase = originalName.replace(parenthesisRegex, '');
+      }
+
+      // Keep incrementing the counter until we find a unique name
+      do {
+        newName = `${nameBase}(${counter})`;
+        counter++;
+      } while (!nameAvailable(newName));
+
+      return newName;
+    }
+  }
+
+  function addUploadEntry(
+    entry: FileSystemEntry | File,
+    type: 'file' | 'folder'
+  ) {
+    const name = entry.name;
+
+    // dont bother finding names for files/folders with invalid names
+    if (/\/|\x00/.test(name) || name.length < 1) {
+      q.notify({
+        type: 'negative',
+        message: 'Item has an invalid name',
+      });
+      return;
+    }
+
+    if (type === 'file' && entry instanceof File) {
+      const validName = findAvailableName(name, type);
+      if (validName) {
+        uploadList.value.push({
+          name: validName,
+          type: 'file',
+          content: entry,
+          temp: '',
+          edit: false,
+          error: false,
+        });
+      }
+    } else if (type === 'folder' && entry instanceof FileSystemDirectoryEntry) {
+      const validName = findAvailableName(name, type);
+      if (validName) {
+        uploadList.value.push({
+          name: validName,
+          type: 'folder',
+          content: entry,
+          temp: '',
+          edit: false,
+          error: false,
+        });
+      }
+    }
+  }
+
+  /**
+   * Remove a file from the upload list
+   */
+  function removeUploadEntry(file: UploadEntryType) {
+    uploadList.value = uploadList.value.filter(
+      (item) => item.name !== file.name
+    );
+  }
+
+  /**
+   * Clear the upload list
+   */
+  function clearUploadList() {
+    uploadList.value = [];
+  }
+
+  /**
+   * Handle file name changes
+   */
+  function changeFileName(file: UploadEntryType) {
+    if (!file.temp || file.temp === file.name) {
+      file.edit = false;
+      return;
+    }
+    if (validName(file.temp)) {
+      file.name = file.temp;
+      file.edit = false;
+      file.error = false;
+    } else {
+      file.error = true;
+    }
+  }
+
+  /**
+   * Start uploading files from the dialog
+   */
+  function startUploadFromDialog() {
+    if (uploadList.value.length > 0) {
+      uploadFiles(uploadList.value, fileOps.rawFolderContent.id);
+      clearUploadList();
+      return true;
+    }
+    return false;
+  }
 
   async function traverseFolder(
     folder: FileSystemDirectoryEntry,
@@ -108,7 +329,7 @@ export const useUploadStore = defineStore('upload', () => {
       transferredPercent: 0,
     });
 
-    progressPanelProgressMap.value.push(folderProgress);
+    uploadProgessList.value.push(folderProgress);
 
     const folderId = 1;
     const folder: TraverseFolderMapType = {
@@ -220,13 +441,15 @@ export const useUploadStore = defineStore('upload', () => {
     }
   }
 
-  async function uploadFile(fileItem: any, parentFolderId: string) {
+  async function uploadFile(fileItem: UploadEntryType, parentId: string) {
+    if (fileItem.content instanceof FileSystemEntry) return;
+
     const file = fileItem.content;
     const itemSize = file.size;
     const formData = new FormData();
 
     formData.append('name', fileItem.name);
-    formData.append('parent_id', parentFolderId);
+    formData.append('parent_id', parentId);
     formData.append('file', file);
     formData.append('size_bytes', itemSize.toString());
 
@@ -244,7 +467,7 @@ export const useUploadStore = defineStore('upload', () => {
       transferredPercent: 0,
     });
 
-    progressPanelProgressMap.value.push(fileProgress);
+    uploadProgessList.value.push(fileProgress);
 
     if (itemSize > MAX_FILE_SIZE) {
       fileProgress.status = 'error';
@@ -297,7 +520,7 @@ export const useUploadStore = defineStore('upload', () => {
   }
 
   function clearCompletedUploads() {
-    progressPanelProgressMap.value = progressPanelProgressMap.value.filter(
+    uploadProgessList.value = uploadProgessList.value.filter(
       (p) => p.status === 'loading'
     );
   }
@@ -306,8 +529,10 @@ export const useUploadStore = defineStore('upload', () => {
     // State
     progressPanel,
     progressSticky,
-    progressPanelProgressMap,
+    uploadProgessList,
     uniqueFolderUploadId,
+    uploadList,
+    hasUploadListItems,
 
     // Constants
     MAX_FILE_SIZE,
@@ -316,12 +541,20 @@ export const useUploadStore = defineStore('upload', () => {
     // Computed
     hasActiveUploads,
 
-    // Methods
+    // Upload List operations
+    addUploadEntry,
+    removeUploadEntry,
+    clearUploadList,
+    changeFileName,
+
+    // Upload operations
     uploadFiles,
     uploadFile,
     uploadFolder,
     cancelRequest,
     clearCompletedUploads,
     traverseFolder,
+    findAvailableName,
+    startUploadFromDialog,
   };
 });

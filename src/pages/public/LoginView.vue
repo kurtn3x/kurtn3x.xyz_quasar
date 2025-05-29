@@ -28,7 +28,7 @@
               bg-color="layout-bg"
               no-error-icon
               dark
-              :disable="localStore.componentLoading"
+              :disable="localLoading"
               :rules="[
                 (val) => (val && val.length > 0) || 'Input your Password',
               ]"
@@ -54,7 +54,7 @@
               color="layout-text"
               no-error-icon
               dark
-              :disable="localStore.componentLoading"
+              :disable="localLoading"
               :rules="[
                 (val) => (val && val.length > 0) || 'Input your Password',
               ]"
@@ -80,7 +80,7 @@
               size="lg"
               class="full-width q-mt-lg login-button"
               label="Sign In"
-              :loading="localStore.componentLoading"
+              :loading="localLoading"
               type="submit"
               :ripple="{ early: true }"
             />
@@ -126,9 +126,11 @@ const credentials = ref({
 });
 const showPassword = ref(false);
 const errorText = ref<HTMLElement | null>(null);
+const localLoading = ref(false);
 
 // Methods
 const handleLogin = async () => {
+  localLoading.value = true;
   await localStore.login(credentials.value);
 
   if (localStore.error) {
@@ -138,6 +140,7 @@ const handleLogin = async () => {
       }
     }, 100);
   }
+  localLoading.value = false;
 };
 
 const handleAnimationEnd = (event: AnimationEvent) => {

@@ -1,5 +1,7 @@
 <template>
   <q-page>
+    <NavigationBar />
+    <ActionBar />
     <FileListHeader />
     <FileList />
   </q-page>
@@ -8,4 +10,6 @@
 <script setup lang="ts">
 import FileList from 'src/components/files/FileList.vue';
 import FileListHeader from 'src/components/files/FileListHeader.vue';
+import ActionBar from 'src/components/files/ActionBar.vue';
+import NavigationBar from 'src/components/files/NavigationBar.vue';
 </script>

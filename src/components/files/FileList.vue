@@ -1,22 +1,111 @@
 <template>
   <!-- List content -->
-  <q-list>
+  <div
+    class="full-width full-height row justify-center"
+    v-if="filesStore.fileOps.loading"
+  >
+    <q-spinner-dots
+      color="primary"
+      size="10em"
+    />
+  </div>
+
+  <q-list v-else>
+    <q-item
+      class="full-width rounded-borders"
+      v-if="filesStore.fileOps.newItem.show"
+      style="background-color: rgba(60, 177, 60, 0.801)"
+    >
+      <q-item-section
+        avatar
+        top
+      >
+        <q-fab
+          v-if="filesStore.fileOps.newItem.type == 'folder'"
+          class="bg-layout-bg text-layout-text no-pointer-events"
+          icon="folder"
+          direction="down"
+          round
+          padding="sm"
+        />
+        <q-fab
+          v-else
+          class="bg-layout-bg text-layout-text"
+          :icon="getIcon(filesStore.fileOps.newItem.mime)"
+          direction="right"
+          round
+          padding="sm"
+        >
+          <template
+            v-for="[key, value] in Array.from(createTypes)"
+            :key="key"
+          >
+            <q-fab-action
+              class="bg-layout-bg text-layout-text"
+              @click="filesStore.fileOps.newItem.mime = key"
+              :icon="value.icon"
+              :label="value.name"
+            />
+          </template>
+        </q-fab>
+      </q-item-section>
+
+      <q-item-section>
+        <q-input
+          dark
+          outlined
+          dense
+          color="white"
+          v-model="filesStore.fileOps.newItem.name"
+          :label="`New ${
+            filesStore.fileOps.newItem.type == 'folder' ? 'Folder' : 'File'
+          } Name`"
+          class="text-body1 q-ml-md"
+          input-class="text-body2"
+          clearable
+          @keyup.enter="createNewItem"
+          ref="newItemInput"
+          hide-bottom-space
+          autofocus
+        />
+      </q-item-section>
+      <q-item-section side>
+        <div class="row">
+          <q-btn
+            icon="done"
+            class="q-ml-md bg-green text-white"
+            round
+            flat
+            @click="createNewItem"
+          />
+          <q-btn
+            icon="close"
+            class="q-ml-md bg-red text-white"
+            round
+            flat
+            @click="resetNewItem"
+          />
+        </div>
+      </q-item-section>
+    </q-item>
     <template
       v-for="(item, index) in filesStore.fileOps.rawFolderContent.children"
       :key="item.id"
     >
       <!-- Folder items -->
       <q-item
-        v-if="item.type == 'folder'"
+        v-if="item.nodeType == 'folder'"
         ref="folderRefs"
         :id="index"
         :data-id="item.id"
-        :data-type="item.type"
+        :data-type="item.nodeType"
         clickable
-        class="file-item selecto-target"
+        @click="getFolderById(item.id)"
+        class="file-item selecto-target q-pa-none"
         :class="[
           item.dragOver ? 'dragover' : '',
           item.selected ? 'selected' : '',
+          item.highlight ? 'highlight' : '',
           isDropTarget(item.id) ? 'drop-target' : '',
           isDragging(item.id) ? 'is-dragging' : '',
         ]"
@@ -31,12 +120,14 @@
         <q-popup-proxy
           context-menu
           :breakpoint="0"
+          @before-show="item.highlight = true"
+          @before-hide="item.highlight = false"
         >
           <RightClickMenu :prop-item="item" />
         </q-popup-proxy>
 
         <div
-          class="file-item-content full-height full-width flex-center q-pa-sm no-pointer-events"
+          class="file-item-content full-height full-width flex-center no-pointer-events"
         >
           <!-- Checkbox -->
           <div class="file-checkbox flex-center pointer-events">
@@ -62,9 +153,8 @@
           <div class="file-name">
             <q-icon
               name="share"
-              v-if="item.shared"
+              v-if="item.isShared"
               size="xs"
-              class="q-mr-sm"
             />
             {{ item.name }}
           </div>
@@ -84,9 +174,9 @@
               flat
               round
               dense
-              size="sm"
+              size="md"
               color="primary"
-              :loading="filesStore.fileOps.componentLoading"
+              :loading="localLoading"
               @click.prevent.stop
             >
               <q-menu>
@@ -103,30 +193,29 @@
         ref="fileRefs"
         :id="index"
         :data-id="item.id"
-        :data-type="item.type"
+        :data-type="item.nodeType"
         clickable
         draggable="true"
         @dragstart="handleDragStart($event, item)"
         @dragend="handleDragEnd($event)"
-        @click="
-          showFilePreviewDialog = true;
-          filePreviewDialogItem = item;
-        "
-        class="file-item selecto-target"
+        class="file-item selecto-target q-pa-none"
         :class="[
           item.selected ? 'selected' : '',
+          item.highlight ? 'highlight' : '',
           isDragging(item.id) ? 'is-dragging' : '',
         ]"
       >
         <q-popup-proxy
           context-menu
           :breakpoint="0"
+          @before-show="item.highlight = true"
+          @before-hide="item.highlight = false"
         >
           <RightClickMenu :prop-item="item" />
         </q-popup-proxy>
 
         <div
-          class="file-item-content full-height full-width flex-center q-pa-sm no-pointer-events"
+          class="file-item-content full-height full-width flex-center no-pointer-events"
         >
           <!-- Checkbox -->
           <div class="file-checkbox pointer-events">
@@ -136,13 +225,14 @@
               color="primary"
               @update:modelValue="handleCheckboxClick(item)"
               @click.stop
+              class="pointer-events"
             />
           </div>
 
           <!-- Icon -->
           <div class="file-icon">
             <q-icon
-              :name="getIcon(item.mime)"
+              :name="getIcon(item.mimeType)"
               color="primary"
               size="sm"
             />
@@ -152,16 +242,15 @@
           <div class="file-name">
             <q-icon
               name="share"
-              v-if="item.shared"
+              v-if="item.isShared"
               size="xs"
-              class="q-mr-sm"
             />
             {{ item.name }}
           </div>
 
           <!-- Size - hidden on small screens -->
           <div class="file-size">
-            {{ item.size }}
+            {{ item.displaySize }}
           </div>
 
           <!-- Modified date - hidden on smaller screens -->
@@ -170,15 +259,16 @@
           </div>
 
           <!-- Actions -->
-          <div class="file-actions pointer-events">
+          <div class="file-actions">
             <q-btn
               icon="more_vert"
               flat
               round
               dense
-              size="sm"
+              size="md"
+              class="pointer-events"
               color="primary"
-              :loading="filesStore.fileOps.componentLoading"
+              :loading="localLoading"
               @click.prevent.stop
             >
               <q-menu>
@@ -194,32 +284,60 @@
   </q-list>
 </template>
 
-<script setup>
+<script setup lang="ts">
 /*
 When the API is updated to use a single item for files & folders, fix the selection logic to only use ids
 */
 import { ref, reactive, onMounted } from 'vue';
 import { useFileStore } from 'src/stores/fileStore';
 import RightClickMenu from 'src/components/files/RightClickMenu.vue';
-import { getIcon } from 'src/components/lib/mimeMap';
+import { getIcon, createTypes } from 'src/components/files/mimeMap';
+import { FileNode } from 'src/types/apiTypes';
 
 // Store and Quasar
 const filesStore = useFileStore();
 
 // Refs for DOM elements
-const folderRefs = ref([]);
-const fileRefs = ref([]);
+const folderRefs = ref<HTMLElement[]>([]);
+const fileRefs = ref<HTMLElement[]>([]);
+const newItemInput = ref<HTMLInputElement | null>(null);
+
+// loading state that no other component depends on
+const localLoading = ref(false);
+
+// Define interfaces for drag state and transfer data
+interface DragState {
+  currentDraggedId: string | null;
+  currentDraggedType: string | null;
+  activeDropTargets: Set<string>;
+  selectedItemsBeingDragged: boolean;
+}
+
+interface DragItemData {
+  id: string;
+  type: string;
+}
+
+interface DragMultipleData {
+  ids: string[];
+  isMultiple: boolean;
+  type?: string;
+}
 
 // Drag and drop state
-const dragState = reactive({
+const dragState = reactive<DragState>({
   currentDraggedId: null,
   currentDraggedType: null,
-  activeDropTargets: new Set(),
+  activeDropTargets: new Set<string>(),
   selectedItemsBeingDragged: false,
 });
 
+function getFolderById(folderId: string): void {
+  filesStore.fileOps.getFolderById(folderId, true);
+}
+
 // Track which items are being dragged
-function isDragging(itemId) {
+function isDragging(itemId: string): boolean {
   return (
     dragState.currentDraggedId === itemId ||
     (dragState.selectedItemsBeingDragged &&
@@ -230,7 +348,7 @@ function isDragging(itemId) {
 }
 
 // Track which folders are potential drop targets
-function isDropTarget(folderId) {
+function isDropTarget(folderId: string): boolean {
   if (dragState.currentDraggedId === folderId) {
     return false;
   }
@@ -247,14 +365,16 @@ function isDropTarget(folderId) {
 }
 
 // Handle the start of a drag operation
-function handleDragStart(event, item) {
+function handleDragStart(event: DragEvent, item: FileNode): void {
+  if (!event.dataTransfer) return;
+
   event.dataTransfer.effectAllowed = 'move';
   event.dataTransfer.setData(
     'text/plain',
     JSON.stringify({
       id: item.id,
-      type: item.type,
-    })
+      type: item.nodeType,
+    } as DragItemData)
   );
 
   // Set drag image/ghost (optional)
@@ -267,14 +387,15 @@ function handleDragStart(event, item) {
 
     // Add all selected item IDs to the transfer data
     const selectedIds = Array.from(filesStore.selection.selectedItems).map(
-      (item) => item.id
+      (selectedItem) => selectedItem.id
     );
     event.dataTransfer.setData(
       'application/json',
       JSON.stringify({
         ids: selectedIds,
         isMultiple: true,
-      })
+        type: item.nodeType,
+      } as DragMultipleData)
     );
   } else {
     // Single item drag
@@ -308,10 +429,10 @@ function handleDragStart(event, item) {
 
   // Update the drag state
   dragState.currentDraggedId = item.id;
-  dragState.currentDraggedType = item.type;
+  dragState.currentDraggedType = item.nodeType;
 }
 
-function handleDragEnd(event) {
+function handleDragEnd(event: DragEvent): void {
   // Clear visual state for all items
   dragState.activeDropTargets.clear();
 
@@ -322,7 +443,7 @@ function handleDragEnd(event) {
 }
 
 // Handle when a dragged item enters a potential drop target
-function handleDragEnter(event, folderItemId) {
+function handleDragEnter(event: DragEvent, folderItemId: string): void {
   // Don't allow dropping on the item being dragged
   if (folderItemId === dragState.currentDraggedId) return;
 
@@ -331,12 +452,14 @@ function handleDragEnter(event, folderItemId) {
 }
 
 // Handle when a dragged item leaves a potential drop target
-function handleDragLeave(event, folderItemId) {
+function handleDragLeave(event: DragEvent, folderItemId: string): void {
   dragState.activeDropTargets.delete(folderItemId);
 }
 
 // Handle the actual drop
-function handleDrop(event, targetFolderId) {
+function handleDrop(event: DragEvent, targetFolderId: string): void {
+  if (!event.dataTransfer) return;
+
   // Prevent folder dropping on itself
   if (dragState.currentDraggedId === targetFolderId) return;
 
@@ -354,6 +477,8 @@ function handleDrop(event, targetFolderId) {
   const jsonData = event.dataTransfer.getData('application/json');
 
   try {
+    localLoading.value = true;
+
     // Clear drag state
     dragState.currentDraggedId = null;
     dragState.currentDraggedType = null;
@@ -362,29 +487,26 @@ function handleDrop(event, targetFolderId) {
 
     // Handle multiple items drop (selected items)
     if (jsonData) {
-      const data = JSON.parse(jsonData);
+      const data = JSON.parse(jsonData) as DragMultipleData;
       if (data.isMultiple && Array.isArray(data.ids)) {
         console.log(`Dropping multiple items into folder: ${targetFolderId}`);
         data.ids.forEach((id) => {
           console.log(`Item ID: ${id} -> Target Folder ID: ${targetFolderId}`);
+          // Use data.type if available, otherwise fallback to a default
+          const itemType = data.type || 'file';
+          filesStore.fileOps.updateParent(id, targetFolderId);
         });
-        data.ids.forEach((id) => {
-          filesStore.fileOps.updateParent(data.type, id, targetFolderId);
-        });
-
-        // Here you would call your store method to move multiple items
-        // filesStore.fileOps.moveSelectedItems(targetFolderId);
         return;
       }
     }
 
     // Handle single item drop
     if (plainData) {
-      const data = JSON.parse(plainData);
+      const data = JSON.parse(plainData) as DragItemData;
       console.log(
         `Dropping item ID: ${data.id} into folder ID: ${targetFolderId}`
       );
-      filesStore.fileOps.updateParent(data.type, data.id, targetFolderId);
+      filesStore.fileOps.updateParent(data.id, targetFolderId);
     }
   } catch (error) {
     console.error('Error processing drop data:', error);
@@ -395,11 +517,12 @@ function handleDrop(event, targetFolderId) {
     dragState.currentDraggedType = null;
     dragState.selectedItemsBeingDragged = false;
     dragState.activeDropTargets.clear();
+    localLoading.value = false;
   }
 }
 
 // Handle checkbox clicks with the Set
-function handleCheckboxClick(item) {
+function handleCheckboxClick(item: FileNode): void {
   // Toggle selected state
   item.selected = !item.selected;
 
@@ -411,27 +534,42 @@ function handleCheckboxClick(item) {
   }
 }
 
+async function createNewItem(): Promise<void> {
+  localLoading.value = true;
+  let successful = false;
+  if (filesStore.fileOps.newItem.type === 'folder') {
+    successful = await filesStore.fileOps.createFolder(
+      filesStore.fileOps.newItem.name,
+      filesStore.fileOps.rawFolderContent.id
+    );
+  } else if (filesStore.fileOps.newItem.type === 'file') {
+    successful = await filesStore.fileOps.createFile(
+      filesStore.fileOps.newItem.name,
+      filesStore.fileOps.newItem.mime,
+      filesStore.fileOps.rawFolderContent.id
+    );
+  }
+
+  if (successful) {
+    resetNewItem();
+  }
+  localLoading.value = false;
+}
+
+function resetNewItem(): void {
+  filesStore.fileOps.newItem.show = false;
+  filesStore.fileOps.newItem.name = '';
+  filesStore.fileOps.newItem.type = 'text/code';
+  filesStore.fileOps.newItem.mime = '';
+}
+
 // Initialize on mount
-onMounted(() => {
-  filesStore.fileOps.getHomeFolder();
+onMounted(async () => {
+  await filesStore.fileOps.getRootFolder();
 });
 </script>
 
 <style scoped>
-.selected {
-  background-color: rgba(0, 191, 255, 0.2);
-}
-
-.pointer-events {
-  pointer-events: auto;
-}
-
-/* Existing drag and drop styles remain unchanged */
-.drop-target {
-  background-color: rgba(var(--q-primary-rgb), 0.1);
-  border: 2px dashed var(--q-primary);
-}
-
 .is-dragging {
   opacity: 0.5;
 }
@@ -444,12 +582,6 @@ onMounted(() => {
 }
 
 .file-item {
-  min-height: 48px;
-}
-
-.file-item-content {
-  display: grid;
-  grid-template-columns: 40px 35px minmax(100px, 1fr) 75px 170px 40px;
   min-height: 48px;
 }
 
@@ -471,47 +603,45 @@ onMounted(() => {
 }
 
 .file-size {
-  width: 75px;
-  min-width: 75px;
+  width: 115px;
+  min-width: 115px;
   text-align: right;
   white-space: nowrap;
   overflow: hidden;
-  padding-right: 20px;
 }
 
 .file-date {
-  width: 170px;
-  min-width: 170px;
-  text-align: right;
+  width: 200px;
+  min-width: 200px;
+  text-align: right !important;
   white-space: nowrap;
   overflow: hidden;
 }
 
 .file-actions {
-  width: 40px;
-  min-width: 40px;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
+  width: 50px;
+  min-width: 50px;
+  padding-left: 20px;
 }
 
-/* Responsive behavior */
-@media (max-width: 768px) {
+.file-item-content {
+  display: grid;
+  grid-template-columns: 40px 35px minmax(100px, 1fr) 115px 200px 50px;
+  min-height: 48px;
+  max-height: 48px;
+  padding-left: 20px;
+  padding-right: 20px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+@media (max-width: 599px) {
   .file-item-content {
-    grid-template-columns: 40px 35px minmax(100px, 1fr) 75px 40px;
+    grid-template-columns: 40px 35px minmax(100px, 1fr) 50px;
   }
 
+  .file-size,
   .file-date {
-    display: none;
-  }
-}
-
-@media (max-width: 480px) {
-  .file-item-content {
-    grid-template-columns: 40px 35px minmax(100px, 1fr) 40px;
-  }
-
-  .file-size {
     display: none;
   }
 }

@@ -1,10 +1,13 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
-import type { FolderEntryType } from 'src/types/index';
+import { ref, computed, watch } from 'vue';
+import type { FileNode } from 'src/types/apiTypes';
+import { useFileOperationsStore } from './fileOperationsStore';
 
 export const useSelectionStore = defineStore('selection', () => {
+  const fileOps = useFileOperationsStore();
+
   // Selection state using Set instead of Array
-  const selectedItems = ref(new Set<FolderEntryType>());
+  const selectedItems = ref(new Set<FileNode>());
   const allSelected = ref(false);
 
   // Computed properties
@@ -15,32 +18,33 @@ export const useSelectionStore = defineStore('selection', () => {
   const selectedItemsArray = computed(() => Array.from(selectedItems.value));
 
   function clearSelectedItems() {
-    selectedItems.value.forEach(function (item) {
+    // run this of all children in rawFolderContent, so this function can also be used to initialize the selection state
+    fileOps.rawFolderContent.children.forEach(function (item) {
       item.selected = false;
     });
+
     selectedItems.value.clear();
     allSelected.value = false;
   }
 
-  function toggleItemSelection(item: FolderEntryType) {
-    if (item.selected) {
-      selectedItems.value.add(item);
-    } else {
-      selectedItems.value.delete(item);
-    }
+  function removeSelectedItem(item: FileNode) {
+    item.selected = false;
+    selectedItems.value.delete(item);
   }
 
-  function toggleSelectAll(items: FolderEntryType[]) {
-    allSelected.value = !allSelected.value;
-    if (allSelected.value) {
-      for (const item of items) {
-        selectedItems.value.add(item);
-        item.selected = true;
+  watch(
+    () => allSelected.value,
+    (newVal) => {
+      if (newVal) {
+        fileOps.rawFolderContent.children.forEach((item) => {
+          selectedItems.value.add(item);
+          item.selected = true;
+        });
+      } else {
+        clearSelectedItems();
       }
-    } else {
-      clearSelectedItems();
     }
-  }
+  );
 
   return {
     // State
@@ -54,7 +58,6 @@ export const useSelectionStore = defineStore('selection', () => {
 
     // Methods
     clearSelectedItems,
-    toggleItemSelection,
-    toggleSelectAll,
+    removeSelectedItem,
   };
 });

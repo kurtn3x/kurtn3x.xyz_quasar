@@ -39,7 +39,7 @@
         size="md"
         label="Rename"
         @click="renameFile"
-        v-close-popup
+        :disable="propItem.name === newName || newName.trim() === ''"
       />
     </q-card-actions>
   </q-card>
@@ -58,6 +58,7 @@ const props = defineProps({
     required: true,
   },
 });
+const emit = defineEmits(['updated']);
 
 // Setup store and Quasar
 const localStore = useLocalStore();
@@ -67,11 +68,15 @@ const fileStore = useFileStore();
 const newName = ref(props.propItem.name);
 
 // Methods
-function renameFile() {
-  fileStore.fileOps.updateName(
+async function renameFile() {
+  const successful = await fileStore.fileOps.updateName(
     props.propItem.type,
     props.propItem.id,
     newName.value
   );
+
+  if (successful) {
+    emit('updated');
+  }
 }
 </script>

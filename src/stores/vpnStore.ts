@@ -1,23 +1,26 @@
-import { reactive } from 'vue';
+// src/stores/vpnStore.ts
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
 import { useQuasar } from 'quasar';
-import { apiGet, apiPost, apiDelete } from 'src/components/apiWrapper';
-import { VPNConnectionType, VPNSetupType, VPNInfoType } from 'src/types';
+import { apiGet, apiPost, apiDelete } from 'src/api/apiWrapper';
+import { VPNSetupType } from 'src/types/localTypes';
+import { VPNClient, VPNConnection } from 'src/types/apiTypes';
+
 import * as wireguard from 'src/components/vpn/wireguard.js';
 import { useLocalStore } from 'stores/localStore';
-import { defaultVPNInfo, defaultVPNConnection } from 'src/types/test';
+import { getTestVpnClients, getTestVpnConnection } from 'src/types/test';
 
-export function useVPN() {
+export const useVPNStore = defineStore('vpn', () => {
   const q = useQuasar();
-
-  const state = reactive({
-    connections: [] as VPNInfoType[],
-    loading: true,
-    error: false,
-    errorMessage: '',
-  });
-
   const localStore = useLocalStore();
 
+  // State
+  const connections = ref<VPNClient[]>([]);
+  const loading = ref(true);
+  const error = ref(false);
+  const errorMessage = ref('');
+
+  // HTTP config
   const axiosConfig = {
     withCredentials: true,
     headers: {
@@ -25,44 +28,51 @@ export function useVPN() {
     },
   };
 
+  // Get all VPN connections
   const getConnections = async () => {
-    state.loading = true;
-    state.error = false;
+    loading.value = true;
+    error.value = false;
 
     if (localStore.isDebugMode) {
       q.notify({ type: 'info', message: 'Debug' });
       await new Promise((resolve) => setTimeout(resolve, 500));
-      state.loading = false;
-      state.error = false;
-      state.connections = [defaultVPNInfo()];
+      loading.value = false;
+      error.value = false;
+      connections.value = getTestVpnClients();
       return;
     }
 
-    const apiData = await apiGet('/vpn/client', axiosConfig);
+    const apiData = await apiGet('/vpn/clients/', axiosConfig);
     if (apiData.error === false) {
-      state.connections = apiData.data as VPNInfoType[];
+      connections.value = apiData.data as VPNClient[];
     } else {
       q.notify({ type: 'negative', message: apiData.errorMessage });
-      state.error = true;
-      state.errorMessage = apiData.errorMessage;
+      error.value = true;
+      errorMessage.value = apiData.errorMessage;
     }
 
-    state.loading = false;
+    loading.value = false;
   };
 
+  // Delete a VPN connection
   const deleteConnection = async (id: string) => {
-    const apiData = await apiDelete('/vpn/client/' + id, axiosConfig);
+    const apiData = await apiDelete(`/vpn/clients/${id}/`, axiosConfig);
     if (apiData.error === false) {
-      q.notify({ type: 'positive', message: 'Deleted.' });
-      await getConnections();
+      q.notify({ type: 'positive', message: 'Deleted' });
+      // Remove the connection from the state directly
+      const index = connections.value.findIndex((conn) => conn.id === id);
+      if (index !== -1) {
+        connections.value.splice(index, 1);
+      }
     } else {
       q.notify({ type: 'negative', message: apiData.errorMessage });
     }
   };
 
+  // Create a new VPN client
   const createVPNClient = async (
     setup: VPNSetupType
-  ): Promise<VPNConnectionType | null> => {
+  ): Promise<VPNConnection | null> => {
     let keys = {
       privateKey: '',
       publicKey: '',
@@ -81,15 +91,16 @@ export function useVPN() {
     if (localStore.isDebugMode) {
       q.notify({ type: 'info', message: 'Debug' });
       await new Promise((resolve) => setTimeout(resolve, 500));
-      const debugConnection = defaultVPNConnection();
+      const debugConnection = getTestVpnConnection();
+      debugConnection.clientPrivateKey = 'omitted';
       return debugConnection;
     }
 
     // Make API call
-    const apiData = await apiPost('/vpn/client', setup, axiosConfig);
+    const apiData = await apiPost('/vpn/clients/', setup, axiosConfig);
 
     if (apiData.error === false) {
-      const vpnConnection = apiData.data as VPNConnectionType;
+      const vpnConnection = apiData.data as VPNConnection;
 
       // Add the key information back
       if (setup.autoKeyGeneration === true) {
@@ -109,9 +120,15 @@ export function useVPN() {
   };
 
   return {
-    state,
+    // State
+    connections,
+    loading,
+    error,
+    errorMessage,
+
+    // Actions
     getConnections,
     deleteConnection,
     createVPNClient,
   };
-}
+});
