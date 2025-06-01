@@ -23,7 +23,7 @@
               rounded
               size="20px"
             >
-              <img :src="localStore.headerInfo.avatar" />
+              <img :src="localStore.headerInfo.avatarUrl" />
             </q-avatar>
             <div class="q-ml-md ellipsis">My Profile</div>
           </q-btn>

@@ -67,8 +67,8 @@
 import { defineComponent, ref, Ref } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { useQuasar } from 'quasar';
-import { apiPost } from 'src/components/apiWrapper';
-import { FolderEntryType } from 'src/types/index';
+import { apiPost } from 'src/api/apiWrapper';
+import { FileNode } from 'src/types/apiTypes';
 
 export default defineComponent({
   name: 'PasswordDialog',
@@ -81,7 +81,7 @@ export default defineComponent({
     const localStore = useLocalStore();
     const q = useQuasar();
     var showDialog = ref(props.active) as Ref<boolean>;
-    var item = ref(props.propItem) as Ref<FolderEntryType>;
+    var item = ref(props.propItem) as Ref<FileNode>;
 
     return {
       localStore,
@@ -117,7 +117,7 @@ export default defineComponent({
       this.loading = true;
       var data = {
         id: this.item.id,
-        type: this.item.type,
+        type: this.item.nodeType,
         password: this.password,
       };
       const axiosConfig = {

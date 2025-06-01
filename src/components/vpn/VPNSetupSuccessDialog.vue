@@ -187,6 +187,10 @@
           :model-value="connection.presharedKey"
           style="height: 50px"
           dense
+          v-if="
+            props.connection.presharedKey &&
+            props.connection.presharedKey.trim()
+          "
         >
           <q-btn
             flat
@@ -229,17 +233,10 @@
               class="text-body1"
               :class="localStore.isDarkMode ? 'text-white' : 'text-dark'"
             >
-              Server Key:
+              Public Key:
             </a>
           </template>
         </q-input>
-        <q-checkbox
-          v-model="connectionOptions.onlyInternal"
-          color="green"
-          dense
-          label="Only allow internal networks"
-          class="q-mt-sm text-body1"
-        />
         <q-input
           outlined
           readonly
@@ -424,7 +421,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['open-help', 'done']);
+const emit = defineEmits(['open-help', 'updated']);
 
 const localStore = useLocalStore();
 const activeTab = ref('info');
@@ -439,32 +436,26 @@ const connectionOptions = ref({
 
 // Compute config
 const wireguardConfig = computed(() => {
-  return (
-    '[Interface]\n' +
-    'PrivateKey = ' +
-    props.connection.clientPrivateKey +
-    '\n' +
-    'Address = ' +
-    props.connection.addresses +
-    '\n' +
-    'DNS = ' +
-    props.connection.dnsServers +
-    '\n' +
-    '[Peer]\n' +
-    'PresharedKey = ' +
-    props.connection.presharedKey +
-    '\n' +
-    'PublicKey = ' +
-    props.connection.serverPublicKey +
-    '\n' +
-    'AllowedIPs = ' +
-    (connectionOptions.value.onlyInternal
+  const config = `[Interface]
+PrivateKey = ${props.connection.clientPrivateKey}
+Address = ${props.connection.addresses}
+DNS = ${props.connection.dnsServers}
+
+[Peer]${
+    props.connection.presharedKey && props.connection.presharedKey.trim()
+      ? `
+PresharedKey = ${props.connection.presharedKey}`
+      : ''
+  }
+PublicKey = ${props.connection.serverPublicKey}
+AllowedIPs = ${
+    connectionOptions.value.onlyInternal
       ? props.connection.allowedIpsInternal
-      : props.connection.allowedIps) +
-    '\n' +
-    'Endpoint = ' +
-    props.connection.endpoint
-  );
+      : props.connection.allowedIps
+  }
+Endpoint = ${props.connection.endpoint}`;
+
+  return config;
 });
 
 // Download configuration
@@ -489,6 +480,6 @@ function downloadConfiguration() {
 
 function getConnections() {
   // Emit event to parent component to refresh connections
-  emit('done');
+  emit('updated');
 }
 </script>

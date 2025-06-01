@@ -14,7 +14,7 @@ import {
 
 export function getTestHeaderInfo(): HeaderInfo {
   return {
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=test',
+    avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=test',
     username: 'testuser',
     isAdmin: true,
   };
@@ -37,7 +37,7 @@ export function getTestUserProfile(): UserProfile {
     status: 'Online',
     location: 'Test City',
     description: 'This is a test user profile for development and testing',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=test',
+    avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=test',
     role: 'Developer',
     dateJoined: '2023-01-01',
   };
@@ -100,7 +100,7 @@ export function getTestVpnConnection(): VPNConnection {
     clientPublicKey: 'mRgQrwX3WLH2IUXNz6tsIqf/60ygQs4hcqfsFvNfLnU=',
     allowedIps: '0.0.0.0/0, ::/0',
     serverPublicKey: 'KALxO/+UYwqFPUGFI+WbUbIJ8MOwKgemi9oYBdr4OVo=',
-    presharedKey: 'lUK8cP+M60KPq7OVso3dni91PhgKgZVxyJY9IkU7J1A=',
+    presharedKey: '',
     dnsServers: '1.1.1.1, 8.8.8.8',
     allowedIpsInternal: '10.0.0.0/24',
     endpoint: 'vpn.example.com:51820',
@@ -116,6 +116,7 @@ export function getTestVpnClients(): VPNClient[] {
       clientPublicKey: 'abc123publickey==',
       created: '2023-01-15',
       alternativeRoute: false,
+      state: 'CREATED',
     },
     {
       id: 'vpn-002',
@@ -124,6 +125,7 @@ export function getTestVpnClients(): VPNClient[] {
       clientPublicKey: 'def456publickey==',
       created: '2023-02-20',
       alternativeRoute: true,
+      state: 'PROCESSING',
     },
     {
       id: 'vpn-003',
@@ -132,6 +134,7 @@ export function getTestVpnClients(): VPNClient[] {
       clientPublicKey: 'ghi789publickey==',
       created: '2023-03-25',
       alternativeRoute: false,
+      state: 'FAILED',
     },
     {
       id: 'vpn-004',
@@ -140,6 +143,7 @@ export function getTestVpnClients(): VPNClient[] {
       clientPublicKey: 'jkl012publickey==',
       created: '2023-04-10',
       alternativeRoute: true,
+      state: 'NEW',
     },
     {
       id: 'vpn-005',
@@ -148,6 +152,7 @@ export function getTestVpnClients(): VPNClient[] {
       clientPublicKey: 'mno345publickey==',
       created: '2023-05-05',
       alternativeRoute: false,
+      state: 'DELETING',
     },
   ];
 }

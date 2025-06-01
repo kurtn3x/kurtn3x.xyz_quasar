@@ -173,7 +173,7 @@
 </template>
 
 <script setup>
-import { apiPut, apiGet } from 'src/components/apiWrapper';
+import { apiPut, apiGet } from 'src/api/apiWrapper';
 import {
   defineProps,
   reactive,

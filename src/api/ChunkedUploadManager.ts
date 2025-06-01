@@ -4,7 +4,10 @@ import {
   UploadSessionInfo,
   UploadTrackingInfo,
 } from 'src/types/localTypes';
-import { apiPost, apiGet } from './apiWrapper';
+
+import { UploadSessionCreateRequest, UploadSession } from 'src/types/apiTypes';
+
+import { apiPost, apiGet, apiDelete } from './apiWrapper';
 import { Cookies } from 'quasar';
 
 // Quasar cookies instance
@@ -12,11 +15,22 @@ const cookies = Cookies;
 
 /**
  * Upload manager for handling chunked uploads with pause/resume capability
+ * Updated to work with Django chunked upload API
+ * Note: Uploads are only maintained in memory - no localStorage persistence
  */
 export class ChunkedUploadManager {
   // Use a Map to track ongoing uploads by ID
   private static activeUploads = new Map<string, UploadTrackingInfo>();
   private static CHUNK_SIZE = 1024 * 1024 * 2; // 2MB chunks
+
+  private static getAxiosConfig() {
+    return {
+      withCredentials: true,
+      headers: {
+        'X-CSRFToken': cookies.get('csrftoken'),
+      },
+    };
+  }
 
   /**
    * Initialize a new chunked upload
@@ -72,23 +86,20 @@ export class ChunkedUploadManager {
         });
       }
 
+      const sessionRequest: UploadSessionCreateRequest = {
+        filename: file.name,
+        parentFolderId: parentId,
+        fileSize: file.size,
+        mimeType: file.type,
+        totalChunks: totalChunks,
+        chunkSize: chunkSize,
+      };
+
       // Initialize session with server
       const response = await apiPost(
-        'files/upload/init-session',
-        {
-          filename: file.name,
-          parentId,
-          fileSize: file.size,
-          mimeType: file.type,
-          totalChunks,
-          chunkSize,
-        },
-        {
-          withCredentials: true,
-          headers: {
-            'X-CSRFToken': cookies.get('csrftoken'),
-          },
-        }
+        'files/uploads/',
+        sessionRequest,
+        ChunkedUploadManager.getAxiosConfig()
       );
 
       if (response.error) {
@@ -97,19 +108,21 @@ export class ChunkedUploadManager {
         );
       }
 
+      const sessionData: UploadSession = response.data;
+
       // Update tracking info with session details
       uploadInfo.sessionInfo = {
-        sessionId: response.data.sessionId,
+        sessionId: sessionData.id, // Django returns 'id', not 'sessionId'
         filename: file.name,
         fileSize: file.size,
         mimeType: file.type,
         chunkSize,
         totalChunks,
         chunks,
-        uploadedChunks: 0,
-        createdAt: new Date(),
-        lastUpdatedAt: new Date(),
-        resumeToken: response.data.resumeToken,
+        uploadedChunks: sessionData.uploadedChunks || 0,
+        createdAt: new Date(sessionData.createdAt),
+        lastUpdatedAt: new Date(sessionData.updatedAt),
+        resumeToken: sessionData.resumeToken,
       };
 
       uploadInfo.status = UploadStatus.QUEUED;
@@ -227,41 +240,37 @@ export class ChunkedUploadManager {
       // Extract the chunk data
       const chunkData = upload.sourceFile.slice(chunk.start, chunk.end);
 
-      // Prepare form data
+      // Prepare form data with snake_case field names
       const formData = new FormData();
       formData.append('chunk', chunkData);
-      formData.append('chunkIndex', chunk.index.toString());
-      formData.append('sessionId', upload.sessionInfo.sessionId);
+      formData.append('chunk_index', chunk.index.toString()); // ✅ Fixed: was 'chunkIndex'
 
-      // Create an abort controller for this chunk
-      const controller = new AbortController();
+      // Use your apiWrapper with proper config for FormData
+      const axiosConfig = {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': cookies.get('csrftoken'),
+          // Don't set Content-Type manually for FormData - let axios handle it
+        },
+      };
 
-      // We need to use fetch here since apiWrapper doesn't support AbortController
-      // But we'll follow the same error handling pattern
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/files/upload/chunk`,
-        {
-          method: 'POST',
-          body: formData,
-          headers: {
-            'X-CSRFToken': cookies.get('csrftoken'),
-          },
-          signal: controller.signal,
-          credentials: 'include',
-        }
+      const response = await apiPost(
+        `files/uploads/${upload.sessionInfo.sessionId}/upload_chunk/`,
+        formData,
+        axiosConfig
       );
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (response.error) {
         throw new Error(
-          errorData.message || `Failed to upload chunk ${chunk.index}`
+          response.errorMessage || `Failed to upload chunk ${chunk.index}`
         );
       }
 
       // Update chunk status
       chunk.status = UploadStatus.COMPLETED;
       chunk.uploadedAt = new Date();
-      upload.sessionInfo.uploadedChunks++;
+      upload.sessionInfo.uploadedChunks =
+        response.data.uploadedChunks || upload.sessionInfo.uploadedChunks + 1;
       upload.sessionInfo.lastUpdatedAt = new Date();
 
       // Update the overall upload progress
@@ -281,7 +290,7 @@ export class ChunkedUploadManager {
       } else {
         chunk.status = UploadStatus.FAILED;
         throw new Error(
-          `Failed to upload chunk ${chunk.index} after ${chunk.retries} retries`
+          `Failed to upload chunk ${chunk.index} after ${chunk.retries} retries: ${error.message}`
         );
       }
     }
@@ -319,17 +328,13 @@ export class ChunkedUploadManager {
     upload.message = 'Upload canceled';
 
     try {
-      // Notify server to cancel the session
-      await apiPost(
-        `files/upload/cancel-session/${upload.sessionInfo.sessionId}`,
-        {},
-        {
-          withCredentials: true,
-          headers: {
-            'X-CSRFToken': cookies.get('csrftoken'),
-          },
-        }
-      );
+      // Cancel the session on the server using DELETE (REST convention)
+      await apiDelete(`files/uploads/${upload.sessionInfo.sessionId}/`, {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': cookies.get('csrftoken'),
+        },
+      });
       return true;
     } catch (error: any) {
       console.error('Failed to cancel upload on server:', error);
@@ -346,12 +351,10 @@ export class ChunkedUploadManager {
     if (!upload.sessionInfo) return;
 
     try {
+      // Complete the upload using your Django API
       const response = await apiPost(
-        `files/upload/finalize/${upload.sessionInfo.sessionId}`,
-        {
-          name: upload.name, // Use the potentially renamed file
-          parentId: upload.parentId,
-        },
+        `files/uploads/${upload.sessionInfo.sessionId}/complete/`,
+        {}, // Django complete endpoint doesn't need additional data
         {
           withCredentials: true,
           headers: {
@@ -375,6 +378,66 @@ export class ChunkedUploadManager {
   }
 
   /**
+   * Get upload status from server (for resuming)
+   */
+  static async getUploadStatus(sessionId: string): Promise<any> {
+    try {
+      const response = await apiGet(`files/uploads/${sessionId}/`, {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': cookies.get('csrftoken'),
+        },
+      });
+
+      if (response.error) {
+        throw new Error(response.errorMessage || 'Failed to get upload status');
+      }
+
+      return response.data;
+    } catch (error: any) {
+      console.error('Failed to get upload status:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Resume upload from server state (for same-session resumes only)
+   */
+  static async resumeFromServer(uploadId: string): Promise<void> {
+    const upload = ChunkedUploadManager.activeUploads.get(uploadId);
+    if (!upload || !upload.sessionInfo) {
+      throw new Error('Upload not found or not initialized');
+    }
+
+    try {
+      // Get current status from server
+      const serverStatus = await ChunkedUploadManager.getUploadStatus(
+        upload.sessionInfo.sessionId
+      );
+
+      // Update our local state with server state
+      upload.sessionInfo.uploadedChunks = serverStatus.uploadedChunks;
+
+      // Mark uploaded chunks as completed
+      for (let i = 0; i < serverStatus.uploadedChunks; i++) {
+        if (upload.sessionInfo.chunks[i]) {
+          upload.sessionInfo.chunks[i].status = UploadStatus.COMPLETED;
+          upload.uploadedBytes +=
+            upload.sessionInfo.chunks[i].end -
+            upload.sessionInfo.chunks[i].start;
+        }
+      }
+
+      // Continue with remaining chunks
+      await ChunkedUploadManager.startUpload(uploadId);
+    } catch (error: any) {
+      upload.status = UploadStatus.FAILED;
+      upload.message = error.message || 'Failed to resume upload';
+      throw error;
+    }
+  }
+
+  /**
    * Get all active uploads
    */
   static getAllUploads(): UploadTrackingInfo[] {
@@ -389,78 +452,67 @@ export class ChunkedUploadManager {
   }
 
   /**
-   * Save upload state to local storage for possible future resuming
+   * Remove a specific upload by ID
    */
-  static saveUploadState(): void {
-    // Convert Map to object for storage
-    const uploadsToSave = Array.from(
-      ChunkedUploadManager.activeUploads.entries()
-    )
-      .filter(
-        ([_, upload]) =>
-          // Only save uploads that can be resumed (have session info)
-          upload.canResume &&
-          upload.sessionInfo &&
-          upload.status !== UploadStatus.COMPLETED
-      )
-      .map(([id, upload]) => {
-        // Don't store the file object itself
-        const { sourceFile, ...uploadWithoutFile } = upload;
-        return [id, uploadWithoutFile];
-      });
-
-    localStorage.setItem(
-      'chunked_uploads',
-      JSON.stringify(Object.fromEntries(uploadsToSave))
-    );
+  static removeUpload(uploadId: string): boolean {
+    return ChunkedUploadManager.activeUploads.delete(uploadId);
   }
 
   /**
-   * Restore upload state from local storage
+   * Clear all uploads from the manager
    */
-  static restoreUploadState(): void {
-    try {
-      const savedUploads = localStorage.getItem('chunked_uploads');
-      if (!savedUploads) return;
-
-      const uploadEntries = Object.entries(JSON.parse(savedUploads));
-
-      for (const [id, uploadData] of uploadEntries) {
-        // Cast dates back from strings
-        const upload = uploadData as UploadTrackingInfo;
-        upload.createdAt = new Date(upload.createdAt);
-        if (upload.sessionInfo) {
-          upload.sessionInfo.createdAt = new Date(upload.sessionInfo.createdAt);
-          upload.sessionInfo.lastUpdatedAt = new Date(
-            upload.sessionInfo.lastUpdatedAt
-          );
-
-          for (const chunk of upload.sessionInfo.chunks) {
-            if (chunk.uploadedAt) {
-              chunk.uploadedAt = new Date(chunk.uploadedAt);
-            }
-          }
-        }
-
-        // Add to active uploads map
-        ChunkedUploadManager.activeUploads.set(id, upload);
+  static clearAllUploads(): void {
+    // Cancel any active uploads first
+    for (const [uploadId, upload] of ChunkedUploadManager.activeUploads) {
+      if (
+        [
+          UploadStatus.UPLOADING,
+          UploadStatus.QUEUED,
+          UploadStatus.PREPARING,
+        ].includes(upload.status)
+      ) {
+        ChunkedUploadManager.cancelUpload(uploadId);
       }
-    } catch (error) {
-      console.error('Failed to restore upload state:', error);
     }
+
+    // Clear the map
+    ChunkedUploadManager.activeUploads.clear();
   }
 
   /**
-   * Helper method to verify if an upload exists and has valid session info
+   * Remove completed uploads only
    */
-  private static validateUpload(uploadId: string): UploadTrackingInfo {
-    const upload = ChunkedUploadManager.activeUploads.get(uploadId);
-    if (!upload) {
-      throw new Error(`Upload with ID ${uploadId} not found`);
+  static removeCompletedUploads(): void {
+    const completedIds: string[] = [];
+
+    for (const [uploadId, upload] of ChunkedUploadManager.activeUploads) {
+      if (upload.status === UploadStatus.COMPLETED) {
+        completedIds.push(uploadId);
+      }
     }
-    if (!upload.sessionInfo) {
-      throw new Error(`Upload ${uploadId} has no session information`);
-    }
-    return upload;
+
+    completedIds.forEach((id) => {
+      ChunkedUploadManager.activeUploads.delete(id);
+    });
+  }
+
+  /**
+   * Get upload statistics
+   */
+  static getUploadStats() {
+    const uploads = Array.from(ChunkedUploadManager.activeUploads.values());
+
+    return {
+      total: uploads.length,
+      uploading: uploads.filter((u) => u.status === UploadStatus.UPLOADING)
+        .length,
+      queued: uploads.filter((u) => u.status === UploadStatus.QUEUED).length,
+      paused: uploads.filter((u) => u.status === UploadStatus.PAUSED).length,
+      completed: uploads.filter((u) => u.status === UploadStatus.COMPLETED)
+        .length,
+      failed: uploads.filter((u) => u.status === UploadStatus.FAILED).length,
+      canceled: uploads.filter((u) => u.status === UploadStatus.CANCELED)
+        .length,
+    };
   }
 }

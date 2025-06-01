@@ -132,7 +132,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { apiGet, apiPut } from 'src/components/apiWrapper';
+import { apiGet, apiPut } from 'src/api/apiWrapper';
 import { defineProps, watch, computed } from 'vue';
 import { useQuasar } from 'quasar';
 import { useLocalStore } from 'stores/localStore';

@@ -22,7 +22,7 @@
           style="height: 285px"
         >
           <div
-            v-if="!uploadStore.hasUploadListItems"
+            v-if="!uploadStore.hasUploads"
             class="text-center text-h6 q-mt-md no-pointer-events"
           >
             Select some Files or Folders or Drag & Drop them here.
@@ -157,7 +157,7 @@
             size="xs"
             class="bg-red text-white"
             push
-            :disabled="!uploadStore.hasUploadListItems"
+            :disabled="!uploadStore.hasUploads"
           />
         </div>
       </div>
@@ -178,7 +178,7 @@
         style="height: 45px"
       />
       <q-btn
-        :disabled="!uploadStore.hasUploadListItems"
+        :disabled="!uploadStore.hasUploads"
         v-close-popup
         push
         class="bg-green text-white col"
@@ -196,7 +196,6 @@
 import { watch, ref } from 'vue';
 import { useFileStore } from 'src/stores/fileStore';
 import { useUploadStore } from 'src/stores/fileStores/uploadStore';
-import { UploadEntryType } from 'src/types/index';
 
 // Props definition
 const props = defineProps({

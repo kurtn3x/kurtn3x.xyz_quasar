@@ -69,7 +69,7 @@
             size="26px"
             rounded
           >
-            <img :src="localStore.headerInfo.avatar" />
+            <img :src="localStore.headerInfo.avatarUrl" />
           </q-avatar>
           <a class="text-body2 q-mr-sm text-weight-bold">
             {{ localStore.headerInfo.username }}
@@ -78,7 +78,7 @@
             name="arrow_drop_down"
             size="sm"
           />
-          <user-menu :headerInfo="localStore.headerInfo" />
+          <UserMenu :headerInfo="localStore.headerInfo" />
         </q-btn>
       </q-toolbar>
 

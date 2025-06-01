@@ -1,11 +1,10 @@
-/**
- * Authentication Types
- */
-
-////////////////////////////////////////
+/*
+User return data
+Settings, Profile, HeaderInfo
+*/
 
 export type HeaderInfo = {
-  avatar: string; // URL to the avatar image
+  avatarUrl: string; // URL to the avatar image
   username: string; // Username of the logged-in user
   isAdmin: boolean; // Whether the user is an admin
 };
@@ -24,7 +23,7 @@ export type UserProfile = {
   status: string;
   location: string;
   description: string;
-  avatar: string; // URL to the avatar image
+  avatarUrl: string; // URL to the avatar image
   role: string;
   dateJoined: string;
 };
@@ -34,7 +33,22 @@ export type AccountSettings = {
   profile: UserProfile;
 };
 
-// generic information about a VPN client
+export type UserProfileUpdate = {
+  name?: string;
+  status?: string;
+  location?: string;
+  description?: string;
+  avatar?: File; // For multipart/form-data
+};
+
+/*
+VPN return data
+*/
+
+/**
+ * Generic Information about a VPN client
+ * This is used to list all VPN clients and their basic information
+ */
 export type VPNClient = {
   id: string;
   name: string;
@@ -42,11 +56,16 @@ export type VPNClient = {
   clientPublicKey: string;
   created: string;
   alternativeRoute: boolean;
+  state: 'NEW' | 'PROCESSING' | 'CREATED' | 'FAILED' | 'DELETING';
   // frontend stuff
   selected?: boolean; // Whether the VPN client is selected in the UI
 };
 
-// Information that is passed when creating a new VPN client (response after creation)
+/**
+ * Connection details for a VPN client
+ * This contains all the necessary information to establish a VPN connection
+ * The data returned here will only ever be shown once, when the VPN client is created
+ */
 export type VPNConnection = {
   name: string; // Name of the VPN connection
   addresses: string; // Comma-separated list of IP addresses
@@ -59,6 +78,10 @@ export type VPNConnection = {
   allowedIpsInternal: string; // Internal allowed IPs for the VPN
   endpoint: string; // Endpoint address for the VPN server
 };
+
+/*
+File Data
+*/
 
 export interface BaseFileNode {
   // Basic identification and structural fields
@@ -128,6 +151,52 @@ export interface FolderTreeNode {
   children?: FolderTreeNode[]; // Child nodes for folders
 }
 
+/**
+ * Upload Session Types
+ */
+
+export type UploadSession = {
+  id: string;
+  filename: string;
+  fileSize: number;
+  mimeType: string;
+  parentFolderId: string;
+  chunkSize: number;
+  totalChunks: number;
+  uploadedChunks: number;
+  status: 'CREATED' | 'UPLOADING' | 'COMPLETED' | 'FAILED' | 'CANCELED';
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
+  progress: number; // Progress percentage (0-100)
+  resumeToken: string;
+  expiresAt: string; // ISO date string
+  user: string; // User ID
+};
+
+/**
+ * Initiate a new upload session
+ */
+export type UploadSessionCreateRequest = {
+  filename: string;
+  fileSize: number;
+  mimeType: string;
+  parentFolderId: string;
+  chunkSize: number;
+  totalChunks: number;
+};
+
+export type UploadChunkRequest = {
+  chunk: File; // For multipart/form-data
+  chunkIndex: number;
+};
+
+export type UploadChunk = {
+  sessionId: string;
+  chunkIndex: number;
+  size: number;
+  createdAt: string;
+};
+
 ///////////////////////////////////////////
 
 export type AuthResponse = {
@@ -159,24 +228,6 @@ export type ChangePasswordRequest = {
 
 export type ErrorResponse = {
   error: string;
-};
-
-/**
- * User Profile Types
- */
-
-export type HeaderInformation = {
-  avatar: string;
-  username: string;
-  isAdmin: boolean;
-};
-
-export type UserProfileUpdate = {
-  name?: string;
-  status?: string;
-  location?: string;
-  description?: string;
-  avatar?: File; // For multipart/form-data
 };
 
 /**
@@ -227,48 +278,6 @@ export type FileNodeContentUpdateRequest = {
 export type FolderContentsResponse = {
   folder: FileNode;
   children: FileNodeList[];
-};
-
-/**
- * Upload Session Types
- */
-
-export type UploadSession = {
-  id: string;
-  filename: string;
-  fileSize: number;
-  mimeType: string;
-  parentFolderId: string;
-  chunkSize: number;
-  totalChunks: number;
-  uploadedChunks: number;
-  status: 'CREATED' | 'UPLOADING' | 'COMPLETED' | 'FAILED' | 'CANCELED';
-  createdAt: string;
-  updatedAt: string;
-  resumeToken: string;
-  expiresAt: string;
-  progressPercentage: number;
-};
-
-export type UploadSessionCreateRequest = {
-  filename: string;
-  fileSize: number;
-  mimeType: string;
-  parentFolderId: string;
-  chunkSize: number;
-  totalChunks: number;
-};
-
-export type UploadChunkRequest = {
-  chunk: File; // For multipart/form-data
-  chunkIndex: number;
-};
-
-export type UploadChunk = {
-  sessionId: string;
-  chunkIndex: number;
-  size: number;
-  createdAt: string;
 };
 
 /**

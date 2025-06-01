@@ -59,10 +59,10 @@ export const useVPNStore = defineStore('vpn', () => {
     const apiData = await apiDelete(`/vpn/clients/${id}/`, axiosConfig);
     if (apiData.error === false) {
       q.notify({ type: 'positive', message: 'Deleted' });
-      // Remove the connection from the state directly
+      // Set state to DELETING
       const index = connections.value.findIndex((conn) => conn.id === id);
       if (index !== -1) {
-        connections.value.splice(index, 1);
+        connections.value[index].state = 'DELETING';
       }
     } else {
       q.notify({ type: 'negative', message: apiData.errorMessage });

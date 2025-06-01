@@ -17,6 +17,10 @@
         <div class="col">{{ propItem.name }}</div>
       </div>
       <div class="row q-mt-md">
+        <div class="col-3 text-weight-bolder">State</div>
+        <div class="col">{{ propItem.state }}</div>
+      </div>
+      <div class="row q-mt-md">
         <div class="col-3 text-weight-bolder">Addresses</div>
         <div class="col">{{ propItem.addresses }}</div>
       </div>

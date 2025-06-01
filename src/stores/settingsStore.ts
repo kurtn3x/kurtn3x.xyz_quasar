@@ -1,7 +1,11 @@
 // stores/settingsStore.ts
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { AccountSettings, UserProfile } from 'src/types/apiTypes';
+import {
+  AccountSettings,
+  UserProfile,
+  UserProfileUpdate,
+} from 'src/types/apiTypes';
 import { apiGet, apiDelete, apiPatch, apiPost } from '../api/apiWrapper';
 import { useQuasar } from 'quasar';
 import { getTestAccountSettings } from 'src/types/test';
@@ -38,7 +42,7 @@ export const useSettingsStore = defineStore('settings', () => {
       error.value = false;
       accountSettings.value = getTestAccountSettings();
       avatarPreview.value =
-        accountSettings.value.profile.avatar + '?' + Math.random();
+        accountSettings.value.profile.avatarUrl + '?' + Math.random();
       return;
     }
 
@@ -50,7 +54,7 @@ export const useSettingsStore = defineStore('settings', () => {
     if (apiData.error === false) {
       accountSettings.value = apiData.data as AccountSettings;
       avatarPreview.value =
-        accountSettings.value.profile.avatar + '?' + Math.random();
+        accountSettings.value.profile.avatarUrl + '?' + Math.random();
       error.value = false;
     } else {
       q.notify({ type: 'negative', message: apiData.errorMessage });
@@ -60,10 +64,7 @@ export const useSettingsStore = defineStore('settings', () => {
     loading.value = false;
   }
 
-  async function updateProfile(
-    newProfileData: Partial<UserProfile>,
-    avatarFile: File | null
-  ) {
+  async function updateProfile(newProfileData: Partial<UserProfileUpdate>) {
     const config = {
       ...axiosConfig,
       headers: {
@@ -98,8 +99,8 @@ export const useSettingsStore = defineStore('settings', () => {
       formData.append('status', newProfileData.status);
     }
 
-    if (avatarFile) {
-      formData.append('avatar', avatarFile);
+    if (newProfileData.avatar) {
+      formData.append('avatar', newProfileData.avatar);
     }
 
     const apiData = await apiPatch('/profile/profiles/me/', formData, config);
@@ -109,11 +110,14 @@ export const useSettingsStore = defineStore('settings', () => {
         type: 'positive',
         message: 'Profile updated successfully.',
       });
-      await getAccountInformation();
-      localStore.getHeaderInfo();
-      if (avatarFile && accountSettings.value) {
-        localStore.setHeaderAvatar(accountSettings.value.profile.avatar);
+      /* Patch returns the updated value */
+      accountSettings.value.profile = apiData.data as UserProfile;
+      if (newProfileData.avatar) {
+        localStore.setHeaderAvatar((apiData.data as UserProfile).avatarUrl);
       }
+      // update header info anways because it doesn't impact the site
+      localStore.getHeaderInfo();
+      /* */
     } else {
       q.notify({ type: 'negative', message: apiData.errorMessage });
     }

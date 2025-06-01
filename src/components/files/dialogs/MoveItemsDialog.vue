@@ -136,7 +136,9 @@
                 >
                   <div class="ellipsis text-body2 q-ma-xs">
                     <q-icon
-                      :name="item.type == 'folder' ? 'folder' : 'file_present'"
+                      :name="
+                        item.nodeType == 'folder' ? 'folder' : 'file_present'
+                      "
                     />
                     <a class="q-ml-sm text-white">{{ item.name }}</a>
                   </div>
@@ -199,7 +201,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useLocalStore } from 'stores/localStore';
 import { QTree } from 'quasar';
-import { FolderTreeType, FolderEntryType } from 'src/types/index';
+import { FileNode } from 'src/types/apiTypes';
 import { useFileStore } from 'src/stores/fileStore';
 
 const moveItemsTree = ref<QTree | null>(null);
@@ -208,8 +210,8 @@ const moveItemsTree = ref<QTree | null>(null);
 const props = defineProps({
   // 2 modes, either move a single item
   propItem: {
-    type: Object as () => FolderEntryType,
-    default: {} as FolderEntryType,
+    type: Object as () => FileNode,
+    default: {} as FileNode,
   },
   // or move multiple items by accessing the selected items
   moveSelection: {
@@ -252,7 +254,6 @@ async function moveItems() {
     const movePromises = fileStore.selection.selectedItemsArray.map(
       async (item) => {
         const successful = await fileStore.fileOps.updateParent(
-          item.type,
           item.id,
           selectedId.value
         );
@@ -280,7 +281,6 @@ async function moveItems() {
     }
   } else {
     const successful = await fileStore.fileOps.updateParent(
-      props.propItem.type,
       props.propItem.id,
       selectedId.value
     );

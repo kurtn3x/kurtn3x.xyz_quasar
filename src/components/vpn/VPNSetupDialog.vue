@@ -6,19 +6,8 @@
   >
     <q-toolbar class="bg-layout-bg text-layout-text text-center items-center">
       <q-toolbar-title class="q-ma-sm">Setup VPN Connection</q-toolbar-title>
-      <div class="absolute-right row items-center q-mr-sm">
-        <q-btn
-          icon="question_mark"
-          push
-          class="bg-blue text-white"
-          round
-          size="sm"
-          style="height: 15px; width: 15px"
-          @click="$emit('open-help')"
-        />
-      </div>
     </q-toolbar>
-    <q-form @submit="handleSubmit">
+    <q-form @submit="handleCreateVPNClient">
       <div class="q-ma-md text-body1">
         <q-input
           v-model="localSetupInput.name"
@@ -59,6 +48,11 @@
             input-class="text-body2"
             class="q-mt-md"
             no-error-icon
+            :rules="[
+              (val) => (val && val.length > 0) || 'Public Key is required',
+            ]"
+            lazy-rules
+            hide-bottom-space
           />
           <q-input
             v-model="localSetupInput.clientPrivateKey"
@@ -70,18 +64,7 @@
             input-class="text-body2"
             class="q-mt-md"
             no-error-icon
-          >
-            <q-tooltip
-              class="text-body1 shadow-1"
-              :class="
-                localStore.isDarkMode
-                  ? 'bg-dark text-white'
-                  : 'bg-white text-dark'
-              "
-            >
-              Private Keys are never transmitted
-            </q-tooltip>
-          </q-input>
+          />
         </div>
         <div class="row justify-center q-mt-md">
           <q-checkbox
@@ -123,6 +106,7 @@
           size="md"
           label="Generate"
           type="submit"
+          :loading="localLoading"
         />
       </q-card-actions>
     </q-form>
@@ -134,12 +118,16 @@ import { ref, Ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { useLocalStore } from 'stores/localStore';
 import { VPNSetupType } from 'src/types/localTypes';
+import { useVPNStore } from 'stores/vpnStore';
 
 // Define events
-const emit = defineEmits(['submit', 'open-help']);
+const emit = defineEmits(['created']);
 
 const localStore = useLocalStore();
+const vpnStore = useVPNStore();
 const q = useQuasar();
+
+const localLoading = ref(false);
 
 // Define default values
 const localSetupInput: Ref<VPNSetupType> = ref({
@@ -150,14 +138,17 @@ const localSetupInput: Ref<VPNSetupType> = ref({
   alternativeRoute: false,
 });
 
-// Handle form submission - send the current state to parent
-function handleSubmit() {
-  // Validate form data if needed
-  if (validateForm()) {
-    // Emit the current state to the parent component
-    emit('submit', localSetupInput.value);
+const handleCreateVPNClient = async () => {
+  localLoading.value = true;
+  if (!validateForm()) {
+    return; // Stop if validation fails
   }
-}
+  const connection = await vpnStore.createVPNClient(localSetupInput.value);
+  if (connection) {
+    emit('created', connection);
+  }
+  localLoading.value = false;
+};
 
 // Basic validation
 function validateForm(): boolean {

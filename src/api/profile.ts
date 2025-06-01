@@ -44,7 +44,10 @@ export function useUserProfile() {
       return;
     }
 
-    const apiData = await apiGet('/profile/profiles/' + userParam, axiosConfig);
+    const apiData = await apiGet(
+      `/profile/profiles/by-username/${userParam}/`,
+      axiosConfig
+    );
 
     if (apiData.error === false) {
       user.value = apiData.data as UserProfile;

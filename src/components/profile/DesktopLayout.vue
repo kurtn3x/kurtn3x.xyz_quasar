@@ -13,19 +13,9 @@
           class="bg-transparent q-ml-md shadow-4"
         >
           <q-img
-            :src="user.avatar"
+            :src="user.avatarUrl"
             class="full-height full-width"
-          >
-            <q-badge
-              rounded
-              floating
-              :color="user.role === 'Admin' ? 'negative' : 'info'"
-              class="text-caption"
-              size="sm"
-            >
-              {{ user.role }}
-            </q-badge>
-          </q-img>
+          />
         </q-avatar>
       </div>
 
@@ -36,19 +26,9 @@
           class="bg-transparent q-ml-md shadow-4"
         >
           <q-img
-            :src="user.avatar"
+            :src="user.avatarUrl"
             class="full-height full-width"
-          >
-            <q-badge
-              rounded
-              floating
-              :color="user.role === 'Admin' ? 'negative' : 'info'"
-              class="text-caption"
-              size="sm"
-            >
-              {{ user.role }}
-            </q-badge>
-          </q-img>
+          />
         </q-avatar>
       </div>
 
@@ -97,184 +77,140 @@
 
   <q-card
     flat
-    class="bg-transparent profile-card"
+    class="bg-transparent profile-card q-mt-sm"
   >
     <q-separator size="1px" />
-    <q-tabs
-      v-model="profileTab"
-      align="justify"
-      inline-label
-      indicator-color="transparent"
-      active-color="layout-text"
-      active-bg-color="primary"
+    <q-card
+      flat
+      class="full-width full-height bg-transparent"
     >
-      <q-separator
-        vertical
-        size="1px"
-      />
-      <q-tab
-        name="about"
-        icon="person"
-        label="About"
-      />
-      <q-separator
-        vertical
-        size="1px"
-      />
-      <q-tab
-        name="placeholder"
-        icon="block"
-        label="Placeholder"
-      />
-      <q-separator
-        vertical
-        size="1px"
-      />
-    </q-tabs>
-    <q-separator size="1px" />
-    <q-tab-panels
-      v-model="profileTab"
-      animated
-      class="bg-transparent"
-    >
-      <q-tab-panel
-        name="about"
-        class="q-pa-none q-mt-md"
-      >
-        <q-card
-          flat
-          class="full-width full-height bg-transparent"
-        >
-          <div class="row q-col-gutter-md">
-            <!-- Left Column - User Details -->
-            <div class="col-12 col-md-5">
-              <q-card
-                flat
-                bordered
+      <div class="row q-col-gutter-md">
+        <!-- Left Column - User Details -->
+        <div class="col-12 col-md-5">
+          <q-card
+            flat
+            bordered
+          >
+            <q-card-section class="bg-primary text-layout-text q-py-sm">
+              <div class="text-h6">User Information</div>
+            </q-card-section>
+            <q-separator />
+            <q-card-section>
+              <q-list separator>
+                <q-item>
+                  <q-item-section avatar>
+                    <q-icon
+                      color="primary"
+                      name="person"
+                    />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label overline>Full Name</q-item-label>
+                    <q-item-label>
+                      {{ user.name || 'Not specified' }}
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+
+                <q-item>
+                  <q-item-section avatar>
+                    <q-icon
+                      color="primary"
+                      name="place"
+                    />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label overline>Location</q-item-label>
+                    <q-item-label>
+                      {{ user.location || 'Not specified' }}
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+
+                <q-item>
+                  <q-item-section avatar>
+                    <q-icon
+                      color="primary"
+                      name="event"
+                    />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label overline>Member Since</q-item-label>
+                    <q-item-label>
+                      {{ user.dateJoined || 'Not available' }}
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+
+                <q-item>
+                  <q-item-section avatar>
+                    <q-icon
+                      color="primary"
+                      name="mood"
+                    />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label overline>Current Status</q-item-label>
+                    <q-item-label>
+                      {{ user.status || 'Not specified' }}
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+
+                <q-item>
+                  <q-item-section avatar>
+                    <q-icon
+                      color="primary"
+                      name="shield"
+                    />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label overline>Role</q-item-label>
+                    <q-item-label>
+                      <q-badge
+                        :color="user.role === 'Admin' ? 'negative' : 'info'"
+                        class="q-pa-xs"
+                      >
+                        {{ user.role || 'User' }}
+                      </q-badge>
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-card-section>
+          </q-card>
+        </div>
+
+        <!-- Right Column - Description/Bio -->
+        <div class="col-12 col-md-7">
+          <q-card
+            flat
+            bordered
+            class="full-height"
+          >
+            <q-card-section class="bg-primary text-layout-text q-py-sm">
+              <div class="text-h6">Description</div>
+            </q-card-section>
+            <q-separator />
+            <q-card-section>
+              <div
+                class="text-body1"
+                style="white-space: pre-line"
               >
-                <q-card-section class="bg-primary text-layout-text q-py-sm">
-                  <div class="text-h6">User Information</div>
-                </q-card-section>
-                <q-separator />
-                <q-card-section>
-                  <q-list separator>
-                    <q-item>
-                      <q-item-section avatar>
-                        <q-icon
-                          color="primary"
-                          name="person"
-                        />
-                      </q-item-section>
-                      <q-item-section>
-                        <q-item-label overline>Full Name</q-item-label>
-                        <q-item-label>
-                          {{ user.name || 'Not specified' }}
-                        </q-item-label>
-                      </q-item-section>
-                    </q-item>
-
-                    <q-item>
-                      <q-item-section avatar>
-                        <q-icon
-                          color="primary"
-                          name="place"
-                        />
-                      </q-item-section>
-                      <q-item-section>
-                        <q-item-label overline>Location</q-item-label>
-                        <q-item-label>
-                          {{ user.location || 'Not specified' }}
-                        </q-item-label>
-                      </q-item-section>
-                    </q-item>
-
-                    <q-item>
-                      <q-item-section avatar>
-                        <q-icon
-                          color="primary"
-                          name="event"
-                        />
-                      </q-item-section>
-                      <q-item-section>
-                        <q-item-label overline>Member Since</q-item-label>
-                        <q-item-label>
-                          {{ user.dateJoined || 'Not available' }}
-                        </q-item-label>
-                      </q-item-section>
-                    </q-item>
-
-                    <q-item>
-                      <q-item-section avatar>
-                        <q-icon
-                          color="primary"
-                          name="mood"
-                        />
-                      </q-item-section>
-                      <q-item-section>
-                        <q-item-label overline>Current Status</q-item-label>
-                        <q-item-label>
-                          {{ user.status || 'Not specified' }}
-                        </q-item-label>
-                      </q-item-section>
-                    </q-item>
-
-                    <q-item>
-                      <q-item-section avatar>
-                        <q-icon
-                          color="primary"
-                          name="shield"
-                        />
-                      </q-item-section>
-                      <q-item-section>
-                        <q-item-label overline>Role</q-item-label>
-                        <q-item-label>
-                          <q-badge
-                            :color="user.role === 'Admin' ? 'negative' : 'info'"
-                            class="q-pa-xs"
-                          >
-                            {{ user.role || 'User' }}
-                          </q-badge>
-                        </q-item-label>
-                      </q-item-section>
-                    </q-item>
-                  </q-list>
-                </q-card-section>
-              </q-card>
-            </div>
-
-            <!-- Right Column - Description/Bio -->
-            <div class="col-12 col-md-7">
-              <q-card
-                flat
-                bordered
-                class="full-height"
-              >
-                <q-card-section class="bg-primary text-layout-text q-py-sm">
-                  <div class="text-h6">Description</div>
-                </q-card-section>
-                <q-separator />
-                <q-card-section>
-                  <div
-                    class="text-body1"
-                    style="white-space: pre-line"
-                  >
-                    {{
-                      user.description ||
-                      'This user has not added a description yet.'
-                    }}
-                  </div>
-                </q-card-section>
-              </q-card>
-            </div>
-          </div>
-        </q-card>
-      </q-tab-panel>
-    </q-tab-panels>
+                {{
+                  user.description ||
+                  'This user has not added a description yet.'
+                }}
+              </div>
+            </q-card-section>
+          </q-card>
+        </div>
+      </div>
+    </q-card>
   </q-card>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import { UserProfile } from 'src/types/apiTypes';
 import { copyToClipboard } from 'src/components/lib/functions';
 
@@ -283,9 +219,6 @@ const props = defineProps<{
   user: UserProfile;
   userlink: string;
 }>();
-
-// Local state
-const profileTab = ref('about');
 </script>
 
 <style scoped>

@@ -8,7 +8,7 @@
     </q-toolbar>
     <q-separator size="1px" />
 
-    <q-card style="max-height: 50vh; height: 45vh; overflow: scroll">
+    <q-card style="max-height: 400px; overflow: scroll">
       <ol>
         <li class="text-body1">
           <a

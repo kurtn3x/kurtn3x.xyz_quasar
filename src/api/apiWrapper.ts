@@ -7,6 +7,10 @@ interface ApiResponse<T = any> {
   returnCode: number;
 }
 
+function isSuccessStatus(status: number): boolean {
+  return status === 200 || status === 201 || status === 204;
+}
+
 export async function apiGet(endpoint: string, axiosConfig: any) {
   const returnData: ApiResponse = {
     error: true,
@@ -19,7 +23,7 @@ export async function apiGet(endpoint: string, axiosConfig: any) {
     const response = await api.get(endpoint, axiosConfig);
 
     returnData.returnCode = response.status;
-    if (response.status == 200) {
+    if (isSuccessStatus(response.status)) {
       returnData.error = false;
       returnData.data = response.data;
     } else {
@@ -71,7 +75,7 @@ export async function apiDelete(endpoint: string, axiosConfig: any) {
     const response = await api.delete(endpoint, axiosConfig);
 
     returnData.returnCode = response.status;
-    if (response.status == 200) {
+    if (isSuccessStatus(response.status)) {
       returnData.error = false;
       returnData.data = response.data;
     } else {
@@ -123,7 +127,7 @@ export async function apiPost(endpoint: string, data: any, axiosConfig: any) {
     const response = await api.post(endpoint, data, axiosConfig);
 
     returnData.returnCode = response.status;
-    if (response.status == 200) {
+    if (isSuccessStatus(response.status)) {
       returnData.error = false;
       returnData.data = response.data;
     } else {
@@ -175,7 +179,7 @@ export async function apiPut(endpoint: string, data: any, axiosConfig: any) {
     const response = await api.put(endpoint, data, axiosConfig);
 
     returnData.returnCode = response.status;
-    if (response.status == 200) {
+    if (isSuccessStatus(response.status)) {
       returnData.error = false;
       returnData.data = response.data;
     } else {
@@ -227,7 +231,7 @@ export async function apiPatch(endpoint: string, data: any, axiosConfig: any) {
     const response = await api.patch(endpoint, data, axiosConfig);
 
     returnData.returnCode = response.status;
-    if (response.status == 200) {
+    if (isSuccessStatus(response.status)) {
       returnData.error = false;
       returnData.data = response.data;
     } else {

@@ -9,21 +9,36 @@ export function copyToClipboard(text: string) {
   });
 }
 
-export function fileSizeIEC(bytes: number) {
-  if (Math.abs(bytes) < 1024) {
-    return bytes + ' B';
-  }
+const decimalFormatter = new Intl.NumberFormat('en', {
+  maximumFractionDigits: 1,
+});
 
-  const units = ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
-  let u = -1;
-  const r = 10 ** 2;
+const binaryFormatter = new Intl.NumberFormat('en', {
+  maximumFractionDigits: 1,
+});
 
-  do {
-    bytes /= 1024;
-    ++u;
-  } while (Math.round(Math.abs(bytes) * r) / r >= 1024 && u < units.length - 1);
+export function fileSizeDecimal(bytes: number): string {
+  if (bytes === 0) return '0 B';
+  if (Math.abs(bytes) < 1000) return bytes + ' B';
 
-  return bytes.toFixed(2) + ' ' + units[u];
+  const units = ['KB', 'MB', 'GB', 'TB', 'PB'];
+  const k = 1000;
+  const i = Math.floor(Math.log(Math.abs(bytes)) / Math.log(k));
+  const value = bytes / Math.pow(k, i);
+
+  return decimalFormatter.format(value) + ' ' + units[i - 1];
+}
+
+export function fileSizeBinary(bytes: number): string {
+  if (bytes === 0) return '0 B';
+  if (Math.abs(bytes) < 1024) return bytes + ' B';
+
+  const units = ['KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
+  const k = 1024;
+  const i = Math.floor(Math.log(Math.abs(bytes)) / Math.log(k));
+  const value = bytes / Math.pow(k, i);
+
+  return binaryFormatter.format(value) + ' ' + units[i - 1];
 }
 
 export function transferedPercentLabel(num: number) {
